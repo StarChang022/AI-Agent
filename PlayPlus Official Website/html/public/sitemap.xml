@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+<!-- Basic -->
+
+<url>
+  <loc>https://playplus.com.tw/</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/digital-transformation.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/quickly-solution.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/contact.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.60</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/about-playplus.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.60</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/partners.html</loc>
+  <lastmod>2025-08-12T08:53:01+00:00</lastmod>
+  <priority>0.60</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/recommended-tools.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.50</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/faq.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.50</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/privacy.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.50</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/terms.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.50</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/contact-success.html</loc>
+  <lastmod>2025-08-26T17:06:00+00:00</lastmod>
+  <priority>0.40</priority>
+</url>
+
+<!-- Portfolio -->
+
+<url>
+  <loc>https://playplus.com.tw/portfolio.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/stemcell.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/hongguanartonline.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/optree.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/investanchors.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/j-garden.html</loc>
+  <lastmod>2025-09-18T22:23:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/portfolio/mitac-meeting-room-booking-system.html</loc>
+  <lastmod>2025-09-23T09:16:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- Blog -->
+
+<url>
+  <loc>https://playplus.com.tw/blog.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- <url>
+  <loc>https://playplus.com.tw/blog/xxx</loc>
+  <lastmod>2025-xx-xxTHH:MM:SS+00:00</lastmod>
+  <priority>0.70</priority>
+</url> -->
+
+<url>
+  <loc>https://playplus.com.tw/blog/20250923-ui-ux-business-value.html</loc>
+  <lastmod>2025-09-23T11:58:12+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250923-http-status-code.html</loc>
+  <lastmod>2025-09-23T11:58:12+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250913-project-kickoff-3-questions-what-who-how.html</loc>
+  <lastmod>2025-09-13T10:20:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250902-restaurant-website-5-essentials-conversion-tw.html</loc>
+  <lastmod>2025-09-02T21:43:10+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250729-what-is-ui-ux-user-experience-basics.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250717-digital-transformation-first-step-workflow.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250702-web-design-quote-why-interview-first.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250623-marketing-strategy-not-just-website.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250612-sme-digital-transformation-strategy-first.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250913-project-kickoff-3-questions-what-who-how</loc>
+  <lastmod>2025-09-13T13:24:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250604-web-design-budget.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250923-http-status-code.html</loc>
+  <lastmod>2025-09-23T09:16:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/blog/20250923-ui-ux-business-value.html</loc>
+  <lastmod>2025-09-23T09:16:00+00:00</lastmod>
+  <priority>0.70</priority>
+</url>
+
+<!-- Services -->
+
+<url>
+  <loc>https://playplus.com.tw/services.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/services/web-design.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/services/internal-systems.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/services/app-development.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://playplus.com.tw/services/chatbot-development.html</loc>
+  <lastmod>2025-07-30T08:19:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+
+</urlset>

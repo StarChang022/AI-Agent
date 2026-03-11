@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="zh-Hant-TW">
+<head>
+
+	<!-- Google tag -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-1BLKW3JJK8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'G-1BLKW3JJK8');
+	</script>
+	<!-- Google Tag Manager -->
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+	new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+	j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+	'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-5LZFC4RX');</script>
+	<!-- Basic -->
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="index, follow">
+	<meta name="author" content="PlayPlus 普魯士國際">
+	<link rel="canonical" href="https://playplus.com.tw/blog/20250923-http-status-code.html"> <!-- ✏️ -->
+	<!-- Page Settings -->
+	<title>網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包 | PlayPlus 普魯士國際</title> <!-- ✏️ -->
+	<meta name="description" content="有時候會發生網頁無法瀏覽的狀況，你得知道 200、301、404、500 這些 HTTP 狀態碼是什麼，快速排查原因與採取對應做法。"> <!-- ✏️ -->
+	<meta name="keywords" content="HTTP 狀態碼, HTTP Status Code, 404 是什麼, 500 伺服器錯誤, 301 轉址, 網站錯誤代碼, HTTP 錯誤原因, 網站維運懶人包"> <!-- ✏️ -->
+	<!-- Font Imports -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital@0;1&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<!-- CSS -->
+	<link rel="preload" href="../style.css?v=6" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<link rel="preload" href="../css/font-icons.css?v=6" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<link rel="preload" href="../css/custom.css?v=6" as="style" onload="this.onload=null;this.rel='stylesheet'">
+	<!-- noscript -->
+	<noscript>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="../style.css?v=6">
+		<link rel="stylesheet" href="../css/font-icons.css?v=6">
+		<link rel="stylesheet" href="../css/custom.css?v=6">
+	</noscript>
+	<!-- MetaTag -->
+	<meta property="og:title" content="網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包 | PlayPlus 普魯士國際"> <!-- ✏️ -->
+	<meta property="og:description" content="有時候會發生網頁無法瀏覽的狀況，你得知道 200、301、404、500 這些 HTTP 狀態碼是什麼，快速排查原因與採取對應做法。"> <!-- ✏️ -->
+	<meta property="og:url" content="https://playplus.com.tw/blog/20250923-http-status-code.html"> <!-- ✏️ -->
+	<meta property="og:image" content="../images/blog/20250923-http-status-code/cover.webp"> <!-- ✏️ -->
+	<meta property="og:type" content="website">
+	<!-- Favicon -->
+	<link rel="icon" href="../images/favicon.svg" type="image/x-icon">
+	<link rel="apple-touch-icon" href="../images/favicon.svg">
+	<!-- JSON-LD 結構化資料 -->
+	<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "WebPage",
+		"inLanguage": "zh-Hant-TW",
+		"url": "https://playplus.com.tw/blog/20250923-http-status-code.html",
+		"areaServed": "Taipei, Taiwan",
+		"serviceType": ["網站設計顧問","品牌官網設計","企業內部系統開發","流程自動化解決方案","APP 開發顧問","聊天機器人導入","數位轉型策略顧問"],
+		"name": "網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包 | PlayPlus 普魯士國際",
+		"description": "有時候會發生網頁無法瀏覽的狀況，你得知道 200、301、404、500 這些 HTTP 狀態碼是什麼，快速排查原因與採取對應做法。"
+	}
+	</script>
+
+	<style>
+		.code {
+			width: 4rem;
+		}
+		.event {
+			width: 6rem;
+		}
+	</style>
+
+</head>
+
+<body class="stretched">
+
+	<!-- Google Tag Manager (noscript) -->
+	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5LZFC4RX"
+	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+	<div id="wrapper">
+		<!-- Header -->
+		<header id="header" class="full-header">
+			<div id="header-wrap">
+				<div class="container">
+					<div class="header-row">
+						<!-- Logo -->
+						<div id="logo">
+							<a href="../">
+								<img class="logo-default" src="../images/Logo.svg" alt="普魯士國際 PlayPlus">
+								<img class="logo-dark" src="../images/Logo.svg" alt="普魯士國際 PlayPlus">
+							</a>
+						</div>
+						<!-- Misc -->
+						<div class="header-misc">
+							<a href="../contact.html" class="button button-small button-circle">立即諮詢</a>
+						</div>
+						<!-- Hamburger -->
+						<div class="primary-menu-trigger">
+							<button class="cnvs-hamburger" type="button" title="Open Mobile Menu">
+								<span class="cnvs-hamburger-box"><span class="cnvs-hamburger-inner"></span></span>
+							</button>
+						</div>
+						<!-- Navigation -->
+						<nav class="primary-menu">
+							<ul class="menu-container">
+								<li class="menu-item">
+									<a class="menu-link" href="../digital-transformation.html"><div>數位轉型</div></a>
+									<ul class="sub-menu-container">
+										<li class="menu-item">
+											<a class="menu-link" href="../digital-transformation.html">數位轉型</a>
+										</li>
+										<li class="menu-item">
+											<a class="menu-link" href="../quickly-solution.html">快速啟動方案</a>
+										</li>
+									</ul>
+								</li>
+								<li class="menu-item">
+									<a class="menu-link" href="../services.html"><div>服務項目</div></a>
+									<ul class="sub-menu-container">
+										<li class="menu-item">
+											<a class="menu-link" href="../services/internal-systems.html">企業內部系統</a>
+										</li>
+										<li class="menu-item">
+											<a class="menu-link" href="../services/web-design.html">品牌網站</a>
+										</li>
+										<li class="menu-item">
+											<a class="menu-link" href="../services/app-development.html">APP</a>
+										</li>
+										<li class="menu-item">
+											<a class="menu-link" href="../services/chatbot-development.html">聊天機器人</a>
+										</li>
+									</ul>
+								</li>
+								<li class="menu-item">
+									<a class="menu-link" href="../portfolio.html"><div>作品集</div></a>
+								</li>
+								<li class="menu-item">
+									<a class="menu-link" href="../blog.html"><div>知識筆記</div></a>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</div>
+			<div class="header-wrap-clone"></div>
+		</header>
+
+		<!-- Breadcrumb -->
+		<nav class="container" aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="../">首頁</a></li>
+				<li class="breadcrumb-item"><a href="../blog.html">知識筆記</a></li>
+				<li class="breadcrumb-item active" aria-current="page">網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包</li>
+			</ol>
+		</nav>
+
+		<!-- Content Group -->
+		<section>
+			<div class="content-wrap">
+				<div class="container not-full column gap-frame-half">
+					<!-- Banner -->
+					<div class="hero column">
+						<div class="title">
+							<h1>網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包</h1>
+						</div>
+						<div class="tags">
+							<div class="tag">其他</div>
+						</div>
+						<div class="date">2025/09/23</div>
+						<img src="../images/blog/20250923-http-status-code/cover.webp" alt="網頁 404 是什麼？完整整理 200、301、404、500 等常見 HTTP 狀態碼懶人包">
+					</div>
+					<!-- Content -->
+					<div class="content column gap-frame-half">
+						<div class="column">
+							<p>有時候會發生網頁無法瀏覽的狀況，頁面上會寫著「這個網頁無法正常運作」之類的文字，下方再帶有狀態碼，如 HTTP ERROR 401 或 HTTP ERROR 500 等等的。HTTP ERROR 後面那串 xxx 就是所謂的狀態碼，表示網頁運作發生的狀況。</p>
+							<p>如果您僅是瀏覽者，關閉頁面就沒事了，但如果您是網站經營者，就要知道分別代表什麼含義唷。</p>
+						</div>
+						<div class="column">
+							<h2 class="inside">100 暫時回應</h2>
+							<table class="table table-striped">
+							<thead>
+									<tr>
+										<th class="code">代碼</th>
+										<th class="event">名稱</th>
+										<th>說明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>100</td>
+										<td>繼續</td>
+										<td>要求者應當繼續此要求。伺服器傳回此代碼，指出已收到某個要求的第一部分，正等候其餘部分。</td>
+									</tr>
+									<tr>
+										<td>101</td>
+										<td>切換通訊協定</td>
+										<td>要求者已請求伺服器切換通訊協定，伺服器正在確認即將進行切換。</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="column">
+							<h2 class="inside">200 成功</h2>
+							<table class="table table-striped">
+							<thead>
+									<tr>
+										<th class="code">代碼</th>
+										<th class="event">名稱</th>
+										<th>說明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>200</td>
+										<td>成功</td>
+										<td>伺服器已成功處理該要求。一般而言，這代表伺服器已提供所要求的網頁。如果您在 robots.txt 檔案中看到此狀態，即表示 GoogleBot 已成功擷取該網頁。</td>
+									</tr>
+									<tr>
+										<td>201</td>
+										<td>已建立</td>
+										<td>該要求已成功完成，伺服器已建立新的資源。</td>
+									</tr>
+									<tr>
+										<td>202</td>
+										<td>已接受</td>
+										<td>伺服器已接受該要求，但尚未處理。</td>
+									</tr>
+									<tr>
+										<td>203</td>
+										<td>非授權資訊</td>
+										<td>伺服器成功處理該要求，但正在傳回可能來自另一來源的資訊。</td>
+									</tr>
+									<tr>
+										<td>204</td>
+										<td>無內容</td>
+										<td>伺服器已成功處理該要求，但沒有傳回任何內容。</td>
+									</tr>
+									<tr>
+										<td>205</td>
+										<td>重設內容</td>
+										<td>伺服器已成功處理該要求，但沒有傳回任何內容。與 204 回應不同，此回應需要要求者重設文件視圖。（例如清除表單以輸入新資料）</td>
+									</tr>
+									<tr>
+										<td>206</td>
+										<td>部分內</td>
+										<td>伺服器已成功處理部分 GET 要求。</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="column">
+							<h2 class="inside">300 已重新導向</h2>
+							<table class="table table-striped">
+							<thead>
+									<tr>
+										<th class="code">代碼</th>
+										<th class="event">名稱</th>
+										<th>說明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>300</td>
+										<td>多重選擇</td>
+										<td>根據該要求，伺服器可採取數種動作。伺服器可能會根據要求者（使用者代理程式）選擇一個動作，或者可能列出清單供要求者選擇一個動作。</td>
+									</tr>
+									<tr>
+										<td>301</td>
+										<td>永久移動</td>
+										<td>這是我們常聽到的 301 轉址。要求的網頁已永久移到新位置。當伺服器傳回此回應（作為對 GET 或 HEAD 要求的回應）時，會自動將要求者導向新位置。您應該此用此代碼讓 GoogleBot 知道某個網頁或網站已永久移至新位置。</td>
+									</tr>
+									<tr>
+										<td>302</td>
+										<td>暫時移動</td>
+										<td>伺服器目前正在對來自不同位置的網頁回應該要求，但是要求者應該繼續使用原位置發出以後的要求。此代碼類似於回應 GET 或 HEAD 要求的 301 代碼，會自動將要求者導向另一個位置，但是因為 GoogleBot 會繼續檢索原位置並為其建立索引，所以您不應該使用此代碼來告知 GoogleBot 某個網頁或網站已移除。</td>
+									</tr>
+									<tr>
+										<td>303</td>
+										<td>參閱其他位置</td>
+										<td>當要求者應該對另一個位置發出單獨的 GET 要求以擷取回應時，伺服器會傳回此代碼，對於 HEAD 之外的所有要求，伺服器會自動導向其他位置。</td>
+									</tr>
+									<tr>
+										<td>304</td>
+										<td>未修改</td>
+										<td>要求的網頁自上次要求後未經任何修改。當伺服器傳回此回應時，不會傳回該網頁內容。您應該設定伺服器傳回此回應，告知 GoogleBot 網頁自上次檢索後便未經修改，這樣可以節省頻寬和負載。</td>
+									</tr>
+									<tr>
+										<td>305</td>
+										<td>使用 Proxy</td>
+										<td>要求者只能夠過 Proxy 進入要求的網頁。當伺服器傳回此回應時，也會指出要求者應該使用的 Proxy。</td>
+									</tr>
+									<tr>
+										<td>307</td>
+										<td>暫時重新導向</td>
+										<td>伺服器目前正對來自不同位置的網頁回應該要求，要求者應該繼續使用原位置發出後的要求。此代碼類似於回應 GET 或 HEAD 要求的 301 代碼，會自動將要求者的向另一個位置，但是 GoogleBot 會繼續檢索原位置並為其建立索引，所以不應該使用此代碼來告知 GoogleBot 某網頁或網站已移除。</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="column">
+							<h2 class="inside">400 要求錯誤</h2>
+							<table class="table table-striped">
+							<thead>
+									<tr>
+										<th class="code">代碼</th>
+										<th class="event">名稱</th>
+										<th>說明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>400</td>
+										<td>不正確的要求</td>
+										<td>伺服器無法解讀該要求的語法。</td>
+									</tr>
+									<tr>
+										<td>401</td>
+										<td>未授權</td>
+										<td>該要求需要驗證。登入後，伺服器可能會對網頁傳回此回應。</td>
+									</tr>
+									<tr>
+										<td>403</td>
+										<td>禁止</td>
+										<td>伺服器拒絕要求。如果看到 GoogleBot 嘗試檢索您網站的有效網頁時收到這個狀態碼，則可能是因為您的伺服器或主機封鎖 GoogleBot 存取權。您可以在 Google 網站管理員工具「檢索」標籤下的「檢索錯誤」看到此狀態碼。</td>
+									</tr>
+									<tr>
+										<td>404</td>
+										<td>找不到</td>
+										<td>最常見的狀態碼。伺服器找不到要求的網頁，該要求是針對伺服器上不存在的網頁。例如您瀏覽 apple.com 時於網址後方隨意輸入 apple.com/1234，這不是該網站底下存在的網頁網址，則伺服器會傳回此回應。</td>
+									</tr>
+									<tr>
+										<td>405</td>
+										<td>不允許的方法</td>
+										<td>不允許要求中指定的方法。</td>
+									</tr>
+									<tr>
+										<td>406</td>
+										<td>不接受</td>
+										<td>無法以所要求的內容特性回應要求的網頁。</td>
+									</tr>
+									<tr>
+										<td>407</td>
+										<td>需要 Proxy 驗證</td>
+										<td>此狀態碼類似於 401（未授權），但指定要求者必須使用 Proxy 進行驗證。當伺服器傳回此回應時，也會指出要求者應該使用的 Proxy。</td>
+									</tr>
+									<tr>
+										<td>408</td>
+										<td>要求逾時</td>
+										<td>等候回應時，發生伺服器逾時。</td>
+									</tr>
+									<tr>
+										<td>409</td>
+										<td>衝突</td>
+										<td>完成要求時，伺服器遇到衝突，伺服器必須在回應中包含衝突資訊。伺服器可能會在 PUT 要求與較早的某個要求相衝突時傳回此狀態碼作為回應，病提供這兩個要求之間的差異清單。</td>
+									</tr>
+									<tr>
+										<td>410</td>
+										<td>已移除</td>
+										<td>要求的資源已永久移除。此代碼類似於 404，「資源曾經存在但現在已不復存在」的情況下，有時會使用 410 取代 404 而使用。如果資源已永久移動，您應該使用 301 指定新位置。</td>
+									</tr>
+									<tr>
+										<td>411</td>
+										<td>需要長度</td>
+										<td>伺服器不接受不含有效內容長度不標頭欄位的要求。</td>
+									</tr>
+									<tr>
+										<td>412</td>
+										<td>前提失敗</td>
+										<td>伺服器未滿足要求者所要求的其中一個前提。</td>
+									</tr>
+									<tr>
+										<td>413</td>
+										<td>要求實體太大</td>
+										<td>伺服器無法處理要求，因為要求過於龐大。</td>
+									</tr>
+									<tr>
+										<td>414</td>
+										<td>要求的 URI 太長</td>
+										<td>要求的 URI（通常指網址）過長，伺服器無法處理。</td>
+									</tr>
+									<tr>
+										<td>415</td>
+										<td>不支援的媒體類型</td>
+										<td>要求的格式不受要求的網頁支援。</td>
+									</tr>
+									<tr>
+										<td>416</td>
+										<td>要求的範圍無法使用</td>
+										<td>要求的範圍在該網頁上無法使用。</td>
+									</tr>
+									<tr>
+										<td>417</td>
+										<td>預期失敗</td>
+										<td>伺服器無法達到預期要求標題欄位的條件。</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="column">
+							<h2 class="inside">500 伺服器錯誤</h2>
+							<table class="table table-striped">
+							<thead>
+									<tr>
+										<th class="code">代碼</th>
+										<th class="event">名稱</th>
+										<th>說明</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>500</td>
+										<td>內部伺服器錯誤</td>
+										<td>伺服器遭遇錯誤，無法完成要求。</td>
+									</tr>
+									<tr>
+										<td>501</td>
+										<td>未提供</td>
+										<td>伺服器不具備完成要求所需的功能。例如當伺服器無法識別要求方式。</td>
+									</tr>
+									<tr>
+										<td>502</td>
+										<td>不正確的閘道</td>
+										<td>伺服器當成閘道或 Proxy 使用，接收到來自上游伺服器的無效回應。</td>
+									</tr>
+									<tr>
+										<td>503</td>
+										<td>服務無法使用</td>
+										<td>伺服器目前暫時無法使用，因為超載貨維護之故而關閉。這種情況通常屬於暫時性。</td>
+									</tr>
+									<tr>
+										<td>504</td>
+										<td>閘道逾時</td>
+										<td>伺服器當成閘道或 Proxy 使用，而且未接收到來自上游伺服器的即時回應。</td>
+									</tr>
+									<tr>
+										<td>505</td>
+										<td>不支援 HTTP 版本</td>
+										<td>伺服器不支援要求裡面所用的 HTTP 通訊協定版本。</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="column">
+							<h2 class="inside">結尾</h2>
+							<p>如果你正在經營網站，建議要記住正確處理狀態碼，才知道該怎麼第一時間解決問題。忘記的話怎麼辦？再回來這裡查詢吧！</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Contact -->
+		<section>
+			<div class="content-wrap">
+				<div class="container">
+					<div class="contact">
+						<div class="row col-mb-30">
+							<div class="col-lg-8 content">
+								<div class="heading">
+									<h2>從一條流程開始<span>也算是啟動數位轉型</span></h2>
+									<div class="column gap-small">
+										<p>不一定要一次重做整個系統，先挑一條「最常出錯或最耗時」的流程，我們陪你從標準化到數位化，親身感受效率差異，再決定要不要擴大。</p>
+									</div>
+									<div class="actions">
+										<a href="../contact.html" class="button button-circle">預約1次免費顧問</a>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 d-none d-lg-block">
+								<img src="../images/contact/contact.webp" alt="普魯士國際 PlayPlus">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Footer -->
+		<footer id="footer">
+			<div class="container">
+				<!-- Footer Widgets -->
+				<div class="footer-widgets-wrap">
+					<div class="row col-mb-30">
+						<div class="col-lg-6 col-xl-7">
+							<div class="widget information">
+								<h3 class="fs-5">普魯士國際 PlayPlus</h3>
+								<div class="content">
+									<div>台北市大安區忠孝東路四段320號2樓</div>
+									<div><a href="mailto:service@playplus.com.tw" class="color-links-dark" target="_blank">service@playplus.com.tw</a></div>
+									<div><a href="tel:0227111223" class="color-links-dark" target="_blank">02-2711-1223</a></div>
+								</div>
+								<div class="sns">
+									<a href="https://www.facebook.com/PlayPlus.International" target="_blank">
+										<img src="../images/sns/facebook.webp" alt="https://www.facebook.com/PlayPlus.International">
+									</a>
+									<a href="https://www.threads.com/@playplus_webdesign" target="_blank">
+										<img src="../images/sns/threads.webp" alt="https://www.threads.com/@playplus_webdesign">
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6 col-xl-5">
+							<div class="row col-mb-30">
+								<div class="col-6 col-sm">
+									<div class="widget widget_links">
+										<h4>專業</h4>
+										<ul>
+											<li><a href="../services.html">服務項目</a></li>
+											<li><a href="../portfolio.html">作品集</a></li>
+										</ul>
+									</div>
+								</div>
+								<div class="col-6 col-sm">
+									<div class="widget widget_links">
+										<h4>分享</h4>
+										<ul>
+											<li><a href="../blog.html">知識筆記</a></li>
+											<li><a href="../recommended-tools.html">數位工具分享</a></li>
+											<li><a href="../partners.html">合作夥伴</a></li>
+										</ul>
+									</div>
+								</div>
+								<div class="col-6 col-sm">
+									<div class="widget widget_links">
+										<h4>我們</h4>
+										<ul>
+											<li><a href="../about-playplus.html">我們是普魯士</a></li>
+											<li><a href="../faq.html">常見問題</a></li>
+											<li><a href="../contact.html">聯絡我們</a></li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Copyrights -->
+			<div id="copyrights">
+				<div class="container">
+					<div class="row col-mb-30">
+						<div class="col-md-6 text-center text-md-start">
+							Copyright &copy; 2025 PlayPlus 普魯士國際有限公司 版權所有<br>
+						</div>
+						<div class="col-md-6 text-center text-md-end">
+							<div class="copyright-links">
+								<a href="../privacy.html">隱私權政策</a> <a href="../terms.html">服務條款</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</div>
+
+	<!-- Go To Top -->
+	<div id="gotoTop" class="uil uil-angle-up"></div>
+	<!-- JavaScripts -->
+	<script defer src="../js/functions.bundle.js"></script>
+	<!-- Line Widget -->
+	<script defer src="/js/components/line-widget.js"></script>
+
+</body>
+</html>
