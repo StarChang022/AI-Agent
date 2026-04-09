@@ -10,8 +10,8 @@ plt.style.use('fivethirtyeight')
 
 # Path to the data file
 CSV_PATH = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/股票/0000加權指數/大盤交易資料.csv'
-REPORT_PATH = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/⌚️暫存/✅數學計算大盤走勢.md'
-ARTIFACTS_DIR = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/⌚️暫存/charts'
+REPORT_PATH = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/✅數學計算大盤走勢.md'
+ARTIFACTS_DIR = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/charts'
 
 # Create chart directory
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
@@ -101,7 +101,7 @@ days = 10
 simulations = 10000
 
 # Geometric Brownian Motion simulation
-daily_returns = np.exp(mu + sigma * np.random.standard_normal((days, simulations)))
+daily_returns = np.exp((mu - 0.5 * sigma**2) + sigma * np.random.standard_normal((days, simulations)))
 price_paths = np.zeros_like(daily_returns)
 price_paths[0] = last_price * daily_returns[0]
 for t in range(1, days):
@@ -288,7 +288,7 @@ elif expected_trend < -0.005 and p_win_after_2_win < 0.5:
 else:
     recommendation = "**觀望 (Wait)** - 市場訊號分歧或缺乏顯著方向性"
 
-report += f"### 💡 行動建議\n基於上述數學與統計分析的總和考量，目前的交易建議為：{recommendation}\n\n"
+report += f"### 💡 未來20個交易日明確交易建議\n基於上述數學與統計分析的總和考量，接下來「未來20個交易日」的交易建議為：{recommendation}\n\n"
 
 
 with open(REPORT_PATH, 'w', encoding='utf-8') as f:
