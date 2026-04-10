@@ -12,7 +12,7 @@ except ImportError:
     exit(1)
 
 def run():
-    input_file = os.path.join('冷郵件對象', '名單104副本.csv')
+    input_file = os.path.join('冷郵件對象', '名單副本104.csv')
     
     if not os.path.exists(input_file):
         print(f"找不到檔案: {input_file}")

@@ -62,7 +62,7 @@ def detect_ecommerce(url, html_text):
     return False
 
 def main():
-    input_file = os.path.join('冷郵件對象', '名單官網副本.csv')
+    input_file = os.path.join('冷郵件對象', '名單副本官網.csv')
     
     # 確保輸入檔案存在
     if not os.path.exists(input_file):
