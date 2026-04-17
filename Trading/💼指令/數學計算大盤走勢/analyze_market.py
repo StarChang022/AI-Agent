@@ -9,9 +9,9 @@ import datetime
 plt.style.use('fivethirtyeight')
 
 # Path to the data file
-CSV_PATH = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/股票/0000加權指數/大盤交易資料.csv'
-REPORT_PATH = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/✅數學計算大盤走勢.md'
-ARTIFACTS_DIR = '/Users/starchang/Documents/CloudFolder/01 GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/charts'
+CSV_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/股票/0000加權指數/大盤交易資料.csv'
+REPORT_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/✅數學計算大盤走勢.md'
+ARTIFACTS_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/charts'
 
 # Create chart directory
 os.makedirs(ARTIFACTS_DIR, exist_ok=True)
