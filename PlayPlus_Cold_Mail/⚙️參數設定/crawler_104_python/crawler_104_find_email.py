@@ -1,4 +1,4 @@
-"""
+﻿"""
 crawler_104_find_email.py
 =========================
 依照 4.104crawler查找網域信箱.md 指令執行。
@@ -7,7 +7,7 @@ crawler_104_find_email.py
   1. 讀取 ../../冷郵件對象/名單副本.csv 的「官方網站」欄位
   2. 從網址解析網域（domain）
   3. 使用 Google 搜尋「@domain」，從結果頁面抓取符合網域的信箱
-  4. 找到 1 筆 → 填入「聯絡人信箱」欄位
+  4. 找到 1 筆 → 填入「email」欄位
      找到 2 筆以上 → 複製該列，每筆一列，分別填入對應信箱
      找不到 → 保留原列不動
   5. 同時判斷信箱是否為具名信箱，填入「聯絡人名稱」
@@ -375,7 +375,7 @@ def main():
     for i, row in enumerate(rows, start=1):
         company_name = row.get("公司品牌簡稱", "").strip()
         website = row.get("官方網站", "").strip()
-        existing_email = row.get("聯絡人信箱", "").strip()
+        existing_email = row.get("email", "").strip()
 
         print(f"[{i:>3}/{total}] {company_name}")
 
@@ -412,7 +412,7 @@ def main():
             # 只有 1 筆 → 直接填入
             email = emails[0]
             new_row = dict(row)
-            new_row["聯絡人信箱"] = email
+            new_row["email"] = email
             if is_official_email(email):
                 new_row["聯絡人名稱"] = "官方"
             else:
@@ -426,7 +426,7 @@ def main():
             print(f"        ✅ 找到 {len(emails)} 個信箱，複製 {len(emails)} 列：")
             for email in emails:
                 new_row = dict(row)
-                new_row["聯絡人信箱"] = email
+                new_row["email"] = email
                 if is_official_email(email):
                     new_row["聯絡人名稱"] = "官方"
                 else:
