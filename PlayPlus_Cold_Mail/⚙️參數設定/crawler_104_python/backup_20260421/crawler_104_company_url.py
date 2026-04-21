@@ -1,62 +1,100 @@
 """
-crawler_104_company_url.py (Google Sheets 版本)
-================================================
+crawler_104_company_url.py
+==========================
 依照 2.104crawler公司網址.md 指令執行。
 使用 Playwright 以處理 JavaScript 動態渲染。
 
 流程：
-  1. 從 Google Sheets『名單副本』讀取「來源」欄位（104 公司頁面 URL）
-  2. 使用 Playwright 進入每個 URL，等待頁面渲染後尋找「公司網址」
+  1. 讀取 ../../冷郵件對象/名單副本.csv 的「來源」欄位（104 公司頁面 URL）
+  2. 使用 Playwright 進入每個 URL，等後頁面渲染後尋找「公司網址」
   3. 找到 → 將網址寫入「官方網站」欄位
      找不到 → 刪除該列
-  4. 結果全部覆寫回 Google Sheets（Google Sheets 本身有版本歷史，不另行備份）
+  4. 結果回存至同一個 CSV（過程中自動建立備份）。
 
 使用方式：
     python3 crawler_104_company_url.py
 
 需要安裝的套件：
-    pip install playwright gspread google-auth
+    pip install playwright
     playwright install chromium
 """
 
+import csv
 import os
 import re
+import shutil
 import time
 import random
+from datetime import datetime
 from typing import List, Dict, Optional
 
 from playwright.sync_api import sync_playwright
-
-import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from gs_helper import get_worksheet, load_sheet_as_rows, save_rows_to_sheet
 
 # ──────────────────────────────────────────────
 # 設定區
 # ──────────────────────────────────────────────
 
-# 請求間隔（秒）
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH = os.path.normpath(
+    os.path.join(SCRIPT_DIR, "..", "..", "冷郵件對象", "名單副本.csv")
+)
+
+# 請求間隔（秒）：降低延遲加速執行
 DELAY_MIN = 1.0
 DELAY_MAX = 2.5
 
-# 連線逾時（毫秒）
-TIMEOUT = 30000
+# 連線逾時（秒）
+TIMEOUT = 30000  # Playwright 使用毫秒
 
 
 # ──────────────────────────────────────────────
 # 工具函式
 # ──────────────────────────────────────────────
 
+def backup_csv(csv_path: str) -> str:
+    """備份 CSV，回傳備份路徑。"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = csv_path.replace(".csv", f"_backup_{timestamp}.csv")
+    shutil.copy2(csv_path, backup_path)
+    print(f"[備份] 已建立備份：{os.path.basename(backup_path)}")
+    return backup_path
+
+
+def load_csv(csv_path: str) -> tuple[List[Dict], List[str]]:
+    """讀取 CSV，回傳所有列（dict 格式）與欄位名稱清單。"""
+    rows = []
+    fieldnames = []
+    if not os.path.exists(csv_path):
+        return rows, fieldnames
+    with open(csv_path, newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        fieldnames = list(reader.fieldnames) if reader.fieldnames else []
+        for row in reader:
+            rows.append(dict(row))
+    return rows, fieldnames
+
+
+def save_csv(csv_path: str, rows: List[Dict], fieldnames: List[str]) -> None:
+    """將列清單重新寫入 CSV。"""
+    with open(csv_path, newline="", encoding="utf-8-sig", mode="w") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\r\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def fetch_company_website(page, url: str) -> Optional[str]:
     """
     使用 Playwright 進入 104 公司頁面，嘗試取得「公司網址」。
     """
     try:
+        # 導向 URL，使用 domcontentloaded 可加快進入頁面速度
         page.goto(url, wait_until="domcontentloaded", timeout=TIMEOUT)
+        
+        # 等待主要內容區塊載入
         print("        等待頁面渲染...")
         page.wait_for_timeout(1000)
-
-        # 優先策略 1: 使用 104 的 data-gtm-content 標籤（非常準確）
+        
+        # 優先策略 1: 使用 104 的 data-gtm-content 標籤 (非常準確)
         website_link = page.query_selector('a[data-gtm-content="公司網址"]')
         if website_link:
             href = website_link.get_attribute("href")
@@ -66,6 +104,7 @@ def fetch_company_website(page, url: str) -> Optional[str]:
         # 優先策略 2: 尋找 .intro-table__data 中包含的連結
         items = page.query_selector_all('.intro-table__data')
         for item in items:
+            # 檢查其前一個兄弟元素是否包含「公司網址」
             header = item.evaluate("el => el.previousElementSibling ? el.previousElementSibling.innerText : \"\"")
             if "公司網址" in str(header):
                 anchor = item.query_selector('a')
@@ -78,14 +117,19 @@ def fetch_company_website(page, url: str) -> Optional[str]:
         all_links = page.query_selector_all('a[href^="http"]')
         for link in all_links:
             href = link.get_attribute("href") or ""
+            
+            # 排除 104 內部連結與常見社群媒體 (除非是官網)
             if any(domain in href for domain in ["104.com.tw", "facebook.com", "line.me", "instagram.com", "youtube.com"]):
                 continue
+                
+            # 檢查其父層或連結文字是否包含關鍵字
             text = link.inner_text().strip()
             parent_text = ""
             try:
                 parent_text = link.evaluate("el => el.parentElement.innerText")
-            except Exception:
+            except:
                 pass
+                
             if "公司網址" in parent_text or "官方網站" in parent_text or re.match(r'^https?://[^\s]+$', text):
                 return href
 
@@ -113,24 +157,28 @@ def fetch_company_website(page, url: str) -> Optional[str]:
 
 def main():
     print("=" * 60)
-    print("  104 公司頁面 → 官方網站爬蟲 (Playwright + Google Sheets 版)")
+    print("  104 公司頁面 → 官方網站爬蟲 (Playwright 版)")
     print("=" * 60)
+    print(f"目標 CSV：{CSV_PATH}\n")
 
-    # 連線 Google Sheets 並讀取所有列
-    ws = get_worksheet()
-    rows, fieldnames = load_sheet_as_rows(ws)
-    print(f"共讀取 {len(rows)} 列資料 (欄位數: {len(fieldnames)})\n")
-
-    if not rows:
-        print("[錯誤] Google Sheets 分頁為空，請先執行 crawler_104_early_list.py")
+    if not os.path.exists(CSV_PATH):
+        print(f"[錯誤] CSV 不存在：{CSV_PATH}")
         return
 
-    kept_rows: List[Dict] = []
-    deleted_count = 0
-    updated_count = 0
-    skipped_count = 0
+    # 備份原始 CSV
+    backup_csv(CSV_PATH)
+
+    # 讀取所有列與欄位名
+    rows, fieldnames = load_csv(CSV_PATH)
+    print(f"共讀取 {len(rows)} 列資料 (欄位數: {len(fieldnames)})\n")
+
+    kept_rows = []      # 保留的列
+    deleted_count = 0   # 刪除的列數
+    updated_count = 0   # 成功填入官方網站的列數
+    skipped_count = 0   # 略過的列數
 
     with sync_playwright() as p:
+        # 啟動瀏覽器
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -148,7 +196,7 @@ def main():
 
             # 來源欄為空 → 略過
             if not source_url:
-                print("        [略過] 來源欄位為空")
+                print(f"        [略過] 來源欄位為空")
                 kept_rows.append(row)
                 skipped_count += 1
                 continue
@@ -160,6 +208,7 @@ def main():
                 skipped_count += 1
                 continue
 
+            # 進入 104 公司頁面取得官方網站
             print(f"        來源：{source_url}")
             website = fetch_company_website(page, source_url)
 
@@ -169,8 +218,9 @@ def main():
                 updated_count += 1
                 print(f"        ✅ 官方網站：{website}")
             else:
+                # 找不到公司網址 → 刪除該列
                 deleted_count += 1
-                print("        ❌ 無公司網址，刪除此列")
+                print(f"        ❌ 無公司網址，刪除此列")
 
             # 隨機間隔
             if i < total:
@@ -179,16 +229,16 @@ def main():
 
         browser.close()
 
-    # 覆寫回 Google Sheets
-    save_rows_to_sheet(ws, kept_rows, fieldnames)
+    # 回存 CSV
+    save_csv(CSV_PATH, kept_rows, fieldnames)
 
     print("\n" + "=" * 60)
-    print("  完成！")
+    print(f"  完成！")
     print(f"  ✅ 填入官方網站：{updated_count} 列")
     print(f"  ❌ 刪除（無官網）：{deleted_count} 列")
     print(f"  ⏭  略過：{skipped_count} 列")
     print(f"  📄 最終保留：{len(kept_rows)} 列")
-    print("  📊 已寫回 Google Sheets『名單副本』")
+    print(f"  寫入位置：{CSV_PATH}")
     print("=" * 60)
 
 

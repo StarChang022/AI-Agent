@@ -1,17 +1,24 @@
 """
-crawler_104_company_profile.py
-==============================
+crawler_104_company_profile.py (Google Sheets 版本)
+====================================================
 搭配 3.104crawler撰寫公司說明.md 執行。
 使用 Playwright 自動進入 104 公司頁面，抓取「公司簡介」與「主要商品」，
-並匯出成 temp_profiles.json 供 AI Agent 進行摘要與寫入。
+並直接將 AI 摘要結果寫回 Google Sheets『名單副本』的「說明」欄位。
 
 流程：
-  1. 讀取 ../../冷郵件對象/名單副本.csv 的「來源」欄位
-  2. 使用 Playwright 進入每個 104 URL，抓取文字資訊
-  3. 儲存為 temp_profiles.json
+  1. 從 Google Sheets『名單副本』讀取「來源」欄位
+  2. 使用 Playwright 進入每個 104 URL，抓取公司簡介文字
+  3. 將摘要結果直接寫回 Google Sheets「說明」欄位
+  4. （可選）同時輸出 temp_profiles.json 供外部 AI Agent 使用
+
+使用方式：
+    python3 crawler_104_company_profile.py
+
+需要安裝的套件：
+    pip install playwright gspread google-auth
+    playwright install chromium
 """
 
-import csv
 import json
 import os
 import time
@@ -20,10 +27,15 @@ from typing import List, Dict
 
 from playwright.sync_api import sync_playwright
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from gs_helper import get_worksheet, load_sheet_as_rows, save_rows_to_sheet
+
+# ──────────────────────────────────────────────
+# 設定區
+# ──────────────────────────────────────────────
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CSV_PATH = os.path.normpath(
-    os.path.join(SCRIPT_DIR, "..", "..", "冷郵件對象", "名單副本.csv")
-)
 TEMP_JSON_PATH = os.path.join(SCRIPT_DIR, "temp_profiles.json")
 
 DELAY_MIN = 1.0
@@ -31,16 +43,9 @@ DELAY_MAX = 2.5
 TIMEOUT = 30000
 
 
-def load_csv(csv_path: str) -> List[Dict]:
-    rows = []
-    if not os.path.exists(csv_path):
-        return rows
-    with open(csv_path, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            rows.append(dict(row))
-    return rows
-
+# ──────────────────────────────────────────────
+# 工具函式
+# ──────────────────────────────────────────────
 
 def fetch_company_info(page, url: str) -> str:
     """抓取 104 頁面的公司簡介與產品"""
@@ -50,18 +55,17 @@ def fetch_company_info(page, url: str) -> str:
 
         info_text = ""
 
-        # 策略 1: 尋找 p 標籤 (104 常用的簡介段落)
-        # 公司簡介通常在某個包含 description 關鍵字的區塊內
+        # 策略 1: 尋找公司簡介段落
         desc_element = page.query_selector('.profile__desc')
         if desc_element:
             info_text += "【公司簡介】\n" + desc_element.inner_text().strip() + "\n\n"
 
-        # 找尋包含「主要商品 / 服務項目」的區塊
+        # 策略 2: 尋找主要商品/服務項目
         products_element = page.query_selector('.product__desc')
         if products_element:
             info_text += "【主要商品】\n" + products_element.inner_text().strip()
 
-        # 如果找不到新的 CSS selector，嘗試通用的備用抓取方法
+        # 策略 3: 備用通用抓取
         if not info_text:
             elements = page.query_selector_all('p')
             for el in elements:
@@ -69,7 +73,7 @@ def fetch_company_info(page, url: str) -> str:
                 if len(text) > 30:
                     info_text += text + "\n"
 
-        # 如果文字太長，截斷避免 token 爆炸 (大約保留 1000 字供 AI 判讀)
+        # 截斷避免 token 爆炸（保留約 1000 字）
         return info_text[:1000].strip() if info_text else "無公司資訊"
 
     except Exception as e:
@@ -77,17 +81,57 @@ def fetch_company_info(page, url: str) -> str:
         return "無法取得公司資訊"
 
 
+def summarize_company_info(info_text: str, company_name: str) -> str:
+    """
+    根據公司資訊文字，自動生成 50~100 字的繁體中文一句話簡介。
+    注意：此函式使用規則式摘要，如需 AI 摘要請改用外部 Agent 讀取 temp_profiles.json。
+    """
+    if not info_text or info_text in ("無公司資訊", "無法取得公司資訊"):
+        return ""
+
+    # 擷取第一段有意義的句子（簡單摘要）
+    lines = [l.strip() for l in info_text.replace("【公司簡介】", "").replace("【主要商品】", "").split("\n") if l.strip()]
+    if not lines:
+        return ""
+
+    # 組合前幾行，截取到合理長度
+    summary = " ".join(lines)
+    # 去除多餘空白
+    summary = " ".join(summary.split())
+    # 截取 100 字以內
+    if len(summary) > 100:
+        # 嘗試在句點處截斷
+        truncated = summary[:100]
+        last_period = max(truncated.rfind("。"), truncated.rfind("，"), truncated.rfind("、"))
+        if last_period > 50:
+            summary = truncated[:last_period + 1]
+        else:
+            summary = truncated + "…"
+
+    return summary
+
+
+# ──────────────────────────────────────────────
+# 主程式
+# ──────────────────────────────────────────────
+
 def main():
     print("=" * 60)
-    print("  104 公司簡介抓取工具 (提供 AI 摘要用)")
+    print("  104 公司簡介抓取工具 (Google Sheets 版本)")
     print("=" * 60)
 
-    rows = load_csv(CSV_PATH)
+    # 連線 Google Sheets 並讀取所有列
+    ws = get_worksheet()
+    rows, fieldnames = load_sheet_as_rows(ws)
+    print(f"共讀取 {len(rows)} 列資料\n")
+
     if not rows:
-        print(f"[錯誤] CSV 不存在或為空：{CSV_PATH}")
+        print("[錯誤] Google Sheets 分頁為空")
         return
 
-    company_data = {}
+    company_data = {}        # 供 temp_profiles.json 輸出（外部 AI Agent 使用）
+    updated_count = 0
+    skipped_count = 0
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -101,33 +145,54 @@ def main():
         for i, row in enumerate(rows, start=1):
             company_name = row.get("公司品牌簡稱", "").strip()
             source_url = row.get("來源", "").strip()
+            existing_desc = row.get("說明", "").strip()
+
+            print(f"[{i:>3}/{total}] {company_name}")
 
             if not source_url:
+                skipped_count += 1
                 continue
 
-            print(f"[{i:>3}/{total}] 抓取中: {company_name}")
+            # 已有說明 → 略過
+            if existing_desc:
+                print(f"        [略過] 說明已存在")
+                skipped_count += 1
+                continue
+
             info = fetch_company_info(page, source_url)
-            
-            # 將資料存入字典中
             company_data[company_name] = info
-            
-            if info and info != "無公司資訊" and info != "無法取得公司資訊":
-                 print(f"        ✅ 取得資訊 (長度: {len(info)})")
+
+            if info and info not in ("無公司資訊", "無法取得公司資訊"):
+                print(f"        ✅ 取得資訊（長度：{len(info)}）")
+                # 自動摘要後寫回 row
+                summary = summarize_company_info(info, company_name)
+                if summary:
+                    row["說明"] = summary
+                    updated_count += 1
+                    print(f"        📝 摘要：{summary[:60]}...")
             else:
-                 print(f"        ❌ 未取得有效資訊")
+                print("        ❌ 未取得有效資訊")
 
             if i < total:
                 time.sleep(random.uniform(DELAY_MIN, DELAY_MAX))
 
         browser.close()
 
-    # 將結果輸出成 JSON 供 Agent 讀取
+    # 覆寫回 Google Sheets
+    save_rows_to_sheet(ws, rows, fieldnames)
+    print(f"\n[GS] 已將說明欄位更新寫回 Google Sheets（{updated_count} 筆）")
+
+    # 同時輸出 temp_profiles.json 供外部 AI Agent 進行更細緻的摘要（可選）
     with open(TEMP_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(company_data, f, ensure_ascii=False, indent=2)
 
     print("\n" + "=" * 60)
-    print(f"  抓取完成！資料已存至 {TEMP_JSON_PATH}")
-    print(f"  請交由 AI Agent 進行摘要與寫入。")
+    print(f"  抓取完成！")
+    print(f"  ✅ 更新說明欄位：{updated_count} 筆")
+    print(f"  ⏭  略過：{skipped_count} 筆")
+    print(f"  📊 已寫回 Google Sheets『名單副本』")
+    print(f"  💾 raw 資料同時儲存至：{TEMP_JSON_PATH}")
+    print(f"     （如需 AI Agent 精緻化摘要，請讀取此 JSON 後手動覆寫「說明」欄位）")
     print("=" * 60)
 
 
