@@ -2,7 +2,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # 設定金鑰檔案路徑
-SERVICE_ACCOUNT_FILE = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⚙️參數設定/crawler_api/eternal-skyline-494002-j8-d157225e7bdc.json'
+SERVICE_ACCOUNT_FILE = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⚙️參數設定/crawler_api/eternal-skyline-494002-j8-356884d3e786.json'
 
 # 設定範圍
 SCOPES = [

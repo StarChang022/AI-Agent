@@ -25,7 +25,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Service Account JSON 路徑
 CREDENTIALS_PATH = os.path.normpath(
-    os.path.join(SCRIPT_DIR, "..", "crawler_api", "eternal-skyline-494002-j8-d157225e7bdc.json")
+    os.path.join(SCRIPT_DIR, "..", "crawler_api", "eternal-skyline-494002-j8-356884d3e786.json")
 )
 
 # Google Sheets 存取範圍
