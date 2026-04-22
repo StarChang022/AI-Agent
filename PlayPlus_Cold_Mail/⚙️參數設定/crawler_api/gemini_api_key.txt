@@ -1,2 +1,0 @@
-請在此處貼上您的 Gemini API Key (來自 https://aistudio.google.com/app/apikey)
-然後儲存檔案。
