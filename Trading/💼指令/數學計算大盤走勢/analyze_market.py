@@ -4,13 +4,17 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import os
 import datetime
+import matplotlib.font_manager as fm
 
 # Set plotting style
 plt.style.use('fivethirtyeight')
+# Use a font that supports Chinese characters, handling mac defaults
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'PingFang HK', 'Heiti TC', 'sans-serif']
+plt.rcParams['axes.unicode_minus'] = False
 
 # Path to the data file
 CSV_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/股票/0000加權指數/大盤交易資料.csv'
-REPORT_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/✅數學計算大盤走勢.md'
+REPORT_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/✅數學計算大盤走勢.md'
 ARTIFACTS_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/💼指令/數學計算大盤走勢/charts'
 
 # Create chart directory
@@ -168,41 +172,58 @@ rsi_stats['ExpectedValue'] = (rsi_stats['WinRate'] - baseline_win_rate) * 100 # 
 # Part 4: Candlestick Pattern (K線形態歷史勝率)
 # ---------------------------------------------------------
 print("Running Candlestick pattern analysis...")
-# Long Lower Shadow: (min(O,C) - L) > 2 * abs(O-C)
 df_recent['Body'] = abs(df_recent['收盤'] - df_recent['開盤'])
 df_recent['LowerShadow'] = df_recent[['開盤', '收盤']].min(axis=1) - df_recent['最低']
+df_recent['UpperShadow'] = df_recent['最高'] - df_recent[['開盤', '收盤']].max(axis=1)
+df_recent['Range'] = df_recent['最高'] - df_recent['最低']
+
+# Identify patterns
 df_recent['Is_LongLowerShadow'] = (df_recent['LowerShadow'] > 2 * df_recent['Body']) & (df_recent['Body'] > 0)
+df_recent['Is_LongUpperShadow'] = (df_recent['UpperShadow'] > 2 * df_recent['Body']) & (df_recent['Body'] > 0)
+df_recent['Is_Doji'] = df_recent['Body'] <= (df_recent['Range'] * 0.1)
 
 # Performance: T+1, T+3, T+5 returns
 df_recent['Ret1'] = (df_recent['收盤'].shift(-1) / df_recent['收盤']) - 1
 df_recent['Ret3'] = (df_recent['收盤'].shift(-3) / df_recent['收盤']) - 1
 df_recent['Ret5'] = (df_recent['收盤'].shift(-5) / df_recent['收盤']) - 1
 
-pattern_df = df_recent[df_recent['Is_LongLowerShadow']].copy()
+patterns = {
+    '長下影線': 'Is_LongLowerShadow',
+    '長上影線': 'Is_LongUpperShadow',
+    '十字星': 'Is_Doji'
+}
 
-metrics = {}
-for h in [1, 3, 5]:
-    ret_col = f'Ret{h}'
-    valid_returns = pattern_df[ret_col].dropna()
-    if len(valid_returns) > 0:
-        win_rate = (valid_returns > 0).mean()
-        avg_ret = valid_returns.mean()
-        wins = valid_returns[valid_returns > 0]
-        losses = valid_returns[valid_returns <= 0]
-        pl_ratio = abs(wins.mean() / losses.mean()) if len(losses) > 0 else float('inf')
-        metrics[h] = {'Sample': len(valid_returns), 'WinRate': win_rate, 'AvgRet': avg_ret, 'PL_Ratio': pl_ratio}
+all_metrics = {}
+plot_data = []
 
-# Plot distribution for T+1 returns
-if len(pattern_df) > 0:
-    plt.figure(figsize=(10, 6))
-    plt.hist(pattern_df['Ret1'].dropna() * 100, bins=20, color='salmon', edgecolor='black')
-    plt.axvline(0, color='black', linestyle='--')
-    plt.title('Distribution of 1-Day Returns After Long Lower Shadow Pattern')
-    plt.xlabel('Return (%)')
-    plt.ylabel('Frequency')
-    pattern_plot = os.path.join(ARTIFACTS_DIR, 'pattern_returns.png')
-    plt.savefig(pattern_plot)
-    plt.close()
+for name, col in patterns.items():
+    pattern_df = df_recent[df_recent[col]].copy()
+    metrics = {}
+    for h in [1, 3, 5]:
+        ret_col = f'Ret{h}'
+        valid_returns = pattern_df[ret_col].dropna()
+        if len(valid_returns) > 0:
+            win_rate = (valid_returns > 0).mean()
+            avg_ret = valid_returns.mean()
+            wins = valid_returns[valid_returns > 0]
+            losses = valid_returns[valid_returns <= 0]
+            pl_ratio = abs(wins.mean() / losses.mean()) if len(losses) > 0 else float('inf')
+            metrics[h] = {'Sample': len(valid_returns), 'WinRate': win_rate, 'AvgRet': avg_ret, 'PL_Ratio': pl_ratio}
+            if h == 1:
+                plot_data.append({'Pattern': name, 'Returns': valid_returns * 100})
+    all_metrics[name] = metrics
+
+# Plot boxplot comparing T+1 returns
+plt.figure(figsize=(10, 6))
+plot_series = [d['Returns'] for d in plot_data]
+plot_labels = [d['Pattern'] for d in plot_data]
+plt.boxplot(plot_series, tick_labels=plot_labels)
+plt.axhline(0, color='red', linestyle='--')
+plt.title('Distribution of 1-Day Returns by Candlestick Pattern')
+plt.ylabel('Return (%)')
+pattern_plot = os.path.join(ARTIFACTS_DIR, 'pattern_returns.png')
+plt.savefig(pattern_plot)
+plt.close()
 
 # ---------------------------------------------------------
 # Generate Markdown Report
@@ -255,27 +276,32 @@ for bucket, row in rsi_stats.iterrows():
     report += f"| {bucket} | {int(row['count'])} | {row['WinRate']:.2%} | {row['ExpectedValue']:.2f}% | {row['P_Value']:.4f}{p_val_mark} |\n"
 
 report += f"""
-## 4. K線形態歷史勝率 (長下影線)
-識別特徵：影線長度 > 實體長度 2 倍。
+## 4. K線形態歷史勝率
+識別特徵：
+- 長下影線：下影線長度 > 實體長度 2 倍
+- 長上影線：上影線長度 > 實體長度 2 倍
+- 十字星：實體長度 <= 總振幅的 10%
 
-- **總樣本數**: {len(pattern_df)}
 - **績效統計**:
 
-| 持有期間 | 平均報酬率 | 勝率 | 盈虧比 (P/L) |
-| :--- | :--- | :--- | :--- |
+| 形態 | 持有期間 | 樣本數 | 平均報酬率 | 勝率 | 盈虧比 (P/L) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
 """
 
-for h, m in metrics.items():
-    report += f"| {h} 天 | {m['AvgRet']:.2%} | {m['WinRate']:.2%} | {m['PL_Ratio']:.2f} |\n"
+for name, metrics in all_metrics.items():
+    for h in [1, 3, 5]:
+        if h in metrics:
+            m = metrics[h]
+            report += f"| {name} | {h} 天 | {m['Sample']} | {m['AvgRet']:.2%} | {m['WinRate']:.2%} | {m['PL_Ratio']:.2f} |\n"
 
 report += f"""
-![長下影線後 1 日收益分佈](file://{pattern_plot})
+![K線形態 1 日收益分佈比較](file://{pattern_plot})
 
 ## 總結與結論
 1. **短期慣性**: 根據馬可夫鏈分析，{'連續上漲具備一定的慣性' if p_win_after_2_win > 0.5 else '連續上漲後回檔機率較高'}，目前的『漲-漲-漲』機率為 {p_win_after_2_win:.2%}。
 2. **波動預期**: 蒙地卡羅模擬顯示，未來 10 天的價格波動中心位於 {med_price:.2f}，波動範圍較大的區間在 {lower_ci:.2f} 至 {upper_ci:.2f} 之間。
 3. **指標指引**: RSI 在 **{rsi_stats['WinRate'].idxmax()}** 區間時具備最高的隔天勝率 ({rsi_stats['WinRate'].max():.2%})。
-4. **形態戰備**: 「長下影線」在 T+5 的平均報酬率為 {metrics.get(5, {}).get('AvgRet', 0):.2%}，勝率為 {metrics.get(5, {}).get('WinRate', 0):.2%}，{'顯示該形態在短中期具備抄底價值' if metrics.get(5, {}).get('AvgRet', 0) > 0 else '顯示該形態目前無顯著獲利空間'}。
+4. **形態戰備**: 「長下影線」在 T+5 的平均報酬率為 {all_metrics.get('長下影線', {}).get(5, {}).get('AvgRet', 0):.2%}，勝率為 {all_metrics.get('長下影線', {}).get(5, {}).get('WinRate', 0):.2%}，{'顯示該形態在短中期具備抄底價值' if all_metrics.get('長下影線', {}).get(5, {}).get('AvgRet', 0) > 0 else '顯示該形態目前無顯著獲利空間'}。
 
 """
 
@@ -289,7 +315,6 @@ else:
     recommendation = "**觀望 (Wait)** - 市場訊號分歧或缺乏顯著方向性"
 
 report += f"### 💡 未來20個交易日明確交易建議\n基於上述數學與統計分析的總和考量，接下來「未來20個交易日」的交易建議為：{recommendation}\n\n"
-
 
 with open(REPORT_PATH, 'w', encoding='utf-8') as f:
     f.write(report)
