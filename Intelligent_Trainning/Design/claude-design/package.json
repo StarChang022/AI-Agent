@@ -1,0 +1,13 @@
+{
+  "name": "electron-rust-app",
+  "version": "1.0.0",
+  "description": "Electron + Rust optimization engine",
+  "main": "main.js",
+  "scripts": {
+    "build:rust": "cd rust-core && npm run build",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^29.0.0"
+  }
+}
