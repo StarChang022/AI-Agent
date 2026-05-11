@@ -29,7 +29,7 @@ import random
 from typing import List, Dict, Optional
 
 from playwright.sync_api import sync_playwright
-import gsheet_helper as gs
+import csv_helper as gs
 
 # ──────────────────────────────────────────────
 # 設定區
@@ -128,7 +128,7 @@ def main():
     print(f"共讀取 {len(rows)} 列資料 (欄位數: {len(fieldnames)})\n")
 
     kept_rows: List[Dict] = []
-    deleted_count = 0
+    not_found_count = 0
     updated_count = 0
     skipped_count = 0
     total = len(rows)
@@ -172,8 +172,9 @@ def main():
                 updated_count += 1
                 print(f"        ✅ 官方網站：{website}")
             else:
-                deleted_count += 1
-                print(f"        ❌ 無公司網址，刪除此列")
+                kept_rows.append(row) # Keep the row anyway
+                not_found_count += 1
+                print(f"        ❌ 無公司網址，保留此列待查")
 
             if i < total:
                 delay = random.uniform(DELAY_MIN, DELAY_MAX)
@@ -188,7 +189,7 @@ def main():
     print("\n" + "=" * 60)
     print(f"  完成！")
     print(f"  ✅ 填入官方網站：{updated_count} 列")
-    print(f"  ❌ 刪除（無官網）：{deleted_count} 列")
+    print(f"  ❌ 未找到（無官網）：{not_found_count} 列")
     print(f"  ⏭  略過：{skipped_count} 列")
     print(f"  📄 最終保留：{len(kept_rows)} 列")
     print(f"  Google Sheets：https://docs.google.com/spreadsheets/d/{gs.SPREADSHEET_ID}/edit")

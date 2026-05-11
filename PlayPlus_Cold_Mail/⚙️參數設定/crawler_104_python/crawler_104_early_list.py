@@ -1,6 +1,6 @@
 """
-crawler_104_early_list.py (Playwright + Google Sheets 版本)
-===========================================================
+crawler_104_early_list.py (Playwright + CSV 版本)
+==================================================
 從 104 人力銀行公司搜尋頁面爬取「公司名稱」與「公司連結」，
 使用 Playwright 以處理 JavaScript 動態渲染。
 
@@ -8,9 +8,9 @@ crawler_104_early_list.py (Playwright + Google Sheets 版本)
   ⌚️暫存/104_early_list.csv  → 要爬取的 104 搜尋頁 URL 清單
 
 資料目的地（輸出）：
-  Google Sheets 『名單副本』分頁
-  - 公司品牌簡稱（A 欄）
-  - 來源（H 欄，104 公司頁面 URL）
+  冷郵件對象/104初期名單.csv
+  - 公司名稱
+  - 104頁面連結
 
 依照 1.104crawler初期名單.md 指令執行。
 
@@ -18,7 +18,7 @@ crawler_104_early_list.py (Playwright + Google Sheets 版本)
     python3 crawler_104_early_list.py
 
 需要安裝的套件：
-    pip install playwright google-auth google-auth-httplib2 google-api-python-client
+    pip install playwright
     playwright install chromium
 """
 
@@ -29,7 +29,6 @@ import random
 import re
 
 from playwright.sync_api import sync_playwright
-import gsheet_helper as gs
 
 # ──────────────────────────────────────────────
 # 設定區
@@ -41,6 +40,14 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PAGE_URL_CSV = os.path.normpath(
     os.path.join(SCRIPT_DIR, "..", "..", "⌚️暫存", "104_early_list.csv")
 )
+
+# 輸出目的地：冷郵件對象/104初期名單.csv
+OUTPUT_CSV = os.path.normpath(
+    os.path.join(SCRIPT_DIR, "..", "..", "冷郵件對象", "104初期名單.csv")
+)
+
+# CSV 欄位
+FIELDNAMES = ["公司名稱", "104頁面連結"]
 
 # 每次請求之間的間隔秒數
 DELAY_MIN = 3.0
@@ -135,7 +142,7 @@ def fetch_companies_with_playwright(page, url: str) -> list[dict]:
 
 def main():
     print("=" * 60)
-    print("  104 人力銀行公司清單爬蟲 (Playwright + Google Sheets 版本)")
+    print("  104 人力銀行公司清單爬蟲 (Playwright + CSV 版本)")
     print("=" * 60)
 
     # 讀取目標 URL 清單
@@ -145,21 +152,8 @@ def main():
         return
     print(f"共讀取 {len(urls)} 個頁面網址\n")
 
-    # 連接 Google Sheets
-    print("[GSheet] 連接 Google Sheets...")
-    service = gs.get_service()
-
-    # 確保標題列存在，並取得現有來源（用於去重）
-    gs.ensure_header(service)
-    existing_sources = gs.get_existing_sources(service)
-    print(f"[GSheet] 工作表已有 {len(existing_sources)} 筆來源記錄\n")
-
-    # 取得現有欄位（以 Sheet 實際標題為準）
-    _, fieldnames = gs.read_all_rows(service)
-    if not fieldnames:
-        fieldnames = gs.FIELDNAMES
-
-    total_written = 0
+    all_companies = []
+    seen_urls = set()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -173,26 +167,11 @@ def main():
             print(f"[{i}/{len(urls)}] 處理頁面：{url}")
             companies = fetch_companies_with_playwright(page, url)
 
-            if companies:
-                # 過濾已存在的公司
-                new_rows = []
-                for c in companies:
-                    clean_url = c["url"].split("?")[0].rstrip("/")
-                    if clean_url not in existing_sources:
-                        row = {field: "" for field in fieldnames}
-                        row["公司品牌簡稱"] = c["name"]
-                        row["來源"] = c["url"]
-                        new_rows.append(row)
-                        existing_sources.add(clean_url)
-
-                if new_rows:
-                    written = gs.append_rows(service, new_rows, fieldnames)
-                    total_written += written
-                    print(f"    → 成功寫入 {written} 筆新資料至 Google Sheets")
-                else:
-                    print("    → 全部已存在，無新資料")
-            else:
-                print("    [警告] 該頁未抓取到任何資料。")
+            for c in companies:
+                clean_url = c["url"].split("?")[0].rstrip("/")
+                if clean_url not in seen_urls:
+                    seen_urls.add(clean_url)
+                    all_companies.append({"公司名稱": c["name"], "104頁面連結": c["url"]})
 
             if i < len(urls):
                 sleep_time = random.uniform(DELAY_MIN, DELAY_MAX)
@@ -201,9 +180,16 @@ def main():
 
         browser.close()
 
+    # 覆寫輸出 CSV
+    os.makedirs(os.path.dirname(OUTPUT_CSV), exist_ok=True)
+    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(all_companies)
+
     print("\n" + "=" * 60)
-    print(f"  任務完成！共新增 {total_written} 筆公司資料")
-    print(f"  Google Sheets：https://docs.google.com/spreadsheets/d/{gs.SPREADSHEET_ID}/edit")
+    print(f"  任務完成！共收集 {len(all_companies)} 筆公司資料")
+    print(f"  已覆寫輸出至：{OUTPUT_CSV}")
     print("=" * 60)
 
 

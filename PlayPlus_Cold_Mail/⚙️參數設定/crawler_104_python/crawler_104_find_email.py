@@ -40,7 +40,7 @@ from urllib.parse import urlparse, quote_plus, urljoin
 import requests
 from bs4 import BeautifulSoup
 
-import gsheet_helper as gs
+import csv_helper as gs
 
 # ──────────────────────────────────────────────
 # 設定區

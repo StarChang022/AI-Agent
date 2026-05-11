@@ -27,7 +27,7 @@ import random
 from typing import List, Dict
 
 from playwright.sync_api import sync_playwright
-import gsheet_helper as gs
+import csv_helper as gs
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_JSON_PATH = os.path.join(SCRIPT_DIR, "temp_profiles.json")
