@@ -12,6 +12,9 @@ FIELDNAMES = [
     "email", "聯絡人名稱", "來源", "說明"
 ]
 
+SPREADSHEET_ID = "14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE"
+
+
 def get_service():
     """CSV 版本不需認證，回傳 None。"""
     return None

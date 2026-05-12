@@ -4,14 +4,17 @@ crawler_104_company_url.py (Playwright + Google Sheets 版本)
 依照 2.104crawler公司網址.md 指令執行。
 使用 Playwright 以處理 JavaScript 動態渲染。
 
+【資料來源】全程對接 Google Sheets 『名單副本』分頁，不使用本機 CSV。
+  Spreadsheet ID : 14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE
+
 流程：
   1. 從 Google Sheets 『名單副本』讀取所有列
   2. 使用 Playwright 進入「來源」欄的 104 公司頁面，尋找「公司網址」
   3. 找到 → 將網址寫入「官方網站」欄位
-     找不到 → 刪除該列
+     找不到 → 保留該列（標記待查）
   4. 結果完整覆寫回 Google Sheets
 
-CSV 欄位（共 9 欄，A~I）：
+Google Sheets 欄位（共 9 欄，A~I）：
   公司品牌簡稱, 序號, 官方網站（本腳本填寫）, 產業, 員工人數, email, 聯絡人名稱, 來源, 說明
 
 使用方式：
@@ -29,7 +32,7 @@ import random
 from typing import List, Dict, Optional
 
 from playwright.sync_api import sync_playwright
-import csv_helper as gs
+import gsheet_helper as gs
 
 # ──────────────────────────────────────────────
 # 設定區

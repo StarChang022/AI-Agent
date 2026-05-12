@@ -3,10 +3,13 @@ crawler_104_find_email.py (Google Sheets 版本) — v2.0 優化版
 =============================================================
 依照 4.104crawler查找網域信箱.md 指令執行。
 
+【資料來源】全程對接 Google Sheets 『名單副本』分頁，不使用本機 CSV。
+  Spreadsheet ID : 14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE
+
 【v2.0 優化重點】
-  ① 新增：爬取公司官方網站聯絡頁（最高效策略）
+  ① 新增：抓取公司官方網站聯絡頁（最高效策略）
   ② 新增：Hunter.io Domain Search API（需設定 HUNTER_API_KEY）
-  ③ 改善：DuckDuckGo 搜尋 + 深入爬取每個搜尋結果頁面
+  ③ 改善：DuckDuckGo 搜尋 + 深入抓取每個搜尋結果頁面
   ④ 新增：從官網首頁 mailto: 連結直接抓取
   ⑤ 改善：Google Dork 加入更多搜尋變體
   ⑥ 改善：WHOIS 黑名單大幅擴充
@@ -40,7 +43,7 @@ from urllib.parse import urlparse, quote_plus, urljoin
 import requests
 from bs4 import BeautifulSoup
 
-import csv_helper as gs
+import gsheet_helper as gs
 
 # ──────────────────────────────────────────────
 # 設定區
@@ -64,19 +67,14 @@ HEADERS = {
     "Upgrade-Insecure-Requests": "1",
 }
 
-DELAY_MIN = 1.5
-DELAY_MAX = 3.5
+DELAY_MIN = 0.1
+DELAY_MAX = 0.3
 MAX_EMAILS_PER_DOMAIN = 5
-REQUEST_TIMEOUT = 12
+REQUEST_TIMEOUT = 3
 
 # 聯絡頁面常見路徑（優先爬取）
 CONTACT_PATHS = [
-    "/contact", "/contact-us", "/contactus", "/contact_us",
-    "/about", "/about-us", "/aboutus", "/about_us",
-    "/team", "/our-team",
-    "/聯絡我們", "/聯絡", "/關於我們", "/關於",
-    "/en/contact", "/zh/contact",
-    "/zh-tw/contact", "/tw/contact",
+    "/contact", "/about",
 ]
 
 # WHOIS 黑名單關鍵字（大幅擴充）
@@ -233,7 +231,7 @@ def search_company_website(website_url: str, domain: str) -> list[str]:
                     if domain in full and full not in urls_to_try:
                         contact_links.append(full)
 
-            for link in contact_links[:5]:  # 最多跟進 5 個連結
+            for link in contact_links[:1]:  # 最多跟進 1 個連結
                 resp2 = safe_get(link)
                 if resp2:
                     found2 = extract_emails_from_html(resp2.text, domain)
@@ -248,7 +246,7 @@ def search_company_website(website_url: str, domain: str) -> list[str]:
         if emails:
             break
 
-        time.sleep(0.5)
+        time.sleep(0.1)
 
     return emails[:MAX_EMAILS_PER_DOMAIN]
 
@@ -264,7 +262,7 @@ def search_hunter_io(domain: str) -> list[str]:
 
     url = f"https://api.hunter.io/v2/domain-search?domain={domain}&api_key={HUNTER_API_KEY}&limit=5"
     try:
-        resp = requests.get(url, timeout=15)
+        resp = requests.get(url, timeout=3)
         if resp.status_code == 200:
             data = resp.json()
             emails_data = data.get("data", {}).get("emails", [])
@@ -331,7 +329,7 @@ def search_duckduckgo_for_emails(domain: str, company_name: str = "") -> list[st
         ddg_url = f"https://html.duckduckgo.com/html/?q={encoded_query}"
 
         try:
-            resp = requests.get(ddg_url, headers=HEADERS, timeout=15)
+            resp = requests.get(ddg_url, headers=HEADERS, timeout=3)
             resp.raise_for_status()
         except Exception as e:
             print(f"        [警告] DuckDuckGo 請求失敗（{query}）：{e}")
@@ -381,7 +379,7 @@ def search_duckduckgo_for_emails(domain: str, company_name: str = "") -> list[st
         if all_emails:
             break
 
-        time.sleep(random.uniform(1.5, 2.5))
+        time.sleep(random.uniform(0.1, 0.2))
 
     return all_emails[:MAX_EMAILS_PER_DOMAIN]
 
@@ -410,7 +408,7 @@ def search_google_dork(domain: str, company_name: str = "") -> list[str]:
         )
 
         try:
-            resp = requests.get(google_url, headers=HEADERS, timeout=15)
+            resp = requests.get(google_url, headers=HEADERS, timeout=3)
         except requests.RequestException as e:
             print(f"        [警告] Google 請求失敗：{e}")
             break
@@ -434,7 +432,7 @@ def search_google_dork(domain: str, company_name: str = "") -> list[str]:
             print(f"        ✅ [Google Dork] 找到：{all_emails}")
             break
 
-        time.sleep(random.uniform(3.0, 5.0))
+        time.sleep(random.uniform(0.1, 0.2))
 
     return all_emails[:MAX_EMAILS_PER_DOMAIN]
 
@@ -487,12 +485,8 @@ def find_emails_for_company(row: dict, domain: str) -> list[str]:
     else:
         print(f"      [2/6] Hunter.io 略過（未設定 API Key）")
 
-    # 策略三：WHOIS
-    print(f"      [3/6] WHOIS 查詢...")
-    found = search_whois_for_emails(domain)
-    add_emails(found, "WHOIS")
-    if len(all_found) >= MAX_EMAILS_PER_DOMAIN:
-        return all_found
+    # 策略三：WHOIS (為避免 subprocess 觸發系統安全互動攔截，略過此步驟)
+    print(f"      [3/6] WHOIS 查詢 (略過)...")
 
     # 策略四：DuckDuckGo
     print(f"      [4/6] DuckDuckGo 搜尋...")
@@ -618,6 +612,9 @@ def main():
                 result_rows.append(new_row)
                 print(f"           - {email}")
             updated_count += 1
+
+        gs.write_all_rows(service, result_rows + rows[i:], fieldnames)
+        print(f"        💾 [自動存檔] 已存檔進度 (第 {i} 筆)")
 
         if i < total:
             delay = random.uniform(DELAY_MIN, DELAY_MAX)

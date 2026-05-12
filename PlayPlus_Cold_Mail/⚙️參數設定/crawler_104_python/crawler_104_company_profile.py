@@ -1,7 +1,10 @@
 """
 crawler_104_company_profile.py (Playwright + Google Sheets 版本)
 ================================================================
-搭配 3.104crawler撰寫公司說明.md 執行。
+搜配 3.104crawler撰寫公司說明.md 執行。
+
+【資料來源】全程對接 Google Sheets 『名單副本』分頁，不使用本機 CSV。
+  Spreadsheet ID : 14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE
 
 流程：
   1. 從 Google Sheets 『名單副本』讀取「來源」欄位
@@ -9,7 +12,7 @@ crawler_104_company_profile.py (Playwright + Google Sheets 版本)
   3. 儲存為 temp_profiles.json（格式：{"公司品牌簡稱": "原始文本", ...}）
   4. AI Agent 讀取 JSON，撰寫摘要後，將說明寫回 Google Sheets 的「說明」欄位
 
-GSheet 欄位（共 9 欄，A~I）：
+Google Sheets 欄位（共 9 欄，A~I）：
   公司品牌簡稱, 序號, 官方網站, 產業, 員工人數, email, 聯絡人名稱, 來源, 說明（AI 填寫）
 
 使用方式：
@@ -27,7 +30,7 @@ import random
 from typing import List, Dict
 
 from playwright.sync_api import sync_playwright
-import csv_helper as gs
+import gsheet_helper as gs
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMP_JSON_PATH = os.path.join(SCRIPT_DIR, "temp_profiles.json")
