@@ -613,8 +613,10 @@ def main():
                 print(f"           - {email}")
             updated_count += 1
 
-        gs.write_all_rows(service, result_rows + rows[i:], fieldnames)
-        print(f"        💾 [自動存檔] 已存檔進度 (第 {i} 筆)")
+        # 暫停逐筆存檔，避免頻繁呼叫 API 觸發 429 Rate Limit
+        # gs.write_all_rows(service, result_rows + rows[i:], fieldnames)
+        # print(f"        💾 [自動存檔] 已存檔進度 (第 {i} 筆)")
+
 
         if i < total:
             delay = random.uniform(DELAY_MIN, DELAY_MAX)
