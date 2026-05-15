@@ -45,11 +45,25 @@ def get_gspread_client():
 # 讀取 stocks.csv
 # ─────────────────────────────────────────────
 def load_stocks() -> list[dict]:
+    """
+    讀取 Stocks.csv，僅回傳個股（排除 TAIEX、TPEx 等指數），
+    且 google_sheet_monthly 欄位必須是有效的 Google Sheet URL。
+    """
+    # 排除的指數型 stock_id
+    EXCLUDED_IDS = {"TAIEX", "TPEx"}
+
     stocks = []
     with open(STOCKS_CSV, newline="", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if row.get("stock_id") and row.get("google_sheet_monthly"):
+            sid = row.get("stock_id", "").strip()
+            monthly_url = row.get("google_sheet_monthly", "").strip()
+            # 排除指數、排除無效 URL（例如 'xxx'）
+            if (
+                sid
+                and sid not in EXCLUDED_IDS
+                and monthly_url.startswith("https://")
+            ):
                 stocks.append(row)
     return stocks
 

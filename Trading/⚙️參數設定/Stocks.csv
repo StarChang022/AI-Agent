@@ -1,4 +1,6 @@
 stock_id,stock_name,google_sheet_daily,google_sheet_monthly,google_sheet_quarterly
+TAIEX,加權指數,https://docs.google.com/spreadsheets/d/1Fv8vvT0gfpanvsZ7edD0y2-gBHMr9b79k-Ra5TAVYvc/edit?gid=1850720630#gid=1850720630,xxx,xxx
+TPEx,櫃買指數,https://docs.google.com/spreadsheets/d/19qqAj7s0wcJwvwt39NFqnmL4OxJvGn5K0_hm50MQYlc/edit?gid=1850720630#gid=1850720630,xxx,xxx
 1342,八貫,https://docs.google.com/spreadsheets/d/1h4g0wzPkS2wTNxTacsWfTDcMWNGCcI4SZFEsEbySjwk/edit?gid=1850720630#gid=1850720630,https://docs.google.com/spreadsheets/d/1h4g0wzPkS2wTNxTacsWfTDcMWNGCcI4SZFEsEbySjwk/edit?gid=1906990016#gid=1906990016,xxx
 2317,鴻海,https://docs.google.com/spreadsheets/d/1_9oQMc8nP2P48pGiwcpyCxrBIlDaueuyOODZR5AGB3A/edit?gid=1850720630#gid=1850720630,https://docs.google.com/spreadsheets/d/1_9oQMc8nP2P48pGiwcpyCxrBIlDaueuyOODZR5AGB3A/edit?gid=598505032#gid=598505032,xxx
 2308,台達電,https://docs.google.com/spreadsheets/d/108F28v9cHpQ-YPioM6zq_ifNov3DGuSGF8b8WdpoG08/edit?gid=1850720630#gid=1850720630,https://docs.google.com/spreadsheets/d/108F28v9cHpQ-YPioM6zq_ifNov3DGuSGF8b8WdpoG08/edit?gid=1883365903#gid=1883365903,xxx
