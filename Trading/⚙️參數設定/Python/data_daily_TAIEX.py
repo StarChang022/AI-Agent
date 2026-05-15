@@ -17,7 +17,7 @@ STOCK_ID = "TAIEX"
 
 CONFIG_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Stocks.csv'
 CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json'
-TEMP_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/暫存/for_python'
+TEMP_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
 
 
 def get_o_to_w_formulas(row_index: int) -> list:

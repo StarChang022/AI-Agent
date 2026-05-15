@@ -64,7 +64,7 @@ async def process_all_stocks():
     df_config = pd.read_csv(config_path)
     
     # Ensure temporary directory exists
-    temp_dir = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/暫存/for_python'
+    temp_dir = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
     os.makedirs(temp_dir, exist_ok=True)
     
     gc = gspread.service_account(filename='/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json')
