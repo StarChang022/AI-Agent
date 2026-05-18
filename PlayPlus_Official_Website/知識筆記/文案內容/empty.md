@@ -9,4 +9,4 @@
 
 ---
 
-> 參考原文 [PageTitle](https://xxx)
+> 參考原文 [PageTitle](xxx)
