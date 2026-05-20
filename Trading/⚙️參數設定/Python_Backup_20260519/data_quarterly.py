@@ -266,13 +266,24 @@ def parse_records(api_data: dict[str, list[dict]]) -> dict[str, dict[str, any]]:
                 merged[q_key] = {"_date_raw": r.get("date", "")[:10]}
             merged[q_key][field] = value
 
-    # ── 股利政策（date 是年度 YYYY，轉為 YYYY-Q4 對齊）──
+    # ── 股利政策（依據除息日或除權日歸類季度）──
     div_records = api_data.get("dividend", [])
     for r in div_records:
-        year_str = r.get("date", "")[:4]
-        q_key = f"{year_str}-Q4"  # 股利通常與年報（Q4）對齊
+        # 優先使用除息日，其次為除權日
+        div_date = r.get("CashDividendPaymentDate", "").strip()
+        if not div_date:
+            div_date = r.get("StockExDividendTradingDate", "").strip()
+            
+        if div_date:
+            q_key = to_quarter_key(div_date)
+            date_raw = div_date[:10]
+        else:
+            year_str = r.get("date", "")[:4]
+            q_key = f"{year_str}-Q4"  # 無除權息日期時的退路
+            date_raw = f"{year_str}-12-31"
+
         if q_key not in merged:
-            merged[q_key] = {"_date_raw": f"{year_str}-12-31"}
+            merged[q_key] = {"_date_raw": date_raw}
 
         for field in APIS["dividend"]["fields"]:
             if field in r:
@@ -330,15 +341,15 @@ def make_formulas(col: int) -> dict[int, str]:
 
     formulas = {
         # 第4列：ROE = 稅後淨利(row32) / ((本期權益(row26) + 上期權益(nc26)) / 2)
-        4:  f"=IF(ISNUMBER({nc}26), {c}32 / (({c}26 + {nc}26) / 2), \"-\")",
+        4:  f"=IF(COUNT({c}32, {c}26, {nc}26) < 3, \"-\", {c}32 / (({c}26 + {nc}26) / 2))",
         # 第5列：毛利率 = 毛利(row29) / 營收(row28)
-        5:  f"={c}29/{c}28",
+        5:  f"=IF(COUNT({c}29, {c}28) < 2, \"-\", {c}29 / {c}28)",
         # 第6列：營業利益率 = 營業利益(row30) / 營收(row28)
-        6:  f"={c}30/{c}28",
+        6:  f"=IF(COUNT({c}30, {c}28) < 2, \"-\", {c}30 / {c}28)",
         # 第7列：稅後淨利率 = 稅後淨利(row32) / 營收(row28)
-        7:  f"={c}32/{c}28",
+        7:  f"=IF(COUNT({c}32, {c}28) < 2, \"-\", {c}32 / {c}28)",
         # 第8列：負債率 = 負債總額(row23) / 資產總額(row16)
-        8:  f"={c}23/{c}16",
+        8:  f"=IF(COUNT({c}23, {c}16) < 2, \"-\", {c}23 / {c}16)",
     }
     return formulas
 
@@ -437,8 +448,8 @@ def write_to_sheet(worksheet, quarter_data: dict[str, dict]):
                 value = q_key
             elif field is not None:
                 raw = q_dict.get(field)
-                if raw is None:
-                    value = ""
+                if raw is None or raw == "":
+                    value = "-"
                 else:
                     value = raw
             else:
@@ -479,26 +490,22 @@ async def fetch_all(stocks: list[dict], gc) -> dict[str, dict[str, dict]]:
     """
     results = {}
 
-    # ── 預先讀取各股票 Google Sheet 最新季度（用於增量更新）──
+    # ── 預先取得各股票最新日期，優先使用本地快取以防 Quota 限制 ──
     start_dates: dict[str, str] = {}
     for stock in stocks:
         sid   = stock["stock_id"]
-        q_url = stock["google_sheet_quarterly"]
-        try:
-            ss_id, gid = parse_sheet_url(q_url)
-            ss = gc.open_by_key(ss_id)
-            ws = ss.get_worksheet_by_id(int(gid))
-            latest = get_latest_quarter_from_sheet(ws)
-
-            # 若本地快取不存在，則從 2020-01-01 重抓全部
-            if not (CACHE_DIR / f"quarterly_{sid}.json").exists():
-                latest = "2020-01-01"
-
-            start_dates[sid] = latest
-            print(f"  [{sid}] 起始日期: {latest}")
-        except Exception as e:
-            print(f"  [{sid}] 讀取 Sheet 失敗，使用預設起始日: {e}")
-            start_dates[sid] = "2020-01-01"
+        
+        # 讀取本地快取以獲取最新日期
+        cache_latest = "2020-01-01"
+        cache_data = load_cache(sid)
+        if cache_data:
+            dates = [d.get("_date_raw") for d in cache_data.values() if d.get("_date_raw")]
+            if dates:
+                dates.sort(reverse=True)
+                cache_latest = dates[0]
+                
+        start_dates[sid] = cache_latest
+        print(f"  [{sid}] 起始日期 (本地快取): {cache_latest}")
 
     # ── 並行從 FinMind 抓取（每支股票同時打 4 個 API）──
     connector = aiohttp.TCPConnector(limit=20)

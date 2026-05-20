@@ -1,0 +1,695 @@
+[
+  {
+    "date": "2020-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5126867000,
+    "revenue_month": 12,
+    "revenue_year": 2019,
+    "create_time": ""
+  },
+  {
+    "date": "2020-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 3674679000,
+    "revenue_month": 1,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 3397996000,
+    "revenue_month": 2,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4651577000,
+    "revenue_month": 3,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4071989000,
+    "revenue_month": 4,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 3763609000,
+    "revenue_month": 5,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4790580000,
+    "revenue_month": 6,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4124487000,
+    "revenue_month": 7,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4882302000,
+    "revenue_month": 8,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5391875000,
+    "revenue_month": 9,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4379859000,
+    "revenue_month": 10,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2020-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4991408000,
+    "revenue_month": 11,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2021-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6336478000,
+    "revenue_month": 12,
+    "revenue_year": 2020,
+    "create_time": ""
+  },
+  {
+    "date": "2021-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4375535000,
+    "revenue_month": 1,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 3632444000,
+    "revenue_month": 2,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5190400000,
+    "revenue_month": 3,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4624529000,
+    "revenue_month": 4,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4911263000,
+    "revenue_month": 5,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4517191000,
+    "revenue_month": 6,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 4527357000,
+    "revenue_month": 7,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5522227000,
+    "revenue_month": 8,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5154468000,
+    "revenue_month": 9,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5069551000,
+    "revenue_month": 10,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2021-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5354563000,
+    "revenue_month": 11,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2022-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6719153000,
+    "revenue_month": 12,
+    "revenue_year": 2021,
+    "create_time": ""
+  },
+  {
+    "date": "2022-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5258916000,
+    "revenue_month": 1,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 3720925000,
+    "revenue_month": 2,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6749720000,
+    "revenue_month": 3,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5625973000,
+    "revenue_month": 4,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6156162000,
+    "revenue_month": 5,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6914045000,
+    "revenue_month": 6,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6840989000,
+    "revenue_month": 7,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6391814000,
+    "revenue_month": 8,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7348530000,
+    "revenue_month": 9,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6610791000,
+    "revenue_month": 10,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2022-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6817141000,
+    "revenue_month": 11,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2023-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 8770217000,
+    "revenue_month": 12,
+    "revenue_year": 2022,
+    "create_time": ""
+  },
+  {
+    "date": "2023-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6269502000,
+    "revenue_month": 1,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6111789000,
+    "revenue_month": 2,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7304297000,
+    "revenue_month": 3,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6322473000,
+    "revenue_month": 4,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6472848000,
+    "revenue_month": 5,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7324446000,
+    "revenue_month": 6,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7510271000,
+    "revenue_month": 7,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7401293000,
+    "revenue_month": 8,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7515166000,
+    "revenue_month": 9,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7178471000,
+    "revenue_month": 10,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2023-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 6850257000,
+    "revenue_month": 11,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2024-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7927613000,
+    "revenue_month": 12,
+    "revenue_year": 2023,
+    "create_time": ""
+  },
+  {
+    "date": "2024-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5884960000,
+    "revenue_month": 1,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 5344656000,
+    "revenue_month": 2,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7618096000,
+    "revenue_month": 3,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 7016810000,
+    "revenue_month": 4,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 8776621000,
+    "revenue_month": 5,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 8618959000,
+    "revenue_month": 6,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 8728653000,
+    "revenue_month": 7,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 9416897000,
+    "revenue_month": 8,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 10047189000,
+    "revenue_month": 9,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 10882611000,
+    "revenue_month": 10,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2024-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 12549045000,
+    "revenue_month": 11,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2025-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 15540247000,
+    "revenue_month": 12,
+    "revenue_year": 2024,
+    "create_time": ""
+  },
+  {
+    "date": "2025-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 12525239000,
+    "revenue_month": 1,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 12908017000,
+    "revenue_month": 2,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 17317305000,
+    "revenue_month": 3,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 17781598000,
+    "revenue_month": 4,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-06-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 18280186000,
+    "revenue_month": 5,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-07-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 24543014000,
+    "revenue_month": 6,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-08-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 22990663000,
+    "revenue_month": 7,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-09-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 25637808000,
+    "revenue_month": 8,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-10-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 24318092000,
+    "revenue_month": 9,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-11-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 23364628000,
+    "revenue_month": 10,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2025-12-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 22554331000,
+    "revenue_month": 11,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2026-01-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 26052581000,
+    "revenue_month": 12,
+    "revenue_year": 2025,
+    "create_time": ""
+  },
+  {
+    "date": "2026-02-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 21527345000,
+    "revenue_month": 1,
+    "revenue_year": 2026,
+    "create_time": ""
+  },
+  {
+    "date": "2026-03-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 23582573000,
+    "revenue_month": 2,
+    "revenue_year": 2026,
+    "create_time": "2026-04-21"
+  },
+  {
+    "date": "2026-04-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 25010823000,
+    "revenue_month": 3,
+    "revenue_year": 2026,
+    "create_time": "2026-04-21"
+  },
+  {
+    "date": "2026-05-01",
+    "stock_id": "2345",
+    "country": "Taiwan",
+    "revenue": 27360301000,
+    "revenue_month": 4,
+    "revenue_year": 2026,
+    "create_time": "2026-05-08"
+  }
+]

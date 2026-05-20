@@ -23,9 +23,11 @@ from google.oauth2.service_account import Credentials
 # 路徑設定
 # ─────────────────────────────────────────────
 BASE_DIR   = Path(__file__).resolve().parents[2]          # Trading/
-CACHE_DIR  = BASE_DIR / "暫存" / "for_python"
-STOCKS_CSV = BASE_DIR / "⚙️參數設定" / "Stocks.csv"
+CACHE_DIR  = BASE_DIR / "⌚️暫存" / "for_python"
 GCP_JSON   = BASE_DIR / "⚙️參數設定" / "rosy-zoo-447904-j1-a600c9e990ca.json"
+
+# 關注名單 Google Sheet（股票清單來源）
+WATCHLIST_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
 
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -42,30 +44,43 @@ def get_gspread_client():
     return gspread.authorize(creds)
 
 # ─────────────────────────────────────────────
-# 讀取 stocks.csv
+# 從關注名單 Google Sheet 讀取股票清單
 # ─────────────────────────────────────────────
-def load_stocks() -> list[dict]:
+EXCLUDED_IDS = {"TAIEX", "TPEx"}
+
+def load_stocks(gc) -> list[dict]:
     """
-    讀取 Stocks.csv，僅回傳個股（排除 TAIEX、TPEx 等指數），
+    從關注名單 Google Sheet 讀取股票清單，
+    僅回傳個股（排除 TAIEX、TPEx 等指數），
     且 google_sheet_monthly 欄位必須是有效的 Google Sheet URL。
     """
-    # 排除的指數型 stock_id
-    EXCLUDED_IDS = {"TAIEX", "TPEx"}
+    wl_doc_id, wl_gid = _parse_wl_url(WATCHLIST_URL)
+    wl_sh = gc.open_by_key(wl_doc_id)
+    wl_ws = wl_sh.get_worksheet_by_id(int(wl_gid)) if wl_gid else wl_sh.sheet1
 
+    wl_values = wl_ws.get_all_values()
+    if len(wl_values) < 2:
+        print("✗ 關注名單 Google Sheet 無資料")
+        return []
+
+    headers = wl_values[0]
     stocks = []
-    with open(STOCKS_CSV, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            sid = row.get("stock_id", "").strip()
-            monthly_url = row.get("google_sheet_monthly", "").strip()
-            # 排除指數、排除無效 URL（例如 'xxx'）
-            if (
-                sid
-                and sid not in EXCLUDED_IDS
-                and monthly_url.startswith("https://")
-            ):
-                stocks.append(row)
+    for row in wl_values[1:]:
+        row_dict = dict(zip(headers, row))
+        sid = row_dict.get('stock_id', '').strip()
+        monthly_url = row_dict.get('google_sheet_monthly', '').strip()
+        if sid and sid not in EXCLUDED_IDS and monthly_url.startswith('https://'):
+            stocks.append(row_dict)
     return stocks
+
+
+def _parse_wl_url(url: str):
+    """回傳 (doc_id, gid)"""
+    m_id  = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", url)
+    m_gid = re.search(r"gid=(\d+)", url)
+    if not m_id or not m_gid:
+        raise ValueError(f"無法解析 URL: {url}")
+    return m_id.group(1), m_gid.group(1)
 
 # ─────────────────────────────────────────────
 # 解析 Google Sheet URL → spreadsheet_id, gid
@@ -224,31 +239,27 @@ def write_to_sheet(worksheet, records: list[dict]):
 async def fetch_all(stocks: list[dict], gc) -> dict[str, list[dict]]:
     """
     並行從 FinMind 抓取所有股票的月營收。
-    先讀 Google Sheet 最新日期決定起始日。
+    優先從本地快取讀取最新日期決定起始日，避免觸發 Google Sheets API 流量限制（Quota Exceeded）。
     回傳 {stock_id: records}
     """
     results = {}
 
-    # 預先取得各 worksheet 最新日期（需同步，避免 gspread 並發問題）
+    # 預先取得各股票最新日期，優先使用本地快取以防 Quota 限制
     start_dates = {}
     for stock in stocks:
         stock_id = stock["stock_id"]
-        url = stock["google_sheet_monthly"]
-        try:
-            ss_id, gid = parse_sheet_url(url)
-            ss = gc.open_by_key(ss_id)
-            ws = ss.get_worksheet_by_id(int(gid))
-            
-            latest = get_latest_date_from_sheet(ws)
-            # 如果本地快取不存在，則無視工作表日期，抓取全部資料（2020-01-01）
-            if not (CACHE_DIR / f"monthly_{stock_id}.json").exists():
-                latest = "2020-01-01"
+        
+        # 讀取本地快取以獲取最新日期
+        cache_latest = "2020-01-01"
+        cache_records = load_cache(stock_id)
+        if cache_records:
+            dates = [r["date"] for r in cache_records if r.get("date")]
+            if dates:
+                dates.sort(reverse=True)
+                cache_latest = dates[0]
                 
-            start_dates[stock_id] = latest
-            print(f"  [{stock_id}] 起始日期: {latest}")
-        except Exception as e:
-            print(f"  [{stock_id}] 讀取 Sheet 失敗，使用預設起始日: {e}")
-            start_dates[stock_id] = "2020-01-01"
+        start_dates[stock_id] = cache_latest
+        print(f"  [{stock_id}] 起始日期 (本地快取): {cache_latest}")
 
     # 並行從 FinMind 抓取
     connector = aiohttp.TCPConnector(limit=10)
@@ -282,11 +293,11 @@ def main():
     print(f"🚀 開始更新每月營收  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 50)
 
-    stocks = load_stocks()
-    print(f"\n📋 共 {len(stocks)} 支股票待處理\n")
-
     # Google Sheets 授權
     gc = get_gspread_client()
+
+    stocks = load_stocks(gc)
+    print(f"\n📋 共 {len(stocks)} 支股票待處理\n")
 
     # ── Step 1：並行抓取所有資料並暫存 ──
     print("── Step 1：從 FinMind 抓取資料 ──")

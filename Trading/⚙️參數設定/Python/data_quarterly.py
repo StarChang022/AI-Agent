@@ -36,8 +36,10 @@ from google.oauth2.service_account import Credentials
 # ═══════════════════════════════════════════════════
 BASE_DIR   = Path(__file__).resolve().parents[2]          # Trading/
 CACHE_DIR  = BASE_DIR / "⌚️暫存" / "for_python"
-STOCKS_CSV = BASE_DIR / "⚙️參數設定" / "Stocks.csv"
 GCP_JSON   = BASE_DIR / "⚙️參數設定" / "rosy-zoo-447904-j1-a600c9e990ca.json"
+
+# 關注名單 Google Sheet（股票清單來源）
+WATCHLIST_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
 
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -68,27 +70,36 @@ def col_letter(n: int) -> str:
 
 
 # ═══════════════════════════════════════════════════
-# 讀取 Stocks.csv
+# 從關注名單 Google Sheet 讀取股票清單
 # ═══════════════════════════════════════════════════
 EXCLUDED_IDS = {"TAIEX", "TPEx"}
 
-def load_stocks() -> list[dict]:
+def load_stocks(gc) -> list[dict]:
     """
-    讀取 Stocks.csv，僅回傳個股（排除 TAIEX / TPEx），
+    從關注名單 Google Sheet 讀取股票清單，
+    僅回傳個股（排除 TAIEX / TPEx），
     且 google_sheet_quarterly 欄位必須是有效的 Google Sheet URL。
     """
+    m_id  = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", WATCHLIST_URL)
+    m_gid = re.search(r"gid=(\d+)", WATCHLIST_URL)
+    if not m_id or not m_gid:
+        raise ValueError(f"無法解析關注名單 URL: {WATCHLIST_URL}")
+    wl_sh = gc.open_by_key(m_id.group(1))
+    wl_ws = wl_sh.get_worksheet_by_id(int(m_gid.group(1)))
+
+    wl_values = wl_ws.get_all_values()
+    if len(wl_values) < 2:
+        print("✗ 關注名單 Google Sheet 無資料")
+        return []
+
+    headers = wl_values[0]
     stocks = []
-    with open(STOCKS_CSV, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            sid = row.get("stock_id", "").strip()
-            q_url = row.get("google_sheet_quarterly", "").strip()
-            if (
-                sid
-                and sid not in EXCLUDED_IDS
-                and q_url.startswith("https://")
-            ):
-                stocks.append(row)
+    for row in wl_values[1:]:
+        row_dict = dict(zip(headers, row))
+        sid   = row_dict.get('stock_id', '').strip()
+        q_url = row_dict.get('google_sheet_quarterly', '').strip()
+        if sid and sid not in EXCLUDED_IDS and q_url.startswith('https://'):
+            stocks.append(row_dict)
     return stocks
 
 
@@ -490,26 +501,22 @@ async def fetch_all(stocks: list[dict], gc) -> dict[str, dict[str, dict]]:
     """
     results = {}
 
-    # ── 預先讀取各股票 Google Sheet 最新季度（用於增量更新）──
+    # ── 預先取得各股票最新日期，優先使用本地快取以防 Quota 限制 ──
     start_dates: dict[str, str] = {}
     for stock in stocks:
         sid   = stock["stock_id"]
-        q_url = stock["google_sheet_quarterly"]
-        try:
-            ss_id, gid = parse_sheet_url(q_url)
-            ss = gc.open_by_key(ss_id)
-            ws = ss.get_worksheet_by_id(int(gid))
-            latest = get_latest_quarter_from_sheet(ws)
-
-            # 若本地快取不存在，則從 2020-01-01 重抓全部
-            if not (CACHE_DIR / f"quarterly_{sid}.json").exists():
-                latest = "2020-01-01"
-
-            start_dates[sid] = latest
-            print(f"  [{sid}] 起始日期: {latest}")
-        except Exception as e:
-            print(f"  [{sid}] 讀取 Sheet 失敗，使用預設起始日: {e}")
-            start_dates[sid] = "2020-01-01"
+        
+        # 讀取本地快取以獲取最新日期
+        cache_latest = "2020-01-01"
+        cache_data = load_cache(sid)
+        if cache_data:
+            dates = [d.get("_date_raw") for d in cache_data.values() if d.get("_date_raw")]
+            if dates:
+                dates.sort(reverse=True)
+                cache_latest = dates[0]
+                
+        start_dates[sid] = cache_latest
+        print(f"  [{sid}] 起始日期 (本地快取): {cache_latest}")
 
     # ── 並行從 FinMind 抓取（每支股票同時打 4 個 API）──
     connector = aiohttp.TCPConnector(limit=20)
@@ -550,17 +557,17 @@ def main():
     print(f"🚀 開始更新每季財報  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 55)
 
-    stocks = load_stocks()
+    # Google Sheets 授權
+    gc = get_gspread_client()
+
+    stocks = load_stocks(gc)
     if not stocks:
-        print("⛔ 無符合條件的股票（請確認 Stocks.csv 中 google_sheet_quarterly 欄位）")
+        print("⛔ 無符合條件的股票（請確認關注名單中 google_sheet_quarterly 欄位）")
         return
     print(f"\n📋 共 {len(stocks)} 支股票待處理")
     for s in stocks:
         print(f"   {s['stock_id']} {s['stock_name']}")
     print()
-
-    # Google Sheets 授權
-    gc = get_gspread_client()
 
     # ── Step 1：並行抓取所有資料並暫存至本地 ──
     print("─" * 55)

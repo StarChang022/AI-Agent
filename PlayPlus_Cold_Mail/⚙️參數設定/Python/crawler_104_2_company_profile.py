@@ -16,7 +16,7 @@ SPREADSHEET_ID = '14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE'
 WORKSHEET_NAME = '名單副本'  # gid=1168472169
 
 # 並行爬蟲設定
-CONCURRENT_PAGES = 5    # 同時開啟的瀏覽器分頁數（越高越快，但風險越大）
+CONCURRENT_PAGES = 1    # 同時開啟的瀏覽器分頁數（越高越快，但風險越大）
 PAGE_TIMEOUT = 20000    # 每頁等待上限 (ms)
 # ==========================================
 
@@ -92,31 +92,46 @@ async def scrape_one_company(page, company):
     """爬取單一公司的 104 頁面資料"""
     url = company['source_url']
     try:
-        await page.goto(url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT)
-        await asyncio.sleep(1)  # 等待 CSR 渲染
+        await page.goto(url, wait_until='load', timeout=PAGE_TIMEOUT)
+        
+        # 等待特定元素出現，確保 CSR 渲染完成（最多等 10 秒）
+        try:
+            await page.wait_for_selector('p.intro-profile', timeout=10000)
+        except Exception as e:
+            print(f"  [除錯] 等待元素超時 ({url})")
+        
+        await asyncio.sleep(2)  # 額外等待確保元素綁定完成
 
-        result = await page.evaluate('''() => {
-            // 公司官網 URL
-            const urlEl = document.querySelector('a[data-gtm-content="公司網址"]');
-            const companyURL = urlEl ? urlEl.href : '';
-
-            // 公司簡介 - 第一段
-            const p1 = document.querySelector('p.intro-profile.mb-0.text-break');
-            const profile1 = p1 ? p1.innerText.trim() : '';
-
-            // 公司簡介 - 第二段
-            const p2 = document.querySelector('p.r3.mb-0.text-break');
-            const profile2 = p2 ? p2.innerText.trim() : '';
-
-            return { companyURL, profile1, profile2 };
-        }''')
+        company_url = ''
+        try:
+            url_el = await page.query_selector('a[data-gtm-content="公司網址"]')
+            if url_el:
+                company_url = await url_el.get_attribute('href')
+        except:
+            pass
+            
+        profile1 = ''
+        try:
+            p1 = await page.query_selector('p.intro-profile')
+            if p1:
+                profile1 = await p1.text_content()
+        except:
+            pass
+            
+        profile2 = ''
+        try:
+            p2 = await page.query_selector('p.r3')
+            if p2:
+                profile2 = await p2.text_content()
+        except:
+            pass
 
         return {
             'row_index': company['row_index'],
             'row_data': company['row_data'],
-            'companyURL': result.get('companyURL', ''),
-            'profile1': result.get('profile1', ''),
-            'profile2': result.get('profile2', ''),
+            'companyURL': company_url.strip() if company_url else '',
+            'profile1': profile1.strip() if profile1 else '',
+            'profile2': profile2.strip() if profile2 else '',
             'success': True
         }
     except Exception as e:
@@ -159,11 +174,7 @@ async def scrape_all_companies(companies):
             headless=True,
             args=['--no-sandbox', '--disable-dev-shm-usage']
         )
-        context = await browser.new_context(
-            user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            locale='zh-TW',
-            viewport={'width': 1440, 'height': 900}
-        )
+        context = await browser.new_context()
 
         tasks = [bounded_scrape(context, c) for c in companies]
         total = len(tasks)

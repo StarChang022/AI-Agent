@@ -224,31 +224,27 @@ def write_to_sheet(worksheet, records: list[dict]):
 async def fetch_all(stocks: list[dict], gc) -> dict[str, list[dict]]:
     """
     並行從 FinMind 抓取所有股票的月營收。
-    先讀 Google Sheet 最新日期決定起始日。
+    優先從本地快取讀取最新日期決定起始日，避免觸發 Google Sheets API 流量限制（Quota Exceeded）。
     回傳 {stock_id: records}
     """
     results = {}
 
-    # 預先取得各 worksheet 最新日期（需同步，避免 gspread 並發問題）
+    # 預先取得各股票最新日期，優先使用本地快取以防 Quota 限制
     start_dates = {}
     for stock in stocks:
         stock_id = stock["stock_id"]
-        url = stock["google_sheet_monthly"]
-        try:
-            ss_id, gid = parse_sheet_url(url)
-            ss = gc.open_by_key(ss_id)
-            ws = ss.get_worksheet_by_id(int(gid))
-            
-            latest = get_latest_date_from_sheet(ws)
-            # 如果本地快取不存在，則無視工作表日期，抓取全部資料（2020-01-01）
-            if not (CACHE_DIR / f"monthly_{stock_id}.json").exists():
-                latest = "2020-01-01"
+        
+        # 讀取本地快取以獲取最新日期
+        cache_latest = "2020-01-01"
+        cache_records = load_cache(stock_id)
+        if cache_records:
+            dates = [r["date"] for r in cache_records if r.get("date")]
+            if dates:
+                dates.sort(reverse=True)
+                cache_latest = dates[0]
                 
-            start_dates[stock_id] = latest
-            print(f"  [{stock_id}] 起始日期: {latest}")
-        except Exception as e:
-            print(f"  [{stock_id}] 讀取 Sheet 失敗，使用預設起始日: {e}")
-            start_dates[stock_id] = "2020-01-01"
+        start_dates[stock_id] = cache_latest
+        print(f"  [{stock_id}] 起始日期 (本地快取): {cache_latest}")
 
     # 並行從 FinMind 抓取
     connector = aiohttp.TCPConnector(limit=10)

@@ -98,18 +98,35 @@ async def process_all_stocks():
             df_old = pd.DataFrame()
             worksheet = None
             
+            # 優先從本地 CSV 讀取舊資料並決定最新日期，避免過度讀取 Google Sheets API
+            temp_csv = os.path.join(temp_dir, f"{stock_id}_daily.csv")
+            if os.path.exists(temp_csv):
+                try:
+                    df_old = pd.read_csv(temp_csv)
+                    if not df_old.empty:
+                        # Convert 日期 to YYYY-MM-DD for comparison and API
+                        dates = pd.to_datetime(df_old['日期'], errors='coerce')
+                        if not dates.isna().all():
+                            max_date = dates.max()
+                            start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
+                            print(f"Found latest date in local CSV: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
+                except Exception as e:
+                    print(f"Error reading local CSV for {stock_id}: {e}")
+                    df_old = pd.DataFrame()
+
+            # 不論本地是否有讀到舊資料，我們都打開 worksheet 備用，但只有在 df_old 為空時才去 get_all_values()
             try:
                 sh = gc.open_by_key(doc_id)
                 worksheet = sh.get_worksheet_by_id(int(gid)) if gid else sh.sheet1
-                all_values = worksheet.get_all_values()
-                if len(all_values) > 1:
-                    df_old = pd.DataFrame(all_values[1:], columns=all_values[0])
-                    # Convert 日期 to YYYY-MM-DD for comparison and API
-                    dates = pd.to_datetime(df_old['日期'], errors='coerce')
-                    if not dates.isna().all():
-                        max_date = dates.max()
-                        start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
-                        print(f"Found latest date in sheet: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
+                if df_old.empty:
+                    all_values = worksheet.get_all_values()
+                    if len(all_values) > 1:
+                        df_old = pd.DataFrame(all_values[1:], columns=all_values[0])
+                        dates = pd.to_datetime(df_old['日期'], errors='coerce')
+                        if not dates.isna().all():
+                            max_date = dates.max()
+                            start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
+                            print(f"Found latest date in sheet: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
             except Exception as e:
                 print(f"Error reading existing data for {stock_id}: {e}")
 

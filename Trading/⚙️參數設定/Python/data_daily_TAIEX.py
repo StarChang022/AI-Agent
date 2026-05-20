@@ -5,17 +5,19 @@ import asyncio
 import pandas as pd
 import gspread
 import numpy as np
-from typing import Union, Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple
 
 # ============================================================
 # 加權指數 (TAIEX) 每日交易資訊
-# 指令來源：加權指數交易資訊.md
+# 指令來源：更新數據_每日_加權指數交易資訊.md L5
 # ============================================================
 
 BASE_URL = "https://api.finmindtrade.com/api/v4/data"
 STOCK_ID = "TAIEX"
 
-CONFIG_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Stocks.csv'
+# 關注名單 Google Sheet（指令 L5 指定的固定目標）
+GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
+
 CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json'
 TEMP_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
 
@@ -298,28 +300,41 @@ def build_sheet_data(df: pd.DataFrame) -> list:
 
 
 async def main():
-    # ── 讀取 Stocks.csv，找到 TAIEX 列 ───────────────────────
-    if not os.path.exists(CONFIG_PATH):
-        print(f"✗ 找不到設定檔：{CONFIG_PATH}")
-        return
-
-    df_config = pd.read_csv(CONFIG_PATH)
-    taiex_row = df_config[df_config['stock_id'].astype(str) == STOCK_ID]
-
-    if taiex_row.empty:
-        print(f"✗ Stocks.csv 中找不到 stock_id={STOCK_ID}，請先新增該列。")
-        return
-
-    google_sheet_url = taiex_row.iloc[0]['google_sheet_daily']
-    if pd.isna(google_sheet_url) or not isinstance(google_sheet_url, str):
-        print(f"✗ TAIEX 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")
-        return
-
-    # ── 初始化 Google Sheet ───────────────────────────────────
+    # ── 步驟1：開啟關注名單，找 TAIEX 列的 google_sheet_daily ─
     os.makedirs(TEMP_DIR, exist_ok=True)
     gc = gspread.service_account(filename=CREDENTIAL_PATH)
 
-    doc_id, gid = parse_google_sheet_url(google_sheet_url)
+    watchlist_doc_id, watchlist_gid = parse_google_sheet_url(GOOGLE_SHEET_URL)
+    watchlist_sh = gc.open_by_key(watchlist_doc_id)
+    watchlist_ws = watchlist_sh.get_worksheet_by_id(int(watchlist_gid)) if watchlist_gid else watchlist_sh.sheet1
+
+    wl_values = watchlist_ws.get_all_values()
+    if len(wl_values) < 2:
+        print("✗ 關注名單 Google Sheet 無資料，結束。")
+        return
+
+    wl_headers = wl_values[0]
+    if 'stock_id' not in wl_headers or 'google_sheet_daily' not in wl_headers:
+        print(f"✗ 關注名單缺少必要欄位（stock_id / google_sheet_daily），目前欄位：{wl_headers}")
+        return
+
+    sid_col = wl_headers.index('stock_id')
+    gsd_col = wl_headers.index('google_sheet_daily')
+
+    taiex_row = next((r for r in wl_values[1:] if r[sid_col] == STOCK_ID), None)
+    if taiex_row is None:
+        print(f"✗ 關注名單中找不到 stock_id={STOCK_ID}，結束。")
+        return
+
+    google_sheet_daily_url = taiex_row[gsd_col].strip()
+    if not google_sheet_daily_url:
+        print(f"✗ TAIEX 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")
+        return
+
+    print(f"▶ 關注名單找到 TAIEX，寫入目標：{google_sheet_daily_url}")
+
+    # ── 步驟2：開啟寫入目標 Google Sheet ─────────────────────
+    doc_id, gid = parse_google_sheet_url(google_sheet_daily_url)
     sh = gc.open_by_key(doc_id)
     worksheet = sh.get_worksheet_by_id(int(gid)) if gid else sh.sheet1
 

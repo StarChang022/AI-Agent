@@ -10,6 +10,11 @@ import numpy as np
 # API URLs
 BASE_URL = "https://api.finmindtrade.com/api/v4/data"
 
+# 關注名單 Google Sheet（股票清單來源）
+WATCHLIST_URL   = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
+CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json'
+TEMP_DIR        = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
+
 def clean_formula(formula):
     return formula.replace('\n', '').replace('\t', '').strip()
 
@@ -55,33 +60,57 @@ async def get_stock_data(session, stock_id, start_date):
 
 EXCLUDE_IDS = {"TAIEX", "TPEx"}
 
+def _parse_gsheet_url(url: str):
+    """回傳 (doc_id, gid)"""
+    import urllib.parse as _up
+    parsed = _up.urlparse(url)
+    qs = _up.parse_qs(parsed.query)
+    gid = qs.get('gid', [None])[0]
+    if gid is None and parsed.fragment and parsed.fragment.startswith('gid='):
+        gid = parsed.fragment.split('=')[1]
+    doc_id = parsed.path.split('/')[3]
+    return doc_id, gid
+
 async def process_all_stocks():
-    config_path = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Stocks.csv'
-    if not os.path.exists(config_path):
-        print(f"Config file not found: {config_path}")
+    # ── 步驟1：從關注名單 Google Sheet 取得股票清單 ───────────
+    os.makedirs(TEMP_DIR, exist_ok=True)
+    gc = gspread.service_account(filename=CREDENTIAL_PATH)
+
+    wl_doc_id, wl_gid = _parse_gsheet_url(WATCHLIST_URL)
+    wl_sh = gc.open_by_key(wl_doc_id)
+    wl_ws = wl_sh.get_worksheet_by_id(int(wl_gid)) if wl_gid else wl_sh.sheet1
+
+    wl_values = wl_ws.get_all_values()
+    if len(wl_values) < 2:
+        print("✗ 關注名單 Google Sheet 無資料，結束。")
         return
 
-    df_config = pd.read_csv(config_path)
-    
-    # Ensure temporary directory exists
-    temp_dir = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
-    os.makedirs(temp_dir, exist_ok=True)
-    
-    gc = gspread.service_account(filename='/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json')
+    wl_headers = wl_values[0]
+    for col in ('stock_id', 'stock_name', 'google_sheet_daily'):
+        if col not in wl_headers:
+            print(f"✗ 關注名單缺少欄位：{col}，目前欄位：{wl_headers}")
+            return
+
+    sid_col  = wl_headers.index('stock_id')
+    name_col = wl_headers.index('stock_name')
+    gsd_col  = wl_headers.index('google_sheet_daily')
+
+    temp_dir = TEMP_DIR
 
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(limit=10)) as session:
-        for index, row in df_config.iterrows():
-            stock_id = str(row['stock_id']).strip()
-            if stock_id in EXCLUDE_IDS:
-                print(f"Skipping {stock_id} (index, not a stock)")
+        for wl_row in wl_values[1:]:
+            stock_id = wl_row[sid_col].strip()
+            if not stock_id or stock_id in EXCLUDE_IDS:
+                if stock_id in EXCLUDE_IDS:
+                    print(f"Skipping {stock_id} (index, not a stock)")
                 continue
-            stock_name = row['stock_name']
-            google_sheet_daily_url = row['google_sheet_daily']
+            stock_name = wl_row[name_col].strip()
+            google_sheet_daily_url = wl_row[gsd_col].strip()
             
             print(f"Processing {stock_id} {stock_name}...")
             
             # 1. Get existing data and latest date
-            if pd.isna(google_sheet_daily_url) or not isinstance(google_sheet_daily_url, str):
+            if not google_sheet_daily_url.startswith('https://'):
                 print(f"Invalid google_sheet_daily URL for {stock_id}")
                 continue
                 
@@ -98,18 +127,35 @@ async def process_all_stocks():
             df_old = pd.DataFrame()
             worksheet = None
             
+            # 優先從本地 CSV 讀取舊資料並決定最新日期，避免過度讀取 Google Sheets API
+            temp_csv = os.path.join(temp_dir, f"{stock_id}_daily.csv")
+            if os.path.exists(temp_csv):
+                try:
+                    df_old = pd.read_csv(temp_csv)
+                    if not df_old.empty:
+                        # Convert 日期 to YYYY-MM-DD for comparison and API
+                        dates = pd.to_datetime(df_old['日期'], errors='coerce')
+                        if not dates.isna().all():
+                            max_date = dates.max()
+                            start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
+                            print(f"Found latest date in local CSV: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
+                except Exception as e:
+                    print(f"Error reading local CSV for {stock_id}: {e}")
+                    df_old = pd.DataFrame()
+
+            # 不論本地是否有讀到舊資料，我們都打開 worksheet 備用，但只有在 df_old 為空時才去 get_all_values()
             try:
                 sh = gc.open_by_key(doc_id)
                 worksheet = sh.get_worksheet_by_id(int(gid)) if gid else sh.sheet1
-                all_values = worksheet.get_all_values()
-                if len(all_values) > 1:
-                    df_old = pd.DataFrame(all_values[1:], columns=all_values[0])
-                    # Convert 日期 to YYYY-MM-DD for comparison and API
-                    dates = pd.to_datetime(df_old['日期'], errors='coerce')
-                    if not dates.isna().all():
-                        max_date = dates.max()
-                        start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
-                        print(f"Found latest date in sheet: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
+                if df_old.empty:
+                    all_values = worksheet.get_all_values()
+                    if len(all_values) > 1:
+                        df_old = pd.DataFrame(all_values[1:], columns=all_values[0])
+                        dates = pd.to_datetime(df_old['日期'], errors='coerce')
+                        if not dates.isna().all():
+                            max_date = dates.max()
+                            start_date = max_date.replace(day=1).strftime('%Y-%m-%d')
+                            print(f"Found latest date in sheet: {max_date.strftime('%Y-%m-%d')}, fetching from month start: {start_date}")
             except Exception as e:
                 print(f"Error reading existing data for {stock_id}: {e}")
 

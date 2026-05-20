@@ -2,10 +2,10 @@
 data_daily_TPEx.py
 ==================
 從 FinMind API 抓取「櫃買指數 (TPEx)」每日交易資訊，
-並將結果覆寫至 Stocks.csv 對應的 Google Sheet。
+並將結果覆寫至關注名單對應的 Google Sheet。
 
 任務邏輯 (依照 櫃買指數交易資訊.md):
-1. 從 Stocks.csv 讀取 stock_id="TPEx" 的 google_sheet_daily 網址。
+1. 從關注名單 Google Sheet 讀取 stock_id="TPEx" 的 google_sheet_daily 網址。
 2. 檢查 Google Sheet 中最新的交易日所在月份月初，以該日期作為 FinMind API 的 start_date。
    若 Sheet 內尚無資料，則從 2020-01-01 開始抓取。
 3. 呼叫 FinMind API 取得新資料，並與 Sheet 現有資料合併（去除重複日期）。
@@ -28,7 +28,8 @@ from typing import Union, Optional, List, Tuple, Dict
 BASE_URL = "https://api.finmindtrade.com/api/v4/data"
 STOCK_ID = "TPEx"
 
-CONFIG_PATH     = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Stocks.csv'
+# 關注名單 Google Sheet（股票清單來源）
+WATCHLIST_URL   = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
 CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json'
 TEMP_DIR        = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
 
@@ -250,27 +251,40 @@ async def main():
     print("  櫃買指數 (TPEx) 每日交易資訊更新")
     print("=" * 60)
 
-    # ── 讀取 Stocks.csv，找到 TPEx 列 ───────────────────────
-    if not os.path.exists(CONFIG_PATH):
-        print(f"✗ 找不到設定檔：{CONFIG_PATH}")
-        return
-
-    df_config = pd.read_csv(CONFIG_PATH)
-    tpex_row = df_config[df_config['stock_id'].astype(str) == STOCK_ID]
-
-    if tpex_row.empty:
-        print(f"✗ Stocks.csv 中找不到 stock_id={STOCK_ID}，請先新增該列。")
-        return
-
-    google_sheet_url = tpex_row.iloc[0]['google_sheet_daily']
-    if pd.isna(google_sheet_url) or not isinstance(google_sheet_url, str):
-        print(f"✗ TPEx 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")
-        return
-
-    # ── 初始化 Google Sheet ───────────────────────────────────
+    # ── 步驟1：從關注名單找 TPEx 的 google_sheet_daily ──────
     os.makedirs(TEMP_DIR, exist_ok=True)
     gc = gspread.service_account(filename=CREDENTIAL_PATH)
 
+    wl_doc_id, wl_gid = parse_google_sheet_url(WATCHLIST_URL)
+    wl_sh = gc.open_by_key(wl_doc_id)
+    wl_ws = wl_sh.get_worksheet_by_id(int(wl_gid)) if wl_gid else wl_sh.sheet1
+
+    wl_values = wl_ws.get_all_values()
+    if len(wl_values) < 2:
+        print("✗ 關注名單 Google Sheet 無資料，結束。")
+        return
+
+    wl_headers = wl_values[0]
+    if 'stock_id' not in wl_headers or 'google_sheet_daily' not in wl_headers:
+        print(f"✗ 關注名單缺少必要欄位，目前欄位：{wl_headers}")
+        return
+
+    sid_col = wl_headers.index('stock_id')
+    gsd_col = wl_headers.index('google_sheet_daily')
+
+    tpex_row = next((r for r in wl_values[1:] if r[sid_col].strip() == STOCK_ID), None)
+    if tpex_row is None:
+        print(f"✗ 關注名單中找不到 stock_id={STOCK_ID}，結束。")
+        return
+
+    google_sheet_url = tpex_row[gsd_col].strip()
+    if not google_sheet_url.startswith('https://'):
+        print(f"✗ TPEx 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")
+        return
+
+    print(f"▶ 關注名單找到 TPEx，寫入目標：{google_sheet_url}")
+
+    # ── 步驟2：開啟寫入目標 Google Sheet ───────────────
     doc_id, gid = parse_google_sheet_url(google_sheet_url)
     sh = gc.open_by_key(doc_id)
     worksheet = sh.get_worksheet_by_id(int(gid)) if gid else sh.sheet1
