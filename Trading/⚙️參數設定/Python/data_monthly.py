@@ -52,7 +52,8 @@ def load_stocks(gc) -> list[dict]:
     """
     從關注名單 Google Sheet 讀取股票清單，
     僅回傳個股（排除 TAIEX、TPEx 等指數），
-    且 google_sheet_monthly 欄位必須是有效的 Google Sheet URL。
+    且 google_sheet_monthly 欄位必須是有效的 Google Sheet URL，
+    且 G 欄 (monthly) 必須為 TRUE。
     """
     wl_doc_id, wl_gid = _parse_wl_url(WATCHLIST_URL)
     wl_sh = gc.open_by_key(wl_doc_id)
@@ -69,6 +70,17 @@ def load_stocks(gc) -> list[dict]:
         row_dict = dict(zip(headers, row))
         sid = row_dict.get('stock_id', '').strip()
         monthly_url = row_dict.get('google_sheet_monthly', '').strip()
+        
+        # 檢查 G 欄 (monthly) 是否為 TRUE
+        is_enabled = False
+        if 'monthly' in row_dict:
+            is_enabled = row_dict.get('monthly', '').strip().upper() == 'TRUE'
+        elif len(row) > 6:
+            is_enabled = row[6].strip().upper() == 'TRUE'
+            
+        if not is_enabled:
+            continue
+            
         if sid and sid not in EXCLUDED_IDS and monthly_url.startswith('https://'):
             stocks.append(row_dict)
     return stocks

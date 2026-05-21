@@ -326,6 +326,12 @@ async def main():
         print(f"✗ 關注名單中找不到 stock_id={STOCK_ID}，結束。")
         return
 
+    daily_col = wl_headers.index('daily') if 'daily' in wl_headers else 5
+    is_enabled = len(taiex_row) > daily_col and taiex_row[daily_col].strip().upper() == 'TRUE'
+    if not is_enabled:
+        print(f"▶ TAIEX 該列的F欄 (daily) 不為 TRUE，跳過運行。")
+        return
+
     google_sheet_daily_url = taiex_row[gsd_col].strip()
     if not google_sheet_daily_url:
         print(f"✗ TAIEX 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")

@@ -277,6 +277,12 @@ async def main():
         print(f"✗ 關注名單中找不到 stock_id={STOCK_ID}，結束。")
         return
 
+    daily_col = wl_headers.index('daily') if 'daily' in wl_headers else 5
+    is_enabled = len(tpex_row) > daily_col and tpex_row[daily_col].strip().upper() == 'TRUE'
+    if not is_enabled:
+        print(f"▶ TPEx 該列的F欄 (daily) 不為 TRUE，跳過運行。")
+        return
+
     google_sheet_url = tpex_row[gsd_col].strip()
     if not google_sheet_url.startswith('https://'):
         print(f"✗ TPEx 的 google_sheet_daily 欄位為空，請先填入 Google Sheet URL。")

@@ -78,7 +78,8 @@ def load_stocks(gc) -> list[dict]:
     """
     從關注名單 Google Sheet 讀取股票清單，
     僅回傳個股（排除 TAIEX / TPEx），
-    且 google_sheet_quarterly 欄位必須是有效的 Google Sheet URL。
+    且 google_sheet_quarterly 欄位必須是有效的 Google Sheet URL，
+    且 H 欄 (quarterly) 必須為 TRUE。
     """
     m_id  = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", WATCHLIST_URL)
     m_gid = re.search(r"gid=(\d+)", WATCHLIST_URL)
@@ -98,6 +99,17 @@ def load_stocks(gc) -> list[dict]:
         row_dict = dict(zip(headers, row))
         sid   = row_dict.get('stock_id', '').strip()
         q_url = row_dict.get('google_sheet_quarterly', '').strip()
+        
+        # 檢查 H 欄 (quarterly) 是否為 TRUE
+        is_enabled = False
+        if 'quarterly' in row_dict:
+            is_enabled = row_dict.get('quarterly', '').strip().upper() == 'TRUE'
+        elif len(row) > 7:
+            is_enabled = row[7].strip().upper() == 'TRUE'
+            
+        if not is_enabled:
+            continue
+            
         if sid and sid not in EXCLUDED_IDS and q_url.startswith('https://'):
             stocks.append(row_dict)
     return stocks
