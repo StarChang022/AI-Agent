@@ -347,6 +347,12 @@ async def main():
     # ── 決定起始日期（從現有資料最新日期的月初）────────────────
     start_date, df_old = get_start_date(worksheet)
 
+    # 若環境變數指定了強制起始日期，則使用它
+    force_start = os.environ.get("FORCE_START_DATE")
+    if force_start:
+        start_date = force_start
+        print(f"  [Environment] 偵測到強制起始日期，覆蓋為：{start_date}")
+
     print(f"▶ 開始抓取 TAIEX 資料，起始日期：{start_date}")
 
     # ── 並行呼叫 FinMind API ──────────────────────────────────

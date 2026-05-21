@@ -167,6 +167,12 @@ async def process_all_stocks():
             except Exception as e:
                 print(f"Error reading existing data for {stock_id}: {e}")
 
+            # 若環境變數指定了強制起始日期，則使用它
+            force_start = os.environ.get("FORCE_START_DATE")
+            if force_start:
+                start_date = force_start
+                print(f"Forcing start date to: {start_date} via environment variable")
+
             print(f"Fetching data for {stock_id} {stock_name} from {start_date}...")
             data_dict = await get_stock_data(session, stock_id, start_date)
             

@@ -94,6 +94,7 @@ async def process_all_stocks():
     sid_col  = wl_headers.index('stock_id')
     name_col = wl_headers.index('stock_name')
     gsd_col  = wl_headers.index('google_sheet_daily')
+    daily_col = wl_headers.index('daily') if 'daily' in wl_headers else 5
 
     temp_dir = TEMP_DIR
 
@@ -105,6 +106,13 @@ async def process_all_stocks():
                     print(f"Skipping {stock_id} (index, not a stock)")
                 continue
             stock_name = wl_row[name_col].strip()
+            
+            # 檢查 F 欄 (daily) 是否為 true
+            is_enabled = len(wl_row) > daily_col and wl_row[daily_col].strip().upper() == 'TRUE'
+            if not is_enabled:
+                print(f"Skipping {stock_id} {stock_name} (Column F / daily is not TRUE)")
+                continue
+                
             google_sheet_daily_url = wl_row[gsd_col].strip()
             
             print(f"Processing {stock_id} {stock_name}...")
