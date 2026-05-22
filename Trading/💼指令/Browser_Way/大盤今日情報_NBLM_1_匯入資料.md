@@ -15,10 +15,11 @@
 從 `## 情報來源網站` 查找情報。
 
 1. 列出 `## 關鍵指數` 的表現。
-2. 台股資金流向哪些族群，列出該族群的主流概念股。
-3. 重大市場消息，包含「利多消息」與「利空消息」。
-4. 市場情緒指標。
-5. 聰明錢潛伏區，除了檯面上的熱門股，聰明錢（Smart Money）是否正在悄悄佈局特定族群？
+2. 列出 `## 重點美股` 的表現。
+3. 台股資金流向哪些族群，列出該族群的主流概念股。
+4. 重大市場消息，包含「利多消息」與「利空消息」。
+5. 市場情緒指標。
+6. 聰明錢潛伏區，除了檯面上的熱門股，聰明錢（Smart Money）是否正在悄悄佈局特定族群？
 
 ## 情報來源網站
 
@@ -48,3 +49,8 @@
 4. 道瓊指數 Dow Jones（https://finance.yahoo.com/quote/^DJI/history/）
 5. 那斯達克 Nasdaq Composite（https://finance.yahoo.com/quote/^IXIC/history/）
 6. 標普500 S&P 500（https://finance.yahoo.com/quote/^GSPC/history/）
+
+## 重點美股
+
+1. 列出 [YAHOO股市](https://tw.stock.yahoo.com/markets) 「熱門個股」的「美股」表現。
+2. 列出 [YAHOO股市](https://tw.stock.yahoo.com/markets) 「指標美股」的表現。
