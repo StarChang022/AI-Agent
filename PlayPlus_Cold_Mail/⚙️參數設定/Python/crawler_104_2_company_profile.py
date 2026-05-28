@@ -17,7 +17,12 @@ WORKSHEET_NAME = '名單副本'  # gid=1168472169
 
 # 並行爬蟲設定
 CONCURRENT_PAGES = 1    # 同時開啟的瀏覽器分頁數（越高越快，但風險越大）
-PAGE_TIMEOUT = 20000    # 每頁等待上限 (ms)
+PAGE_TIMEOUT = 25000    # 每頁等待上限 (ms)
+
+# ⚠️ Cloudflare 會識別 headless 瀏覽器並封鎖 API。
+# headless=False 讓 Chromium 以完整視窗模式運行，可通過 Cloudflare 驗證。
+# 若需要在伺服器（無螢幕環境）執行，可改用 Xvfb 虛擬顯示。
+HEADLESS = False
 # ==========================================
 
 
@@ -66,7 +71,6 @@ def load_companies_from_csv():
     print(f"  → CSV 標題列：{headers}")
 
     for i, row in enumerate(rows[1:], start=2):  # 第 2 列起（1-indexed）
-        # 確保 row 有足夠欄位
         while len(row) < 11:
             row.append('')
 
@@ -76,10 +80,10 @@ def load_companies_from_csv():
 
         if source_url and source_url.startswith('http'):
             companies.append({
-                'row_index': i,     # CSV 中的列號（從 1 計算）
-                'row_data': row,    # 原始列資料
+                'row_index': i,
+                'row_data': row,
                 'company_name': company_name,
-                'source_url': source_url,   # H欄：104 公司頁面
+                'source_url': source_url,
             })
 
     print(f"  → 找到 {len(companies)} 間有效公司（H欄有網址）")
@@ -89,60 +93,96 @@ def load_companies_from_csv():
 # ===== 步驟 3：Playwright 並行爬取各公司頁面資料 =====
 
 async def scrape_one_company(page, company):
-    """爬取單一公司的 104 頁面資料"""
-    url = company['source_url']
-    try:
-        await page.goto(url, wait_until='load', timeout=PAGE_TIMEOUT)
-        
-        # 等待特定元素出現，確保 CSR 渲染完成（最多等 10 秒）
-        try:
-            await page.wait_for_selector('p.intro-profile', timeout=10000)
-        except Exception as e:
-            print(f"  [除錯] 等待元素超時 ({url})")
-        
-        await asyncio.sleep(2)  # 額外等待確保元素綁定完成
+    """
+    爬取單一公司的 104 頁面資料。
 
-        company_url = ''
-        try:
-            url_el = await page.query_selector('a[data-gtm-content="公司網址"]')
-            if url_el:
-                company_url = await url_el.get_attribute('href')
-        except:
-            pass
-            
-        profile1 = ''
-        try:
-            p1 = await page.query_selector('p.intro-profile')
-            if p1:
-                profile1 = await p1.text_content()
-        except:
-            pass
-            
-        profile2 = ''
-        try:
-            p2 = await page.query_selector('p.r3')
-            if p2:
-                profile2 = await p2.text_content()
-        except:
-            pass
+    核心策略：
+    1. 以 headless=False（非無頭模式）啟動 Chromium，通過 Cloudflare 指紋檢測。
+    2. 載入公司主頁後，在頁面 JS 上下文中以 fetch() 呼叫 104 後端 JSON API，
+       繼承頁面 Cookie（包含 Cloudflare cf_clearance）取回完整資料。
+
+    已確認的 API 回傳欄位：
+      - custLink  : 公司官方網站 URL
+      - profile   : 公司簡介（長文）
+      - product   : 主要商品/服務（可作為 profile2）
+    """
+    url = company['source_url']
+
+    try:
+        cust_no = url.rstrip('/').split('/')[-1]
+    except Exception:
+        cust_no = ''
+
+    if not cust_no:
+        print(f"  [警告] 無法解析公司 ID：{url}")
+        return {
+            'row_index': company['row_index'], 'row_data': company['row_data'],
+            'companyURL': '', 'profile1': '', 'profile2': '', 'success': False
+        }
+
+    try:
+        # 步驟 A：載入公司主頁，觸發 Cloudflare 驗證並取得必要 Cookie
+        await page.goto(url, wait_until='load', timeout=PAGE_TIMEOUT)
+        await asyncio.sleep(1)  # 等待 Cookie 寫入
+
+        # 步驟 B：在頁面 JS context 中以 fetch() 呼叫 API
+        api_url = f'https://www.104.com.tw/api/companies/{cust_no}/content'
+        data = await page.evaluate("""
+            async (args) => {
+                const { apiUrl, refererUrl } = args;
+                try {
+                    const res = await fetch(apiUrl, {
+                        headers: {
+                            'Accept': 'application/json, text/plain, */*',
+                            'Referer': refererUrl,
+                            'Origin': 'https://www.104.com.tw'
+                        },
+                        credentials: 'include'
+                    });
+                    if (!res.ok) return { error: res.status };
+                    return await res.json();
+                } catch(e) {
+                    return { error: e.toString() };
+                }
+            }
+        """, {'apiUrl': api_url, 'refererUrl': url})
+
+        if not data or 'error' in data:
+            err = data.get('error', 'unknown') if data else 'null response'
+            print(f"  [除錯] API 回傳錯誤 ({cust_no}): {err}")
+            return {
+                'row_index': company['row_index'], 'row_data': company['row_data'],
+                'companyURL': '', 'profile1': '', 'profile2': '', 'success': False
+            }
+
+        # 步驟 C：解析 JSON 欄位（依實測確認欄位名稱）
+        d = data.get('data', {}) or {}
+
+        company_url = (d.get('custLink') or '').strip()
+        profile1    = (d.get('profile') or '').strip()
+        profile2    = (d.get('product') or '').strip()   # 主要商品/服務
+
+        if not profile1 and not profile2 and not company_url:
+            print(f"  [除錯] API 成功但欄位全空 ({cust_no})，keys: {list(d.keys())[:12]}")
+            return {
+                'row_index': company['row_index'], 'row_data': company['row_data'],
+                'companyURL': '', 'profile1': '', 'profile2': '', 'success': False
+            }
 
         return {
             'row_index': company['row_index'],
-            'row_data': company['row_data'],
-            'companyURL': company_url.strip() if company_url else '',
-            'profile1': profile1.strip() if profile1 else '',
-            'profile2': profile2.strip() if profile2 else '',
+            'row_data':  company['row_data'],
+            'companyURL': company_url,
+            'profile1':   profile1,
+            'profile2':   profile2,
             'success': True
         }
+
     except Exception as e:
         print(f"  [警告] {company['company_name']} ({url}) 爬取失敗：{e}")
         return {
-            'row_index': company['row_index'],
-            'row_data': company['row_data'],
-            'companyURL': '',
-            'profile1': '',
-            'profile2': '',
-            'success': False
+            'row_index': company['row_index'], 'row_data': company['row_data'],
+            'companyURL': '', 'profile1': '', 'profile2': '', 'success': False
         }
 
 
@@ -159,9 +199,9 @@ async def scrape_all_companies(companies):
     results = []
     semaphore = asyncio.Semaphore(CONCURRENT_PAGES)
 
-    async def bounded_scrape(browser, company):
+    async def bounded_scrape(context, company):
         async with semaphore:
-            page = await browser.new_page()
+            page = await context.new_page()
             try:
                 r = await scrape_one_company(page, company)
                 return r
@@ -169,17 +209,33 @@ async def scrape_all_companies(companies):
                 await page.close()
 
     async with async_playwright() as p:
-        print(f"\n[步驟 3] 啟動 Chromium（並行 {CONCURRENT_PAGES} 頁）...")
+        mode_label = "有界面模式（繞過 Cloudflare）" if not HEADLESS else "Headless 模式"
+        print(f"\n[步驟 3] 啟動 Chromium（並行 {CONCURRENT_PAGES} 頁，{mode_label}）...")
         browser = await p.chromium.launch(
-            headless=True,
-            args=['--no-sandbox', '--disable-dev-shm-usage']
+            headless=HEADLESS,
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--no-sandbox',
+                '--disable-dev-shm-usage'
+            ]
         )
-        context = await browser.new_context()
+        context = await browser.new_context(
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 800},
+            locale="zh-TW",
+            timezone_id="Asia/Taipei"
+        )
+
+        # 抹除 navigator.webdriver 自動化特徵
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined
+            });
+        """)
 
         tasks = [bounded_scrape(context, c) for c in companies]
         total = len(tasks)
 
-        # 分批執行並顯示進度
         done = 0
         for coro in asyncio.as_completed(tasks):
             result = await coro
@@ -222,7 +278,6 @@ def update_local_csv(companies_map, all_rows):
 
             row[2] = r['companyURL']    # C欄: 官方網站
             row[8] = profile_combined   # I欄: 說明
-            # A B D E F G H J K 維持現狀
 
         updated_rows.append(row)
 
@@ -260,9 +315,9 @@ def write_back_to_sheet(updated_rows):
         chunk = data_rows[i:i + BATCH]
         start_row = 2 + i
         try:
-            sheet.update(f'A{start_row}', chunk)
-        except TypeError:
-            sheet.update(range_name=f'A{start_row}', values=chunk)
+            sheet.update(values=chunk, range_name=f'A{start_row}')
+        except Exception as e:
+            print(f"  [警告] 寫入失敗：{e}")
         print(f"  → 已寫入第 {start_row} ~ {start_row + len(chunk) - 1} 列")
         if i + BATCH < len(data_rows):
             time.sleep(1)
@@ -298,11 +353,11 @@ def main():
 
     # 5. 更新本地 CSV
     print("\n[步驟 5] 更新本地 CSV...")
-    # 讀取最新版本的本地 CSV（含完整列資料）
     with open(LOCAL_CSV, 'r', encoding='utf-8') as f:
         all_rows = list(csv.reader(f))
 
-    companies_map = {r['row_index']: r for r in results}
+    # 僅篩選 success == True 的項目進行更新，防止空資料覆寫現有名單
+    companies_map = {r['row_index']: r for r in results if r['success']}
     updated_rows = update_local_csv(companies_map, all_rows)
 
     # 6. 批次寫回 Google Sheets
