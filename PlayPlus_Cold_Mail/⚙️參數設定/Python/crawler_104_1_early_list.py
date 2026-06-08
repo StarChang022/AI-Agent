@@ -45,34 +45,89 @@ async def scrape_all_pages(urls):
     seen_urls = set()
 
     async with async_playwright() as p:
-        print("啟動 Chromium 瀏覽器...")
-        browser = await p.chromium.launch(headless=True, args=['--no-sandbox'])
+        # 優先嘗試使用本機真實安裝的 Chrome（最有效繞過反爬蟲）
+        # 若沒有安裝 Chrome，則退回使用 Playwright 的 Chromium（顯示視窗模式）
+        print("啟動瀏覽器（顯示視窗模式，可最有效繞過反爬蟲）...")
+        try:
+            browser = await p.chromium.launch(
+                channel='chrome',   # 使用本機安裝的 Google Chrome
+                headless=False,     # 顯示視窗，繞過 headless 偵測
+                args=['--no-sandbox', '--disable-blink-features=AutomationControlled']
+            )
+            print("  → 使用本機 Google Chrome")
+        except Exception:
+            browser = await p.chromium.launch(
+                headless=False,     # 至少確保非 headless
+                args=['--no-sandbox', '--disable-blink-features=AutomationControlled']
+            )
+            print("  → 使用 Playwright Chromium（視窗模式）")
+
         context = await browser.new_context(
-            user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             locale='zh-TW',
-            viewport={'width': 1440, 'height': 900}
+            timezone_id='Asia/Taipei',
+            viewport={'width': 1440, 'height': 900},
         )
         page = await context.new_page()
 
         for i, url in enumerate(urls, 1):
             print(f"[進度] 第 {i}/{len(urls)} 頁：{url}")
 
-            try:
-                await page.goto(url, wait_until='networkidle', timeout=30000)
-                # 等待公司列表出現
-                await page.wait_for_selector('a.company-name-link--pc', timeout=15000)
-            except Exception as e:
-                print(f"[警告] 第 {page_num} 頁載入失敗：{e}，停止。")
-                break
+            success = False
+            for attempt in range(1, 4):  # 最多重試 3 次
+                try:
+                    await page.goto(url, wait_until='domcontentloaded', timeout=30000)
+                    # 等待 3 秒讓 JS 渲染
+                    await asyncio.sleep(3)
+                    # 嘗試等待公司連結（不需可見，只要在 DOM 存在）
+                    await page.wait_for_selector('a[class*="company-name-link"]', state='attached', timeout=10000)
+                    success = True
+                    break
+                except Exception as e:
+                    # 截圖協助診斷（只在第一次失敗時）
+                    if attempt == 1:
+                        debug_path = os.path.join(BASE_DIR, '⌚️暫存', f'debug_page_{i}.png')
+                        try:
+                            await page.screenshot(path=debug_path)
+                            print(f"  [診斷] 截圖已儲存：{debug_path}")
+                        except Exception:
+                            pass
+                    print(f"[警告] 第 {i} 頁第 {attempt} 次嘗試失敗：{e}")
+                    if attempt < 3:
+                        print(f"  → 等待 5 秒後重試...")
+                        await asyncio.sleep(5)
 
-            # 抓取該頁面所有公司名稱與 URL
-            companies = await page.evaluate('''() => {
-                const links = document.querySelectorAll('a.company-name-link--pc');
-                return Array.from(links).map(a => ({
-                    name: (a.getAttribute('title') || a.innerText).trim(),
-                    url: a.href
-                })).filter(c => c.name && c.url);
-            }''')
+            if not success:
+                print(f"[錯誤] 第 {i} 頁連續失敗 3 次，跳過此頁。")
+                continue
+
+            # 小等 1 秒讓 JS 渲染完成
+            await asyncio.sleep(1)
+
+            # 抓取公司名稱與 URL（同時支援 PC 和 mobile 版結構）
+            companies = await page.evaluate('''
+                () => {
+                    // a[class*="company-name-link"] 同時配對 PC(–-pc) 和 mobile(–-mobile)
+                    // 共會抓到兩個版本的同一公司，用 URL 去重即可
+                    const links = document.querySelectorAll('a[class*="company-name-link"]');
+                    const seen = new Set();
+                    const results = [];
+                    for (const a of links) {
+                        const href = a.href;
+                        if (href && href.includes('/company/') && !seen.has(href)) {
+                            seen.add(href);
+                            results.push({
+                                name: (a.getAttribute('title') || a.innerText || '').trim(),
+                                url: href
+                            });
+                        }
+                    }
+                    return results.filter(c => c.name && c.url);
+                }
+            ''')
+
+            print(f"  [調試] JS 共發現 {len(companies)} 個公司")
+
 
             new_count = 0
             for c in companies:
