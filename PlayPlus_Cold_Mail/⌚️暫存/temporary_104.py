@@ -1,53 +1,535 @@
-import pandas as pd
-import shutil
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+為 名單副本.csv 中每位潛在客戶生成「客製化企業內部系統」版本的 Day1, Day7, Day14, Day30, Day60 冷郵件，
+同時將公司說明更新為繁體中文、專業口吻且200字以內的一句話公司簡介。
+遵循歐美俐落調性中文化、開場即鉤子（從產業觀察切入，不提招募/擴大團隊）、極簡架構與低壓力行動呼籲。
+並且嚴格禁止使用「建議」二字。
+"""
+
+import csv
 import os
+import shutil
 import json
 
-# Define file paths
-csv_path = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本.csv"
-backup_path = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本_backup.csv"
-json_path = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⌚️暫存/temporary_104.json"
+CSV_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本.csv"
+BACKUP_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本_backup.csv"
+JSON_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⌚️暫存/temporary_104.json"
 
-# 1. Back up the original file
-if not os.path.exists(backup_path):
-    shutil.copy2(csv_path, backup_path)
-    print(f"Successfully backed up {csv_path} to {backup_path}")
-else:
-    print(f"Backup already exists at {backup_path}")
+DESC_DATA = {
+    "三豪橡膠股份有限公司": "三豪橡膠股份有限公司創立於1992年，專注於運動器材、汽機車與各類機械所需的高品質橡膠零件設計與專業製造，致力於提供把手、矽膠鞋墊及防震防油墊片等多元避震密封解決方案。",
+    "美達科技股份有限公司": "美達科技股份有限公司成立於2002年，為全球半導體、光電及光通訊產業測試解決方案的領先上櫃廠商，專精於高效率、高穩定性之類比IC與混合訊號測試儀器及系統技術研發。",
+    "羽泰國際實業股份有限公司": "羽泰國際實業股份有限公司創立於1992年，為螺絲成型工具領域的領先製造商，專業從事各類沖模、沖棒、頂針等精密五金模具與自動化製程設備的研發、設計與製造。",
+    "倫特股份有限公司": "倫特股份有限公司擁有三十多年專業經驗，為台灣首家引進熱感紙加工分條之領導廠商，提供熱感紙、標籤貼紙、醫療及辦公耗材等一條龍式的高效率客製化印刷與分條加工服務。",
+    "ROCA Taiwan Co.\t Ltd_台灣樂家衛浴股份有限公司": "台灣樂家衛浴股份有限公司為全球衛浴空間領導品牌ROCA集團之台灣子公司，秉持創新、環保與卓越設計理念，致力於引進並研發高品質的電子式馬桶及智慧衛浴系列產品。",
+    "承化實業股份有限公司": "承化實業股份有限公司創立於1987年，專注於粉末冶金工業的研發與製造，為全球客戶提供汽機車、鎖具、電動工具等高精度精密機械零件與含油軸承的一體化解決方案。",
+    "林德勝製罐機械股份有限公司": "林德勝製罐機械股份有限公司成立於1975年，憑藉數十年專業經驗，專注於不規則罐整廠機械設備、製罐生產線規劃及精密模具的研發與一貫化製造服務，深獲國內外客戶信賴。",
+    "國愷興業股份有限公司": "國愷興業股份有限公司成立於1983年，專門從事汽車零件及氣動工具零組件的加工與製造，提供高精度的CNC車床與銑床加工服務，業務範圍遍及國內外市場。",
+    "敬昕工業有限公司": "敬昕工業有限公司創立於1989年，專注於化妝品包裝容器的設計與生產，提供從射出成型、表面噴塗電鍍到印刷裝配的一體化完整生產線，產品優質且外銷歐美日等國際市場。",
+    "駿瀚生化股份有限公司": "駿瀚生化股份有限公司創始於1990年，致力於生化酵素法醫藥中間體之研發製造，並結合化學專業提供精密電子特用化學品生產與回收服務，為綠色環保科技的優良企業。",
+    "富騰國際實業股份有限公司": "富騰國際實業股份有限公司為多家國際鋼廠經銷代理，專營耐高溫、耐腐蝕、耐磨耗之特殊金屬材料供應與精密機械加工件製造，為半導體、航太及石化等產業提供一站式解決方案。",
+    "騏宏科技股份有限公司": "騏宏科技股份有限公司成立於2010年，專注於特種車輛LED警示設備的設計、研發與製造，並積極佈局航太領域，以高標準品質與稻盛哲學的管理思維共創世界級的光電奇蹟。",
+    "台灣三帆製藥科技股份有限公司": "台灣三帆製藥科技股份有限公司創立於1982年，為通過GMP與TTQS認證的專業中藥廠，專精於科學濃縮中藥及各式經皮吸收酸痛貼布的OEM/ODM研發、製造與銷售。",
+    "鶴見製作所股份有限公司": "鶴見製作所股份有限公司致力於保護水資源，為全球知名的泵浦技術領導廠商，專業研發與銷售適用於建築、土木、礦業及污水處理等各類高品質沉水泵與水流控制設備。",
+    "飛泰貿易有限公司": "飛泰貿易有限公司成立於1973年，專門代理與經銷高品質工廠自動化零組件，並發展KGN自有品牌，提供空氣壓零件、感測器、機械手臂與點膠設備等全方位技術支援服務。",
+    "凱益股份有限公司": "凱益股份有限公司成立於1978年，為通過ISO 13485與QMS等多項認證的優良醫療器材製造商，專業生產高品質醫療用零件及輸注液套，產品深獲國內外知名品牌信賴。",
+    "億萊富國際股份有限公司": "億萊富國際股份有限公司成立於2001年，為骨科術後復健醫療器材與專業義肢研發、製造及銷售之跨國企業，致力於為全球市場提供完善的運動護具及智慧穿戴復健方案。",
+    "翔定興業有限公司": "翔定興業有限公司成立於1996年，為全球戶外運動及機能時裝品牌的首選合作供應商，專注於研發環保機能、極限運動與時裝布料，致力將台灣紡織科技推向國際舞台。",
+    "匠普系統工程股份有限公司": "匠普系統工程股份有限公司成立於1995年，專營製程線上分析儀器及煙道排放監測系統設備銷售，提供從設計、採購到組裝調試的完整系統整合與維護保養工程服務。",
+    "威舜股份有限公司": "威舜股份有限公司成立於2014年，為通過TTQS評核之專業製造商，在瓦斯熔斷器、氧氣乙炔調整器及壓力表等安全氣體控制設備領域深耕多年，於國內外市場具優勢地位。",
+    "仁德國際股份有限公司": "仁德國際股份有限公司成立於2001年，秉持良心食品與以人為本理念，專注於「田家拉餅」品牌的千層拉餅、烤餅之研發與生產，以傳統製法與嚴格品管行銷全球。",
+    "技詮科技有限公司": "技詮科技有限公司專注於跨境電商與外貿業務，專業製造改裝車用、電動車用、船用與發電機用儀錶及相關精密零件，致力於深化國外合作並創造良好品牌口碑。",
+    "新萬仁化學製藥股份有限公司": "新萬仁化學製藥股份有限公司創立於1947年，為台灣知名之PIC/S GMP藥廠，旗下擁有「綠油精」、「金十字胃腸藥」與「叮寧防蚊液」等廣受消費者信賴的經典家庭常備保健藥品。",
+    "則宥興業有限公司": "則宥興業有限公司為通過ISO 9001認證的專業化油器製造商，擁有三十年以上的研發技術經驗，專門生產高品質汽機車化油器、零配件及農業園藝割草機零組件。",
+    "湧傑企業股份有限公司": "湧傑企業股份有限公司成立於1993年，專注於牙科醫療器材領域，獨家代理Ormco矯正、Kerr一般牙科及HuFriedyGroup器械等世界知名品牌，為台灣牙醫師提供專業信賴的服務。",
+    "僑隆機械有限公司": "僑隆機械有限公司成立於1993年，專業製造橡塑膠類品的整廠機械設備，產品行銷全球四十多國，主力提供高品質磨粉機、高速混合機及粉體輸送自動供料系統。",
+    "彰慶企業股份有限公司": "彰慶企業股份有限公司創立於1980年，為富慶企業集團的衛浴產品專業製造廠，主要生產高品質毛巾架、衛浴安全把手、洗澡椅等配件，以誠信負責態度深受歐美客戶信賴。",
+    "永興祥木業股份有限公司": "永興祥木業股份有限公司創立於1958年，專注於實木家具設計、製造與室內裝潢，並致力推廣臺南家具產業博物館、魯班學堂等文化平台，傳承台灣精湛的手工木藝技術。",
+    "壹得昶國際有限公司": "壹得昶國際有限公司創立於1994年，秉持製造與銷售一體化理念，以「D&T團體服」品牌提供企業、學校及團體客製化制服與活動服裝的一站式設計與製造服務。",
+    "美祺企業股份有限公司": "美祺企業股份有限公司為國際時尚刺繡與印花專家，結合科技、創意與設計，提供高端科技刺繡、雷射技術製造，及流行生活用品與精緻服飾配件的OEM/ODM代工服務。",
+    "永猷股份有限公司": "永猷股份有限公司建立於1986年，為通過ISO 9001與ISO 13485醫療器材認證之專業廠商，專門生產高品質平面與杯型活性碳口罩、醫療防護口罩及周邊衛生耗材。",
+    "碳基科技股份有限公司": "碳基科技股份有限公司創立於2007年，專注於航太級碳纖維複合材料研發與無人載具製造，是台灣無人機與無人船產業的先驅，提供從零件到全機組裝與維修的一站式服務。",
+    "金萬財股份有限公司": "金萬財股份有限公司創立於1994年，專門生產汽機車零組件，專攻精密車修及鍛造後二次加工，憑藉與模具廠和鍛造廠的密切配合，提供少量多樣及高性價比的客製化產品。",
+    "榮憶橡膠工業股份有限公司": "榮憶橡膠工業股份有限公司成立於1985年，主要從事工業用橡膠零件設計與專業製造，提供O形環、墊片、襯套及汽機車避震防塵橡膠產品，行銷遍及國內外市場。",
+    "唯運企業股份有限公司": "唯運企業股份有限公司創立於1981年，主要從事女裝、童裝與睡衣等多元針織成衣的製造與外銷，業務遍及美國及加拿大等國際市場，追求企業的穩定永續經營。",
+    "益生生技開發股份有限公司": "益生生技開發股份有限公司設立於2000年，專精於分子生物與醫療診斷試劑的開發及量產，並積極朝向自有品牌健康食品與醫美產品發展，致力於造福人類健康。"
+}
 
-# 2. Load the mapped descriptions from JSON
-with open(json_path, 'r', encoding='utf-8') as f:
-    mapping = json.load(f)
+CUSTOM_DATA = {
+    "三豪橡膠股份有限公司": {
+        "short_name": "三豪橡膠",
+        "hook": "三豪橡膠深耕橡膠加工與避震密封製品逾三十年，卓越的研發實力讓產品成功打進 NIKE 等國際一線品牌鏈",
+        "pain": "面對運動器材與汽機車等多產業的少量多樣橡膠件訂單，若現場排程與料件流轉仍依賴人工對帳，極易產生資訊落差",
+        "case_id": "mitac"
+    },
+    "美達科技股份有限公司": {
+        "short_name": "美達科技",
+        "hook": "美達科技作為半導體量測系統解決方案的全球領導上櫃大廠，在類比IC與混合訊號測試領域具有頂尖的研發技術與市場優勢",
+        "pain": "高精度測試機台的模組規格多樣且出廠校正流程嚴謹，若設備裝機、測試報告與客製化軟體版本紀錄多散落在獨立檔案，跨部門交接成本極高",
+        "case_id": "tsn"
+    },
+    "羽泰國際實業股份有限公司": {
+        "short_name": "羽泰國際",
+        "hook": "羽泰國際深耕螺絲成型工具與精密模具研發逾三十年，榮獲美國專利授權且通過國際品質認證，為行業領先製造商",
+        "pain": "客製化沖棒、碳化鎢模具等模具規格繁雜，若從圖面確認、現場排程到品檢履歷仍以紙本或試算表流轉，主管難以即時追蹤交期",
+        "case_id": "mitac"
+    },
+    "倫特股份有限公司": {
+        "short_name": "倫特公司",
+        "hook": "倫特公司為台灣熱感紙加工分條的領導先驅，提供從塗佈、分條印刷到標籤貼膠的一條龍客製化高效服務，版圖拓展至日韓市場",
+        "pain": "紙品與標籤印刷訂單的規格客製化程度高、出貨頻率快，若業務接單與工廠排程排刀缺乏系統化即時對接，極易推高人工彙整與核對成本",
+        "case_id": "chrb"
+    },
+    "ROCA Taiwan Co.\t Ltd_台灣樂家衛浴股份有限公司": {
+        "short_name": "台灣樂家衛浴",
+        "hook": "台灣樂家衛浴作為浴室空間領域的全球標竿 ROCA 集團成員，將尖端設計與環保科技帶入衛浴電子產品，居於市場領導地位",
+        "pain": "衛浴電子設備的研發變更、工程測試與維護保養流程精細，若跨部門協作與品質標準檢驗仰賴人工追蹤，容易在新人交接時產生斷層",
+        "case_id": "tsn"
+    },
+    "承化實業股份有限公司": {
+        "short_name": "承化實業",
+        "hook": "承化實業致力於粉末冶金工業三十餘年，擁有專業的溫壓材料與成型校正技術，建立遍及日美德印等國的全球商務網",
+        "pain": "機械零組件與含油軸承產品的品項眾多，且成型、燒結至品檢工序繁雜，若各工段排程與品檢儀器數據未經系統化整合，人工彙整報表將耗費大量時間",
+        "case_id": "mitac"
+    },
+    "林德勝製罐機械股份有限公司": {
+        "short_name": "林德勝製罐機械",
+        "hook": "林德勝製罐機械深耕製罐設備研發逾四十年，專精於不規則罐整廠機械設備與一貫化作業，以優異開發技術享譽國內外",
+        "pain": "整廠規劃專案從企劃、生產安裝到售後指導的週期長且協作點多，若專案進度、設計變更與維修工單散落在個別同仁的通訊軟體或表格中，回溯極為不易",
+        "case_id": "mitac"
+    },
+    "國愷興業股份有限公司": {
+        "short_name": "國愷興業",
+        "hook": "國愷興業專精於汽車零件與氣動工具零組件的CNC精密加工，擁有專業研發及製造實力，外銷比重高達三成",
+        "pain": "汽車零組件加工要求極佳的交期與精密度，當面臨少量多樣的外銷排程時，若現場排產工單與品檢紀錄缺乏系統化管理，核對與交接將面臨瓶頸",
+        "case_id": "mitac"
+    },
+    "敬昕工業有限公司": {
+        "short_name": "敬昕工業",
+        "hook": "敬昕工業深耕化妝品包裝容器生產三十餘年，建立從射出成型、表面塗裝電鍍到裝配的完整產線，產品深受國際名牌好評",
+        "pain": "化妝品容器的配色、噴塗及印刷客製規格極為繁多，若業務端與現場產線的打樣狀態、庫存與交期缺乏即時串聯系統，容易拉長溝通週期與人工對帳時間",
+        "case_id": "tfif"
+    },
+    "駿瀚生化股份有限公司": {
+        "short_name": "駿瀚生化",
+        "hook": "駿瀚生化結合頂尖研究機構致力於醫藥中間體與電子特用化學品研發，生化酵素法製程符合環保趨勢，技術實力厚實",
+        "pain": "生化與電子化學品的生產過程對參數控制、回收履歷及品管要求極高，若每日品檢與進出庫紀錄仍依賴人工手動謄寫或Excel，容易推高覆核負擔",
+        "case_id": "tfif"
+    },
+    "富騰國際實業股份有限公司": {
+        "short_name": "富騰國際",
+        "hook": "富騰國際為國際知名特殊鋼授權代理及零部件製造中心，擁有大型高精度加工一條龍設備，服務半導體與航太等高端產業",
+        "pain": "特殊金屬材料的裁切、車銑、銲接等加工規格與製程品管極為繁複，若材料批次號與工單進度缺乏即時系統追蹤，容易拉長現場核對期並影響交期回報",
+        "case_id": "mitac"
+    },
+    "騏宏科技股份有限公司": {
+        "short_name": "騏宏科技",
+        "hook": "騏宏科技專注於車用 LED 警示設備，榮獲 IATF16949 及 AS9100 汽車航太雙系統認證，更將稻盛阿米巴經營理念融入管理",
+        "pain": "從接單、設計、生產到出貨性能測試的一貫化產線中，若各工段排程與品質追蹤履歷仍以紙本或獨立表單流轉，現場主管將花費大量時間手動彙整數據",
+        "case_id": "mitac"
+    },
+    "台灣三帆製藥科技股份有限公司": {
+        "short_name": "台灣三帆製藥",
+        "hook": "台灣三帆製藥為通過 GMP 及 TTQS 認證的科學中藥與酸痛貼布專業製造廠，以卓越的經皮吸收研發技術行銷全球",
+        "pain": "醫藥貼布與保健食品的批次生產履歷與品管數據要求嚴格，若產線檢驗報告與配方批號流轉依賴人工核對及紙本存檔，容易在面對外部查核時面臨回溯耗時的考驗",
+        "case_id": "tfif"
+    },
+    "鶴見製作所股份有限公司": {
+        "short_name": "鶴見製作所",
+        "hook": "鶴見製作所深耕沉水泵浦與水資源控制技術逾八十年，全球網遍布45國，以高性能設備支持明石海峽大橋等大型地標工程",
+        "pain": "泵浦設備規格繁多且應用場景廣泛，售後技術諮詢、零件調度與維護工單的資訊量龐大，若缺乏集中化的系統管理，容易在跨地區分公司交接時衍生盲區",
+        "case_id": "mitac"
+    },
+    "飛泰貿易有限公司": {
+        "short_name": "飛泰貿易",
+        "hook": "飛泰貿易深耕工廠自動化零組件銷售逾半世紀，代理國際品牌並發展 KGN 自有品牌，建構跨台灣、中國與東南亞的技術服務網",
+        "pain": "自動化感測器、機械手臂與點膠設備品項數以千計，若多處營業據點的庫存狀態、客製點膠方案與售後維修紀錄仍以Excel管理，將耗費大量時間重複核對",
+        "case_id": "tfif"
+    },
+    "凱益股份有限公司": {
+        "short_name": "凱益股份",
+        "hook": "凱益股份有限公司深耕醫療器材製造逾四十年，通過 ISO 13485、ISO 14001 與 QMS 認證，長期與全球一線醫療器材廠策略合作",
+        "pain": "醫療零件與輸注液套的製造對生產環境、材料追蹤及法規品管有極嚴苛的要求，若生產批號與檢驗紀錄多靠人工填單存檔，容易在品質稽核或客戶追溯時耗費多時",
+        "case_id": "tsn"
+    },
+    "億萊富國際股份有限公司": {
+        "short_name": "億萊富",
+        "hook": "億萊富深耕復健醫療器材與專業義肢研發銷售逾二十年，成功自國貿轉型為自主研發製造的跨國企業，產品聚焦歐美及亞太",
+        "pain": "骨科輔具與義肢的客製化程度高、出貨頻率快，若跨國分銷網絡的發貨狀態、設計變更與售後維護紀錄僅以獨立表格往返，極易拉高跨部門溝通與核對成本",
+        "case_id": "tsn"
+    },
+    "翔定興業有限公司": {
+        "short_name": "翔定公司",
+        "hook": "翔定公司為全球機能時裝與戶慢運動品牌的首選面料合作供應商，專注於環保機能與極限運動等機能布料的開發設計",
+        "pain": "機能布料的打樣規格、環保檢驗與多工段染整進度繁複，若設計部門、業務端與生產廠區間的進度資訊未有系統化對接，往往依賴人工反覆追蹤與報表彙整",
+        "case_id": "chrb"
+    },
+    "匠普系統工程股份有限公司": {
+        "short_name": "匠普系統工程",
+        "hook": "匠普系統工程深耕煙道排放監測與製程分析系統逾三十年，提供從設計、採購到組裝調試的一站式系統整合統包服務",
+        "pain": "系統整合專案週期長、涉及電機、化學及施工等跨領域協作，若現場進度、零件備品調度與定期維護合約仍靠人工Excel追蹤，主管難以即時掌握全局",
+        "case_id": "mitac"
+    },
+    "威舜股份有限公司": {
+        "short_name": "威舜股份",
+        "hook": "威舜股份有限公司在瓦斯熔斷器、氧氣乙炔調整器等設備領域具有市場獨佔優勢，並順利通過 TTQS 企業機構版評核",
+        "pain": "氣體控制與壓力表設備的安全標準極高，隨著公司快速成長，若機台排程、品檢數據與物料採購仍偏重人工流程，容易拉高溝通成本且經驗不易傳承",
+        "case_id": "mitac"
+    },
+    "仁德國際股份有限公司": {
+        "short_name": "仁德國際",
+        "hook": "仁德國際創立「田家拉餅」品牌，秉持良心食品精神，堅持千層拉餅與烤餅的真材實料與傳統製法，成功打進國際市場",
+        "pain": "食品廠面對高頻率的出貨與嚴格的食安工廠衛生指標，若進銷存紀錄、原料批號與品檢數據主要仰賴人工表單，當產量放大時將面臨繁重的手工對帳工作",
+        "case_id": "tfif"
+    },
+    "技詮科技有限公司": {
+        "short_name": "技詮科技",
+        "hook": "技詮科技專精於汽機車、電動車與船用改裝儀錶研發，並積極拓展國外跨境電商，建立優良的外貿品牌口碑",
+        "pain": "面對跨境電商平台的多國訂單與少量多樣的儀表零組件規格，若訂單出貨排程與現場組裝進度缺乏系統化同步，容易推高人工核對成本與交期瓶頸",
+        "case_id": "mitac"
+    },
+    "新萬仁化學製藥股份有限公司": {
+        "short_name": "新萬仁化學製藥",
+        "hook": "新萬仁化學製藥作為台灣指標性 PIC/S GMP 藥廠，旗下「綠油精」、「金十字胃腸藥」與「叮寧防蚊液」等品牌風靡市場半世紀",
+        "pain": "製藥廠的配方確效、生產環境參數與物料履歷有著嚴苛的國際規範，若各項GMP/GDP查核文件與品管檢驗流程多以人工紙本管理，在跨班別交接時將耗費極高時間成本",
+        "case_id": "tfif"
+    },
+    "則宥興業有限公司": {
+        "short_name": "則宥興業",
+        "hook": "YSN則宥興業為台灣專業化油器製造商，擁有三十年研發技術經驗並通過 ISO 9001 認證，配備瑞士、德國最新精密設備",
+        "pain": "化油器及汽機車零配件的型號與規格繁雜，若五軸CNC自動車床的排產進度與現場品檢履歷多以紙本或試算表紀錄，主管難以即時掌握整體交期",
+        "case_id": "mitac"
+    },
+    "湧傑企業股份有限公司": {
+        "short_name": "湧傑企業",
+        "hook": "湧傑企業深耕牙科醫療器材代理逾三十年，獨家代理 Ormco 矯正與 Kerr 等世界知名品牌，為全台牙醫師信賴的夥伴",
+        "pain": "獨家代理的品牌及耗材品項眾多，若業務端的需求、倉庫出貨排程與售後維修追蹤缺乏即時系統對接，常需耗費大量人工在電話及表單上反覆核對",
+        "case_id": "tsn"
+    },
+    "僑隆機械有限公司": {
+        "short_name": "僑隆機械",
+        "hook": "僑隆機械成立於1993年，專業製造橡塑膠磨粉機、混合機等整廠設備，產品行銷全球超過四十多個國家",
+        "pain": "橡塑膠整廠設備屬於高客製化專案，若從設備設計變更、採購組裝到現場安裝試車的進度皆以散落的檔案追蹤，容易在新人交接或售後服務時產生資訊斷層",
+        "case_id": "mitac"
+    },
+    "彰慶企業股份有限公司": {
+        "short_name": "彰慶企業",
+        "hook": "彰慶企業為富慶集團旗下衛浴與安全把手專業製造大廠，擁有三千坪廠區與豐富生產技術，產品深受歐美客戶信賴",
+        "pain": "衛浴配件品項與安全品質測試項目繁雜，若現場生產工單進度與品質測試數據缺乏即時串聯系統，往往需要依賴人工整理報表，效率難以提升",
+        "case_id": "mitac"
+    },
+    "永興祥木業股份有限公司": {
+        "short_name": "永興祥木業",
+        "hook": "永興家具集團創立於1958年，專注於高端實木家具工藝，承製總統府綠廳等大型家具專案，並經營家具產業博物館與魯班學堂",
+        "pain": "高級實木家具從原木買賣、乾燥、手工雕刻到生漆的工序極多且週期長，若各工坊的施作進度與客製化裝潢專案紀錄依賴人工回報與紙本，主管極難掌控時程",
+        "case_id": "chrb"
+    },
+    "壹得昶國際有限公司": {
+        "short_name": "壹得昶國際",
+        "hook": "壹得昶國際創立於1994年，以「D&T團體服」品牌整合原料、設計到製造一貫化作業，在全台擁有多家直營門市與工廠",
+        "pain": "團體服定製涉及設計稿確認、布料打樣、生產與門市出貨等多部門對接，若各班服或企業制服的進度管理只留在人員腦中或試算表，易衍生交期延誤或資訊出錯",
+        "case_id": "chrb"
+    },
+    "美祺企業股份有限公司": {
+        "short_name": "美祺企業",
+        "hook": "美祺企業為 RMC 國際時尚刺繡專家，將刺繡與雷射科技設計結合，為國際品牌提供高品質的 OEM/ODM 服飾配件代工",
+        "pain": "精緻刺繡與流行禮贈品的代工樣式與打樣版本極多，若業務端的國際訂單需求與工廠現場的生產排程缺乏專屬系統對接，常需耗費大量人工來回確認進度",
+        "case_id": "chrb"
+    },
+    "永猷股份有限公司": {
+        "short_name": "永猷股份",
+        "hook": "永猷股份深耕醫療口罩與防護耗材生產近四十年，通過 ISO 13485 及美規 NIOSH N95 等認證，為個人防護設備的優良大廠",
+        "pain": "口罩及醫療耗材的生產面臨極高的法規稽核與品質管制，若每日進出庫庫存與品質檢驗紀錄多靠人工填寫與Excel彙整，在面對產線快速擴充時將面臨管理瓶頸",
+        "case_id": "tsn"
+    },
+    "碳基科技股份有限公司": {
+        "short_name": "碳基科技",
+        "hook": "碳基科技創立於2007年，專注於航太級碳纖維複合材料研發，是台灣無人機與無人船製造整合領域的國防自主合作先驅",
+        "pain": "無人載具製造與航太複材零組件的製程精密，且研發試製與品檢程序極為嚴格，若全機組裝進度與驗證紀錄高度依賴試算表或人工填報，極易推高專案管理成本",
+        "case_id": "tsn"
+    },
+    "金萬財股份有限公司": {
+        "short_name": "金萬財股份",
+        "hook": "金萬財股份創立於1994年，專門生產汽機車精密車修零組件，能克服少量多樣的產品並與鍛造廠及模具廠密切配合",
+        "pain": "面對少量多樣且需鍛造後二次加工的汽機車零組件，各製程間的工單交接與料件進度若缺乏即時的內部系統，現場常需人工反覆核對，且技術經驗不易傳承",
+        "case_id": "mitac"
+    },
+    "榮憶橡膠工業股份有限公司": {
+        "short_name": "榮憶橡膠",
+        "hook": "榮憶橡膠成立於1985年，專業從事橡膠密封產品與避震零件的設計製造，以穩健營運服務全球空油壓油封與汽機車市場",
+        "pain": "O形環、墊片與襯套的型號及尺寸以萬計，當面臨國內外多元客製訂單時，若現場模具管理與批次排程缺乏系統化追蹤，容易推高覆核成本並產生資訊落差",
+        "case_id": "mitac"
+    },
+    "唯運企業股份有限公司": {
+        "short_name": "唯運企業",
+        "hook": "唯運企業創立於1981年，主要從事女裝、童裝等多元針織成衣外銷，為美加地區各大服飾品牌的長期合作生產夥伴",
+        "pain": "成衣外銷涉及從款式打樣、布料採購到大貨量產的長週期流程，若各訂單的進度變更與出貨排程缺乏專屬內部系統整合，常需耗費大量人工開會對帳",
+        "case_id": "chrb"
+    },
+    "益生生技開發股份有限公司": {
+        "short_name": "益生生技",
+        "hook": "益生生技專精於分子生物與醫療診斷試劑之開發量產，曾兩度獲得台北市生技獎，並成功開發自我品牌保健與醫美產品",
+        "pain": "生技與診斷試劑的開發及量產受醫療法規嚴格管控，若實驗室研發紀錄、原料批號與進銷存仍依賴傳統試算表或紙本管理，容易推高覆核成本與新人交接瓶頸",
+        "case_id": "tsn"
+    }
+}
 
-# 3. Read original CSV file
-df = pd.read_csv(csv_path, encoding='utf-8')
+CASES = {
+    'chrb': {
+        'name': '大管家包租代管系統',
+        'url': 'https://playplus.com.tw/portfolio/chrb',
+        'desc': '打造高效的狀態追蹤與派工管理機制，讓跨部門協作透明高效'
+    },
+    'tfif': {
+        'name': '食安智幫手APP',
+        'url': 'https://playplus.com.tw/portfolio/tfif-app',
+        'desc': '梳理進銷存與品管追蹤流程，讓關鍵檢驗數據一目瞭然'
+    },
+    'tsn': {
+        'name': '腎臟醫學會 TSN 病理系統',
+        'url': 'https://playplus.com.tw/portfolio/tsn',
+        'desc': '建構符合高規格醫療標準的深度資料追蹤與專業審核機制'
+    },
+    'mitac': {
+        'name': '神達電腦開發會議室預約系統',
+        'url': 'https://playplus.com.tw/portfolio/mitac-meeting-room-booking-system',
+        'desc': '解決跨部門資源預約與排程調度的混亂問題'
+    }
+}
 
-# 4. Map the company description
-print("Updating descriptions...")
-unmapped_companies = []
-# Clean keys in mapping dict
-mapping = {str(k).strip(): v for k, v in mapping.items()}
+def get_titles(idx, short_name):
+    # Rule: Never use the word "建議" in titles
+    t1 = [
+        f"給{short_name}的內部流程優化方案：告別人工彙整報表",
+        f"{short_name}的內部協作流程，是否跟得上業務成長速度？",
+        f"協助{short_name}梳理內部營運流程的客製化方案",
+        f"為{short_name}打造專屬內部系統的初步構想",
+        f"{short_name}在業務擴張期，有沒有更直覺的營運追蹤方式？"
+    ][idx % 5]
 
-for index, row in df.iterrows():
-    co_name = str(row['公司名稱']).strip()
-    if co_name in mapping:
-        df.at[index, '說明'] = mapping[co_name]
+    t7 = [
+        f"快速跟進：關於{short_name}內部系統升級的想法",
+        f"一個簡短的確認：給{short_name}的內部管理優化想法",
+        f"不知您是否有空閱覽：關於客製化營運系統的構想",
+        f"{short_name}專屬系統打造構想：一封簡短的追蹤信",
+        f"給{short_name}的小提醒：營運流程數位化探討"
+    ][idx % 5]
+
+    t14 = [
+        f"實戰案例分享：內部工作流程如何實現無痛升級",
+        f"流程數位化的實質價值：協助同仁省下人工核對時間",
+        f"從小流程啟動數位轉型：分享我們過去的系統導入經歷",
+        f"消除系統導入顧慮：給{short_name}的實戰經驗參考",
+        f"打造好紀錄、好交接的專屬系統：實戰案例分享"
+    ][idx % 5]
+
+    t30 = [
+        f"評估內部系統開發時，您可能會顧慮的幾個問題",
+        f"預算彈性與溝通成本：關於{short_name}流程升級的解方",
+        f"主管每週只需15分鐘：高彈性的客製化系統開發方案",
+        f"擔心客製化系統費用或耗費時間？我們的模組化解方",
+        f"關於客製化企業內部系統，多數決策者最關心的三件事"
+    ][idx % 5]
+
+    t60 = [
+        f"最後一封信：祝{short_name}持續蓬勃成長",
+        f"停止主動聯繫：未來若有專屬系統需求隨時歡迎探討",
+        f"不再打擾日常業務：PlayPlus隨時為您敞開大門",
+        f"優雅退場：期待未來與{short_name}在數位化領域合作",
+        f"給{short_name}的最後一封信——祝 貴司業務蒸蒸日上"
+    ][idx % 5]
+
+    return t1, t7, t14, t30, t60
+
+def generate_sequences(idx, comp_name, contact_name):
+    c = CUSTOM_DATA.get(comp_name)
+    if not c:
+        # Fallback search by substring
+        for k in CUSTOM_DATA:
+            if k in comp_name or comp_name in k:
+                c = CUSTOM_DATA[k]
+                break
+        if not c:
+            c = {
+                'short_name': comp_name,
+                'hook': '貴司在產業中具備深厚的基礎與卓越的運營表現',
+                'pain': '流程紀錄跟不上業務擴張的速度，過度依賴人工彙整報表或傳統試算表對接',
+                'case_id': 'mitac'
+            }
+
+    short_name = c['short_name']
+    case_info = CASES[c['case_id']]
+    
+    # Contact greeting handling
+    if any(k in contact_name for k in ['官方', '窗口', '客服', '服務']) or not contact_name.strip():
+        greeting = "您好，"
     else:
-        unmapped_companies.append(row['公司名稱'])
+        greeting = f"{contact_name.strip()} 您好，"
 
-if unmapped_companies:
-    print(f"Warning: Found unmapped companies in CSV: {set(unmapped_companies)}")
-else:
-    print("All companies successfully mapped!")
+    t1, t7, t14, t30, t60 = get_titles(idx, short_name)
 
-# 5. Save the updated dataframe back to CSV
-df.to_csv(csv_path, index=False, encoding='utf-8')
-print(f"Successfully saved updated CSV to {csv_path}")
+    emails = {}
+    
+    # Day 1
+    emails['day1_title'] = t1
+    emails['day1_content'] = (
+        f"{greeting}<br><br>"
+        f"我剛研究了{c['hook']}。<br><br>"
+        f"不過我們觀察到，許多企業在快速擴張的階段，常會遇到內部管理與流程跟不上的問題。以貴司的營運鏈來說，{c['pain']}，例如：流程紀錄在資深同仁腦中、過度仰賴人工彙整報表或傳統試算表對接等。<br><br>"
+        f"我們是 PlayPlus，專注於協助中型企業打造「**客製化企業內部系統**」。我們不推銷動輒數百萬的大型系統，而是從你們最痛的一條流程開始，打造好紀錄、好追蹤、好交接的專屬系統。例如我們曾協助{case_info['name']}（{case_info['url']}），{case_info['desc']}。<br><br>"
+        f"是否方便寄一份我們過去在相關產業的流程數位化案例給您參考？您可以從這邊參考我們的服務及作品集：https://playplus.com.tw/<br><br>"
+        f"感謝您"
+    )
 
-# 6. Verify first few rows
-print("\nVerification (First 5 rows):")
-df_ver = pd.read_csv(csv_path, encoding='utf-8')
-for idx, row in df_ver.head(5).iterrows():
-    print(f"Company: {row['公司名稱']}")
-    print(f"Updated Description: {row['說明']}")
-    print("-" * 50)
+    # Day 7
+    emails['day7_title'] = t7
+    emails['day7_content'] = (
+        f"{greeting}<br><br>"
+        f"上週寄了一封關於優化內部管理流程與專屬系統打造的簡短想法，不知道您是否有機會看過？<br><br>"
+        f"我知道您業務繁忙，若無法回覆我完全能理解。只是想確認這封信有沒有順利抵達您的收件匣。<br><br>"
+        f"您可以從這邊參考我們的服務及作品集：https://playplus.com.tw/<br><br>"
+        f"感謝您"
+    )
+
+    # Day 14
+    emails['day14_title'] = t14
+    emails['day14_content'] = (
+        f"{greeting}<br><br>"
+        f"接著上一封信，我想進一步分享 PlayPlus 過去協助企業推動流程數位化的實戰經歷。許多正處於快速成長期的公司，常擔心引進新系統會面臨員工反彈或適應期過長的問題。<br><br>"
+        f"因此，我們切入「**從小流程著手**」的途徑，先針對內部最耗費人工核對或重複溝通的節點開發專屬數位工具。這不僅能讓前線同仁立即感受到省時與好交接的實質價值，更能有效消除內部對數位轉型的顧慮與不信任。<br><br>"
+        f"如果您有興趣了解具體的導入成效與做法，我很樂意提供相關的案例分析。您可以從這邊參考我們的服務及作品集：https://playplus.com.tw/<br><br>"
+        f"感謝您"
+    )
+
+    # Day 30
+    emails['day30_title'] = t30
+    emails['day30_content'] = (
+        f"{greeting}<br><br>"
+        f"這段時間陸續跟您分享了一些想法，我猜測您在評估內部營運系統開發時，可能會擔心費用超出預期，或是需要投入大量寶貴的時間成本？<br><br>"
+        f"其實為了讓企業保有最大的彈性，我們提供「**模組化開發**」與「**分階段優化方案**」，完全能配合您的預算規劃逐步推進。此外，我們的專案協作流程極度精簡，**主管每週只需 15 分鐘確認進度**，能大幅降低雙方的溝通成本。<br><br>"
+        f"這或許能讓您在不增加行政負擔的情況下，輕鬆啟動工作流程升級。您可以從這邊參考我們的服務及作品集：https://playplus.com.tw/<br><br>"
+        f"感謝您"
+    )
+
+    # Day 60
+    emails['day60_title'] = t60
+    emails['day60_content'] = (
+        f"{greeting}<br><br>"
+        f"這是我最後一封主動追蹤的郵件。這段時間未收到您的回覆，我想梳理內部營運流程或導入客製化系統，或許不是貴司目前的優先事項。我會停止主動聯繫，以免打擾您的日常業務。<br><br>"
+        f"不過，若未來{short_name}在團隊持續成長的過程中，有任何打造專屬內部系統、讓工作流程更好紀錄與交接的需求，PlayPlus 的大門隨時為您敞開。我們將持續在客製化系統開發領域提供專業服務。<br><br>"
+        f"祝 貴司業務蒸蒸日上。您可以從這邊參考我們的服務及作品集：https://playplus.com.tw/<br><br>"
+        f"感謝您"
+    )
+
+    return emails
+
+def main():
+    if not os.path.exists(CSV_PATH):
+        print(f"❌ 找不到檔案: {CSV_PATH}")
+        return
+
+    # Back up the original file
+    if not os.path.exists(BACKUP_PATH):
+        shutil.copy2(CSV_PATH, BACKUP_PATH)
+        print(f"Successfully backed up {CSV_PATH} to {BACKUP_PATH}")
+    else:
+        print(f"Backup already exists at {BACKUP_PATH}")
+
+    # Read CSV
+    with open(CSV_PATH, 'r', encoding='utf-8-sig') as f:
+        rows = list(csv.reader(f))
+
+    if not rows:
+        print("❌ CSV 檔案為空")
+        return
+
+    header = rows[0]
+    col = {h: idx for idx, h in enumerate(header) if h}
+
+    required_cols = [
+        '公司名稱', '聯絡人名稱', '說明',
+        'day1_title', 'day1_content',
+        'day7_title', 'day7_content',
+        'day14_title', 'day14_content',
+        'day30_title', 'day30_content',
+        'day60_title', 'day60_content'
+    ]
+
+    for key in required_cols:
+        if key not in col:
+            print(f"❌ CSV 標頭缺少必填欄位: {key}")
+            return
+
+    comp_idx = col['公司名稱']
+    contact_idx = col['聯絡人名稱']
+    desc_idx = col['說明']
+
+    # Dump the mapped short descriptions to temporary_104.json
+    with open(JSON_PATH, 'w', encoding='utf-8') as f:
+        json.dump(DESC_DATA, f, ensure_ascii=False, indent=2)
+    print(f"Saved short descriptions mapping to {JSON_PATH}")
+
+    updated_count = 0
+    for i in range(1, len(rows)):
+        r = rows[i]
+        if not r or len(r) <= comp_idx:
+            continue
+        
+        comp_name = r[comp_idx].strip()
+        if not comp_name:
+            continue
+            
+        contact_name = r[contact_idx].strip() if len(r) > contact_idx else "官方"
+        
+        # 1. Update company description
+        if comp_name in DESC_DATA:
+            r[desc_idx] = DESC_DATA[comp_name]
+        else:
+            # Substring fallback
+            found = False
+            for k in DESC_DATA:
+                if k in comp_name or comp_name in k:
+                    r[desc_idx] = DESC_DATA[k]
+                    found = True
+                    break
+            if not found:
+                print(f"⚠️ Warning: No description update found for {comp_name}")
+
+        # 2. Generate and update 5-day emails
+        emails = generate_sequences(i, comp_name, contact_name)
+        
+        # Ensure row has enough columns
+        while len(r) <= max(col.values()):
+            r.append('')
+            
+        for key in [
+            'day1_title', 'day1_content',
+            'day7_title', 'day7_content',
+            'day14_title', 'day14_content',
+            'day30_title', 'day30_content',
+            'day60_title', 'day60_content'
+        ]:
+            r[col[key]] = emails[key]
+            
+        updated_count += 1
+
+    # Save to CSV
+    with open(CSV_PATH, 'w', encoding='utf-8-sig', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+
+    print(f"✅ 成功完成 {updated_count} 筆潛在客戶的「說明」更新及冷郵件撰寫（Day 1 ~ Day 60）！")
+
+    # Sanity checks on the generated rows to ensure no forbidden words are present
+    for i in range(1, len(rows)):
+        r = rows[i]
+        comp_name = r[comp_idx].strip()
+        for col_name in ['day1_title', 'day1_content', 'day7_title', 'day7_content', 'day14_title', 'day14_content', 'day30_title', 'day30_content', 'day60_title', 'day60_content']:
+            text = r[col[col_name]]
+            if "建議" in text:
+                print(f"❌ FAILURE: Forbidden word '建議' found in row {i} ({comp_name}) column {col_name}!")
+                return
+    print("🎉 CONSTRAINT PASSED: No forbidden word '建議' found in any of the generated email fields!")
+
+if __name__ == '__main__':
+    main()
