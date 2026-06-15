@@ -9,14 +9,14 @@ from google.oauth2.service_account import Credentials
 # ================= 參數設定 =================
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LOCAL_CSV = os.path.join(BASE_DIR, '冷郵件對象', '名單副本.csv')
-TEMP_FILE = os.path.join(BASE_DIR, '⌚️暫存', 'temporary_104.json')
+TEMP_FILE = os.path.join(BASE_DIR, '⌚️暫存', 'temporary_104_profile.json')
 CREDENTIALS_FILE = os.path.join(BASE_DIR, '⚙️參數設定', 'eternal-skyline-494002-j8-356884d3e786.json')
 
 SPREADSHEET_ID = '14H99Ks5UFbdNnM9OoNQ2XWoVz4UHyp2QK0GiIym_1pE'
 WORKSHEET_NAME = '名單副本'  # gid=1168472169
 
 # 並行爬蟲設定
-CONCURRENT_PAGES = 1    # 同時開啟的瀏覽器分頁數（越高越快，但風險越大）
+CONCURRENT_PAGES = 2    # 同時開啟的瀏覽器分頁數（越高越快，但風險越大）
 PAGE_TIMEOUT = 25000    # 每頁等待上限 (ms)
 
 # ⚠️ Cloudflare 會識別 headless 瀏覽器並封鎖 API。
@@ -71,7 +71,7 @@ def load_companies_from_csv():
     print(f"  → CSV 標題列：{headers}")
 
     for i, row in enumerate(rows[1:], start=2):  # 第 2 列起（1-indexed）
-        while len(row) < 11:
+        while len(row) < 27:
             row.append('')
 
         # H欄（index=7）是來源（104 公司頁面 URL）
@@ -267,7 +267,7 @@ def update_local_csv(companies_map, all_rows):
     updated_rows = [all_rows[0]]  # 保留標題列
 
     for i, row in enumerate(all_rows[1:], start=2):
-        while len(row) < 11:
+        while len(row) < 27:
             row.append('')
 
         if i in companies_map:
@@ -306,7 +306,7 @@ def write_back_to_sheet(updated_rows):
     data_rows = updated_rows[1:]  # 只寫資料列，不蓋標題
 
     try:
-        sheet.batch_clear(['A2:K'])
+        sheet.batch_clear(['A2:Z'])
     except Exception as e:
         print(f"  [警告] 清除舊資料失敗：{e}")
 
@@ -323,6 +323,17 @@ def write_back_to_sheet(updated_rows):
             time.sleep(1)
 
     print("  → Google Sheets 寫入完成！")
+
+
+def load_existing_results():
+    if os.path.exists(TEMP_FILE):
+        try:
+            with open(TEMP_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return {r['row_data'][7].strip(): r for r in data if r.get('success')}
+        except Exception:
+            pass
+    return {}
 
 
 # ===== 主程式 =====
@@ -342,14 +353,46 @@ def main():
         print("  → 無公司可爬，結束。")
         return
 
+    # 讀取已成功的結果以支援斷點續爬
+    existing_results = load_existing_results()
+    companies_to_crawl = []
+    skipped_results = []
+
+    for c in companies:
+        url = c['source_url']
+        # 檢查是否已在暫存檔成功抓取
+        if url in existing_results:
+            res = existing_results[url].copy()
+            res['row_index'] = c['row_index']
+            res['row_data'] = c['row_data']
+            skipped_results.append(res)
+        # 或是 CSV 該列已經有官方網站且有說明（避免重複爬取）
+        elif len(c['row_data']) > 8 and c['row_data'][2].strip() and c['row_data'][8].strip():
+            skipped_results.append({
+                'row_index': c['row_index'],
+                'row_data': c['row_data'],
+                'companyURL': c['row_data'][2].strip(),
+                'profile1': c['row_data'][8].strip(),
+                'profile2': '',
+                'success': True
+            })
+        else:
+            companies_to_crawl.append(c)
+
+    print(f"  → 總公司數: {len(companies)}, 已完成/跳過: {len(skipped_results)}, 待爬取: {len(companies_to_crawl)}")
+
     # 3. 並行爬取所有公司頁面
-    results = asyncio.run(scrape_all_companies(companies))
-    success_count = sum(1 for r in results if r['success'])
-    print(f"\n  → 完成：{success_count}/{len(results)} 筆成功爬取。")
+    results = []
+    if companies_to_crawl:
+        results = asyncio.run(scrape_all_companies(companies_to_crawl))
+
+    all_results = results + skipped_results
+    success_count = sum(1 for r in all_results if r['success'])
+    print(f"\n  → 完成：{success_count}/{len(all_results)} 筆成功爬取。")
 
     # 4. 暫存至本地 JSON
     print("\n[步驟 4] 暫存爬蟲結果...")
-    save_temp(results)
+    save_temp(all_results)
 
     # 5. 更新本地 CSV
     print("\n[步驟 5] 更新本地 CSV...")
@@ -357,13 +400,14 @@ def main():
         all_rows = list(csv.reader(f))
 
     # 僅篩選 success == True 的項目進行更新，防止空資料覆寫現有名單
-    companies_map = {r['row_index']: r for r in results if r['success']}
+    companies_map = {r['row_index']: r for r in all_results if r['success']}
     updated_rows = update_local_csv(companies_map, all_rows)
 
     # 6. 批次寫回 Google Sheets
     write_back_to_sheet(updated_rows)
 
     print("\n=== 全部完成 ===")
+
 
 
 if __name__ == '__main__':
