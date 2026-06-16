@@ -5,6 +5,9 @@
 | Keywords | ROE, ROA, comparing ROE and ROA, Buffett’s take on ROE, what is ROE, the high ROE trap, return on equity, return on assets, economic moat, value investing. |
 | URL | https://valuecafe.cc/financial-ratios/roe-and-roa |
 
+**List-Summary**:
+xxx
+
 ---
 
 # ROE and ROA : Judging a company's efficiency and quality, is your money actually being put to good use?

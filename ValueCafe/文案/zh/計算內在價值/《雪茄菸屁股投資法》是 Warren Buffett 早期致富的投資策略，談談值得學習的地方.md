@@ -1,6 +1,14 @@
+| Item | Input |
+| --- | --- |
+| Title | 《雪茄菸屁股投資法》是 Warren Buffett 早期致富的投資策略，談談值得學習的地方 | ValueCafe |
 | Description | 深入了解 Benjamin Graham 的「雪茄菸屁股投資法」，看 Warren Buffett 如何靠雪茄菸屁股投資法奠定基礎，以及後續如何進化採用新策略。本文不只教你算術，還教你價值投資最重要的「安全邊際」原則。 |
 | Keywords | 雪茄菸屁股投資法, 價值投資, 安全邊際, Net Net 估價, 班傑明葛拉漢, 巴菲特, 葛拉漢投資哲學 |
-| URL | cigar-butt-investing |
+| URL | https://valuecafe.cc/intrinsic-value/cigar-butt-investing |
+
+**List-Summary**:
+xxx
+
+---
 
 # 《雪茄菸屁股投資法》是 Warren Buffett 早期致富的投資策略，談談值得學習的地方
 
@@ -8,7 +16,7 @@
 
 當年這套理論確實非常厲害，也幫助 Warren Buffett 早期賺進人生的第1桶金，但現在已經不太管用。
 
-![cigar-butt-investing.jpg](attachment:5fceba46-de98-4fda-afa5-911030b13ac0:cigar-butt-investing.jpg)
+
 
 多數人眼中，會將投資看作是一場光鮮亮麗的派對，人人都在追逐那些最熱門、最耀眼的明星。
 
@@ -30,11 +38,7 @@ Benjamin Graham 除了是早期提倡雪茄菸屁股理論的人之外，也是 
 
 ## 雪茄菸屁股投資法的計算估值方式
 
-<aside>
-
-NCAV = 流動資產 − 總負債
-
-</aside>
+> NCAV = 流動資產 − 總負債
 
 我先說，雪茄菸屁股投資法並沒有標準的計算公式，就算你是直接拿財報內的「每股淨值」來作為參考也可以，但還有個更保守的「淨流動資產價值」（Net Current Asset Value, NCAV）供你參考。
 
@@ -67,7 +71,3 @@ Benjamin Graham 認為，一家公司若瀕臨倒閉，那些廠房設備很可�
 資訊高度流通的今天，真正符合葛拉罕嚴苛標準的投資機會已越來越稀少，所有人隨時都能從公開資訊找到淨值比小於1的公司，或者 NCAV 大於零的公司。而且雪茄菸屁股已經被世界上大部分人知道，不再是什麼秘密。
 
 你還是能從中學到「安全邊際」概念，用遠低於其內在價值的價格買入資產。即便我們現在都知道應該買入偉大的公司，安全邊際仍是不可捨棄的條件。
-
-## 更多學習資源
-
-[[《價值陷阱》可能是你最昂貴的一堂課！注意3大警訊]]

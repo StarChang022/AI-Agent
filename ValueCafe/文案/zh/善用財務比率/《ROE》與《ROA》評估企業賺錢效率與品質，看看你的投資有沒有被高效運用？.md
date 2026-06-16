@@ -5,6 +5,9 @@
 | Keywords | ROE, ROA, ROE ROA 比較, 巴菲特 ROE, ROE是什麼, 高ROE 陷阱, 股東權益報酬率, 資產報酬率, 護城河, 價值投資 |
 | URL | https://valuecafe.cc/financial-ratios/roe-and-roa |
 
+**List-Summary**:
+xxx
+
 ---
 
 # 《ROE》與《ROA》評估企業賺錢效率與品質，看看你的投資有沒有被高效運用？

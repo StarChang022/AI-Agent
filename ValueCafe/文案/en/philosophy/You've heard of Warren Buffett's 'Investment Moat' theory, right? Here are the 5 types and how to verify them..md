@@ -3,18 +3,7 @@
 | Title | xxx | ValueCafe |
 | Description | xxx |
 | Keywords | xxx |
-| URL | https://valuecafe.cc/financial-ratios/xxx |
+| URL | https://valuecafe.cc/philosophy/investment-moat |
 
 ---
 
-
-
-
-
-## 更多學習資源
-
-[[]]
-[[]]
-[[]]
-[[]]
-[[]]

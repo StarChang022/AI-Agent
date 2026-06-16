@@ -1,5 +1,13 @@
+| Item | Input |
+| --- | --- |
+| Title | xxx | ValueCafe |
 | Description | 引用 Warren Buffett 的投資護城河理論，帶你認識5大護城河種類與真實企業例子。再教你如何用3大財務指標驗證護城河寬度，拒絕短期的市場博弈，建立能安穩睡覺的投資組合。 |
 | Keywords | 投資護城河, 巴菲特 護城河, 什麼是護城河, 護城河種類, 護城河 股票, 護城河 例子, 如何找到有護城河的公司 |
+| URL | https://valuecafe.cc/philosophy/investment-moat |
+
+---
+
+
 | URL | investment-moat |
 | Summary | 如果將一家偉大的企業比喻為一座堅固的城堡，什麼才能保護這座城堡屹立不搖？是一條又寬又深、甚至養著鱷魚的「投資護城河」。 |
 

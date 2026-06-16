@@ -3,7 +3,7 @@
 | Title | xxx | ValueCafe |
 | Description | xxx |
 | Keywords | xxx |
-| URL | https://valuecafe.cc/financial-ratios/xxx |
+| URL | https://valuecafe.cc/philosophy/xxx |
 
 ---
 

@@ -5,6 +5,9 @@
 | Keywords | Income statement, profit margin, gross margin, operating margin, net profit margin, value investing, Warren Buffett, financial statement analysis, investing for beginners, company profitability, economic moat, entrepreneurial mindset. |
 | URL | https://valuecafe.cc/financial-ratios/profit-margin |
 
+**List-Summary**:
+xxx
+
 ---
 
 # Profit Margins : The key to reading a company's story, understanding its pricing power, and decoding its core competitiveness from the income statement
