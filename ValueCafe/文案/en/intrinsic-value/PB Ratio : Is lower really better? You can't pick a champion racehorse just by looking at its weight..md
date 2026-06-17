@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/intrinsic-value/pb-ratio |
 
 **List-Summary**:
-xxx
+If you're using the price-to-book (P/B) ratio to hunt for undervalued bargains, looking only at book value is an easy way to fall into a depreciation trap in dying industries. Think of the P/B ratio as a scale for a company's assets: it tells you how heavy they are, but it can't tell you anything about their profitability. By pairing P/B with return on equity (ROE) as a winning combo, we'll show you how to avoid the classic "low P/B + low ROE" value trap and pinpoint hidden gems that are temporarily beaten down by market sentiment but are actually highly efficient, profitable businesses.
 
 ---
 

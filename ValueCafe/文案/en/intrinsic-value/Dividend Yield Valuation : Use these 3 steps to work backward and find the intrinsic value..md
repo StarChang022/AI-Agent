@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/intrinsic-value/dividend-yield-valuation |
 
 **List-Summary**:
-xxx
+A practical valuation guide tailored specifically for dividend investors! In this post, we'll break down how the dividend yield valuation method works. You'll learn how to use a simple formula to easily back-calculate your target buying price in three easy steps: estimating future cash dividends, setting your target yield, and plugging in the numbers to find the fair, cheap, and expensive price points. We also highlight three critical warning signs to watch out for: artificially high yields caused by crashing stock prices, the illusion of dividends funded by capital reserves, and the trap of one-off payouts. This will help you secure a stable stream of cash flow while avoiding the classic value trap of collecting dividends only to lose money on share price depreciation.
 
 ---
 

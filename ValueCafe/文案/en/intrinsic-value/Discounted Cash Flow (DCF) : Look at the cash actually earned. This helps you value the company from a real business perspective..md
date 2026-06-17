@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/intrinsic-value/discounted-cash-flow |
 
 **List-Summary**:
-xxx
+A stock's true value comes down to how much real cash it can generate. In this post, we'll use a simple story about buying a coffee shop to dive into the heart of Warren Buffett's valuation approach: Discounted Cash Flow (DCF). We'll break down this complex financial model into three simple pillars: free cash flow, the discount rate (your opportunity cost), and terminal value (long-term worth). Plus, we'll walk you through the actual math step-by-step. By adopting the DCF mindset, you'll learn to look at companies like a business owner, tune out market noise, and focus on buying real, tangible future value.
 
 ---
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-將 temporary_104.json 中的一句話簡介（summary）更新至 名單副本.csv 的「說明」欄位（I欄/index 8）。
+將 temporary_104.json 中的一句話簡介（new_description）更新至 名單副本.csv 的「說明」欄位（I欄/index 8）。
 """
 
 import csv
@@ -9,9 +9,10 @@ import json
 import os
 import shutil
 
-CSV_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本.csv"
-BACKUP_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本_backup_intro.csv"
-JSON_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⌚️暫存/temporary_104.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV_PATH = os.path.join(BASE_DIR, '冷郵件對象', '名單副本.csv')
+BACKUP_PATH = os.path.join(BASE_DIR, '冷郵件對象', '名單副本_backup_intro.csv')
+JSON_PATH = os.path.join(BASE_DIR, '⌚️暫存', 'temporary_104.json')
 
 def main():
     print("=== 開始更新公司說明（I欄） ===")
@@ -33,9 +34,8 @@ def main():
     
     # 建立公司名稱與 summary 的對照表
     company_to_summary = {}
-    for item in json_data:
-        name = item.get('name')
-        summary = item.get('summary')
+    for name, item in json_data.items():
+        summary = item.get('new_description')
         if name and summary:
             company_to_summary[name.strip()] = summary.strip()
             

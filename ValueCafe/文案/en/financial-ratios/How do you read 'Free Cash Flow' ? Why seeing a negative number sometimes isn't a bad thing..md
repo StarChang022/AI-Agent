@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/free-cash-flow |
 
 **List-Summary**:
-xxx
+Free cash flow (FCF) is the key to understanding a company's true financial health. Unlike net income, which can easily be dressed up by accounting rules, FCF tells the real story of the cash flowing in and out. When a company's FCF dips into the negative, it doesn't automatically mean it's in trouble. You have to distinguish between a 'good negative' and a 'bad negative.' The good kind is when the core business is profitable, but management chooses to reinvest heavily in the future (like Amazon in its early days) to plant the seeds for long-term growth. The bad kind is when the core business itself is bleeding cash, relying entirely on outside funding to stay alive. Learning to read FCF and the reasons behind the numbers lets you think like a business partner, so you can tell if a company is investing in its future or just bleeding out to survive.
 
 ---
 

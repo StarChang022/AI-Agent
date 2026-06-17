@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/debt-ratio |
 
 **List-Summary**:
-xxx
+Is a high debt ratio always dangerous? Not necessarily! This post busts the myth that 'less debt is always better.' We'll show you how to cross-reference a company's debt ratio with its interest coverage ratio and free cash flow to get a clear picture of its debt quality and true ability to pay it off. By comparing real-world examples like TSMC and Evergreen Marine, you'll learn to tell whether a company is borrowing to invest in its future or just borrowing to survive. It's the ultimate way to avoid investment blind spots.
 
 ---
 

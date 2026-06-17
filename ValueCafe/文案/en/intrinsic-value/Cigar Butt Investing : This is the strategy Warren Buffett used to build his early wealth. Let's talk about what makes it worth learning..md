@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/intrinsic-value/cigar-butt-investing |
 
 **List-Summary**:
-xxx
+The 'cigar butt' investing strategy is a classic method pioneered by Benjamin Graham, the father of value investing, and it served as the cornerstone of Warren Buffett's early wealth. In this post, we'll dive deep into this ultra-conservative 'margin of safety' philosophy and show you how to estimate liquidation value using Net Current Asset Value (NCAV). Although the financial landscape has changed and Buffett eventually shifted to buying wonderful businesses under Charlie Munger's influence, the margin of safety logic at the heart of this strategy remains an essential tool for modern investors to evaluate asset values and protect against downside risk.
 
 ---
 

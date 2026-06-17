@@ -30,7 +30,7 @@ PAGE_TIMEOUT = 15000       # 每頁等待上限 (ms)
 
 # SMTP 驗證設定
 SMTP_TIMEOUT = 10          # SMTP 連線超時 (秒)
-COMMON_PREFIXES = ['info', 'service', 'contact', 'hr', 'sales', 'admin', 'office', 'mail']
+COMMON_PREFIXES = ['info', 'service', 'contact', 'sales', 'office', 'mail']
 
 # 每間公司要嘗試的常見聯絡頁路徑
 CONTACT_PATHS = ['', '/contact', '/contact-us', '/contactus', '/about', '/about-us', '/about/qa', '/service', '/agents', '/contactus/agents']
@@ -118,6 +118,12 @@ def is_valid_email(email: str) -> bool:
     local, _, domain_part = email.partition('@')
     if not local or not domain_part or '.' not in domain_part:
         return False
+
+    # 排除特定前綴 (hr, ir, admin)，避免誤殺正常英文名 (如 irene)
+    if local in ('hr', 'ir', 'admin') or \
+       any(local.startswith(f"{p}{sep}") for p in ('hr', 'ir', 'admin') for sep in ('-', '_', '.')):
+        return False
+
     return True
 
 def dedup_emails(emails) -> List[str]:
@@ -405,11 +411,11 @@ def write_back_to_sheet(data_rows):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SPREADSHEET_ID).worksheet(WORKSHEET_NAME)
-    sheet.batch_clear(['A2:Z'])
+    sheet.batch_clear(['A2:Y'])
     data = data_rows[1:]
     BATCH = 500
     for i in range(0, len(data), BATCH):
-        chunk = data[i:i + BATCH]
+        chunk = [r[:25] for r in data[i:i + BATCH]]
         sheet.update(f'A{2+i}', chunk)
         time.sleep(1)
     print("  → 完成！")

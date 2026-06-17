@@ -306,13 +306,13 @@ def write_back_to_sheet(updated_rows):
     data_rows = updated_rows[1:]  # 只寫資料列，不蓋標題
 
     try:
-        sheet.batch_clear(['A2:Z'])
+        sheet.batch_clear(['A2:Y'])
     except Exception as e:
         print(f"  [警告] 清除舊資料失敗：{e}")
 
     BATCH = 500
     for i in range(0, len(data_rows), BATCH):
-        chunk = data_rows[i:i + BATCH]
+        chunk = [r[:25] for r in data_rows[i:i + BATCH]]
         start_row = 2 + i
         try:
             sheet.update(values=chunk, range_name=f'A{start_row}')

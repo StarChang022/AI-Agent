@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/current-ratio-and-quick-ratio |
 
 **List-Summary**:
-xxx
+When a market crisis hits, how do you know if a company will survive? Using analogies like 'financial first-aid kits' and 'emergency trauma packs,' this post breaks down the definitions and formulas of the current ratio and quick ratio in plain English. These two key metrics make it easy to assess a company's liquidity and immediate ability to pay off debt in under five minutes. They'll help you weed out ticking-time-bomb stocks that look good on paper but are running on empty, filter for robust survivors built to defend your portfolio, and steer clear of bankruptcy risks that could wipe you out.
 
 ---
 

@@ -46,16 +46,16 @@ def main():
     sheet = client.open_by_key(SPREADSHEET_ID).worksheet(WORKSHEET_NAME)
 
     # ── 清除舊資料（保留標題列）──
-    print("[清除] 清除舊資料列 A2:Z ...")
+    print("[清除] 清除舊資料列 A2:Y ...")
     try:
-        sheet.batch_clear(['A2:Z'])
+        sheet.batch_clear(['A2:Y'])
     except Exception as e:
         print(f"  [警告] 清除失敗：{e}")
 
     # ── 批次寫入 ──
     print(f"[寫入] 開始批次寫入（每批 {BATCH_SIZE} 筆）...")
     for i in range(0, len(data_rows), BATCH_SIZE):
-        chunk = data_rows[i:i + BATCH_SIZE]
+        chunk = [r[:25] for r in data_rows[i:i + BATCH_SIZE]]
         start_row = 2 + i
         end_row = start_row + len(chunk) - 1
         try:

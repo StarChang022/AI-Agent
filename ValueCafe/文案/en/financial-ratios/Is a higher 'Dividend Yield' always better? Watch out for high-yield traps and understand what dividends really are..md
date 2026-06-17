@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/dividend-yield |
 
 **List-Summary**:
-xxx
+The high dividend yields that buy-and-hold investors love can actually be a major trap full of blind spots. In this post, we'll dive into what dividends really are, explain how ex-dividend dates and price recovery actually work, and break down red flags like losing money on the stock price just to get a payout, or holding a company that has stopped growing. Drawing on Warren Buffett's investment philosophy, we'll show you why a low yield (where the company reinvests its earnings) can actually be a good thing. This will help you learn to buy into a great business, rather than just chasing a payout check.
 
 ---
 

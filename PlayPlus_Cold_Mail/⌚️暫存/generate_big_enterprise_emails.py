@@ -10,15 +10,19 @@ import json
 import os
 import shutil
 
-CSV_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本.csv"
-BACKUP_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/冷郵件對象/名單副本_backup_emails.csv"
-JSON_PATH = "/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Cold_Mail/⌚️暫存/temporary_104.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV_PATH = os.path.join(BASE_DIR, '冷郵件對象', '名單副本.csv')
+BACKUP_PATH = os.path.join(BASE_DIR, '冷郵件對象', '名單副本_backup_emails.csv')
+JSON_PATH = os.path.join(BASE_DIR, '⌚️暫存', 'temporary_104.json')
 
-# 定義特定產業分類名單
+# 定義特定產業分類名單 (大企業_企業內部系統中匹配的非製造業公司)
 RETAIL_COMPANIES = {
     "樹森開發股份有限公司",
     "泰安食品股份有限公司",
-    "雅聞化妝品/內衣/SPA_台灣雅聞生技股份有限公司"
+    "雅聞化妝品/內衣/SPA_台灣雅聞生技股份有限公司",
+    "悅氏礦泉水_名牌食品股份有限公司",
+    "金格食品股份有限公司",
+    "米哥食品有限公司"
 }
 
 MEDICAL_COMPANIES = {
@@ -27,7 +31,14 @@ MEDICAL_COMPANIES = {
     "善德生化科技股份有限公司",
     "聯亞藥業股份有限公司",
     "新廣業股份有限公司",
-    "柏倫實業有限公司"
+    "柏倫實業有限公司",
+    "西藥_羅氏大藥廠股份有限公司"
+}
+
+SERVICES_COMPANIES = {
+    "和新機電管理股份有限公司",
+    "新武股份有限公司",
+    "永豐紙業股份有限公司"
 }
 
 def get_company_category(name):
@@ -36,6 +47,8 @@ def get_company_category(name):
         return "retail"
     elif name in MEDICAL_COMPANIES:
         return "medical"
+    elif name in SERVICES_COMPANIES:
+        return "services"
     return "manufacturing"
 
 def generate_emails(contact_name, company_name):
@@ -57,7 +70,12 @@ def generate_emails(contact_name, company_name):
     elif category == "medical":
         p1 = "在高度合規與高頻率審核的日常營運中，同仁每天經常在多個內部系統花費大量時間進行重複性的人工操作，這會悄悄消耗團隊精力，也為企業增加龐大的隱形營運成本。"
         p3 = "作為神達集團長期合作的數位轉型與陪跑顧問，我們協助重新整合集團的一站式入口、工時登錄及簽核流程重構等核心營運系統，專注於流程梳理與動線重構，將繁瑣的流程大幅降低人工比例，實質為他們提升集團綜效。"
-        day7_p2_detail = "特別是針對生醫產業常見的「跨部門單據審核／高頻率合規流程」，"
+        day7_p2_detail = "特別是針對生醫與製藥產業常見的「跨部門單據審核／高頻率合規流程」，"
+        day30_target = "提升營運流程自動化"
+    elif category == "services":
+        p1 = "在高度合規與高頻率審核的日常營運中，同仁每天經常在多個內部系統花費大量時間進行重複性的人工操作，這會悄悄消耗團隊精力，也為企業增加龐大的隱形營運成本。"
+        p3 = "作為神達集團長期合作的數位轉型與陪跑顧問，我們協助重新整合集團的一站式入口、工時登錄及簽核流程重構等核心營運系統，專注於流程梳理與動線重構，將繁瑣的流程大幅降低人工比例，實質為他們提升集團綜效。"
+        day7_p2_detail = "特別是針對金融與專業服務常見的「跨部門單據審核／高頻率合規流程」，"
         day30_target = "提升營運流程自動化"
     else:
         # manufacturing
@@ -110,7 +128,7 @@ def generate_emails(contact_name, company_name):
     day30_title = "企業內部系統優化的最後一封信"
     day30_p1 = "打擾了，這是最後一封追蹤信，後續我不會再發信打擾您的收件匣。"
     day30_p2 = f"在優雅退場前，還是想再次提醒，若貴司未來有計畫透過數位轉型{day30_target}，我們 PlayPlus 能提供專業服務，為您盤點並梳理現在的營運流程，透過 UI/UX 與前後端開發服務，進行企業內部系統的長期規劃。"
-    day30_p3 = "我再次將附上案例簡報，您可以在 https://playplus.com.tw/internal-system-briefing.pdf 裡面參考詳細資訊。若未來貴司有優化營運流程的需求，隨時歡迎您與我們取得聯繫。"
+    day30_p3 = "我再次將附上案例簡報，您可以在 https://playplus.com.tw/internal-system-briefing.pdf 裡面參考詳細資訊。若未來貴司有營運流程的需求，隨時歡迎您與我們取得聯繫。"
     
     day30_content = (
         f"{greeting}<br>\n"
@@ -169,9 +187,17 @@ def main():
             return
         col_idx[col_name] = header.index(col_name)
 
-    # 3. 逐行更新（僅針對 Scenarios 為「大企業_企業內部系統」的列）
+    # 3. 讀取現有的 temporary_104.json，避免覆蓋其他情境的資料
+    existing_logs = {}
+    if os.path.exists(JSON_PATH):
+        try:
+            with open(JSON_PATH, 'r', encoding='utf-8') as f:
+                existing_logs = json.load(f)
+        except Exception:
+            pass
+
+    # 4. 逐行更新（僅針對 Scenarios 為「大企業_企業內部系統」的列）
     updated_count = 0
-    export_logs = {}
 
     for idx in range(1, len(rows)):
         row = rows[idx]
@@ -202,18 +228,18 @@ def main():
         row[col_idx['day60_title']] = "-"
         row[col_idx['day60_content']] = "-"
 
-        export_logs[f"{comp_name}_{contact_name}"] = emails
+        existing_logs[f"{comp_name}_{contact_name}"] = emails
         updated_count += 1
 
-    # 4. **最後執行一次**寫回 CSV
+    # 5. **最後執行一次**寫回 CSV
     with open(CSV_PATH, 'w', encoding='utf-8-sig', newline='') as f:
         writer = csv.writer(f)
         writer.writerows(rows)
     print(f"✅ 已成功更新 {updated_count} 家公司的冷郵件欄位。")
 
-    # 5. 輸出暫存對照
+    # 6. 輸出暫存對照
     with open(JSON_PATH, 'w', encoding='utf-8') as f:
-        json.dump(export_logs, f, ensure_ascii=False, indent=2)
+        json.dump(existing_logs, f, ensure_ascii=False, indent=2)
     print(f"✅ 已輸出詳細對照 JSON 檔至: {JSON_PATH}")
 
 if __name__ == '__main__':

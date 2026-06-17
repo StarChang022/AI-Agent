@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/profit-margin |
 
 **List-Summary**:
-xxx
+Understanding the income statement is the very first step in value investing. In this post, we'll use a super simple bakery analogy to break down the four essential financial metrics you need to know: gross margin (which reflects product profitability and pricing power), operating margin (which measures operational efficiency), pre-tax margin (to see if the company is focused on its core business), and net margin (which shows how much shareholders actually get to keep). Think of profit like a funnel. As money filters down, great companies keep their margins steady and maximize what's left at every level. By learning to spot margin trends over the long haul, you'll be able to read between the lines, pinpoint a company's competitive edge, and find high-quality stocks with solid economic moats.
 
 ---
 

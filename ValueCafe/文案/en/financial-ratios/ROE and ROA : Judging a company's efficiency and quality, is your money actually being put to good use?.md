@@ -6,7 +6,7 @@
 | URL | https://valuecafe.cc/financial-ratios/roe-and-roa |
 
 **List-Summary**:
-xxx
+Want to find great companies that compound and grow like a snowball? Then you need to understand 'earning efficiency.' In this post, we'll break down Return on Equity (ROE), Warren Buffett's favorite metric, and show you how to read it alongside Return on Assets (ROA). This is the key to spotting fake, high-debt-inflated ROE traps. We'll teach you how to choose outstanding companies that generate high returns for shareholders in a healthy, sustainable way while protecting themselves with a strong competitive moat.
 
 ---
 
