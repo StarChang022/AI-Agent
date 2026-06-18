@@ -3,7 +3,7 @@
 | Title | xxx | ValueCafe |
 | Description | xxx |
 | Keywords | xxx |
-| URL | https://valuecafe.cc/philosophy/xxx |
+| URL | https://valuecafe.cc/legendary/xxx |
 
 ---
 

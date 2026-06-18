@@ -40,33 +40,24 @@ The items on the Income Statement are just calculated step-by-step using simple 
 
 Just looking at the raw numbers on an income statement doesn't really tell you the whole story. We need to dig deeper into what those numbers mean. These ratios—which are just percentages or multiples you get from simple math (add, subtract, multiply, divide)—help us break it all down.
 
-#### Revenues
+* **Revenues**
+  The income a company generates from its main business activities.
 
-The income a company generates from its main business activities.
+* **Gross Profit**
+  = **Revenues** - Cost of Goods Sold
+  "Cost of Goods Sold" (COGS) basically means all the direct costs related to making and selling a product, like raw materials.
 
-#### Gross Profit
+* **Operating Income**
+  = **Gross Profit** - Operating Expenses
+  "Operating Expenses" are the indirect costs of just keeping the business running. This includes administrative costs (like salaries, utilities), selling costs (like ads), and R&D.
 
-= Revenues - Cost of Goods Sold
+* **Pre-Tax Income**
+  = **Operating Income** + Non-Operating Income
+  "Non-operating income or loss" is money made or lost from things outside the main business, like investments in other companies, interest income, or currency exchange gains/losses.
 
-"Cost of Goods Sold" (COGS) basically means all the direct costs related to making and selling a product, like raw materials.
-
-#### Operating Income
-
-= Gross Profit - Operating Expenses
-
-"Operating Expenses" are the indirect costs of just keeping the business running. This includes administrative costs (like salaries, utilities), selling costs (like ads), and R&D.
-
-#### Pre-Tax Income
-
-= Operating Income + Non-Operating Income
-
-"Non-operating income or loss" is money made or lost from things outside the main business, like investments in other companies, interest income, or currency exchange gains/losses.
-
-#### Net Income
-
-= Pre-Tax Income - Taxes
-
-This is what's left after subtracting all the taxes you have to pay.
+* **Net Income**
+  = **Pre-Tax Income** - Taxes
+  This is what's left after subtracting all the taxes you have to pay.
 
 ### Look at Profit Margins to See How It's Really Doing
 

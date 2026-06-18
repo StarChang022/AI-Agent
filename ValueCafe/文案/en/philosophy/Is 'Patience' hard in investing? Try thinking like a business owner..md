@@ -1,13 +1,15 @@
 | Item | Input |
 | --- | --- |
-| Title | The single most important action you can take is making the right purchase at the start. After that, it’s decades of just sitting tight. | ValueCafe |
+| Title | Is 'Patience' hard in investing? Try thinking like a business owner. | ValueCafe |
 | Description | Feeling anxious when stocks take a hit? Drawing from Warren Buffett’s farm story, you can develop the mindset of a farm owner who holds for the long haul. The kind of value investing that actually lets you sleep at night is basically doing nothing at all. |
 | Keywords | Value investing, long-term holding, building an investment mindset, overcoming investment anxiety, dealing with market dips, Buffett’s farm story, zen investing. |
 | URL | https://valuecafe.cc/philosophy/patience-of-value-investing |
 
 ---
 
-# The single most important action you can take is making the right purchase at the start. After that, it’s decades of just sitting tight.
+# Is 'Patience' hard in investing? Try thinking like a business owner.
+
+The single most important action you can take is making the right purchase at the start. After that, it’s decades of just sitting tight.
 
 When you plant a seed, you don't expect it to grow into a giant tree overnight. If you're running a food cart, you don't expect it to turn into a massive franchise by tomorrow morning. You know it takes time and patience. By the time you start seeing real results, you'll realize that those small daily actions have just become a natural habit.
 

@@ -69,45 +69,35 @@ Let's take a look at two titans of Taiwanese industry: the semiconductor leader 
 
 If we just look at the debt ratio on the surface, we might jump to a totally misleading conclusion. That is why you have to look at "Debt Ratio + Interest Coverage Ratio + Free Cash Flow" all together.
 
-#### TSMC (2330.TW)
+### TSMC (2330.TW)
 
-##### Debt ratio %
+* **Debt ratio %**
+  * 2024: 35.39%
+  * 2023: 37.04%
+  * 2022: 40.37%
+* **Interest coverage ratio**
+  * 2024: 134.95
+  * 2023: 82.60
+  * 2022: 98.38
+* **Free cash flow**
+  * 2024: 945
+  * 2023: 339
+  * 2022: 534
 
-- 2024: 35.39%
-- 2023: 37.04%
-- 2022: 40.37%
+### Evergreen Marine (2603.TW)
 
-##### Interest coverage ratio
-
-- 2024: 134.95
-- 2023: 82.60
-- 2022: 98.38
-
-##### Free cash flow
-
-- 2024: 945
-- 2023: 339
-- 2022: 534
-
-#### Evergreen Marine (2603.TW)
-
-##### Debt ratio %
-
-- 2024: 34.10%
-- 2023: 35.67%
-- 2022: 34.36%
-
-##### Interest coverage ratio
-
-- 2024: 35.51
-- 2023: 13.97
-- 2022: 123.70
-
-##### Free cash flow
-
-- 2024: 170
-- 2023: -26
-- 2022: 405
+* **Debt ratio %**
+  * 2024: 34.10%
+  * 2023: 35.67%
+  * 2022: 34.36%
+* **Interest coverage ratio**
+  * 2024: 35.51
+  * 2023: 13.97
+  * 2022: 123.70
+* **Free cash flow**
+  * 2024: 170
+  * 2023: -26
+  * 2022: 405
 
 Evergreen's debt ratio is actually slightly lower than TSMC's. If you stopped there, you would wrongly conclude that "Evergreen has a safer financial structure than TSMC".
 
