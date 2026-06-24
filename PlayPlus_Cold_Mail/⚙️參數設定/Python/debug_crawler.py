@@ -214,6 +214,11 @@ def extract_emails_from_html(html: str) -> Set[str]:
         if is_valid_email(email):
             emails.add(email.lower())
 
+    # 管道五：正則表達式掃描原始 HTML（補漏網之魚）
+    for email in EMAIL_REGEX.findall(html):
+        if is_valid_email(email):
+            emails.add(email.lower())
+
     return emails
 
 def collect_all_subpage_urls(base_url: str, html: str) -> List[str]:
@@ -267,9 +272,9 @@ async def scrape_emails_from_web(context, company_name: str, website_url: str, d
         if target_url in visited:
             continue
         visited.add(target_url)
-        page = await context.new_page()
+        print(f'DEBUG: new_page {target_url} or {sub_url if "sub_url" in locals() else ""}'); page = await context.new_page()
         try:
-            await page.goto(target_url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT)
+            print(f'DEBUG: goto {target_url}'); await page.goto(target_url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT); print(f'DEBUG: goto done {target_url}')
             content = await page.content()
             if path == '' and homepage_html is None:
                 homepage_html = content  # 記住首頁 HTML 供後續子頁面收集用
@@ -279,13 +284,10 @@ async def scrape_emails_from_web(context, company_name: str, website_url: str, d
             if filter_emails_by_domain(list(all_emails), domain):
                 break
         except Exception:
-            if path == '':
-                # 如果首頁發生 Timeout 或網路連線錯誤，代表整個網站無法訪問，直接中斷後續路徑測試以節省時間
-                break
             pass
         finally:
             try:
-                await page.close()
+                print('DEBUG: closing page'); await page.close(); print('DEBUG: page closed')
             except Exception:
                 pass
 
@@ -300,9 +302,9 @@ async def scrape_emails_from_web(context, company_name: str, website_url: str, d
                 continue
             visited.add(sub_url)
             extra_count += 1
-            page = await context.new_page()
+            print(f'DEBUG: new_page {target_url} or {sub_url if "sub_url" in locals() else ""}'); page = await context.new_page()
             try:
-                await page.goto(sub_url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT)
+                print(f'DEBUG: goto {sub_url}'); await page.goto(sub_url, wait_until='domcontentloaded', timeout=PAGE_TIMEOUT); print(f'DEBUG: goto done {sub_url}')
                 content = await page.content()
                 emails = extract_emails_from_html(content)
                 all_emails.update(emails)
@@ -312,7 +314,7 @@ async def scrape_emails_from_web(context, company_name: str, website_url: str, d
                 pass
             finally:
                 try:
-                    await page.close()
+                    print('DEBUG: closing page'); await page.close(); print('DEBUG: page closed')
                 except Exception:
                     pass
 
