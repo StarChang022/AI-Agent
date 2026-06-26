@@ -109,7 +109,8 @@ async def scrape_one_company(page, company):
     url = company['source_url']
 
     try:
-        cust_no = url.rstrip('/').split('/')[-1]
+        clean_url = url.split('?')[0].split('#')[0]
+        cust_no = clean_url.rstrip('/').split('/')[-1]
     except Exception:
         cust_no = ''
 
