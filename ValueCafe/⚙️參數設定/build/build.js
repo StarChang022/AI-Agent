@@ -70,12 +70,18 @@ async function main() {
   console.log('');
 
   // ── Step 1: 清除舊輸出目錄 ────────────────────────────────────────────────
-  console.log('[1/7] 清除舊輸出目錄...');
+  console.log('[1/7] 清理舊輸出目錄內容 (保留 .git)...');
   if (fs.existsSync(OUTPUT_DIR)) {
-    fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
-    console.log(`  已刪除：${OUTPUT_DIR}`);
+    const files = fs.readdirSync(OUTPUT_DIR);
+    for (const file of files) {
+      if (file === '.git') continue; // 關鍵：跳過並保留 .git 目錄
+      const filePath = path.join(OUTPUT_DIR, file);
+      fs.rmSync(filePath, { recursive: true, force: true });
+    }
+    console.log(`  已清理：${OUTPUT_DIR} (已保留 .git)`);
+  } else {
+    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
-  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
   // ── Step 2: 複製靜態資源 ──────────────────────────────────────────────────
   console.log('[2/7] 複製靜態資源...');
