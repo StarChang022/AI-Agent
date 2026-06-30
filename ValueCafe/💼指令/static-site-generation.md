@@ -1,4 +1,7 @@
-我需要你將本專案以 Static Site Generation 網頁渲染技術打包成靜態網站，寫出相應的執行腳本。以下是每個項目的需求。
+我需要你將 `/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/en` 專案以 Static Site Generation 網頁渲染技術打包成靜態網站，寫出相應的執行腳本。
+先將 `/Users/starchang/Documents/CloudFolder/GitHub/valuecafe` 資料夾刪除，再將打包結果直接輸出成 `/Users/starchang/Documents/CloudFolder/GitHub/valuecafe` 資料夾。
+
+以下是每個項目的需求。
 
 # financial-ratios
 

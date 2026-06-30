@@ -1,0 +1,12 @@
+{
+  "name": "valuecafe-ssg",
+  "version": "1.0.0",
+  "description": "ValueCafe Static Site Generator",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "keywords": [],
+  "author": "STARChang",
+  "license": "UNLICENSED"
+}
