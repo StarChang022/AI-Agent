@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: 20251222-uber-lyft-baidu-london-robotaxi-2026
-**title**: Robotaxi war hits the streets of London: Uber and Lyft team up with Baidu's Apollo Go to launch in 2026! | ValueCafe
+**title**: Robotaxi war hits the streets of London: Uber and Lyft team up with Baidu's Apollo Go to launch in 2026!
 **description**: Uber and Lyft have announced a partnership with Baidu's Apollo Go to deploy robotaxis in London in 2026. Boosted by the UK's Automated Vehicles Act, which clarifies liability, this move is set to push ride-hailing platforms toward an algorithm-driven model and reshape both actuarial insurance and EV charging supply chains. While the technology has logged over 240 million kilometers, Baidu's entry has sparked data sovereignty and national security concerns, and safety in low-light conditions remains a critical test for public trust.
 **keywords**: Uber, Lyft, Baidu, Apollo Go, robotaxi, autonomous driving, London transport, Automated Vehicles Act 2024, RT6, U.S.-China tech war, transportation sector transformation, UK national security
 **Source**: https://www.bbc.com/news/articles/cy8jmx1dl9ro

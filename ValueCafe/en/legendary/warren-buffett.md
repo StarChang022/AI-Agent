@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: warren-buffett
-**title**: Warren Buffett: A value investing legend | ValueCafe
+**title**: Warren Buffett: A value investing legend
 **description**: Step into the legendary life of Warren Buffett. Driven by his firm belief in value investing, see how he went from a paperboy to building a massive investment empire all on his own. This article isn't about some billionaire gossip. Instead, it's a deep dive into Buffett's wisdom that can actually change your life, weaving business thinking and investment philosophy right into your DNA.
 **keywords**: Warren Buffett, value investing, Buffett's investment philosophy, Buffett's investment stories, core concepts of value investing, Buffett's lifestyle, Berkshire Hathaway, Charlie Munger
 **name**: Warren Buffett

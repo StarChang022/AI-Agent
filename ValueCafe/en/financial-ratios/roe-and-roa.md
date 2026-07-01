@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: roe-and-roa
-**title**: ROE and ROA : Judging a company's efficiency and quality, is your money actually being put to good use? | ValueCafe
+**title**: ROE and ROA : Judging a company's efficiency and quality, is your money actually being put to good use?
 **description**: If you want to invest like Warren Buffett, just knowing ROE isn’t going to cut it. We’re breaking down how to use ROA to spot 'high ROE traps' fueled by too much debt, so you can find the high-quality companies that actually have a moat.
 **keywords**: ROE, ROA, comparing ROE and ROA, Buffett’s take on ROE, what is ROE, the high ROE trap, return on equity, return on assets, economic moat, value investing.
 **list-summary**: These measure efficiency and quality. They basically answer the question: Is management actually any good at putting your money to work?

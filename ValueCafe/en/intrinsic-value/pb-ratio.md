@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: pb-ratio
-**title**:  | P/B Ratio : Is lower really better? You can't pick a champion racehorse just by looking at its weight. | ValueCafe
+**title**: P/B Ratio : Is lower really better? You can't pick a champion racehorse just by looking at its weight.
 **description**:  | Trying to hunt for bargains using the Price-to-Book (P/B) ratio? Just a heads up: if you only look at book value, you might end up in a value trap. We’ll show you how to pair P/B with ROE to use the ratio the right way, helping you spot companies that are temporarily on sale but still have plenty of room to grow.
 **keywords**:  | Price-to-book ratio, P/B ratio, PBR, is a low P/B ratio always better, how to use P/B ratio, P/B ratio and ROE, P/B ratio vs P/E ratio, value trap, stock valuation, return on equity.
 **list-summary**: Not a chance. That's like picking a racehorse just based on its weight—it doesn't tell you if it can actually win.

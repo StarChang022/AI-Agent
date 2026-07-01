@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: charlie-munger
-**title**: Charlie Munger: The legendary mastermind of smart investing and thinking backwards | ValueCafe
+**title**: Charlie Munger: The legendary mastermind of smart investing and thinking backwards
 **description**: What wisdom did the legendary Charlie Munger leave behind when he passed away? This article dives into his investment philosophy, showing how he used inversion and a latticework of mental models. It also looks at how he packed a lifetime of wisdom into Poor Charlie's Almanack, turning it into a mental framework you can make your own and use for the rest of your life.
 **keywords**: Charlie Munger, Munger's investment philosophy, Munger's mental models, Munger's inverse thinking, The psychology of human misjudgment, Poor Charlie's Almanack
 **name**: Charlie Munger

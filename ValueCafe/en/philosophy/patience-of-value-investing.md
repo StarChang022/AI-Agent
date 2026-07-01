@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: patience-of-value-investing
-**title**: Is 'Patience' hard in investing? Try thinking like a business owner. | ValueCafe
+**title**: Is 'Patience' hard in investing? Try thinking like a business owner.
 **description**: Feeling anxious when stocks take a hit? Drawing from Warren Buffett’s farm story, you can develop the mindset of a farm owner who holds for the long haul. The kind of value investing that actually lets you sleep at night is basically doing nothing at all.
 **keywords**: Value investing, long-term holding, building an investment mindset, overcoming investment anxiety, dealing with market dips, Buffett’s farm story, zen investing.
 **list-summary**: Most people live like anxious 'stock-price tenants' rather than calm-and-steady 'business owners.' Why does it seem to make perfect sense to calmly hold a farm for decades, but people can't apply that same mindset to the stocks they own?

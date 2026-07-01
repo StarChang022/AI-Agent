@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: economic-moat
-**title**: You've heard of Warren Buffett's 'Economic Moat' theory, right? Here are the 5 types and how to verify them. | ValueCafe
+**title**: You've heard of Warren Buffett's 'Economic Moat' theory, right? Here are the 5 types and how to verify them.
 **description**: Drawing from Warren Buffett’s 'Economic Moat' theory, I’ll walk you through the five main types of economic moats using real-world examples. I’ll also show you how to use three key financial metrics to gauge the strength of a moat, so you can ignore the short-term market noise and build a portfolio that lets you sleep soundly at night.
 **keywords**: Economic moat, Buffett's moat theory, what is an economic moat, types of economic moats, moat stocks, economic moat examples, how to find companies with wide moats
 **list-summary**: If a great business is like a strong castle, what protects it and keeps it standing strong? It's a 'moat'—one that's wide, deep, and maybe even filled with crocodiles. We call this an 'Economic Moat'.

@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: discounted-cash-flow
-**title**: Discounted Cash Flow (DCF) : Look at the cash actually earned. This helps you value the company from a real business perspective. | ValueCafe
+**title**: Discounted Cash Flow (DCF) : Look at the cash actually earned. This helps you value the company from a real business perspective.
 **description**: Think the DCF formula is way too complicated? We’re breaking it down with a simple 'buying a coffee shop' story to walk you through a full discounted cash flow valuation. We’ll cover everything from free cash flow and discount rates to terminal value. Learn how to think about valuation like Warren Buffett and stop stressing over market swings.
 **keywords**: Discounted Cash Flow, DCF, DCF valuation, DCF formula, Free Cash Flow, FCF calculation, discount rate, discount rate calculation, DCF tutorial, terminal value, value investing, business valuation.
 **list-summary**: It's all about the actual cash the business generates. This method helps you value a company from an owner's point of view, not just as a stock.

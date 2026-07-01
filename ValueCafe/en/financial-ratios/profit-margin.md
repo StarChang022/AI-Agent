@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: profit-margin
-**title**: Profit Margins : The key to reading a company's story, understanding its pricing power, and decoding its core competitiveness from the income statement | ValueCafe
+**title**: Profit Margins : The key to reading a company's story, understanding its pricing power, and decoding its core competitiveness from the income statement
 **description**: Ever wanted to learn Warren Buffett’s value investing but felt lost looking at an income statement? We’re breaking it down using a simple bakery story to help you master four key metrics: gross margin, operating margin, and net profit margin. We'll show you how to analyze a company’s real earnings power so you can spot high-quality stocks with a solid moat, just like Buffett.
 **keywords**: Income statement, profit margin, gross margin, operating margin, net profit margin, value investing, Warren Buffett, financial statement analysis, investing for beginners, company profitability, economic moat, entrepreneurial mindset.
 **list-summary**: This number tells a story. It shows you if the company has 'pricing power' and helps you spot its 'core competitive edge' just by reading the P&L.

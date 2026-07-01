@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: dividend-yield
-**title**: Is a higher 'Dividend Yield' always better? Watch out for high-yield traps and understand what dividends really are. | ValueCafe
+**title**: Is a higher 'Dividend Yield' always better? Watch out for high-yield traps and understand what dividends really are.
 **description**: Looking to start dividend investing but worried about falling into a high-yield trap? This post explains what dividend yield is and how to calculate it in plain English. We’ll use Warren Buffett’s investment philosophy to help you see past the 'gain the dividend, lose the principal' myth so you can find solid companies to hold for the long haul.
 **keywords**: Dividend yield, what is dividend yield, is high yield always good, high-yield trap, dividend investing, value investing, Warren Buffett, cash dividends, ex-dividend, price recovery.
 **list-summary**: Is higher always better? Not necessarily. A super-high yield can be a red flag. You need to understand the nature of that dividend first.

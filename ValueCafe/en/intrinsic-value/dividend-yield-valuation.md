@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: dividend-yield-valuation
-**title**: Dividend Yield Valuation : Use these 3 steps to work backward and find the intrinsic value. | ValueCafe
+**title**: Dividend Yield Valuation : Use these 3 steps to work backward and find the intrinsic value.
 **description**: Want to learn how to work backwards from dividend yield to find the fair value of stable income stocks? We’ve put together a full guide that walks you through a simple 3-step calculation. Plus, we’ll share three big warning signs to watch out for so you don't fall into a 'value trap' where you lose more in share price than you gain in dividends. Start building a cash flow you can actually count on.
 **keywords**: Dividend yield valuation, calculating fair value for dividend stocks, avoiding the dividend trap, stable dividend stocks, dividend yield, dividends, share price, fair value, value trap, income stocks.
 **list-summary**: It's a 3-step way to 'work backward' and figure out its intrinsic value.

@@ -41,6 +41,12 @@ function replaceEditorBlock(html, commentLabel, replacer) {
   const idx = html.indexOf(commentStr);
   if (idx === -1) return html;
 
+  // 尋找 comment 之前的縮排字元
+  let lineStart = html.lastIndexOf('\n', idx);
+  if (lineStart === -1) lineStart = 0;
+  else lineStart += 1;
+  const baseIndent = html.slice(lineStart, idx).replace(/[^\s]/g, '');
+
   // 從 comment 結尾開始，找下一個非空白字元（應為 '<'）
   const afterComment = idx + commentStr.length;
   const nextTagStart = html.indexOf('<', afterComment);
@@ -93,9 +99,72 @@ function replaceEditorBlock(html, commentLabel, replacer) {
   }
 
   const templateBlock = html.slice(nextTagStart, blockEnd);
-  const replacement   = replacer(templateBlock);
+  let replacement   = replacer(templateBlock);
+
+  if (baseIndent && replacement) {
+    replacement = replacement.split('\n<').join('\n' + baseIndent + '<');
+  }
 
   return html.slice(0, idx) + replacement + html.slice(blockEnd);
+}
+
+/**
+ * 找到 <!-- XYZ Editor --> 後，將緊接的單一 HTML 標籤區塊替換為 content，
+ * 並將 content 的每一行（第一行除外）都縮排對齊到與 <!-- XYZ Editor --> 相同的層級。
+ */
+function replaceAndIndentEditorBlock(html, commentLabel, content) {
+  const commentRegex = new RegExp(`<!--\\s*#?\\s*${commentLabel}\\s*-->`);
+  const match = html.match(commentRegex);
+  if (!match) return html;
+  const idx = match.index;
+  const commentStr = match[0];
+
+  let lineStart = html.lastIndexOf('\n', idx);
+  if (lineStart === -1) lineStart = 0;
+  else lineStart += 1;
+  const baseIndent = html.slice(lineStart, idx).replace(/[^\s]/g, '');
+
+  const afterComment = idx + commentStr.length;
+  const nextTagStart = html.indexOf('<', afterComment);
+  if (nextTagStart === -1) return html;
+
+  const tagMatch = html.slice(nextTagStart).match(/^<([a-zA-Z][a-zA-Z0-9-]*)/);
+  if (!tagMatch) return html;
+  const tagName = tagMatch[1];
+
+  let depth = 0;
+  let blockEnd = nextTagStart;
+  let i = nextTagStart;
+  const len = html.length;
+
+  while (i < len) {
+    if (html[i] !== '<') { i++; continue; }
+    const openMatch = html.slice(i).match(new RegExp(`^<${tagName}(?=[\\s>/])`));
+    if (openMatch) {
+      depth++;
+      const gt = html.indexOf('>', i);
+      if (html.slice(i, gt + 1).trimEnd().endsWith('/>')) depth--;
+      i = gt + 1;
+      if (depth === 0) { blockEnd = i; break; }
+      continue;
+    }
+    const closeMatch = html.slice(i).match(new RegExp(`^</${tagName}>`));
+    if (closeMatch) {
+      depth--;
+      i += closeMatch[0].length;
+      if (depth === 0) { blockEnd = i; break; }
+      continue;
+    }
+    i++;
+  }
+
+  const lines = content.split('\n');
+  const indentedContent = lines.map((line, index) => {
+    if (index === 0) return line;
+    return line ? baseIndent + line : line;
+  }).join('\n');
+
+  return html.slice(0, nextTagStart) + indentedContent + html.slice(blockEnd);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -186,12 +255,10 @@ function generateArticlePage(article, templatePath, destPath, allArticles) {
                .replace(/🟢PageKeywords/g,      article.head['keywords']    || '');
 
     // Hero Editor
-    html = html.replace(/<!-- Hero Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/div>)/,
-      `<!-- Hero Editor -->\n${article.hero}`);
+    html = replaceAndIndentEditorBlock(html, 'Hero Editor', article.hero);
 
     // Content Editor
-    html = html.replace(/<!-- Content Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/div>\s*<\/div>\s*<\/section>)/,
-      `<!-- Content Editor -->\n${article.content}`);
+    html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
 
 
 
@@ -217,12 +284,10 @@ function generateLegendaryArticlePage(article, templatePath, destPath, allArticl
                .replace(/🟢PageKeywords/g,      article.head['keywords']    || '');
 
     // Hero Editor (legendary 的 Hero Editor 在 template 中沒有包裝，直接插入)
-    html = html.replace(/<!-- Hero Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/div>)/,
-      `<!-- Hero Editor -->\n${article.hero}`);
+    html = replaceAndIndentEditorBlock(html, 'Hero Editor', article.hero);
 
     // Content Editor
-    html = html.replace(/<!-- Content Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/div>\s*<\/div>\s*<\/section>)/,
-      `<!-- Content Editor -->\n${article.content}`);
+    html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
 
 
 
@@ -248,12 +313,10 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
                .replace(/🟢PageKeywords/g,      article.head['keywords']    || '');
 
     // Hero Editor
-    html = html.replace(/<!-- Hero Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/section>|<\/div>\s*<\/div>\s*<\/div>)/,
-      `<!-- Hero Editor -->\n${article.hero}`);
+    html = replaceAndIndentEditorBlock(html, 'Hero Editor', article.hero);
 
     // Content Editor
-    html = html.replace(/<!-- Content Editor -->([\s\S]*?)(?=<\/div>\s*<\/div>\s*<\/div>\s*<\/div>\s*<\/section>)/,
-      `<!-- Content Editor -->\n${article.content}`);
+    html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
 
 
 
@@ -314,6 +377,12 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
 
     const afterComment = idx + commentStr.length;
 
+    // 尋找 comment 之前的縮排字元
+    let lineStart = html.lastIndexOf('\n', idx);
+    if (lineStart === -1) lineStart = 0;
+    else lineStart += 1;
+    const baseIndent = html.slice(lineStart, idx).replace(/[^\s]/g, '');
+
     // 取出第一個完整 div（col-md-6 範本）
     const firstDivStart = html.indexOf('<', afterComment);
     const firstBlock    = extractBlock(html, firstDivStart);
@@ -325,7 +394,7 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
     const secondBlockEnd = secondDivStart + secondBlock.length;
 
     // 依規則：第一則用 firstBlock，其餘用 secondBlock
-    const newItems = articles.map((a, i) => {
+    let newItems = articles.map((a, i) => {
       const tpl = i === 0 ? firstBlock : secondBlock;
       let block = tpl
         .replace(/🟢UrlName/g,   a.id)
@@ -342,6 +411,10 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
       });
       return block;
     }).join('\n');
+
+    if (baseIndent && newItems) {
+      newItems = newItems.split('\n<').join('\n' + baseIndent + '<');
+    }
 
     return html.slice(0, idx) + newItems + html.slice(secondBlockEnd);
   });
@@ -506,6 +579,7 @@ function generateWorldviewPage(allArticlesMap, srcPath, destPath) {
 module.exports = {
   renderTemplate,
   replaceEditorBlock,
+  replaceAndIndentEditorBlock,
   generateArticlePage,
   generateLegendaryArticlePage,
   generateNewsArticlePage,

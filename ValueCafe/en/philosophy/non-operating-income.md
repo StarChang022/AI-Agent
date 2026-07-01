@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: non-operating-income
-**title**: Is 'Non-Operating Income' a bonus or a trap? It is actually part of your profit quality check. | ValueCafe
+**title**: Is 'Non-Operating Income' a bonus or a trap? It is actually part of your profit quality check.
 **description**: 'Non-operating income' can make a company’s net profit look better than it really is, but is it a real opportunity or a trap? Start by looking at the 'quality of earnings.' You need to separate one-time gains from sustainable profits and use the hard data in the financial reports to make better investment calls.
 **keywords**: Non-operating income, quality of earnings, non-operating income financial statements, one-time gains, evaluating earnings quality, non-operating income traps, non-operating revenue.
 **list-summary**: Non-operating income isn't just a random number; it can also be an integrated part of the business model.

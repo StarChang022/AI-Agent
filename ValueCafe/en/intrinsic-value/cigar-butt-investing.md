@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: cigar-butt-investing
-**title**: Cigar Butt Investing : This is the strategy Warren Buffett used to build his early wealth. Let's talk about what makes it worth learning. | ValueCafe
+**title**: Cigar Butt Investing : This is the strategy Warren Buffett used to build his early wealth. Let's talk about what makes it worth learning.
 **description**: Take a deep dive into Benjamin Graham’s famous 'cigar butt' investing strategy. We’ll look at how Warren Buffett used this approach to build his foundation and how he eventually evolved his strategy over time. This post goes beyond just the numbers to explain the 'margin of safety,' which is the single most important rule in all of value investing.
 **keywords**: Cigar butt investing, value investing, margin of safety, net-net valuation, Benjamin Graham, Warren Buffett, Graham’s investment philosophy.
 **list-summary**: This was Buffett's original strategy for getting rich. It was his 'early-days' playbook.

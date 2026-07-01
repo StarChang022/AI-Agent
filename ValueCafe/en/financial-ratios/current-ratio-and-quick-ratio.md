@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: current-ratio-and-quick-ratio
-**title**: What are the 'Current Ratio and Quick Ratio' ? Think of them as the 'Financial first aid kit' for a company's ability to pay debts. | ValueCafe
+**title**: What are the 'Current Ratio and Quick Ratio' ? Think of them as the 'Financial first aid kit' for a company's ability to pay debts.
 **description**: Wondering what the real difference is between the current ratio and the quick ratio? We’re using a 'financial first-aid kit' analogy to help you master the formulas and definitions in a flash. Learn how to use these metrics to make smarter moves with your investments.
 **keywords**: Current ratio, quick ratio, current ratio vs quick ratio, what’s a good current ratio, current vs quick ratio difference, quick ratio formula, current ratio by industry, financial analysis, value investing.
 **list-summary**: Think of these as the company's 'financial first-aid kit' for paying its short-term bills.

@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: pe-ratio
-**title**: P/E Ratio : When valuing a stock, don't just look at the numbers! You need to understand the business behind those numbers. | ValueCafe
+**title**: P/E Ratio : When valuing a stock, don't just look at the numbers! You need to understand the business behind those numbers.
 **description**: Want to learn how to use the P/E ratio to pick winning stocks? We’re starting with the basics of the P/E formula and diving into what those high and low numbers actually say about market sentiment. Plus, we’re sharing our exclusive 'Earnings Quality Checklist' to help you avoid the value traps that often hide in low P/E stocks, so you can start evaluating businesses like a pro.
 **keywords**: Price-to-earnings ratio, P/E ratio, P/E ratio calculation, how to calculate P/E, high vs low P/E ratios, what’s a good P/E ratio, low P/E stocks, stock picking with P/E, P/E ratio band chart, value trap, earnings per share, EPS, price-to-book ratio.
 **list-summary**: Never just look at the number. You gotta understand the actual business behind that number.

@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: value-trap
-**title**: A Value Trap' could be the most expensive lesson you learn! Watch out for these 3 red flags. | ValueCafe
+**title**: A Value Trap' could be the most expensive lesson you learn! Watch out for these 3 red flags.
 **description**: Feeling anxious when stocks take a hit? Drawing from Warren Buffett’s farm story, you can develop the mindset of a farm owner who holds for the long haul. The kind of value investing that actually lets you sleep at night is basically doing nothing at all.
 **keywords**: Value investing, long-term holding, building an investment mindset, overcoming investment anxiety, dealing with market dips, Buffett’s farm story, zen investing.
 **list-summary**: You think you're buying a cheap stock, but you might actually be buying a business that is slowly dying.

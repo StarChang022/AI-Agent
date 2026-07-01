@@ -1,7 +1,7 @@
 # Head Editor
 
 **id**: peter-lynch
-**title**: Peter Lynch: The legendary fund manager who ran a $14 billion fund on pure common sense | ValueCafe
+**title**: Peter Lynch: The legendary fund manager who ran a $14 billion fund on pure common sense
 **description**: Peter Lynch went from working as a golf caddy to help pay the bills to becoming a superstar fund manager on Wall Street. He built a unique investment philosophy, tracking down multiple 'tenbaggers' that brought him massive success. By relying on nothing but common sense, he maintained a staggering 29.2% average annual return year after year, turning Fidelity's Magellan Fund into the number one fund in the world.
 **keywords**: Peter Lynch, Peter Lynch's investment philosophy, Peter Lynch's stock classification, tenbaggers, GARP strategy, PEG ratio, invest in what you know, Magellan Fund, Fidelity, stock picking strategies, value investing, retail investing
 **name**: Peter Lynch

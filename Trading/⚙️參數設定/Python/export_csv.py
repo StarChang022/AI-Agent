@@ -1,6 +1,7 @@
 import os
 import csv
 import time
+import shutil
 import urllib.parse
 import gspread
 
@@ -18,8 +19,8 @@ WATCHLIST_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsb
 # Portfolio Sheet URL (資產組合 / 資產管理)
 PORTFOLIO_URL = 'https://docs.google.com/spreadsheets/d/1YecgMfK1i4hnsiledS5dYwwyBsMCTUPc6H6mfj0G1_0/edit?gid=0#gid=0'
 
-# Output directory for exported CSVs（若資料夾不存在會自動建立）
-OUTPUT_DIR = '/Users/starchang/Desktop/csv'
+# Output directory for exported CSVs（每次執行前會清空，若資料夾不存在會自動建立）
+OUTPUT_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/stocks'
 
 # Parallel worker count（執行緒數）
 # 多個執行緒可以讓網路 I/O 重疊，加速下載。
@@ -314,6 +315,11 @@ def run_parallel_downloads(
 
 
 def main():
+    print("正在清空並重建輸出資料夾...")
+    if os.path.exists(OUTPUT_DIR):
+        shutil.rmtree(OUTPUT_DIR)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
     print("正在初始化 Google API 服務...")
     try:
         gc = get_gspread_client(CREDENTIAL_PATH)
