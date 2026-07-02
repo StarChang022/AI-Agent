@@ -1,0 +1,15 @@
+{
+  "serverInfo": {
+    "name": "PlayPlus Web Agent",
+    "version": "1.0.0"
+  },
+  "transport": {
+    "type": "webmcp",
+    "endpoint": "/mcp"
+  },
+  "capabilities": {
+    "tools": {},
+    "resources": {},
+    "prompts": {}
+  }
+}

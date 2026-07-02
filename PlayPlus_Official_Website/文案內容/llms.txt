@@ -1,0 +1,21 @@
+# PlayPlus 普魯士國際
+
+> PlayPlus 普魯士國際是一支專為中小企業提供「數位轉型顧問與客製化系統開發」的專業團隊。我們協助沒有 IT 部門、預算有限的公司，從梳理工作流程開始，設計卓越的使用體驗並開發落地的小系統，幫助企業逐步完成標準化、數位化、自動化，無痛啟動數位轉型。
+
+## 聯絡方式
+- 網站: https://playplus.com.tw/
+- 總部位置: 台北市
+- 預約諮詢: https://playplus.com.tw/contact.html
+
+## 核心服務
+- [企業內部系統](https://playplus.com.tw/services/internal-systems.html): 數位轉型的核心，包含庫存管理、員工排班、ERP整合、CRM系統等，旨在提升工作效率，統一資料格式與入口。先體驗再決定，可享有 1 個月免費試用。
+- [品牌網站](https://playplus.com.tw/services/web-design.html): 企業轉型的第一步數位門面，我們提供兼具美感設計與良好 UX 的網站開發，確保 SEO 友善，啟動成長引擎。
+- [APP 開發](https://playplus.com.tw/services/app-development.html): 針對高行動場景（如外勤業務、學員會員、客服），打造專屬操作流程的 iOS 與 Android APP 應用。
+- [聊天機器人](https://playplus.com.tw/services/chatbot-development.html): 透過 LINE 等聊天軟體建立服務據點，自動化客服、強化用戶連結並提升轉換率。
+
+## 關鍵資訊
+- [服務項目與流程說明](https://playplus.com.tw/services.html)
+- [數位轉型與快速啟動方案](https://playplus.com.tw/digital-transformation.html)
+- [精選專案作品集](https://playplus.com.tw/portfolio.html)
+- [常見問答 FAQ](https://playplus.com.tw/faq.html)
+- [知識筆記與技術文章](https://playplus.com.tw/blog.html)

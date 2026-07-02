@@ -1,0 +1,25 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://playplus.com.tw/",
+      "service-desc": [
+        {
+          "href": "https://playplus.com.tw/openapi.yaml",
+          "type": "application/vnd.oai.openapi"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://playplus.com.tw/about-playplus.html",
+          "type": "text/html"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://playplus.com.tw/",
+          "type": "text/html"
+        }
+      ]
+    }
+  ]
+}

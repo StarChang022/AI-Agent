@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "playplus-services",
+      "type": "skill-md",
+      "description": "提供普魯士國際的數位轉型與網站開發服務資訊。",
+      "url": "https://playplus.com.tw/.well-known/agent-skills/general-info.md",
+      "digest": "sha256:d65e8d3fc1bab4b81745c4e8af1176a1ed8fd5c7c69c3e969b49253ece4bf2a3"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+name: Auto Deploy on Main Update
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "20"
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build project
+              run: npm run build
+
+            - name: Deploy to server
+              env:
+                  SSH_KEY: ${{ secrets.SSH_KEY }}
+                  SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+                  SSH_HOST: ${{ secrets.SSH_HOST }}
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "$SSH_KEY" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+                  ssh -t -i ~/.ssh/id_rsa $SSH_USERNAME@$SSH_HOST << 'EOF'
+                  cd /home/playplus/www/playplus_2025
+                  git fetch origin
+                  git reset --hard origin/main
+                  git clean -fd
+                  EOF
+                  
+                  # 同步 dist 資料夾到伺服器
+                  rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+                    ./dist/ $SSH_USERNAME@$SSH_HOST:/home/playplus/www/playplus_2025/dist/
