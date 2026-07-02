@@ -19,6 +19,9 @@ WATCHLIST_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsb
 # Portfolio Sheet URL (資產組合 / 資產管理)
 PORTFOLIO_URL = 'https://docs.google.com/spreadsheets/d/1YecgMfK1i4hnsiledS5dYwwyBsMCTUPc6H6mfj0G1_0/edit?gid=0#gid=0'
 
+# Detail Sheet URL (明細)
+DETAIL_URL = 'https://docs.google.com/spreadsheets/d/1YecgMfK1i4hnsiledS5dYwwyBsMCTUPc6H6mfj0G1_0/edit?gid=1617655567#gid=1617655567'
+
 # Output directory for exported CSVs（每次執行前會清空，若資料夾不存在會自動建立）
 OUTPUT_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/stocks'
 
@@ -339,6 +342,13 @@ def main():
     pf_ok = download_sheet_as_csv(rate_limiter, cache, PORTFOLIO_URL, stocks_file_path, label='資產組合')
     if not pf_ok:
         print("\033[91m[失敗] 資產組合匯出未完成，請檢查權限後再試。\033[0m")
+
+    # ── Step 1b: 匯出明細 (Detail) ───────────────────────────────────────
+    print("\n正在匯出明細 (Detail) → trading_detail.csv ...")
+    detail_file_path = os.path.join(OUTPUT_DIR, 'trading_detail.csv')
+    dt_ok = download_sheet_as_csv(rate_limiter, cache, DETAIL_URL, detail_file_path, label='明細')
+    if not dt_ok:
+        print("\033[91m[失敗] 明細匯出未完成，請檢查權限後再試。\033[0m")
 
     # ── Step 2: 讀取股票名單（單次 API 呼叫取得整張表）─────────────────────
     print("\n正在讀取股票名單主表格（單次 API 呼叫）...")
