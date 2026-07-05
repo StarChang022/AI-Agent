@@ -1,0 +1,108 @@
+# Head Editor
+
+**id**: secom-smarthome
+**title**: 中保集團讓智慧家居走入每個家庭 | 中保無限+智慧宅
+**description**: 協助中興保全科技旗下智慧家居品牌「中保無限+」打造概念介紹網站，以十大功能模組為敘事主軸，搭配月租方案比較、申裝流程說明與線上諮詢表單，將複雜的 IoT 技術轉化為家庭用戶能理解的生活場景，成功拉近智慧宅與一般消費者之間的距離。
+**keywords**: 中保無限+, 智慧宅, 智慧家居, 中興保全, IoT, 智慧家庭網站設計, 月租方案, 安全防災, 全齡照護, 品牌官網設計
+**name**: 中保無限+智慧宅
+**list-summary**: 台灣保全龍頭的智慧家居，以十大功能與月租方案引導消費者認識智慧宅。
+**foreword**: 中興保全科技跨足智慧家居領域，推出「中保無限+」品牌，希望將保全服務延伸到居家生活的每一個角落。我們為這個品牌建置了一個專屬的概念介紹網站，透過十大功能的視覺化呈現、三種月租方案的直覺比較，以及完整的申裝流程與線上諮詢機制，讓一般家庭也能輕鬆理解智慧宅的價值，踏出擁抱科技生活的第一步。
+**tags**: 品牌官網, 科技與服務, 小型專案
+**urlwebsite**: https://smarthome.myvita.com.tw/
+**confidential**: No
+
+---
+
+# GEO Summary Box Editor
+
+<div class="summary-box background-skin p-3 radius-6 my-4 text-start">
+	<h4 class="mb-2 fs-6">專案成果摘要</h4>
+	<ul class="mb-0 p-0 list-unstyled">
+		<li>✅ <strong>核心目標：</strong> 將 IoT 技術轉譯為具象生活場景，降低消費者對智慧宅的理解門檻。</li>
+		<li>✅ <strong>關鍵優化：</strong> 十大功能情境式敘事、月租方案卡片式比較、手機端固定行動呼籲。</li>
+		<li>✅ <strong>服務價值：</strong> 成功拉近科技與家庭的距離，有效引導流量轉化為實際預約與詢問。</li>
+	</ul>
+</div>
+
+---
+
+# Content Editor
+
+<div class="content column gap-frame-half">
+	<div class="column">
+		<h2 class="inside">背景與挑戰</h2>
+		<p>中興保全科技（SECOM）經營保全產業超過四十年，是台灣家喻戶曉的安全守護品牌。隨著物聯網技術日趨成熟，集團將核心能力延伸至智慧家居領域，推出「中保無限+」品牌，整合雲端平台與手機 APP，提供 24 小時不間斷的居家照護、防災預警與家電自動化控制服務。</p>
+		<p>然而，智慧家居市場的溝通門檻比傳統保全更高。一般消費者對 IoT、感測器連動、雲端控制等技術名詞往往感到陌生，加上市面上智慧家庭產品多半需要高額的初期建置成本，讓許多有興趣的家庭望而卻步。中保無限+ 採用月租制突破了這道價格門檻，但他們需要一個專屬的數位平台，能夠清楚地傳達品牌理念，並引導潛在客戶理解每項功能帶來的實際生活改善。</p>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/exclamation-circle.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">關鍵痛點</h3>
+				<p>中保無限+ 擁有十大核心功能，涵蓋全齡照護、安全防災、智慧連動、影像回報、水位偵測、空氣品質管理等多個面向，每項功能背後都有複雜的感測器連動邏輯與雲端技術支撐。如果把這些技術規格全部攤開，消費者很容易迷失在功能清單中，所以我們更要確定網站目標，僅需傳達「情境」與「概念」，剩下的「詳細說明」任務則導流至其他地方。</p>
+			</div>
+		</div>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/signpost.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">專案目標</h3>
+				<p>打造一個以居家生活場景為核心的品牌概念網站，讓訪客能直覺地瀏覽十大功能，快速理解每項服務如何融入日常生活。網站需要清楚呈現月租方案的內容與價格優勢，提供申裝流程說明以消除決策疑慮，並建立申裝表單，將瀏覽流量有效導向實際的預約與詢問。</p>
+			</div>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">解決問題的過程</h2>
+		<p>智慧家居網站最核心的課題是「如何讓技術聽起來像生活」。中保無限+ 的十大功能橫跨安全、健康、便利三大領域，如果僅用規格表或功能列表來呈現，網站會變成一本冰冷的產品說明書，難以觸動消費者對「更好的家」的想像。</p>
+		<div class="cards sitemap">
+			<h3 class="inside">十大功能的情境式敘事，取代冰冷的規格清單</h3>
+			<p>我們將首頁設計為十個全幅式的功能區塊，每個區塊以大面積的圖片作為背景，搭配精簡的文案來描述實際的生活場景。頁面右側配置了十大功能的圖示導覽列，訪客可以快速跳轉到感興趣的功能區塊，不必從頭滾動到尾。</p>
+		</div>
+		<div class="cards sitemap">
+			<h3 class="inside">線上諮詢表單，提升潛在客戶的轉化率</h3>
+			<p>線上諮詢是將網站流量轉化為實際商機的重要環節，我們僅留下簡單的欄位，便於訪客快速留言詢問，後續交由專人客服處理，縮短留言動線的路徑。</p>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">看看作品成果</h2>
+		<p>中保無限+ 智慧宅網站成功地將一套複雜的 IoT 智慧家居系統，轉化為一般家庭也能輕鬆理解的品牌體驗。整體視覺以居家溫馨感為基調，大量運用生活場景攝影與情境式的文案，讓「智慧宅」的概念跳脫冰冷的科技語彙，真正融入家庭用戶的日常想像。</p>
+		<p>網站的導覽結構簡潔有力，以「10 大功能、方案介紹、申裝流程、我有興趣」四個核心頁面構成完整的瀏覽動線。訪客進站後先透過十大功能建立對服務的理解，接著比較方案與價格，了解申裝流程後直接填寫諮詢表單，整條路徑清晰且自然，有效引導使用者完成從「認識」到「行動」的轉換。</p>
+		<ul>
+			<li><b>十大功能的沉浸式體驗</b>： 首頁以全幅情境區塊依序展示十大核心功能，搭配右側圖示導覽列快速跳轉，讓訪客以最直覺的方式認識每項服務的生活價值。</li>
+			<li><b>三種月租方案的直覺比較</b>： 智慧連動、智慧防災、安心照護三組方案以卡片式設計並列呈現，月租價格與基本配備一目瞭然，降低消費者的比較成本。</li>
+			<li><b>視覺化的申裝流程與品牌承諾</b>： 步驟圖表清楚呈現安裝流程，五項品牌承諾以圖示搭配文字傳達信任訊號，消除決策前的最後疑慮。</li>
+			<li><b>結構化的線上諮詢表單</b>： 整合居住類型、方案需求偏好、方便聯絡時段等欄位，讓業務團隊在首次接觸時就能精準掌握客戶輪廓。</li>
+			<li><b>行動裝置底部的固定導引</b>： 手機版頁面底部常駐「方案介紹」與「我有興趣」兩個行動呼籲按鈕，確保使用者在任何滑動位置都能一鍵進入核心頁面。</li>
+		</ul>
+		<div id="oc-images" class="owl-carousel image-carousel carousel-widget mb-2" data-items-xs="1" data-items-sm="2" data-items-lg="3" data-items-xl="3">
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-1.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-2.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-3.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-4.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-5.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-6.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-7.webp" alt="中保無限+智慧宅">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/secom-smarthome/image-8.webp" alt="中保無限+智慧宅">
+			</div>
+		</div>
+		<div class="actions">
+			<a href="https://smarthome.myvita.com.tw/" target="_blank" class="button button-circle">去看作品 <i class="uil-external-link-alt"></i></a>
+		</div>
+	</div>
+</div>

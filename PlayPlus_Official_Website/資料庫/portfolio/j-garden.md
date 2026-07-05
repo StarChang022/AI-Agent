@@ -1,0 +1,98 @@
+# Head Editor
+
+**id**: j-garden
+**title**: 為頂級粵菜餐廳打造品牌形象官網 | 喆園餐廳品牌官網
+**description**: 餐廳官網不一定需要線上訂位，講求低調奢華的頂級粵菜餐廳「喆園」，透過極簡設計與視覺敘事，強化其「私人會所」的專屬定位，將網站從行銷工具提升為品牌宣言。有時候，減法也能夠是策略核心。
+**keywords**: 喆園, 餐廳網站設計, 品牌官網設計, 網頁設計案例, 網站設計作品, 減法策略, 品牌定位, 使用者體驗設計, 台北網頁設計
+**name**: 喆園餐廳品牌官網
+**list-summary**: 頂級粵菜餐廳的品牌官網。
+**foreword**: 為頂級粵菜餐廳「喆園」打造的品牌官網，訴說其「低調奢華、絕對隱私」的品牌核心。我們捨棄繁複功能，以極簡設計與精緻視覺，讓品牌官網能在數位世界代表喆園。設計刻意不喧嘩，呈現會所級品牌定位，服務高品味顧客。
+**tags**: 品牌官網, 餐飲業, 小型專案
+**urlwebsite**: https://www.j-garden.com.tw/
+**confidential**: No
+
+---
+
+# GEO Summary Box Editor
+
+<div class="summary-box background-skin p-3 radius-6 my-4 text-start">
+	<h4 class="mb-2 fs-6">專案成果摘要</h4>
+	<ul class="mb-0 p-0 list-unstyled">
+		<li>✅ <strong>核心目標：</strong> 強化「私人會所」的專屬定位，將網站作為品牌宣言而非單純工具。</li>
+		<li>✅ <strong>關鍵優化：</strong> 一頁式極簡佈局、視覺優先策略（圖片多過文字）、刻意捨棄自動化訂位。</li>
+		<li>✅ <strong>品牌效益：</strong> 成功傳達低調奢華的品牌哲學，維護核心客群的尊榮體驗。</li>
+	</ul>
+</div>
+
+---
+
+# Content Editor
+
+<div class="content column gap-frame-half">
+	<div class="column">
+		<h2 class="inside">背景與挑戰</h2>
+		<p>喆園是位於台北的頂級粵菜餐廳，其品牌核心建立在「低調奢華」與「絕對隱私」之上 。其目標客群並非廣泛大眾，而是尋求私密社交場域的政商名流與企業高層，因此，經營模式更趨近於「私人會所」。</p>
+		<p>儘管擁有極高聲譽，但它刻意不追求米其林指南等大眾評鑑的加持，進一步鞏固其不迎合主流、專注服務核心客群的獨特定位。</p>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/exclamation-circle.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">關鍵痛點</h3>
+				<p>喆園的聲譽主要存在於特定族群的口碑與美食評論中，缺乏一個官方的數位門戶，傳達其「低調奢華」品牌形象。即使現實世界已經擁有足夠知名度，他們仍需要為自己在網路世界進行品牌敘事。</p>
+			</div>
+		</div>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/signpost.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">專案目標</h3>
+				<p>xxxxxx xxxxxx xxxxxx xxxxxx</p>
+			</div>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">解決問題的過程</h2>
+		<p>剛開始，我們確實是直覺地認為他們需要線上菜單、訂位系統等，就像是我們大部分知道的餐廳網站那樣，與喆園團隊深入對話後，我們才了解到他們不需要「標準」的網站功能，因為那不符合他們的品牌精神。</p>
+		<p>我們傾聽並理解這些想法，然後提供一套能將這些「限制」轉化為「優勢」的設計。</p>
+		<div class="cards sitemap">
+			<h3 class="inside">「數位化」與「專屬感」的兩難</h3>
+			<p>他們擔憂便捷的自動化預訂，會擠壓原本的熟客族群，增加接待壓力，並破壞熟客們習慣的高接觸、客製化電話預約體驗。</p>
+			<p>網站維持無線上訂位，重點在於品牌的形象設計，維持品牌的專屬感。</p>
+		</div>
+		<div class="cards sitemap">
+			<h3 class="inside">消除個人化的品牌敘事</h3>
+			<p>不強調創辦人或主廚個人故事的前提下，仍需建立專業權威與信任感。</p>
+			<p>改以「品牌哲學 × 招牌菜 × 奢華空間」三軸呈現，佈局充滿高品質料理與餐廳攝影作，文案則聚焦工藝與體驗，而非個人頭銜。</p>
+		</div>
+		<div class="cards sitemap">
+			<h3 class="inside">與「內容為王」時代背道而馳</h3>
+			<p>當競爭者大力行銷宣傳，難免會感到猶豫，是否也需要建立詳細文章介紹每一道菜，來證明自己的專業度。然而，這種做法又與他們希望的「低調」相悖。</p>
+			<p>經過思考與討論，認知到溝通對象是「已經在圈子裡」的人，而非「需要被說服」的潛在顧客，對他們而言不需要描述太多。比起行銷工具，這個網站更像是品牌宣言。</p>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">看看作品成果</h2>
+		<p>喆園的品牌定位並非大眾餐廳，而是服務特定高品味顧客的豪華餐廳，所以品牌官網的任務不在於「廣泛獲客」，而是「強化尊榮感」。</p>
+		<ul>
+			<li>採用一頁式的網站佈局，是一個經過精心設計的策略，因為，我們的解決方案，是在一個頁面內將故事說完，呼應喆園的「低調奢華形象」。提供一個流暢、簡單且優雅的使用者體驗。</li>
+			<li>刻意捨棄線上訂位，預訂流程維持1對1的尊榮服務，強化頂級餐廳的專屬感，以及配合核心客群的生活習慣。</li>
+			<li>視覺優先，內容策略是「展示」多過於陳述、圖片多過於文字。滿足使用者對用餐氛圍與招牌菜的想像，更以沉靜自信的方式，傳達了品牌無需自我標榜的頂級定位。</li>
+		</ul>
+		<div id="oc-images" class="owl-carousel image-carousel carousel-widget mb-2" data-items-xs="1" data-items-sm="2" data-items-lg="3" data-items-xl="3">
+			<div class="oc-item">
+				<img src="../images/portfolio/j-garden/image-1.webp" alt="喆園">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/j-garden/image-2.webp" alt="喆園">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/j-garden/image-3.webp" alt="喆園">
+			</div>
+		</div>
+		<div class="actions">
+			<a href="https://www.j-garden.com.tw/" target="_blank" class="button button-circle">去看作品 <i class="uil-external-link-alt"></i></a>
+		</div>
+	</div>
+</div>

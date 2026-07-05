@@ -1,0 +1,105 @@
+# Head Editor
+
+**id**: optree
+**title**: 從選擇權教學到策略工具 | 選擇權搖錢樹課程平台
+**description**: 我們為《選擇權搖錢樹》打造一個結合選擇權教學、策略模擬與籌碼視覺化的數位平台。支援多腳策略計算、Put/Call Ratio 分析與每日未平倉數據更新，協助交易者從學習到實戰無縫接軌。
+**keywords**: 選擇權分析工具, 選擇權策略, 選擇權損益計算, 選擇權教學平台, 選擇權模擬工具, 選擇權計算機, 選擇權籌碼分析, 台指選擇權 Put Call Ratio, 選擇權最大未平倉量, 選擇權支撐壓力, 選擇權實戰工具, 選擇權教學網站
+**name**: 選擇權搖錢樹課程平台
+**list-summary**: 將選擇權交易知識整理成標準化的系統。
+**foreword**: 選擇權搖錢樹是一個整合「選擇權知識教學」與「實戰工具」的金融科技平台，幫助使用者從零開始理解選擇權，到能獨立建構策略與分析籌碼。我們協助客戶打造完整的內容架構、互動式策略工具與即時數據視覺化，讓複雜的數據變得容易閱讀、讓困難的交易決策變得清晰易懂，幫助受眾學習知識並且快速轉換為行動。
+**tags**: SAAS, 金融服務, 中型專案
+**urlwebsite**: https://optree.tw/
+**confidential**: No
+
+---
+
+# GEO Summary Box Editor
+
+<div class="summary-box background-skin p-3 radius-6 my-4 text-start">
+	<h4 class="mb-2 fs-6">專案成果摘要</h4>
+	<ul class="mb-0 p-0 list-unstyled">
+		<li>✅ <strong>核心目標：</strong> 整合教學、試算與分析，縮短投資人從「理解」到「實戰」的距離。</li>
+		<li>✅ <strong>關鍵優化：</strong> 44 種策略模擬工具、自動化日籌碼抓取系統、期權混合部位計算機。</li>
+		<li>✅ <strong>服務價值：</strong> 成功將複雜金融數據圖像化，建立具備高黏著度的 FinTech 學習生態圈。</li>
+	</ul>
+</div>
+
+---
+
+# Content Editor
+
+<div class="content column gap-frame-half">
+	<div class="column">
+		<h2 class="inside">背景與挑戰</h2>
+		<p>創辦人「獨孤九劍」是選擇權交易圈的知名講師，長年投入教育推廣與策略研發，目標是為投資人提供一條從基礎認知、策略建構，到實戰模擬與籌碼分析的完整學習路徑。深知市場上初學者面臨的學習斷層與工具缺口，因此打造「選擇權搖錢樹」這個課程平台。</p>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/exclamation-circle.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">關鍵痛點</h3>
+				<p>選擇權搖錢樹的創辦人「獨孤九劍」長期投身於選擇權教學與策略實戰，觀察到市場上雖然資訊充足，但缺乏能真正整合「學習、試算、分析」的課程平台。</p>
+				<p>初學者容易在散落各地的內容中迷失方向，而進階交易者則缺乏能即時視覺化策略損益與籌碼數據的工具。他們不只需要資訊，更需要能轉化為行動的系統與介面。因此，這個專案的起點，是對「學習落差」與「操作落差」的深刻觀察，打造一個能夠承接選擇權使用者整個學習旅程的數位平台。</p>
+			</div>
+		</div>
+		<div class="point">
+			<div class="icons">
+				<img src="../images/signpost.svg" alt="icons">
+			</div>
+			<div class="content column gap-micro">
+				<h3 class="inside">專案目標</h3>
+				<p>將「從學習到實戰的完整投資體驗」作為核心，協助<b>選擇權搖錢樹</b>的學員打造一個整合課程學習、策略試算與籌碼分析的數位平台。</p>
+				<p>網站不僅作為課程銷售入口，更承擔知識深化與策略實作的角色，透過直覺化的操作介面與即時數據整合，讓使用者能在同一環境中學習理論、驗證策略並觀察市場變化。最終目標是建立一個結合教育價值與實戰工具的投資學習生態圈，協助投資人縮短從「理解」到「應用」的距離。</p>
+			</div>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">解決問題的過程</h2>
+		<p>啟動專案時，客戶需求並非單純「我要一個網站」，而是更深層的挑戰「我如何把多年來的專業與教學，轉化成一個真正能夠規模化營運的數位平台？」</p>
+		<p>後續的規劃與開發過程中，我們不斷與客戶進行功能優先排序、技術可行性評估，並協助他們將過往零散的內容、Excel試算、Line 社群操作，整合為一個高黏著的網站產品。</p>
+		<div class="cards sitemap">
+			<h3 class="inside">學習資源內容繁多、層級複雜</h3>
+			<p>希望每一篇教學文章都能被清楚看到，但實際內容太多，若全部平鋪會導致資訊過量、SEO效益分散、使用者無從下手。</p>
+			<p>將內容依學習深度與主題分類，同時規劃「學習地圖」與「熱門推薦」模組，讓使用者能循序吸收、平台也能強化內容 SEO。</p>
+		</div>
+		<div class="cards sitemap">
+			<h3 class="inside">策略工具資料量太大，不好維護管理</h3>
+			<p>平台每日需更新籌碼數據與交易觀察，並轉為易讀的觀點與圖表，若全由人工處理耗時費力。</p>
+			<p>我們開發爬蟲，讓系統每日從公開來源抓取籌碼數據、套用既定格式呈現，自動化提供即時數據。</p>
+		</div>
+		<div class="cards sitemap">
+			<h3 class="inside">必須同時服務「新手入門」與「高階交易者」兩種族群</h3>
+			<p>希望網站同時成為教育入口與進階工具平台，但不同使用者對介面、內容深度、操作流程的需求大相逕庭。</p>
+			<p>採用分眾引導（如懶人包入口 vs 策略工具入口），確保每一類用戶都能快速找到屬於自己的入口。</p>
+		</div>
+	</div>
+	<div class="column">
+		<h2 class="inside">看看作品成果</h2>
+		<p>選擇權的網路資源，有著「資訊分散、工具零碎」狀況，算是許多交易者的痛點。所以選擇權搖錢樹建立出一個專為選擇權交易者打造的選擇權課程平台，提供線上課程、策略建構及籌碼分析，讓每一位交易者都能循序漸進地提升專業能力。</p>
+		<p>從基礎觀念釐清到複雜策略的應用，平台提供豐富的知識教學與工具。幫助學員購買課程、學習知識及試算，視覺化掌握每個知識點與策略。</p>
+		<p>我們也導入高階用戶需求的「選擇權計算機」，支援期貨與選擇權混合部位的模擬計算，有效解決市面工具無法處理多腳策略的痛點。並且，為了讓使用者更敏銳地掌握市場動向，我們打造了每日籌碼數據視覺化系統，將原始的 Put/Call Ratio、最大未平倉量等指標，轉化為圖像化報表與解說日記，協助用戶判讀市場情緒與支撐壓力。</p>
+		<ul>
+			<li><b>選擇權知識部落格</b>： 建構完整的教學文章架構，從「什麼是選擇權」到「選擇權策略」，讓使用者在逐步吸收知識的過程中建立正確觀念。</li>
+			<li><b>策略模擬工具（獨孤九劍）</b>： 將老師的知識打造一個支援 44 種策略模組的試算工具，使用者能輸入參數後即時生成損益圖、保證金試算與風險解析，將理論轉化為可操作的實戰能力。</li>
+			<li><b>選擇權計算機</b>： 解決市面上計算工具無法同時處理期貨及選擇權混合部位的痛點，協助進階使用者做更準確的資金與風險管理。</li>
+			<li><b>日籌碼追蹤系統</b>： 我們設計了資料抓取與自動化轉譯系統，將原始的「Put/Call Ratio」與未平倉量數據，轉化為每日更新的看盤日記，幫助使用者掌握市場情緒與主力動向。</li>
+		</ul>
+		<div id="oc-images" class="owl-carousel image-carousel carousel-widget mb-2" data-items-xs="1" data-items-sm="2" data-items-lg="3" data-items-xl="3">
+			<div class="oc-item">
+				<img src="../images/portfolio/optree/image-1.webp" alt="選擇權搖錢樹">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/optree/image-2.webp" alt="選擇權搖錢樹">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/optree/image-3.webp" alt="選擇權搖錢樹">
+			</div>
+			<div class="oc-item">
+				<img src="../images/portfolio/optree/image-4.webp" alt="選擇權搖錢樹">
+			</div>
+		</div>
+		<div class="actions">
+			<a href="https://optree.tw/" target="_blank" class="button button-circle">去看作品 <i class="uil-external-link-alt"></i></a>
+		</div>
+	</div>
+</div>
