@@ -29,6 +29,7 @@ const {
   parseOrderJson,
   sortByOrder,
   sortByDateDesc,
+  randomSample,
 } = require('./parser');
 const {
   generateBlogArticlePage,
@@ -180,8 +181,8 @@ async function main() {
   console.log('[7/8] 生成 index.html...');
 
   const siteData = {
-    portfolio: portfolioSorted,
-    blog     : blogSorted,
+    portfolio: randomSample(portfolioSorted, INDEX_LIMITS['portfolio']),
+    blog     : randomSample(blogSorted, INDEX_LIMITS['blog']),
   };
 
   generateIndexPage(
@@ -196,7 +197,7 @@ async function main() {
   console.log('[8/8] 生成 about-playplus.html...');
 
   generateAboutPage(
-    portfolioSorted,
+    randomSample(portfolioSorted, ABOUT_PORTFOLIO_LIMIT),
     path.join(INPUT_DIR,  'about-playplus.html'),
     path.join(OUTPUT_DIR, 'about-playplus.html'),
     ABOUT_PORTFOLIO_LIMIT

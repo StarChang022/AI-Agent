@@ -299,6 +299,37 @@ function generatePortfolioArticlePage(article, templatePath, destPath) {
 // 列表頁生成器
 // ═══════════════════════════════════════════════════════════════════════════════
 
+const BLOG_TAG_MAP = {
+  '設計師邏輯': 'designer',
+  '談談數位轉型': 'mindset',
+  '釐清需求': 'needs',
+  '決策與規劃': 'planning',
+  '觀點分享': 'insights',
+  '工具與資源應用': 'tools',
+  '趨勢觀察': 'trend',
+  '其他': 'miscellaneous'
+};
+
+const PORTFOLIO_TAG_MAP = {
+  '企業內部系統': 'system',
+  'SAAS': 'saas',
+  '品牌官網': 'official',
+  '電商平台': 'ecommerce',
+  '內容平台': 'media',
+  '餐飲業': 'catering',
+  '科技與服務': 'tech',
+  '金融服務': 'financial',
+  '製造業': 'manufacturing',
+  '零售電商': 'retail',
+  '電子業': 'electronics',
+  '藝術產業': 'art',
+  '生技醫療': 'biotech',
+  '不動產經營業': 'real-estate',
+  '小型專案': 'small-project',
+  '中型專案': 'medium-project',
+  '大型專案': 'large-project'
+};
+
 /**
  * 生成 blog.html 列表頁。
  * 依日期新到舊排列，每筆含 🟢Filter, 🟢UrlName, 🟢TAGs, 🟢PageTitle, 🟢Date。
@@ -309,9 +340,9 @@ function generateBlogListPage(articles, listHtmlPath, outputPath) {
   renderTemplate(listHtmlPath, outputPath, (html) => {
     html = replaceEditorBlock(html, 'List Editor', (tpl) => {
       return articles.map(a => {
-        // 將 tags 轉為 CSS class（去除空白、轉小寫）
+        // 將 tags 轉為 CSS class（使用字典對應，若無對應則去除空白轉小寫）
         const tags = (a.head['tags'] || '').split(',').map(t => t.trim()).filter(Boolean);
-        const filterClasses = tags.map(t => t.replace(/\s+/g, '-').toLowerCase()).join(' ');
+        const filterClasses = tags.map(t => BLOG_TAG_MAP[t] || t.replace(/\s+/g, '-').toLowerCase()).join(' ');
 
         let block = tpl
           .replace(/🟢Filter/g,    filterClasses)
@@ -337,7 +368,7 @@ function generatePortfolioListPage(articles, listHtmlPath, outputPath) {
     html = replaceEditorBlock(html, 'List Editor', (tpl) => {
       return articles.map(a => {
         const tags = (a.head['tags'] || '').split(',').map(t => t.trim()).filter(Boolean);
-        const filterClasses = tags.map(t => t.replace(/\s+/g, '-').toLowerCase()).join(' ');
+        const filterClasses = tags.map(t => PORTFOLIO_TAG_MAP[t] || t.replace(/\s+/g, '-').toLowerCase()).join(' ');
 
         let block = tpl
           .replace(/🟢Filter/g,       filterClasses)

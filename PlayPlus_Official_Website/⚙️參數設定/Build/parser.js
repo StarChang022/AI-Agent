@@ -29,7 +29,7 @@ function parseMarkdown(filePath) {
   const text = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
   // ── 切分各個 Section ──────────────────────────────────────────────────────
-  const sectionRegex = /^#\s+(.+?)\n([\s\S]*?)(?=^#\s+|\Z)/gm;
+  const sectionRegex = /^#\s+(.+?)\n([\s\S]*?)(?=^#\s+)/gm;
   const sections = {};
   let match;
   while ((match = sectionRegex.exec(text + '\n# END\n')) !== null) {

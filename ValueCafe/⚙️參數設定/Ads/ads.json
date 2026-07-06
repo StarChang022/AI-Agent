@@ -1,0 +1,16 @@
+[
+  {
+    "id": "books-essays-of-warren-buffett",
+    "type": "Books",
+    "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+    "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+    "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+  },
+  {
+    "id": "courses-financial-markets-global",
+    "type": "Courses",
+    "title": "Financial Markets",
+    "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+    "url": "https://www.coursera.org/learn/financial-markets-global"
+  }
+]

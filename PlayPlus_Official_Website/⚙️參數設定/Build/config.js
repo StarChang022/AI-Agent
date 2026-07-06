@@ -30,6 +30,7 @@ const COPY_FILES = [
   'style.css.map',
   'contact.html',
   'contact-success.html',
+  'services.html',
   'about-playplus.html',
   'digital-transformation.html',
   'faq.html',
@@ -69,12 +70,12 @@ const SKIP_FILES = new Set([
 
 // ─── index.html 各分類顯示數量 ───────────────────────────────────────────────
 const INDEX_LIMITS = {
-  'portfolio': 6,  // 作品集卡片數量（首頁）
-  'blog'     : 4,  // 知識筆記顯示數量（首頁）
+  'portfolio': 10,  // 作品集卡片數量（首頁）
+  'blog'     : 10,  // 知識筆記顯示數量（首頁）
 };
 
 // ─── about-playplus.html 作品集顯示數量 ─────────────────────────────────────
-const ABOUT_PORTFOLIO_LIMIT = 6;
+const ABOUT_PORTFOLIO_LIMIT = 10;
 
 module.exports = {
   INPUT_DIR,
