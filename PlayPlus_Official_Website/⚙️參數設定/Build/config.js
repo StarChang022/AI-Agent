@@ -3,7 +3,7 @@
 const path = require('path');
 
 // ─── 路徑設定 ────────────────────────────────────────────────────────────────
-const INPUT_DIR  = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Official_Website/資料庫';
+const INPUT_DIR  = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/PlayPlus_Official_Website/Database';
 const OUTPUT_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/playplus2025_transition_version';
 
 // ─── 使用 order.json 排序的分類 ──────────────────────────────────────────────
