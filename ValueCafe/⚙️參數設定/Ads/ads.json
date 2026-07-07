@@ -4,13 +4,65 @@
     "type": "Books",
     "title": "The Essays of Warren Buffett: Lessons for Corporate America",
     "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
-    "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4",
+    "pages": [
+      "financial-ratios/roe-and-roa.html",
+      "financial-ratios/profit-margin.html",
+      "financial-ratios/free-cash-flow.html"
+    ]
   },
   {
     "id": "courses-financial-markets-global",
     "type": "Courses",
     "title": "Financial Markets",
     "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
-    "url": "https://www.coursera.org/learn/financial-markets-global"
+    "url": "https://www.coursera.org/learn/financial-markets-global",
+    "pages": [
+      "financial-ratios/debt-ratio.html",
+      "financial-ratios/current-ratio-and-quick-ratio.html",
+      "financial-ratios/dividend-yield.html"
+    ]
+  },
+  {
+    "id": "books-little-book-big-dividends",
+    "type": "Books",
+    "title": "The Little Book of Big Dividends: A Safe Formula for Guaranteed Returns",
+    "description": "A practical guide to building a solid portfolio of dividend-paying stocks, written by a leading investment expert.",
+    "url": "https://www.amazon.com/Little-Book-Big-Dividends-Guaranteed/dp/0470568469",
+    "pages": [
+      "financial-ratios/dividend-yield.html"
+    ]
+  },
+  {
+    "id": "courses-introduction-financial-accounting",
+    "type": "Courses",
+    "title": "Introduction to Financial Accounting",
+    "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+    "url": "https://www.coursera.org/learn/wharton-accounting",
+    "pages": [
+      "financial-ratios/roe-and-roa.html",
+      "financial-ratios/profit-margin.html"
+    ]
+  },
+  {
+    "id": "courses-corporate-finance",
+    "type": "Courses",
+    "title": "Corporate Finance",
+    "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+    "url": "https://www.coursera.org/learn/wharton-finance",
+    "pages": [
+      "financial-ratios/free-cash-flow.html"
+    ]
+  },
+  {
+    "id": "books-the-intelligent-investor",
+    "type": "Books",
+    "title": "The Intelligent Investor",
+    "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+    "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661",
+    "pages": [
+      "financial-ratios/debt-ratio.html",
+      "financial-ratios/current-ratio-and-quick-ratio.html"
+    ]
   }
 ]

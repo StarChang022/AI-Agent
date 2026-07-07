@@ -485,6 +485,101 @@ function generateAboutPage(portfolioArticles, srcPath, destPath, limit) {
   });
 }
 
+/**
+ * 更新 sitemap.xml 檔案的 Portfolio 與 Blog 區段。
+ *
+ * @param {string} sitemapPath - sitemap.xml 檔案的絕對路徑
+ * @param {Array}  blogSorted  - 已排序的部落格文章列表
+ * @param {Array}  portfolioSorted - 已排序的作品集列表
+ * @param {string} inputDir    - 輸入目錄的絕對路徑
+ */
+function generateSitemap(sitemapPath, blogSorted, portfolioSorted, inputDir) {
+  if (!fs.existsSync(sitemapPath)) {
+    console.warn(`  [Sitemap] 找不到 sitemap.xml: ${sitemapPath}`);
+    return;
+  }
+
+  const sitemapContent = fs.readFileSync(sitemapPath, 'utf8');
+  const portfolioMarker = '<!-- Portfolio -->';
+  const blogMarker = '<!-- Blog -->';
+  const servicesMarker = '<!-- Services -->';
+
+  const portfolioStart = sitemapContent.indexOf(portfolioMarker);
+  const blogStart = sitemapContent.indexOf(blogMarker);
+  const servicesStart = sitemapContent.indexOf(servicesMarker);
+
+  if (portfolioStart === -1 || blogStart === -1 || servicesStart === -1) {
+    console.warn('  [Sitemap] 找不到 sitemap.xml 中的標記注釋，取消更新');
+    return;
+  }
+
+  // 1. 解析現有的 lastmod
+  const urlRegex = /<url>([\s\S]*?)<\/url>/g;
+  const locRegex = /<loc>(.*?)<\/loc>/;
+  const lastmodRegex = /<lastmod>(.*?)<\/lastmod>/;
+
+  const existingLastmod = {};
+  let match;
+  while ((match = urlRegex.exec(sitemapContent)) !== null) {
+    const urlBlock = match[1];
+    const locMatch = urlBlock.match(locRegex);
+    const lastmodMatch = urlBlock.match(lastmodRegex);
+    if (locMatch && lastmodMatch) {
+      existingLastmod[locMatch[1].trim()] = lastmodMatch[1].trim();
+    }
+  }
+
+  function formatISO(date) {
+    return date.toISOString().replace(/\.\d+Z$/, '+00:00');
+  }
+
+  function getOrUpdateLastmod(url, filePath) {
+    if (!fs.existsSync(filePath)) {
+      return formatISO(new Date());
+    }
+    const mtime = fs.statSync(filePath).mtime;
+    const existingStr = existingLastmod[url];
+    if (existingStr) {
+      const existingDate = new Date(existingStr);
+      if (mtime.getTime() - existingDate.getTime() > 10000) {
+        return formatISO(mtime);
+      }
+      return existingStr;
+    }
+    return formatISO(mtime);
+  }
+
+  // 2. 構建 Portfolio 區塊
+  let portfolioBlockContent = `\n<url>\n\t<loc>https://playplus.com.tw/portfolio.html</loc>\n\t<lastmod>${existingLastmod['https://playplus.com.tw/portfolio.html'] || '2025-07-30T08:19:18+00:00'}</lastmod>\n\t<priority>0.70</priority>\n</url>\n`;
+
+  for (const article of portfolioSorted) {
+    const url = `https://playplus.com.tw/portfolio/${article.id}.html`;
+    const filePath = path.join(inputDir, 'portfolio', article.filename);
+    const lastmod = getOrUpdateLastmod(url, filePath);
+    portfolioBlockContent += `<url>\n\t<loc>${url}</loc>\n\t<lastmod>${lastmod}</lastmod>\n\t<priority>0.70</priority>\n</url>\n`;
+  }
+
+  // 3. 構建 Blog 區塊
+  let blogBlockContent = `\n<url>\n\t<loc>https://playplus.com.tw/blog.html</loc>\n\t<lastmod>${existingLastmod['https://playplus.com.tw/blog.html'] || '2025-07-30T08:19:18+00:00'}</lastmod>\n\t<priority>0.70</priority>\n</url>\n`;
+
+  for (const article of blogSorted) {
+    const url = `https://playplus.com.tw/blog/${article.id}.html`;
+    const filePath = path.join(inputDir, 'blog', article.filename);
+    const lastmod = getOrUpdateLastmod(url, filePath);
+    blogBlockContent += `<url>\n\t<loc>${url}</loc>\n\t<lastmod>${lastmod}</lastmod>\n\t<priority>0.70</priority>\n</url>\n`;
+  }
+
+  // 4. 重組並寫回
+  const newSitemapContent =
+    sitemapContent.slice(0, portfolioStart + portfolioMarker.length) +
+    '\n' + portfolioBlockContent + '\n' +
+    sitemapContent.slice(blogStart, blogStart + blogMarker.length) +
+    '\n' + blogBlockContent + '\n' +
+    sitemapContent.slice(servicesStart);
+
+  fs.writeFileSync(sitemapPath, newSitemapContent, 'utf8');
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 
 module.exports = {
@@ -499,4 +594,5 @@ module.exports = {
   generatePortfolioListPage,
   generateIndexPage,
   generateAboutPage,
+  generateSitemap,
 };

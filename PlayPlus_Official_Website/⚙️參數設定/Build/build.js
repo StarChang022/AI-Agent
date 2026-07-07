@@ -38,6 +38,7 @@ const {
   generatePortfolioListPage,
   generateIndexPage,
   generateAboutPage,
+  generateSitemap,
 } = require('./generator');
 
 // ─── 工具：遞迴複製目錄 ──────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ async function main() {
   console.log('');
 
   // ── Step 1: 清除舊輸出目錄 ────────────────────────────────────────────────
-  console.log('[1/8] 清理舊輸出目錄內容 (保留 .git)...');
+  console.log('[1/9] 清理舊輸出目錄內容 (保留 .git)...');
   if (fs.existsSync(OUTPUT_DIR)) {
     const files = fs.readdirSync(OUTPUT_DIR);
     for (const file of files) {
@@ -93,7 +94,7 @@ async function main() {
   }
 
   // ── Step 2: 複製靜態資源 ──────────────────────────────────────────────────
-  console.log('[2/8] 複製靜態資源...');
+  console.log('[2/9] 複製靜態資源...');
 
   // 複製資源目錄
   for (const dir of COPY_DIRS) {
@@ -125,7 +126,7 @@ async function main() {
   }
 
   // ── Step 3: 解析 .md 檔案 ─────────────────────────────────────────────────
-  console.log('[3/8] 解析 Markdown 文章...');
+  console.log('[3/9] 解析 Markdown 文章...');
 
   // blog（依日期新到舊排序）
   const blogRaw    = parseCategory(path.join(INPUT_DIR, 'blog'), SKIP_FILES);
@@ -139,7 +140,7 @@ async function main() {
   console.log(`  portfolio : ${portfolioSorted.length} 篇`);
 
   // ── Step 4: 生成文章 HTML ─────────────────────────────────────────────────
-  console.log('[4/8] 生成文章頁面...');
+  console.log('[4/9] 生成文章頁面...');
 
   // blog 文章
   const blogTemplatePath = path.join(INPUT_DIR, 'blog', 'template.html');
@@ -158,7 +159,7 @@ async function main() {
   }
 
   // ── Step 5: 生成 blog.html 列表頁 ────────────────────────────────────────
-  console.log('[5/8] 生成 blog.html 列表頁...');
+  console.log('[5/9] 生成 blog.html 列表頁...');
 
   generateBlogListPage(
     blogSorted,
@@ -168,7 +169,7 @@ async function main() {
   console.log('  blog.html');
 
   // ── Step 6: 生成 portfolio.html 列表頁 ───────────────────────────────────
-  console.log('[6/8] 生成 portfolio.html 列表頁...');
+  console.log('[6/9] 生成 portfolio.html 列表頁...');
 
   generatePortfolioListPage(
     portfolioSorted,
@@ -178,7 +179,7 @@ async function main() {
   console.log('  portfolio.html');
 
   // ── Step 7: 生成 index.html ───────────────────────────────────────────────
-  console.log('[7/8] 生成 index.html...');
+  console.log('[7/9] 生成 index.html...');
 
   const siteData = {
     portfolio: randomSample(portfolioSorted, INDEX_LIMITS['portfolio']),
@@ -194,7 +195,7 @@ async function main() {
   console.log('  index.html');
 
   // ── Step 8: 生成 about-playplus.html ─────────────────────────────────────
-  console.log('[8/8] 生成 about-playplus.html...');
+  console.log('[8/9] 生成 about-playplus.html...');
 
   generateAboutPage(
     randomSample(portfolioSorted, ABOUT_PORTFOLIO_LIMIT),
@@ -203,6 +204,16 @@ async function main() {
     ABOUT_PORTFOLIO_LIMIT
   );
   console.log('  about-playplus.html');
+
+  // ── Step 9: 更新 sitemap.xml ─────────────────────────────────────────────
+  console.log('[9/9] 更新 sitemap.xml...');
+  const inputSitemapPath = path.join(INPUT_DIR, 'public', 'sitemap.xml');
+  const outputSitemapPath = path.join(OUTPUT_DIR, 'public', 'sitemap.xml');
+
+  // 更新來源與輸出目錄的 sitemap.xml
+  generateSitemap(inputSitemapPath, blogSorted, portfolioSorted, INPUT_DIR);
+  generateSitemap(outputSitemapPath, blogSorted, portfolioSorted, INPUT_DIR);
+  console.log('  sitemap.xml');
 
   // ── 完成 ──────────────────────────────────────────────────────────────────
   console.log('');
