@@ -109,7 +109,7 @@ h4.inside { font-size: var(--text-h4-inside); }
 	margin-bottom: var(--number-6);
 }
 
-.tags h1, .tags h2, .tags h3, .tags h4 {
+.tags h1, .tags h2, .tags h3, .tags h4, .tags p { {
 	margin-bottom: 0;
 }
 

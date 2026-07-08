@@ -8,7 +8,16 @@
     "pages": [
       "financial-ratios/roe-and-roa.html",
       "financial-ratios/profit-margin.html",
-      "financial-ratios/free-cash-flow.html"
+      "financial-ratios/free-cash-flow.html",
+      "intrinsic-value/cigar-butt-investing.html",
+      "intrinsic-value/discounted-cash-flow.html",
+      "intrinsic-value/pe-ratio.html",
+      "legendary/warren-buffett.html",
+      "legendary/charlie-munger.html",
+      "philosophy/patience-of-value-investing.html",
+      "philosophy/economic-moat.html",
+      "philosophy/margin-of-safety.html",
+      "worldview.html"
     ]
   },
   {
@@ -20,7 +29,15 @@
     "pages": [
       "financial-ratios/debt-ratio.html",
       "financial-ratios/current-ratio-and-quick-ratio.html",
-      "financial-ratios/dividend-yield.html"
+      "financial-ratios/dividend-yield.html",
+      "intrinsic-value/pb-ratio.html",
+      "intrinsic-value/pe-ratio.html",
+      "legendary/warren-buffett.html",
+      "legendary/charlie-munger.html",
+      "legendary/peter-lynch.html",
+      "news/20251222-gold-silver-price-record-high-2026-market-analysis.html",
+      "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html",
+      "worldview.html"
     ]
   },
   {
@@ -30,7 +47,8 @@
     "description": "A practical guide to building a solid portfolio of dividend-paying stocks, written by a leading investment expert.",
     "url": "https://www.amazon.com/Little-Book-Big-Dividends-Guaranteed/dp/0470568469",
     "pages": [
-      "financial-ratios/dividend-yield.html"
+      "financial-ratios/dividend-yield.html",
+      "intrinsic-value/dividend-yield-valuation.html"
     ]
   },
   {
@@ -41,7 +59,10 @@
     "url": "https://www.coursera.org/learn/wharton-accounting",
     "pages": [
       "financial-ratios/roe-and-roa.html",
-      "financial-ratios/profit-margin.html"
+      "financial-ratios/profit-margin.html",
+      "intrinsic-value/pb-ratio.html",
+      "intrinsic-value/pe-ratio.html",
+      "philosophy/non-operating-income.html"
     ]
   },
   {
@@ -51,7 +72,10 @@
     "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
     "url": "https://www.coursera.org/learn/wharton-finance",
     "pages": [
-      "financial-ratios/free-cash-flow.html"
+      "financial-ratios/free-cash-flow.html",
+      "intrinsic-value/discounted-cash-flow.html",
+      "news/20251222-alphabet-acquires-intersect-power-ai-energy-strategy.html",
+      "philosophy/economic-moat.html"
     ]
   },
   {
@@ -62,7 +86,178 @@
     "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661",
     "pages": [
       "financial-ratios/debt-ratio.html",
-      "financial-ratios/current-ratio-and-quick-ratio.html"
+      "financial-ratios/current-ratio-and-quick-ratio.html",
+      "intrinsic-value/cigar-butt-investing.html",
+      "intrinsic-value/pb-ratio.html",
+      "legendary/warren-buffett.html",
+      "legendary/charlie-munger.html",
+      "philosophy/margin-of-safety.html",
+      "philosophy/value-trap.html",
+      "worldview.html"
+    ]
+  },
+  {
+    "id": "books-security-analysis",
+    "type": "Books",
+    "title": "Security Analysis: Principles and Technique",
+    "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+    "url": "https://www.amazon.com/dp/1264932405",
+    "pages": [
+      "intrinsic-value/cigar-butt-investing.html",
+      "legendary/warren-buffett.html",
+      "philosophy/margin-of-safety.html"
+    ]
+  },
+  {
+    "id": "courses-corporate-valuation",
+    "type": "Courses",
+    "title": "Corporate Valuation - DCF and Relative Valuation",
+    "description": "Master the fundamental skills of company valuation in corporate finance and investment analysis using Discounted Cash Flow models.",
+    "url": "https://www.coursera.org/learn/corporate-valuation",
+    "pages": [
+      "intrinsic-value/discounted-cash-flow.html"
+    ]
+  },
+  {
+    "id": "courses-dividend-growth-investing",
+    "type": "Courses",
+    "title": "The Ultimate Guide to Dividend & Dividend Growth Investing",
+    "description": "Learn how to analyze and build a high-quality dividend growth portfolio for consistent long-term cash flow.",
+    "url": "https://www.udemy.com/topic/dividend-investing/",
+    "pages": [
+      "intrinsic-value/dividend-yield-valuation.html"
+    ]
+  },
+  {
+    "id": "courses-value-investing-masterclass",
+    "type": "Courses",
+    "title": "The Complete Value Investing Course",
+    "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+    "url": "https://www.udemy.com/topic/value-investing/",
+    "pages": [
+      "intrinsic-value/pe-ratio.html",
+      "intrinsic-value/pb-ratio.html",
+      "legendary/warren-buffett.html",
+      "legendary/charlie-munger.html",
+      "legendary/peter-lynch.html",
+      "philosophy/value-trap.html",
+      "worldview.html"
+    ]
+  },
+  {
+    "id": "books-poor-charlies-almanack",
+    "type": "Books",
+    "title": "Poor Charlie's Almanack: The Essential Wit and Wisdom of Charles T. Munger",
+    "description": "A collection of speeches, lectures, and public commentary from Charlie Munger, detailing his multidisciplinary thinking framework and mental models.",
+    "url": "https://www.amazon.com/Poor-Charlies-Almanack-Wisdom-Charles/dp/1578065011",
+    "pages": [
+      "legendary/charlie-munger.html",
+      "philosophy/patience-of-value-investing.html",
+      "philosophy/economic-moat.html"
+    ]
+  },
+  {
+    "id": "books-one-up-on-wall-street",
+    "type": "Books",
+    "title": "One Up On Wall Street: How To Use What You Already Know To Make Money In The Market",
+    "description": "Peter Lynch's classic guide showing regular investors how to leverage common sense and daily observations to find high-growth companies before the professionals do.",
+    "url": "https://www.amazon.com/One-Up-Wall-Street-Already/dp/0743200403",
+    "pages": [
+      "legendary/peter-lynch.html"
+    ]
+  },
+  {
+    "id": "books-the-snowball",
+    "type": "Books",
+    "title": "The Snowball: Warren Buffett and the Business of Life",
+    "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+    "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096",
+    "pages": [
+      "legendary/warren-buffett.html",
+      "philosophy/patience-of-value-investing.html"
+    ]
+  },
+  {
+    "id": "books-new-case-for-gold",
+    "type": "Books",
+    "title": "The New Case for Gold",
+    "description": "James Rickards explains why gold is the ultimate safe-haven asset, protecting wealth against currency devaluation, inflation, and geopolitical crises.",
+    "url": "https://www.amazon.com/New-Case-Gold-James-Rickards/dp/1101980761",
+    "pages": [
+      "news/20251222-gold-silver-price-record-high-2026-market-analysis.html"
+    ]
+  },
+  {
+    "id": "courses-renewable-energy-specialization",
+    "type": "Courses",
+    "title": "Renewable Energy Specialization",
+    "description": "A comprehensive Coursera specialization covering technologies, economics, and electric power system integrations for clean energy projects.",
+    "url": "https://www.coursera.org/specializations/renewable-energy",
+    "pages": [
+      "news/20251222-alphabet-acquires-intersect-power-ai-energy-strategy.html",
+      "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html"
+    ]
+  },
+  {
+    "id": "courses-energy-politics-economics",
+    "type": "Courses",
+    "title": "Politics and Economics of International Energy",
+    "description": "Analyze the geopolitical and economic dynamics of energy markets, focusing on fossil fuels, nuclear power, EU policy, and renewable energy shifts.",
+    "url": "https://www.coursera.org/learn/energy-politics-economics",
+    "pages": [
+      "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html"
+    ]
+  },
+  {
+    "id": "courses-self-driving-cars-specialization",
+    "type": "Courses",
+    "title": "Self-Driving Cars Specialization",
+    "description": "Learn the engineering and software fundamentals behind autonomous driving systems, covering state estimation, localization, and motion planning.",
+    "url": "https://www.coursera.org/specializations/self-driving-cars",
+    "pages": [
+      "news/20251222-uber-lyft-baidu-london-robotaxi-2026.html",
+      "news/20251222-waymo-driverless-taxis-were-paralyzed.html"
+    ]
+  },
+  {
+    "id": "books-autonomy-driverless-car",
+    "type": "Books",
+    "title": "Autonomy: The Quest to Build the Driverless Car—and How It Will Reshape Our World",
+    "description": "An inside look at the corporate rivalries, technological breakthroughs, and massive societal impacts of the self-driving car revolution.",
+    "url": "https://www.amazon.com/Autonomy-Quest-Build-Driverless-Reshape/dp/0062661132",
+    "pages": [
+      "news/20251222-uber-lyft-baidu-london-robotaxi-2026.html",
+      "news/20251222-waymo-driverless-taxis-were-paralyzed.html"
+    ]
+  },
+  {
+    "id": "books-builds-wealth",
+    "type": "Books",
+    "title": "The Little Book That Builds Wealth: The Knockout Formula for Finding Great Investments",
+    "description": "Pat Dorsey explains the concept of economic moats and shows you how to identify businesses with sustainable competitive advantages.",
+    "url": "https://www.amazon.com/Little-Book-That-Builds-Wealth/dp/1119717752",
+    "pages": [
+      "philosophy/economic-moat.html"
+    ]
+  },
+  {
+    "id": "books-quality-of-earnings",
+    "type": "Books",
+    "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+    "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+    "url": "https://www.amazon.com/dp/0684863758",
+    "pages": [
+      "philosophy/non-operating-income.html"
+    ]
+  },
+  {
+    "id": "books-most-important-thing",
+    "type": "Books",
+    "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+    "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+    "url": "https://www.amazon.com/dp/0231153686",
+    "pages": [
+      "philosophy/margin-of-safety.html"
     ]
   }
 ]
