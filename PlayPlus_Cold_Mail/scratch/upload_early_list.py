@@ -47,9 +47,9 @@ def main():
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SPREADSHEET_ID).worksheet(WORKSHEET_NAME)
 
-    print("Clearing worksheet A2:Y...")
+    print("Clearing worksheet A2:U...")
     try:
-        sheet.batch_clear(['A2:Y'])
+        sheet.batch_clear(['A2:U'])
     except Exception as e:
         print(f"Warning: clear failed: {e}")
 

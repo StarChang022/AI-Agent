@@ -48,8 +48,8 @@ def update_csv():
     not_found = set()
 
     for row in rows[1:]:
-        # Ensure row has at least 25 columns (A to Y, index 0 to 24)
-        while len(row) < 25:
+        # Ensure row has at least 21 columns (A to U, index 0 to 20)
+        while len(row) < 21:
             row.append('')
 
         company_name = row[0].strip()
@@ -57,26 +57,26 @@ def update_csv():
         if company_name in all_emails:
             data = all_emails[company_name]
             # Indexes:
-            # 15: day1_title, 16: day1_content
-            # 17: day7_title, 18: day7_content
-            # 19: day14_title, 20: day14_content
-            # 21: day30_title, 22: day30_content
-            # 23: day60_title, 24: day60_content
+            # 11: day1_title, 12: day1_content
+            # 13: day7_title, 14: day7_content
+            # 15: day14_title, 16: day14_content
+            # 17: day30_title, 18: day30_content
+            # 19: day60_title, 20: day60_content
             
-            row[15] = data.get('day1_title', '')
-            row[16] = data.get('day1_content', '')
+            row[11] = data.get('day1_title', '')
+            row[12] = data.get('day1_content', '')
             
-            row[17] = data.get('day7_title', '')
-            row[18] = data.get('day7_content', '')
+            row[13] = data.get('day7_title', '')
+            row[14] = data.get('day7_content', '')
             
-            row[19] = data.get('day14_title', '')
-            row[20] = data.get('day14_content', '')
+            row[15] = data.get('day14_title', '')
+            row[16] = data.get('day14_content', '')
             
-            row[21] = data.get('day30_title', '')
-            row[22] = data.get('day30_content', '')
+            row[17] = data.get('day30_title', '')
+            row[18] = data.get('day30_content', '')
             
-            row[23] = data.get('day60_title', '')
-            row[24] = data.get('day60_content', '')
+            row[19] = data.get('day60_title', '')
+            row[20] = data.get('day60_content', '')
             
             updated_count += 1
         else:

@@ -71,10 +71,8 @@ def load_companies_from_csv():
     print(f"  → CSV 標題列：{headers}")
 
     for i, row in enumerate(rows[1:], start=2):  # 第 2 列起（1-indexed）
-        while len(row) < 27:
+        while len(row) < 21:
             row.append('')
-
-        # H欄（index=7）是來源（104 公司頁面 URL）
         source_url = row[7].strip() if len(row) > 7 else ''
         company_name = row[0].strip() if len(row) > 0 else ''
 
@@ -268,7 +266,7 @@ def update_local_csv(companies_map, all_rows):
     updated_rows = [all_rows[0]]  # 保留標題列
 
     for i, row in enumerate(all_rows[1:], start=2):
-        while len(row) < 27:
+        while len(row) < 21:
             row.append('')
 
         if i in companies_map:
@@ -307,13 +305,13 @@ def write_back_to_sheet(updated_rows):
     data_rows = updated_rows[1:]  # 只寫資料列，不蓋標題
 
     try:
-        sheet.batch_clear(['A2:Y'])
+        sheet.batch_clear(['A2:U'])
     except Exception as e:
         print(f"  [警告] 清除舊資料失敗：{e}")
 
     BATCH = 500
     for i in range(0, len(data_rows), BATCH):
-        chunk = [r[:25] for r in data_rows[i:i + BATCH]]
+        chunk = [r[:21] for r in data_rows[i:i + BATCH]]
         start_row = 2 + i
         try:
             sheet.update(values=chunk, range_name=f'A{start_row}')

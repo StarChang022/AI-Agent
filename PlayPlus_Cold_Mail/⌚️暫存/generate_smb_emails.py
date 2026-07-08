@@ -188,18 +188,18 @@ for idx, row in enumerate(rows):
         })
         
         # Update the row in-memory
-        while len(row) < 26:
+        while len(row) < 21:
             row.append('')
-        row[16] = day1_title
-        row[17] = day1_content
-        row[18] = day7_title
-        row[19] = day7_content
-        row[20] = day14_title
-        row[21] = day14_content
-        row[22] = day30_title
-        row[23] = day30_content
-        row[24] = day60_title
-        row[25] = day60_content
+        row[11] = day1_title
+        row[12] = day1_content
+        row[13] = day7_title
+        row[14] = day7_content
+        row[15] = day14_title
+        row[16] = day14_content
+        row[17] = day30_title
+        row[18] = day30_content
+        row[19] = day60_title
+        row[20] = day60_content
         
         updated_count += 1
 

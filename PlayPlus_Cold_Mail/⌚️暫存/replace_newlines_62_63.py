@@ -9,23 +9,23 @@ with open(csv_path, 'r', encoding='utf-8-sig') as f:
         rows.append(row)
 
 # Excel rows 62 and 63 correspond to 0-based indices 61 and 62 in the rows list
-# Column R is index 17 (day1_content)
-# Column T is index 19 (day7_content)
-# Column X is index 23 (day30_content)
+# Column M is index 12 (day1_content)
+# Column O is index 14 (day7_content)
+# Column S is index 18 (day30_content)
 updated_count = 0
 for excel_row_idx in [62, 63]:
     list_idx = excel_row_idx - 1
     if list_idx < len(rows):
         row = rows[list_idx]
-        # Update Column R (index 17)
-        if len(row) > 17 and row[17]:
-            row[17] = row[17].replace('\r\n', '\n').replace('\n', '<br>')
-        # Update Column T (index 19)
-        if len(row) > 19 and row[19]:
-            row[19] = row[19].replace('\r\n', '\n').replace('\n', '<br>')
-        # Update Column X (index 23)
-        if len(row) > 23 and row[23]:
-            row[23] = row[23].replace('\r\n', '\n').replace('\n', '<br>')
+        # Update Column M (index 12)
+        if len(row) > 12 and row[12]:
+            row[12] = row[12].replace('\r\n', '\n').replace('\n', '<br>')
+        # Update Column O (index 14)
+        if len(row) > 14 and row[14]:
+            row[14] = row[14].replace('\r\n', '\n').replace('\n', '<br>')
+        # Update Column S (index 18)
+        if len(row) > 18 and row[18]:
+            row[18] = row[18].replace('\r\n', '\n').replace('\n', '<br>')
         updated_count += 1
 
 with open(csv_path, 'w', encoding='utf-8-sig', newline='') as f:

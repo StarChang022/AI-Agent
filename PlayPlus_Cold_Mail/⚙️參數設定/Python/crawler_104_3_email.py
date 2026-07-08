@@ -384,7 +384,7 @@ async def scrape_all_emails(companies: list) -> dict:
 def apply_management_rules(all_rows, email_results):
     output_rows = [all_rows[0]]
     for i, row in enumerate(all_rows[1:], start=2):
-        while len(row) < 27:
+        while len(row) < 21:
             row.append('')
         website = row[2].strip()
         existing_email = row[5].strip()
@@ -410,11 +410,11 @@ def write_back_to_sheet(data_rows):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SPREADSHEET_ID).worksheet(WORKSHEET_NAME)
-    sheet.batch_clear(['A2:Y'])
+    sheet.batch_clear(['A2:U'])
     data = data_rows[1:]
     BATCH = 500
     for i in range(0, len(data), BATCH):
-        chunk = [r[:25] for r in data[i:i + BATCH]]
+        chunk = [r[:21] for r in data[i:i + BATCH]]
         sheet.update(f'A{2+i}', chunk)
         time.sleep(1)
     print("  → 完成！")
@@ -429,7 +429,7 @@ def main():
 
     companies_to_scrape = []
     for i, row in enumerate(all_rows[1:], start=2):
-        while len(row) < 27:
+        while len(row) < 21:
             row.append('')
         website = row[2].strip()
         existing_email = row[5].strip()

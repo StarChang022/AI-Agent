@@ -1,4 +1,4 @@
-## MetaTag
+# Head Editor
 
 **id**: 20260708-google-stitch-vibe-coding-ui-draft
 **title**: 找系統設計廠商怕講不清楚？先用 Google Stitch AI 工具把想法變成 UI 草稿！
