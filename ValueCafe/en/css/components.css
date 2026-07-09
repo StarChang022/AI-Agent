@@ -2,6 +2,7 @@
 /* 目錄 ---------------------------------------------------------------- */
 
 /* Number : 直接控制屬性數值，例如 max-width 或 font-size 等。 */
+/* Background Color : 背景顏色。 */
 /* Content : 內容排版調整。 */
 /* Buttons : 按鈕。 */
 /* TAGs : 標籤。 */
@@ -23,6 +24,15 @@
 h2.inside { font-size: var(--text-h2-inside); }
 h3.inside { font-size: var(--text-h3-inside); }
 h4.inside { font-size: var(--text-h4-inside); }
+
+
+
+/* Background Color ---------------------------------------------------------------- */
+
+.background1 { background-color: var(--color-background1); }
+.background2 { background-color: var(--color-background2); }
+.background3 { background-color: var(--color-background3); }
+.background4 { background-color: var(--color-background4); }
 
 
 
@@ -109,7 +119,7 @@ h4.inside { font-size: var(--text-h4-inside); }
 	margin-bottom: var(--number-6);
 }
 
-.tags h1, .tags h2, .tags h3, .tags h4, .tags p { {
+.tags h1, .tags h2, .tags h3, .tags h4, .tags p {
 	margin-bottom: 0;
 }
 
@@ -256,12 +266,6 @@ h4.inside { font-size: var(--text-h4-inside); }
 		max-width: fit-content;
 	}
 }
-
-/* Background Color */
-
-.cards.background-horizontal.background2 { background-color: var(--color-background2); }
-.cards.background-horizontal.background4 { background-color: var(--color-background4); }
-
 
 /* Border Horizontal */
 
@@ -427,12 +431,7 @@ hr.bold {
 	margin-bottom: 0;
 }
 
-/* Background Color */
 
-.blocks.background1 { background-color: var(--color-background1); }
-.blocks.background2 { background-color: var(--color-background2); }
-.blocks.background3 { background-color: var(--color-background3); }
-.blocks.background4 { background-color: var(--color-background4); }
 
 
 
