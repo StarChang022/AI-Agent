@@ -429,6 +429,26 @@ MAX_ROW = 48  # 最大列號
 
 
 # ═══════════════════════════════════════════════════
+# 取得最新已結算季度（避免未來/當期季度污染）
+# ═══════════════════════════════════════════════════
+def latest_completed_quarter() -> str:
+    """
+    回傳最近一個已結算完畢的季度 key（如 '2026-Q1'）。
+    規則：當前季度尚未結束，因此最新完整季度為上一季。
+      - Q1 結束於 3/31 → 若現在是 Q2~Q4，上一季是 Q1
+      - Q2 結束於 6/30 → 若現在是 Q3~Q4，上一季是 Q2
+      - 以此類推
+    財報申報有延遲，此函數僅過濾「日期上不可能已結算的季度」。
+    """
+    today = date.today()
+    current_q = math.ceil(today.month / 3)
+    if current_q == 1:
+        return f"{today.year - 1}-Q4"
+    else:
+        return f"{today.year}-Q{current_q - 1}"
+
+
+# ═══════════════════════════════════════════════════
 # 將資料覆寫至 Google Sheet
 # ═══════════════════════════════════════════════════
 def write_to_sheet(worksheet, quarter_data: dict[str, dict]):
@@ -439,6 +459,15 @@ def write_to_sheet(worksheet, quarter_data: dict[str, dict]):
     if not quarter_data:
         print("    ⚠ 無資料可寫入")
         return
+
+    # 過濾掉超過「最新已結算季度」的未來季度
+    # （避免股利除息日期落在當季/未來，被誤判為財報季度）
+    max_q = latest_completed_quarter()
+    filtered_data = {k: v for k, v in quarter_data.items() if k <= max_q}
+    if len(filtered_data) < len(quarter_data):
+        removed = sorted(set(quarter_data.keys()) - set(filtered_data.keys()), reverse=True)
+        print(f"    🔍 過濾未結算季度: {', '.join(removed)}（上限: {max_q}）")
+        quarter_data = filtered_data
 
     # 依季度排序（新 → 舊）
     sorted_quarters = sorted(quarter_data.keys(), reverse=True)
