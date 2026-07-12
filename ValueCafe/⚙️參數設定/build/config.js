@@ -38,11 +38,14 @@ const COPY_DIRS = [
   'js',
   'images',
   'css',
+  'public',
 ];
 
 const COPY_FILES = [
   'style.css',
   'contact.html',
+  'robots.txt',
+  'llms.txt',
 ];
 
 // ─── 不需打包的黑名單 ────────────────────────────────────────────────────────

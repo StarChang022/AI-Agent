@@ -11,7 +11,7 @@
  *
  * 執行流程：
  *   1. 刪除舊的 OUTPUT_DIR
- *   2. 複製靜態資源（css / js / images / statements / to-beginners / contact.html / style.css）
+ *   2. 複製靜態資源（css / js / images / public / statements / to-beginners / contact.html / style.css / robots.txt / llms.txt）
  *   3. 解析各分類的 .md 檔案
  *   4. 生成各分類的文章 HTML
  *   5. 生成各分類的列表 HTML
@@ -38,6 +38,7 @@ const {
   generateNewsListPage,
   generateIndexPage,
   generateWorldviewPage,
+  generateSitemap,
 } = require('./generator');
 
 // ─── 工具：遞迴複製目錄 ──────────────────────────────────────────────────────
@@ -142,7 +143,7 @@ async function main() {
   const frTemplatePath = path.join(INPUT_DIR, 'financial-ratios', 'template.html');
   for (const article of frSorted) {
     const dest = path.join(OUTPUT_DIR, 'financial-ratios', `${article.id}.html`);
-    generateArticlePage(article, frTemplatePath, dest, frSorted);
+    generateArticlePage(article, frTemplatePath, dest, frSorted, 'financial-ratios');
     console.log(`  [FR] ${article.id}.html`);
   }
 
@@ -150,7 +151,7 @@ async function main() {
   const ivTemplatePath = path.join(INPUT_DIR, 'intrinsic-value', 'template.html');
   for (const article of ivSorted) {
     const dest = path.join(OUTPUT_DIR, 'intrinsic-value', `${article.id}.html`);
-    generateArticlePage(article, ivTemplatePath, dest, ivSorted);
+    generateArticlePage(article, ivTemplatePath, dest, ivSorted, 'intrinsic-value');
     console.log(`  [IV] ${article.id}.html`);
   }
 
@@ -174,7 +175,7 @@ async function main() {
   const phTemplatePath = path.join(INPUT_DIR, 'philosophy', 'template.html');
   for (const article of phSorted) {
     const dest = path.join(OUTPUT_DIR, 'philosophy', `${article.id}.html`);
-    generateArticlePage(article, phTemplatePath, dest, phSorted);
+    generateArticlePage(article, phTemplatePath, dest, phSorted, 'philosophy');
     console.log(`  [PH] ${article.id}.html`);
   }
 
@@ -184,14 +185,18 @@ async function main() {
   generateListPage(
     frSorted,
     path.join(INPUT_DIR, 'financial-ratios.html'),
-    path.join(OUTPUT_DIR, 'financial-ratios.html')
+    path.join(OUTPUT_DIR, 'financial-ratios.html'),
+    'financial-ratios.html',
+    'horizontal-bar'
   );
   console.log('  financial-ratios.html');
 
   generateListPage(
     ivSorted,
     path.join(INPUT_DIR, 'intrinsic-value.html'),
-    path.join(OUTPUT_DIR, 'intrinsic-value.html')
+    path.join(OUTPUT_DIR, 'intrinsic-value.html'),
+    'intrinsic-value.html',
+    'horizontal-bar'
   );
   console.log('  intrinsic-value.html');
 
@@ -212,7 +217,9 @@ async function main() {
   generateListPage(
     phSorted,
     path.join(INPUT_DIR, 'philosophy.html'),
-    path.join(OUTPUT_DIR, 'philosophy.html')
+    path.join(OUTPUT_DIR, 'philosophy.html'),
+    'philosophy.html',
+    'cards'
   );
   console.log('  philosophy.html');
 
@@ -256,6 +263,12 @@ async function main() {
     path.join(OUTPUT_DIR, 'worldview.html')
   );
   console.log('  worldview.html');
+
+  // ── Step 8: 生成 Sitemap ──────────────────────────────────────────────────
+  console.log('[8/8] 生成 sitemap.xml...');
+  const sitemapDest = path.join(OUTPUT_DIR, 'public', 'sitemap.xml');
+  generateSitemap(allArticlesMap, sitemapDest);
+  console.log(`  sitemap.xml (產出至 public/sitemap.xml)`);
 
   // ── 完成 ──────────────────────────────────────────────────────────────────
   console.log('');

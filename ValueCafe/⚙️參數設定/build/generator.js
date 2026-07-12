@@ -4,6 +4,11 @@ const fs   = require('fs');
 const path = require('path');
 const { randomSample, sortByDateDesc } = require('./parser');
 const { MORE_RESOURCES_LIMIT }         = require('./config');
+const {
+  buildHorizontalBarAds,
+  buildBookmarksAds,
+  buildCardsAds,
+}                                      = require('./ads');
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 工具函式
@@ -172,6 +177,62 @@ function replaceAndIndentEditorBlock(html, commentLabel, content) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * 當 Bookmarks Ads 沒有廣告時，移除整個包含 <!-- Bookmarks Ads --> 的
+ * div.column.column-content 容器（含 Recommendation 標題）。
+ *
+ * 策略：
+ *   1. 找到 <!-- Bookmarks Ads --> 的位置
+ *   2. 往前掃描，找到最近一個 <div class="column column-content"> 開頭
+ *   3. 從該開頭往後以括號計數找到對應的 </div> 結尾
+ *   4. 移除整段（含前後換行）
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+function removeBookmarksSection(html) {
+  const commentStr = '<!-- Bookmarks Ads -->';
+  const commentIdx = html.indexOf(commentStr);
+  if (commentIdx === -1) return html;
+
+  // 往前找最近的 <div class="column column-content">
+  const openTag = '<div class="column column-content">';
+  let divStart = html.lastIndexOf(openTag, commentIdx);
+  if (divStart === -1) return html;
+
+  // 從 divStart 往後用巢狀計數找對應的 </div>
+  let depth = 0;
+  let i = divStart;
+  let divEnd = -1;
+  const len = html.length;
+
+  while (i < len) {
+    if (html[i] !== '<') { i++; continue; }
+
+    if (html.slice(i).startsWith('<div')) {
+      depth++;
+      i = html.indexOf('>', i) + 1;
+      continue;
+    }
+    if (html.slice(i).startsWith('</div>')) {
+      depth--;
+      i += 6;
+      if (depth === 0) { divEnd = i; break; }
+      continue;
+    }
+    i++;
+  }
+
+  if (divEnd === -1) return html;
+
+  // 移除該區塊（若前面有換行也一起清除，保持縮排整潔）
+  let start = divStart;
+  if (start > 0 && html[start - 1] === '\n') start--;
+
+  return html.slice(0, start) + html.slice(divEnd);
+}
+
+
+/**
  * 產生 financial-ratios / intrinsic-value / philosophy 文章的 More Resources HTML。
  * 樣板：<!-- More Resources Editor --> 後接一個 <div class="oc-item"> 包含
  *       🟢UrlName 與 🟢PageTitle。
@@ -239,14 +300,25 @@ function buildMoreResourcesNews(templateBlock, pool) {
  * @param {string} destPath      - 輸出路徑
  * @param {Array}  allArticles   - 同分類所有文章（用於 more resources）
  */
-function generateArticlePage(article, templatePath, destPath, allArticles) {
+function generateArticlePage(article, templatePath, destPath, allArticles, category) {
   const pool = allArticles.filter(a => a.id !== article.id);
+  const pageRelPath = category ? `${category}/${article.id}.html` : `${article.id}.html`;
 
   renderTemplate(templatePath, destPath, (html) => {
     // Step 1: More Resources first (before global UrlName replacement)
     html = replaceEditorBlock(html, 'More Resources Editor', (tpl) =>
       buildMoreResourcesStandard(tpl, pool)
     );
+
+    // Step 2: Bookmarks Ads（<!-- Bookmarks Ads --> 區塊，最多 5 則）
+    const bookmarkAds = buildBookmarksAds(pageRelPath, 5);
+    if (bookmarkAds.length > 0) {
+      // 有廣告：填入廣告內容，清除佔位符
+      html = replaceEditorBlock(html, 'Bookmarks Ads', () => bookmarkAds.join('\n'));
+    } else {
+      // 無廣告：移除整個包含 Recommendation 的 div.column.column-content 容器
+      html = removeBookmarksSection(html);
+    }
 
     // Head 替換
     html = html.replace(/🟢UrlName/g,          article.id)
@@ -271,6 +343,7 @@ function generateArticlePage(article, templatePath, destPath, allArticles) {
  */
 function generateLegendaryArticlePage(article, templatePath, destPath, allArticles) {
   const pool = allArticles.filter(a => a.id !== article.id);
+  const pageRelPath = `legendary/${article.id}.html`;
 
   renderTemplate(templatePath, destPath, (html) => {
     // Step 1: More Resources first (before global UrlName replacement)
@@ -286,10 +359,24 @@ function generateLegendaryArticlePage(article, templatePath, destPath, allArticl
     // Hero Editor (legendary 的 Hero Editor 在 template 中沒有包裝，直接插入)
     html = replaceAndIndentEditorBlock(html, 'Hero Editor', article.hero);
 
-    // Content Editor
+    // Content Editor — 必須先填入內容，再搜尋最後一個 div.column.column-content
     html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
 
-
+    // Step 2: Legendary 廣告 — 在最後一個 div.column.column-content 前插入最多 1 則 Horizontal Bar Ads
+    // 廣告外框：<div class="column column-content"></div>
+    // 必須在 Content 填入後才搜尋，此時文章内容的 div 才實際存在
+    const lgAds = buildHorizontalBarAds(pageRelPath, 1, '<div class="column column-content">');
+    if (lgAds.length > 0) {
+      const markerRe = /<div class="column column-content">/g;
+      let lastIdx = -1;
+      let m;
+      while ((m = markerRe.exec(html)) !== null) {
+        lastIdx = m.index;
+      }
+      if (lastIdx !== -1) {
+        html = html.slice(0, lastIdx) + lgAds[0] + '\n' + html.slice(lastIdx);
+      }
+    }
 
     return html;
   });
@@ -300,12 +387,40 @@ function generateLegendaryArticlePage(article, templatePath, destPath, allArticl
  */
 function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
   const pool = allArticles.filter(a => a.id !== article.id);
+  const pageRelPath = `news/${article.id}.html`;
 
   renderTemplate(templatePath, destPath, (html) => {
-    // Step 1: More Resources first (before global UrlName replacement)
-    html = replaceEditorBlock(html, 'More Resources Editor', (tpl) =>
-      buildMoreResourcesNews(tpl, pool)
-    );
+    // Step 1: More Resources（含廣告插入）— news 內頁每 3 篇插入 1 則 Cards Ads
+    html = replaceEditorBlock(html, 'More Resources Editor', (tpl) => {
+      const sorted   = sortByDateDesc(pool);
+      const selected = sorted.slice(0, MORE_RESOURCES_LIMIT);
+
+      const itemBlocks = [];
+      selected.forEach((item, i) => {
+        // 渲染文章區塊（直接用 tpl 作為 oc-item 外框內的內容）
+        let block = tpl
+          .replace(/🟢UrlName/g,   item.id)
+          .replace(/🟢PageTitle/g, item.head['title'] || '')
+          .replace(/🟢Date/g,      item.head['date']  || '');
+
+        const tags = (item.head['tags'] || '').split(',').map(t => t.trim()).filter(Boolean);
+        let tagIdx = 0;
+        block = block.replace(/<li class="yolk">🟢TAGs<\/li>/g, () => {
+          const tag = tags[tagIdx] || '';
+          tagIdx++;
+          return tag ? `<li class="yolk">${tag}</li>` : '';
+        });
+        itemBlocks.push(block);
+
+        // 每 3 篇後插入 1 則廣告（取代原有 <a> 容器，直接以 <div class="oc-item"> 包裹廣告）
+        if ((i + 1) % 3 === 0) {
+          const adBlocks = buildCardsAds(pageRelPath, 1, '<div class="oc-item">');
+          itemBlocks.push(...adBlocks);
+        }
+      });
+
+      return itemBlocks.join('\n');
+    });
 
     html = html.replace(/🟢UrlName/g,          article.id)
                .replace(/🟢PageTitle/g,        article.head['title']       || '')
@@ -332,15 +447,29 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
  * 生成 financial-ratios.html / intrinsic-value.html / philosophy.html 列表頁。
  * 使用 order.json 排序，每筆含 🟢UrlName, 🟢PageTitle, 🟢ListSummary。
  */
-function generateListPage(articles, listHtmlPath, outputPath) {
+function generateListPage(articles, listHtmlPath, outputPath, adsPageKey, adsStyle) {
   renderTemplate(listHtmlPath, outputPath, (html) => {
     html = replaceEditorBlock(html, 'List Editor', (tpl) => {
-      return articles.map(a =>
-        tpl
+      const items = [];
+      articles.forEach((a, i) => {
+        const articleHtml = tpl
           .replace(/🟢UrlName/g,     a.id)
           .replace(/🟢PageTitle/g,   a.head['title']        || '')
-          .replace(/🟢ListSummary/g, a.head['list-summary'] || '')
-      ).join('\n');
+          .replace(/🟢ListSummary/g, a.head['list-summary'] || '');
+        items.push(articleHtml);
+
+        // 每 3 篇文章後插入 1 則廣告（第 3、6、9... 篇之後）
+        if (adsPageKey && (i + 1) % 3 === 0) {
+          if (adsStyle === 'horizontal-bar') {
+            const adBlocks = buildHorizontalBarAds(adsPageKey, 1);
+            items.push(...adBlocks);
+          } else if (adsStyle === 'cards') {
+            const adBlocks = buildCardsAds(adsPageKey, 1, '<div class="col-md-3">');
+            items.push(...adBlocks);
+          }
+        }
+      });
+      return items.join('\n');
     });
     return html;
   });
@@ -393,8 +522,9 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
     const secondBlock    = extractBlock(html, secondDivStart);
     const secondBlockEnd = secondDivStart + secondBlock.length;
 
-    // 依規則：第一則用 firstBlock，其餘用 secondBlock
-    let newItems = articles.map((a, i) => {
+    // 依規則：第一則用 firstBlock，其餘用 secondBlock；每 4 篇插入 1 則 Cards 廣告
+    const itemBlocks = [];
+    articles.forEach((a, i) => {
       const tpl = i === 0 ? firstBlock : secondBlock;
       let block = tpl
         .replace(/🟢UrlName/g,   a.id)
@@ -409,8 +539,16 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
         tagIdx++;
         return tag ? `<li class="yolk">${tag}</li>` : '';
       });
-      return block;
-    }).join('\n');
+      itemBlocks.push(block);
+
+      // 每 4 篇後插入 1 則 Cards 廣告（第 4、8、12... 篇之後）
+      if ((i + 1) % 4 === 0) {
+        const adBlocks = buildCardsAds('news.html', 1, '<div class="col-md-3">');
+        itemBlocks.push(...adBlocks);
+      }
+    });
+
+    let newItems = itemBlocks.join('\n');
 
     if (baseIndent && newItems) {
       newItems = newItems.split('\n<').join('\n' + baseIndent + '<');
@@ -575,6 +713,68 @@ function generateWorldviewPage(allArticlesMap, srcPath, destPath) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Sitemap Generator
+// ═══════════════════════════════════════════════════════════════════════════════
+function generateSitemap(allArticlesMap, destPath) {
+  const now = new Date().toISOString().replace(/\.\d+Z$/, '+00:00');
+  
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+		xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+		http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+<!-- Basic -->
+
+<url>
+	<loc>https://valuecafe.cc/</loc>
+	<lastmod>${now}</lastmod>
+	<priority>1.00</priority>
+</url>
+<url>
+	<loc>https://valuecafe.cc/worldview.html</loc>
+	<lastmod>${now}</lastmod>
+	<priority>0.80</priority>
+</url>
+<url>
+	<loc>https://valuecafe.cc/contact.html</loc>
+	<lastmod>${now}</lastmod>
+	<priority>0.80</priority>
+</url>
+
+<!-- Categories -->
+
+`;
+
+  const categories = ['financial-ratios', 'intrinsic-value', 'legendary', 'news', 'philosophy'];
+  for (const cat of categories) {
+    xml += `<url>
+	<loc>https://valuecafe.cc/${cat}.html</loc>
+	<lastmod>${now}</lastmod>
+	<priority>0.80</priority>
+</url>\n`;
+  }
+
+  xml += `\n<!-- Articles -->\n\n`;
+
+  for (const [category, articles] of Object.entries(allArticlesMap)) {
+    for (const a of articles) {
+      xml += `<url>
+	<loc>https://valuecafe.cc/${category}/${a.id}.html</loc>
+	<lastmod>${now}</lastmod>
+	<priority>0.70</priority>
+</url>\n`;
+    }
+  }
+
+  xml += `\n</urlset>`;
+
+  fs.mkdirSync(path.dirname(destPath), { recursive: true });
+  fs.writeFileSync(destPath, xml, 'utf8');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 
 module.exports = {
   renderTemplate,
@@ -589,4 +789,6 @@ module.exports = {
   generateIndexPage,
   generateWorldviewPage,
   extractBlock,
+  generateSitemap,
 };
+
