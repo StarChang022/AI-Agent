@@ -715,57 +715,86 @@ function generateWorldviewPage(allArticlesMap, srcPath, destPath) {
 // ═══════════════════════════════════════════════════════════════════════════════
 // Sitemap Generator
 // ═══════════════════════════════════════════════════════════════════════════════
-function generateSitemap(allArticlesMap, destPath) {
+
+/**
+ * 掃描 outputDir 下所有打包後的 .html 檔案，生成 sitemap.xml 並放在 root 下。
+ *
+ * Priority 規則：
+ *   index.html       → 1.00
+ *   worldview.html   → 0.80
+ *   contact.html     → 0.80
+ *   *\.html (列表頁)  → 0.80（直接在 root 下）
+ *   category/*.html  → 0.70（分類內頁 / 層級內頁）
+ *
+ * @param {string} outputDir      - 打包輸出目錄 (OUTPUT_DIR)
+ * @param {object} allArticlesMap - 不再使用，保留為相容性備用
+ * @param {string} destPath       - sitemap.xml 輸出路徑（應為 root 下）
+ */
+function generateSitemap(outputDir, allArticlesMap, destPath) {
+  const BASE_URL = 'https://valuecafe.cc';
   const now = new Date().toISOString().replace(/\.\d+Z$/, '+00:00');
-  
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-		xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-		http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
-<!-- Basic -->
+  // 避免將 sitemap.xml 本身加入、也排除 template/components 備用頁
+  const EXCLUDE_FILES = new Set([
+    'sitemap.xml',
+    'components-level1.html',
+    'components-level2.html',
+  ]);
 
-<url>
-	<loc>https://valuecafe.cc/</loc>
-	<lastmod>${now}</lastmod>
-	<priority>1.00</priority>
-</url>
-<url>
-	<loc>https://valuecafe.cc/worldview.html</loc>
-	<lastmod>${now}</lastmod>
-	<priority>0.80</priority>
-</url>
-<url>
-	<loc>https://valuecafe.cc/contact.html</loc>
-	<lastmod>${now}</lastmod>
-	<priority>0.80</priority>
-</url>
-
-<!-- Categories -->
-
-`;
-
-  const categories = ['financial-ratios', 'intrinsic-value', 'legendary', 'news', 'philosophy'];
-  for (const cat of categories) {
-    xml += `<url>
-	<loc>https://valuecafe.cc/${cat}.html</loc>
-	<lastmod>${now}</lastmod>
-	<priority>0.80</priority>
-</url>\n`;
+  /**
+   * 遞迴收集 dir 下所有 .html 檔案的相對路徑（相對於 outputDir）。
+   * @param {string} dir
+   * @param {string} prefix - 相對路徑前綴，初始為 ''
+   * @returns {string[]}
+   */
+  function collectHtmlFiles(dir, prefix) {
+    const results = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        results.push(...collectHtmlFiles(path.join(dir, entry.name), relPath));
+      } else if (entry.name.endsWith('.html') && !EXCLUDE_FILES.has(entry.name)) {
+        results.push(relPath);
+      }
+    }
+    return results;
   }
 
-  xml += `\n<!-- Articles -->\n\n`;
+  // 決定每個 html 的 priority
+  function getPriority(relPath) {
+    if (relPath === 'index.html') return '1.00';
+    if (relPath === 'worldview.html' || relPath === 'contact.html') return '0.80';
+    if (!relPath.includes('/')) return '0.80'; // root 下列表頁
+    return '0.70'; // 分類內頁
+  }
 
-  for (const [category, articles] of Object.entries(allArticlesMap)) {
-    for (const a of articles) {
-      xml += `<url>
-	<loc>https://valuecafe.cc/${category}/${a.id}.html</loc>
-	<lastmod>${now}</lastmod>
-	<priority>0.70</priority>
-</url>\n`;
-    }
+  const htmlFiles = collectHtmlFiles(outputDir, '');
+
+  // index.html 排在最前，其次為 root 層其他頁，再來是分類內頁
+  htmlFiles.sort((a, b) => {
+    const pa = getPriority(a);
+    const pb = getPriority(b);
+    if (pa !== pb) return pa > pb ? -1 : 1;
+    return a.localeCompare(b);
+  });
+
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+\t\txmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+\t\txmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+\t\txsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+\t\thttp://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+\n`;
+
+  for (const relPath of htmlFiles) {
+    const urlPath = relPath === 'index.html' ? '/' : `/${relPath}`;
+    const priority = getPriority(relPath);
+    xml += `<url>
+\t<loc>${BASE_URL}${urlPath}</loc>
+\t<lastmod>${now}</lastmod>
+\t<priority>${priority}</priority>
+</url>
+`;
   }
 
   xml += `\n</urlset>`;

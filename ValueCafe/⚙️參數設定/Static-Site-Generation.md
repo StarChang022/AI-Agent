@@ -193,6 +193,10 @@
 2. 承1，將 worldview.html 的 🟢Url 帶入對應 html 的位址。
 3. 承1，將 worldview.html 的 🟢PageTitle 帶入對應 html 的 title 。
 
+# sitemap.xml
+
+每次打包時都為所有打包後的 html 檔案生成 sitemap.xml 並放在 root 下。
+
 # 其他
 
 上述未提到的檔案。

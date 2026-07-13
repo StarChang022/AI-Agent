@@ -17,6 +17,7 @@
  *   5. 生成各分類的列表 HTML
  *   6. 生成 index.html
  *   7. 生成 worldview.html
+ *   8. 生成 sitemap.xml（涵蓋所有 html，放在 root 下）
  */
 
 const fs   = require('fs');
@@ -266,9 +267,9 @@ async function main() {
 
   // ── Step 8: 生成 Sitemap ──────────────────────────────────────────────────
   console.log('[8/8] 生成 sitemap.xml...');
-  const sitemapDest = path.join(OUTPUT_DIR, 'public', 'sitemap.xml');
-  generateSitemap(allArticlesMap, sitemapDest);
-  console.log(`  sitemap.xml (產出至 public/sitemap.xml)`);
+  const sitemapDest = path.join(OUTPUT_DIR, 'sitemap.xml');
+  generateSitemap(OUTPUT_DIR, allArticlesMap, sitemapDest);
+  console.log(`  sitemap.xml (產出至 root/sitemap.xml)`);
 
   // ── 完成 ──────────────────────────────────────────────────────────────────
   console.log('');
