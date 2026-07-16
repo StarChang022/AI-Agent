@@ -5,8 +5,8 @@
 **description**: Alphabet is buying clean energy company Intersect Power for $4.75 billion to tackle the surging electricity demand driven by AI development. Facing a tough situation in Texas, where grid connection requests for data centers have quadrupled in just 14 months, Alphabet is vertically integrating its energy supply to make sure its AI infrastructure keeps expanding smoothly.
 **keywords**: Alphabet acquisition, Google AI power, Intersect Power acquisition, data center power demand, AI power shortage, renewable energy investment, ERCOT power applications, vertical energy integration, Sheldon Kimber, AI infrastructure
 **Source**: https://www.cnbc.com/2025/12/22/alphabet-to-acquire-intersect.html
-**date**: 2025-12-22
 **TAGs**: Tech
+**date**: 2025-12-22
 
 ---
 

@@ -5,8 +5,8 @@
 **description**: A massive power outage in San Francisco ground Waymo's robotaxi fleet to a halt, triggering an investigation by the CPUC. This incident highlights the far-reaching impact on autonomous vehicle resilience, smart city power infrastructure, and emerging insurance risks, while exploring the core challenges of commercializing robotaxis.
 **keywords**: Waymo, autonomous driving, San Francisco blackout, Alphabet, robotaxi, smart cities, CPUC, PG&E, edge cases, industry analysis, risk management, smart infrastructure
 **Source**: https://www.bbc.com/news/articles/c36zdxl41jro
-**date**: 2025-12-22
 **TAGs**: Robotaxi, Energy
+**date**: 2025-12-22
 
 ---
 

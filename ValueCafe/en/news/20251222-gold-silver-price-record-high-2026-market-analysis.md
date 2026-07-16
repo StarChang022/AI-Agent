@@ -5,8 +5,8 @@
 **description**: Gold is breaking past $4,470, and silver is skyrocketing by a record-breaking 138%! In this post, we're taking a deep dive into the safe-haven sentiment triggered by the 'Trump effect,' expectations for Fed rate cuts in 2026, and how a weak US dollar is driving precious metals. We'll also break down the industrial demand for silver in the green energy sector, and analyze the winners and losers in mining and jewelry as prices soar, helping you stay clear-headed during this boom cycle.
 **keywords**: Gold prices hit record highs, silver price trends, safe-haven asset allocation, Trump effect on gold prices, Fed rate cut forecast, 2026 gold price analysis, geopolitical risk investing, industrial demand for silver, green energy costs, gold and silver mining stocks
 **Source**: https://www.bbc.com/news/articles/cd74ldr2zryo
-**date**: 2025-12-22
 **TAGs**: Global, Investing
+**date**: 2025-12-22
 
 ---
 

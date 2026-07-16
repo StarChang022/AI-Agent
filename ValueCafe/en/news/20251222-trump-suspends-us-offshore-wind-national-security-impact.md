@@ -5,8 +5,8 @@
 **description**: The Trump administration's sudden suspension of five major East Coast offshore wind projects over national security concerns has sent Orsted's stock tumbling. This article takes a deep dive into the truth behind the radar interference claims, expert skepticism over the political motives, and how this move impacts the green power supply for AI data centers and threatens the U.S. energy transition, providing investors with a comprehensive financial breakdown and industry impact assessment.
 **keywords**: Trump offshore wind, U.S. energy policy, Orsted stock price plunge, national security threats of offshore wind, Vineyard Wind 1, radar interference clutter, green electricity for AI data centers, energy transition risks, U.S. renewable energy shutdown, energy project approval reform
 **Source**: https://www.bbc.com/news/articles/cd74lyr094vo
-**date**: 2025-12-22
 **TAGs**: Energy, Politics
+**date**: 2025-12-22
 
 ---
 
