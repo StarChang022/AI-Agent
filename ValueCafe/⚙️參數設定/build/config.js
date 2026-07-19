@@ -46,6 +46,7 @@ const COPY_FILES = [
   'contact.html',
   'robots.txt',
   'llms.txt',
+  '_headers',
 ];
 
 // ─── 不需打包的黑名單 ────────────────────────────────────────────────────────
