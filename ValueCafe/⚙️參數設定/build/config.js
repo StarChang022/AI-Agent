@@ -48,6 +48,8 @@ const COPY_FILES = [
   'robots.txt',
   'llms.txt',
   '_headers',
+  'auth.md',
+  'CNAME',
 ];
 
 // ─── 不需打包的黑名單 ────────────────────────────────────────────────────────
