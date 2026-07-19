@@ -45,6 +45,9 @@ const COPY_DIRS = [
 const COPY_FILES = [
   'style.css',
   'contact.html',
+  'privacy.html',
+  'terms.html',
+  '404.html',
   'robots.txt',
   'llms.txt',
   '_headers',

@@ -739,6 +739,7 @@ function generateSitemap(outputDir, allArticlesMap, destPath) {
     'sitemap.xml',
     'components-level1.html',
     'components-level2.html',
+    '404.html',
   ]);
 
   /**
