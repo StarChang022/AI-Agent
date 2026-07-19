@@ -39,6 +39,7 @@ const COPY_DIRS = [
   'images',
   'css',
   'public',
+  '.well-known',
 ];
 
 const COPY_FILES = [
