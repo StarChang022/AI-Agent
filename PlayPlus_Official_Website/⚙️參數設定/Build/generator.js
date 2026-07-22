@@ -292,7 +292,9 @@ function generatePortfolioArticlePage(article, templatePath, destPath) {
     html = replaceTags(html, article.head['tags'] || '');
 
     // Content Editor
-    html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
+    // 移除 markdown 檔內手寫殘留的 tips 區塊（避免與後續插入重複）
+    let cleanContent = (article.content || '').replace(/[ \t]*<div class="tips">[\s\S]*?企業內部系統會關係到保密性[\s\S]*?<\/div>\s*<\/div>\s*/g, '');
+    html = replaceAndIndentEditorBlock(html, 'Content Editor', cleanContent);
 
     // Confidential 段落處理（template 內有兩個 <div class="tips">）
     // confidential=No → 移除兩個 tips；confidential=Yes → 保留
@@ -304,9 +306,14 @@ function generatePortfolioArticlePage(article, templatePath, destPath) {
       html = html.replace(/[ \t]*<div class="tips">[\s\S]*?<\/div>[ \t]*\n[ \t]*<\/div>[ \t]*\n?/g, '');
     }
 
-    // ② 第二個 tips（在 Content Editor 之後，以 <!-- Confidential Tips Editor --> 標記）：
-    //    confidential=Yes → 保留（替換成 tips 內容）；confidential=No → 替換為空字串（移除）
-    html = replaceAndIndentEditorBlock(html, 'Confidential Tips Editor', isConfidential ? tipsHtml : '');
+    // ② 第二個 tips：直接在 <div id="oc-images" 前方插入（因原本的標記已被 Content Editor 覆蓋）
+    if (isConfidential) {
+      const cleanTips = '<div class="tips">\n\t<div class="column">\n\t\t<p>企業內部系統會關係到保密性，畫面僅以黑白設計稿呈現。</p>\n\t</div>\n</div>';
+      html = html.replace(/([ \t]*)(<div id="oc-images")/g, (match, p1, p2) => {
+        const indentedTips = cleanTips.replace(/\n/g, '\n' + p1);
+        return p1 + indentedTips + '\n' + p1 + p2;
+      });
+    }
 
     return html;
   });
