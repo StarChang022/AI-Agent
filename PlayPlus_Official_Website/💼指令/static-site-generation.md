@@ -40,30 +40,22 @@
 2. portfolio/template.html 裡面的 🟢PageTitle 帶入對應 .md 檔案的 # Head Editor 的 **title** 。
 3. portfolio/template.html 裡面的 🟢PageDescription 帶入對應 .md 檔案的 # Head Editor 的 **description** 。
 4. portfolio/template.html 裡面的 🟢PageKeywords 帶入對應 .md 檔案的 # Head Editor 的 **keywords** 。
-5. portfolio/template.html 裡面的 🟢ArticleForeword 帶入對應 .md 檔案的 # Head Editor 的 **foreword** 。
-6. portfolio/template.html 裡面的 🟢UrlWebsite 帶入對應 .md 檔案的 # Head Editor 的 **urlwebsite** 。
-7. portfolio/template.html 裡面的 🟢ListSummary 帶入對應 .md 檔案的 # Head Editor 的 **list-summary** 。
-7. portfolio/template.html 裡面的 <div class="tags"> 的 🟢TAGs 帶入對應 .md 檔案的 # Head Editor 的 **tags** （對應數量）。
-8. portfolio/template.html 裡面的 「<!-- GEO Summary Box Editor -->」 帶入對應 .md 檔案的 # GEO Summary Box Editor 全部，將 <div class="summary-box background-skin p-3 radius-6 my-4 text-start"> 裡面的內容帶入，帶入時必須配合上下網進行適當的縮排。
-9. portfolio/template.html 裡面的 「<!-- Content Editor -->」 帶入對應 .md 檔案的 # Content Editor 全部，將 <div class="content column gap-frame-half"> 裡面的內容帶入，帶入時必須配合上下網進行適當的縮排。
-10. 當對應 .md 檔案的 # Head Editor 的 **confidential** 為「Yes」，就要讓 portfolio/template.html 裡面的 ### portfolio confidential 的段落需要顯示。反之，當 **confidential** 為「No」，該段落移除。
-
-### portfolio confidential
-
-<div class="tips">
-	<div class="column">
-		<p>企業內部系統會關係到保密性，畫面僅以黑白設計稿呈現。</p>
-	</div>
-</div>
+5. portfolio/template.html 裡面的 🟢PageSubTitle 帶入對應 .md 檔案的 # Head Editor 的 **subtitle** 。
+6. portfolio/template.html 裡面的 🟢ArticleForeword 帶入對應 .md 檔案的 # Head Editor 的 **foreword** 。
+7. portfolio/template.html 裡面的 🟢UrlWebsite 帶入對應 .md 檔案的 # Head Editor 的 **urlwebsite** 。
+8. portfolio/template.html 裡面的 🟢ListSummary 帶入對應 .md 檔案的 # Head Editor 的 **list-summary** 。
+9. portfolio/template.html 裡面的 <div class="tags"> 的 🟢TAGs 帶入對應 .md 檔案的 # Head Editor 的 **tags** （對應數量）。
+10. portfolio/template.html 裡面的 「<!-- GEO Summary Box Editor -->」 帶入對應 .md 檔案的 # GEO Summary Box Editor 全部，將 <div class="summary-box background-skin p-3 radius-6 my-4 text-start"> 裡面的內容帶入，帶入時必須配合上下網進行適當的縮排。
+11. portfolio/template.html 裡面的 「<!-- Content Editor -->」 帶入對應 .md 檔案的 # Content Editor 全部，將 <div class="content column gap-frame-half"> 裡面的內容帶入，帶入時必須配合上下網進行適當的縮排。
+12. portfolio/template.html 裡面有兩個 <div class="tips"><div class="column"><p>企業內部系統會關係到保密性，畫面僅以黑白設計稿呈現。</p></div></div> 段落。當對應 .md 檔案的 # Head Editor 的 **confidential** 為「No」，就移除這兩個 <div class="tips"> 段落。反之如果 **confidential** 為「Yes」，則段落維持。
 
 ## portfolio 列表
 
 1. portfolio.html 依照日期（對應 .md 檔案的 # Head Editor 的 **Date**）新到舊排序，在 「<!-- List Editor -->」 生成對應的列表連結。
 2. 承1，將 portfolio.html 裡面的 🟢UrlName 帶入對應 .md 檔案的 # Head Editor 的 **id** 。
 3. 承1，將 portfolio.html 裡面的 🟢PageTitle 帶入對應 .md 檔案的 # Head Editor 的 **title** 。
-4. 承1，將 portfolio.html 裡面的 🟢Name 帶入對應 .md 檔案的 # Head Editor 的 **name** 。
-5. 承1，將 portfolio.html 裡面的 🟢TAGs 帶入對應 .md 檔案的 # Head Editor 的 **tags** （對應數量）。
-6. 承5，將 portfolio.html 裡面的 🟢Filter 根據 🟢TAGs 帶入的值，往上去 <div class="filter column gap-micro"> 的 <div class="grid-filter" data-container="#portfolios"> 容器內尋找對應的 data-filter （對應數量），以空格隔開。例如 tags 為「企業內部系統, 電子業, 中型專案」，則 data-filter 為「system electronics medium-project」。
+4. 承1，將 portfolio.html 裡面的 🟢TAGs 帶入對應 .md 檔案的 # Head Editor 的 **tags** （對應數量）。
+5. 承4，將 portfolio.html 裡面的 🟢Filter 根據 🟢TAGs 帶入的值，往上去 <div class="filter column gap-micro"> 的 <div class="grid-filter" data-container="#portfolios"> 容器內尋找對應的 data-filter （對應數量），以空格隔開。例如 tags 為「企業內部系統, 電子業, 中型專案」，則 data-filter 為「system electronics medium-project」。
 
 # public 資料夾
 

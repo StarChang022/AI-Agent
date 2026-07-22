@@ -264,11 +264,13 @@ function generateBlogArticlePage(article, templatePath, destPath) {
  *   🟢PageTitle        → head.title
  *   🟢PageDescription  → head.description
  *   🟢PageKeywords     → head.keywords
+ *   🟢PageSubTitle     → head.subtitle
  *   🟢TAGs             → head.tags（逗號分隔）
  *   🟢ArticleForeword  → head.foreword
  *   🟢UrlWebsite       → head.urlwebsite
  *   <!-- GEO Summary Box Editor --> 後的區塊 → 保留原始內容（此區塊由 .md 的 content 提供）
  *   <!-- Content Editor --> 後的區塊 → article.content
+ *   confidential=Yes → 保留 <div class="tips"> 保密段落；confidential=No → 移除該段落
  *
  * @param {object} article      - 單篇文章資料
  * @param {string} templatePath - template.html 路徑
@@ -282,6 +284,7 @@ function generatePortfolioArticlePage(article, templatePath, destPath) {
       .replace(/🟢PageTitle/g,        article.head['title']       || '')
       .replace(/🟢PageDescription/g,  article.head['description'] || '')
       .replace(/🟢PageKeywords/g,     article.head['keywords']    || '')
+      .replace(/🟢PageSubTitle/g,     article.head['subtitle']    || '')
       .replace(/🟢ArticleForeword/g,  article.head['foreword']    || '')
       .replace(/🟢UrlWebsite/g,       article.head['urlwebsite']  || '#');
 
@@ -290,6 +293,20 @@ function generatePortfolioArticlePage(article, templatePath, destPath) {
 
     // Content Editor
     html = replaceAndIndentEditorBlock(html, 'Content Editor', article.content);
+
+    // Confidential 段落處理（template 內有兩個 <div class="tips">）
+    // confidential=No → 移除兩個 tips；confidential=Yes → 保留
+    const isConfidential = (article.head['confidential'] || '').trim().toLowerCase() === 'yes';
+    const tipsHtml = '<div class="tips">\n\t\t\t\t\t\t\t<div class="column">\n\t\t\t\t\t\t\t\t<p>企業內部系統會關係到保密性，畫面僅以黑白設計稿呈現。</p>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>';
+
+    // ① 第一個 tips（在 Content Editor 之前的 Banner 區）：用 regex 直接移除或保留
+    if (!isConfidential) {
+      html = html.replace(/[ \t]*<div class="tips">[\s\S]*?<\/div>[ \t]*\n[ \t]*<\/div>[ \t]*\n?/g, '');
+    }
+
+    // ② 第二個 tips（在 Content Editor 之後，以 <!-- Confidential Tips Editor --> 標記）：
+    //    confidential=Yes → 保留（替換成 tips 內容）；confidential=No → 替換為空字串（移除）
+    html = replaceAndIndentEditorBlock(html, 'Confidential Tips Editor', isConfidential ? tipsHtml : '');
 
     return html;
   });
@@ -361,7 +378,7 @@ function generateBlogListPage(articles, listHtmlPath, outputPath) {
 
 /**
  * 生成 portfolio.html 列表頁。
- * 依 order.json 排序，每筆含 🟢Filter, 🟢UrlName, 🟢TAGs, 🟢Name, 🟢ListSummary。
+ * 依 order.json 排序，每筆含 🟢Filter, 🟢UrlName, 🟢PageTitle, 🟢TAGs, 🟢ListSummary。
  */
 function generatePortfolioListPage(articles, listHtmlPath, outputPath) {
   renderTemplate(listHtmlPath, outputPath, (html) => {
@@ -373,7 +390,7 @@ function generatePortfolioListPage(articles, listHtmlPath, outputPath) {
         let block = tpl
           .replace(/🟢Filter/g,       filterClasses)
           .replace(/🟢UrlName/g,      a.id)
-          .replace(/🟢Name/g,         a.head['name']         || a.head['title'] || '')
+          .replace(/🟢PageTitle/g,    a.head['title']        || '')
           .replace(/🟢ListSummary/g,  a.head['list-summary'] || '');
 
         // TAGs

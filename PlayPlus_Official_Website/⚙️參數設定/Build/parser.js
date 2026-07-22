@@ -42,7 +42,7 @@ function parseMarkdown(filePath) {
   const headRaw = sections['Head Editor'] || '';
   const head = {};
   // 格式：**key**: value（單行）
-  const headLineRegex = /^\*\*([^*]+)\*\*:\s*(.*)$/gm;
+  const headLineRegex = /^\*\*([^*]+)\*\*:[^\S\n]*(.*)$/gm;
   let hm;
   while ((hm = headLineRegex.exec(headRaw)) !== null) {
     const key   = hm[1].trim().toLowerCase();
