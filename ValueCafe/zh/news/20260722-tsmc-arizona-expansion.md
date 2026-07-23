@@ -1,6 +1,6 @@
 # Head Editor
 
-**id**: 20260722-tsmc-arizona-expansion-semiconductor-impact
+**id**: 20260722-tsmc-arizona-expansion
 **title**: 台積電加碼 1,000 億美元擴建亞利桑那廠：成本結構衝擊與全球半導體版圖重塑
 **description**: 台積電宣布在美國亞利桑那州追加 1,000 億美元投資，並將 2026 全年資本支出上調至 600 億至 640 億美元。本文深度剖析海外高昂建廠成本對台積電毛利率的短期稀釋效應、設備採購策略，以及對輝達、蘋果與英特爾等美股半導體巨頭的深遠影響。
 **keywords**: 台積電亞利桑那廠, TSM 資本支出, 先進製程, 2奈米, 先進封裝, 毛利率稀釋, 輝達供應鏈, 英特爾代工, 半導體地緣政治, ValueCafe
@@ -26,7 +26,7 @@
 			</div>
 		</div>
 	</div>
-	<img src="../images/news/20260722-tsmc-arizona-expansion-semiconductor-impact/cover.webp" alt="台積電加碼 1,000 億美元擴建亞利桑那廠：成本結構衝擊與全球半導體版圖重塑">
+	<img src="../images/news/20260722-tsmc-arizona-expansion/cover.webp" alt="台積電加碼 1,000 億美元擴建亞利桑那廠：成本結構衝擊與全球半導體版圖重塑">
 </div>
 
 ---

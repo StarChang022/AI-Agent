@@ -26,7 +26,7 @@
 			</div>
 		</div>
 	</div>
-	<img src="../images/news/20260722-tsmc-arizona-expansion-semiconductor-impact/cover.webp" alt="TSMC doubles down with $100B Arizona expansion: Cost structure impact and global semiconductor shakeup">
+	<img src="../images/news/20260722-tsmc-arizona-expansion/cover.webp" alt="TSMC doubles down with $100B Arizona expansion: Cost structure impact and global semiconductor shakeup">
 </div>
 
 ---
@@ -82,7 +82,7 @@
 		</ul>
 	</div>
 	<div class="column column-content">
-		<h2>Takeaways from Mr. Cafe</h2>
+		<h2>Takeaways from Mr.Cafe</h2>
 		<p>TSMC's decision to drop another $100 billion on its Arizona buildout and raise its capex plan shows a grand strategy: accepting short-term margin pressure to secure long-term semiconductor dominance. Even though high US construction costs and heavy depreciation will weigh on gross margin expansion over the next few quarters, TSMC's disciplined equipment spending, cutting-edge 2nm tech, and unmatched pricing power keep key orders from global AI leaders locked down tight. For value investors, short-term stock swings driven by margin worries actually create a great opportunity to look at intrinsic value and safety margins.</p>
 	</div>
 </div>

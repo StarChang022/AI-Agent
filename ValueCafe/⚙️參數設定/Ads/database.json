@@ -14,9 +14,11 @@
       "intrinsic-value/pe-ratio.html",
       "legendary/warren-buffett.html",
       "legendary/charlie-munger.html",
+      "news/20260722-tsmc-arizona-expansion.html",
       "philosophy/patience-of-value-investing.html",
       "philosophy/economic-moat.html",
       "philosophy/margin-of-safety.html",
+      "philosophy/value-trap.html",
       "worldview.html"
     ]
   },
@@ -37,6 +39,9 @@
       "legendary/peter-lynch.html",
       "news/20251222-gold-silver-price-record-high-2026-market-analysis.html",
       "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html",
+      "news/20260716-super-el-nino-climateflation.html",
+      "news/20260722-tsmc-arizona-expansion.html",
+      "news/20260723-kospi-etf-circuit-breaker.html",
       "worldview.html"
     ]
   },
@@ -75,7 +80,9 @@
       "financial-ratios/free-cash-flow.html",
       "intrinsic-value/discounted-cash-flow.html",
       "news/20251222-alphabet-acquires-intersect-power-ai-energy-strategy.html",
-      "philosophy/economic-moat.html"
+      "news/20260722-tsmc-arizona-expansion.html",
+      "philosophy/economic-moat.html",
+      "philosophy/non-operating-income.html"
     ]
   },
   {
@@ -91,7 +98,9 @@
       "intrinsic-value/pb-ratio.html",
       "legendary/warren-buffett.html",
       "legendary/charlie-munger.html",
+      "news/20260723-kospi-etf-circuit-breaker.html",
       "philosophy/margin-of-safety.html",
+      "philosophy/patience-of-value-investing.html",
       "philosophy/value-trap.html",
       "worldview.html"
     ]
@@ -105,7 +114,10 @@
     "pages": [
       "intrinsic-value/cigar-butt-investing.html",
       "legendary/warren-buffett.html",
-      "philosophy/margin-of-safety.html"
+      "news/20260723-kospi-etf-circuit-breaker.html",
+      "philosophy/margin-of-safety.html",
+      "philosophy/non-operating-income.html",
+      "worldview.html"
     ]
   },
   {
@@ -140,6 +152,10 @@
       "legendary/warren-buffett.html",
       "legendary/charlie-munger.html",
       "legendary/peter-lynch.html",
+      "news/20260722-tsmc-arizona-expansion.html",
+      "news/20260723-kospi-etf-circuit-breaker.html",
+      "philosophy/economic-moat.html",
+      "philosophy/margin-of-safety.html",
       "philosophy/value-trap.html",
       "worldview.html"
     ]
@@ -153,7 +169,8 @@
     "pages": [
       "legendary/charlie-munger.html",
       "philosophy/patience-of-value-investing.html",
-      "philosophy/economic-moat.html"
+      "philosophy/economic-moat.html",
+      "worldview.html"
     ]
   },
   {
@@ -174,7 +191,9 @@
     "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096",
     "pages": [
       "legendary/warren-buffett.html",
-      "philosophy/patience-of-value-investing.html"
+      "philosophy/patience-of-value-investing.html",
+      "philosophy/value-trap.html",
+      "worldview.html"
     ]
   },
   {
@@ -237,7 +256,8 @@
     "description": "Pat Dorsey explains the concept of economic moats and shows you how to identify businesses with sustainable competitive advantages.",
     "url": "https://www.amazon.com/Little-Book-That-Builds-Wealth/dp/1119717752",
     "pages": [
-      "philosophy/economic-moat.html"
+      "philosophy/economic-moat.html",
+      "philosophy/value-trap.html"
     ]
   },
   {
@@ -247,7 +267,9 @@
     "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
     "url": "https://www.amazon.com/dp/0684863758",
     "pages": [
-      "philosophy/non-operating-income.html"
+      "news/20260722-tsmc-arizona-expansion.html",
+      "philosophy/non-operating-income.html",
+      "philosophy/value-trap.html"
     ]
   },
   {
@@ -257,7 +279,10 @@
     "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
     "url": "https://www.amazon.com/dp/0231153686",
     "pages": [
-      "philosophy/margin-of-safety.html"
+      "news/20260716-super-el-nino-climateflation.html",
+      "news/20260723-kospi-etf-circuit-breaker.html",
+      "philosophy/margin-of-safety.html",
+      "philosophy/patience-of-value-investing.html"
     ]
   }
 ]

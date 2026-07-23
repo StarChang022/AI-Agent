@@ -145,7 +145,6 @@ async function main() {
   for (const article of frSorted) {
     const dest = path.join(OUTPUT_DIR, 'financial-ratios', `${article.id}.html`);
     generateArticlePage(article, frTemplatePath, dest, frSorted, 'financial-ratios');
-    fs.copyFileSync(path.join(INPUT_DIR, 'financial-ratios', article.filename), path.join(OUTPUT_DIR, 'financial-ratios', `${article.id}.md`));
     console.log(`  [FR] ${article.id}.html`);
   }
 
@@ -154,7 +153,6 @@ async function main() {
   for (const article of ivSorted) {
     const dest = path.join(OUTPUT_DIR, 'intrinsic-value', `${article.id}.html`);
     generateArticlePage(article, ivTemplatePath, dest, ivSorted, 'intrinsic-value');
-    fs.copyFileSync(path.join(INPUT_DIR, 'intrinsic-value', article.filename), path.join(OUTPUT_DIR, 'intrinsic-value', `${article.id}.md`));
     console.log(`  [IV] ${article.id}.html`);
   }
 
@@ -163,7 +161,6 @@ async function main() {
   for (const article of lgSorted) {
     const dest = path.join(OUTPUT_DIR, 'legendary', `${article.id}.html`);
     generateLegendaryArticlePage(article, lgTemplatePath, dest, lgSorted);
-    fs.copyFileSync(path.join(INPUT_DIR, 'legendary', article.filename), path.join(OUTPUT_DIR, 'legendary', `${article.id}.md`));
     console.log(`  [LG] ${article.id}.html`);
   }
 
@@ -172,7 +169,6 @@ async function main() {
   for (const article of nwSorted) {
     const dest = path.join(OUTPUT_DIR, 'news', `${article.id}.html`);
     generateNewsArticlePage(article, nwTemplatePath, dest, nwSorted);
-    fs.copyFileSync(path.join(INPUT_DIR, 'news', article.filename), path.join(OUTPUT_DIR, 'news', `${article.id}.md`));
     console.log(`  [NW] ${article.id}.html`);
   }
 
@@ -181,7 +177,6 @@ async function main() {
   for (const article of phSorted) {
     const dest = path.join(OUTPUT_DIR, 'philosophy', `${article.id}.html`);
     generateArticlePage(article, phTemplatePath, dest, phSorted, 'philosophy');
-    fs.copyFileSync(path.join(INPUT_DIR, 'philosophy', article.filename), path.join(OUTPUT_DIR, 'philosophy', `${article.id}.md`));
     console.log(`  [PH] ${article.id}.html`);
   }
 
