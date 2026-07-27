@@ -5,7 +5,7 @@
 **description**: Feeling anxious when stocks take a hit? Drawing from Warren Buffett’s farm story, you can develop the mindset of a farm owner who holds for the long haul. The kind of value investing that actually lets you sleep at night is basically doing nothing at all.
 **keywords**: Value investing, long-term holding, building an investment mindset, overcoming investment anxiety, dealing with market dips, Buffett’s farm story, zen investing.
 **list-summary**: You think you're buying a cheap stock, but you might actually be buying a business that is slowly dying.
-**name**: A 《 Value Trap 》 might be the most expensive lesson you'll ever learn! Watch out for these 3 big red flags.
+**name**: Value Trap
 
 ---
 

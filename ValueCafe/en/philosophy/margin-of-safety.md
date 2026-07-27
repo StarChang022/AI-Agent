@@ -5,7 +5,7 @@
 **description**: Mastering value investing starts with understanding the 'margin of safety.' This guide breaks down the concept of a safety margin, helps you identify value traps, and shows you how to build an investment system that lets you sleep soundly without the constant fear of being stuck in a bad position.
 **keywords**: Margin of safety, value investing, margin of safety calculation, value traps, bag holding, Warren Buffett, American Express, intrinsic value, Benjamin Graham
 **list-summary**: The investing world is full of uncertainty. We can't predict the next recession, shifts in the industry, or even what a company will report next quarter. That's why we need to leave ourselves a 'margin of safety'—by buying at a price far below its 'intrinsic value'—to give ourselves a cushion for any mistakes.
-**name**: The 《 Margin of Safety 》 is used to protect your portfolio and lower the risk of being wrong.
+**name**: Margin of Safety
 
 ---
 

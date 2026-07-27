@@ -445,7 +445,7 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
 
 /**
  * 生成 financial-ratios.html / intrinsic-value.html / philosophy.html 列表頁。
- * 使用 order.json 排序，每筆含 🟢UrlName, 🟢PageTitle, 🟢ListSummary。
+ * 使用 order.json 排序，每筆含 🟢UrlName, 🟢PageTitle, 🟢Name, 🟢ListSummary。
  */
 function generateListPage(articles, listHtmlPath, outputPath, adsPageKey, adsStyle) {
   renderTemplate(listHtmlPath, outputPath, (html) => {
@@ -455,6 +455,7 @@ function generateListPage(articles, listHtmlPath, outputPath, adsPageKey, adsSty
         const articleHtml = tpl
           .replace(/🟢UrlName/g,     a.id)
           .replace(/🟢PageTitle/g,   a.head['title']        || '')
+          .replace(/🟢Name/g,        a.head['name']         || a.head['title'] || '')
           .replace(/🟢ListSummary/g, a.head['list-summary'] || '');
         items.push(articleHtml);
 

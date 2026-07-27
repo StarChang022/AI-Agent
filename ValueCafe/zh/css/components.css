@@ -309,12 +309,15 @@ h4.inside { font-size: var(--text-h4-inside); }
 .cards.photo-text-media h3 {
 	margin-top: 0;
 	font-size: var(--text-md);
-	font-weight: 300;
 	display: -webkit-box;
 	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	word-break: break-all;
+}
+.cards.photo-text-media p {
+	font-size: var(--text-md);
+	font-weight: 300;
 }
 .cards.photo-text-media time {
 	font-weight: 100;

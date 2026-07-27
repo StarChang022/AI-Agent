@@ -1,11 +1,11 @@
 # Head Editor
 
 **id**: investment-moat
-**title**: You've heard of Warren Buffett's 'Economic Moat' theory, right? Here are the 5 types and how to verify them.
-**description**: Drawing from Warren Buffett’s 'Economic Moat' theory, I’ll walk you through the five main types of economic moats using real-world examples. I’ll also show you how to use three key financial metrics to gauge the strength of a moat, so you can ignore the short-term market noise and build a portfolio that lets you sleep soundly at night.
-**keywords**: Economic moat, Buffett's moat theory, what is an economic moat, types of economic moats, moat stocks, economic moat examples, how to find companies with wide moats
-**list-summary**: If a great business is like a strong castle, what protects it and keeps it standing strong? It's a 'moat'—one that's wide, deep, and maybe even filled with crocodiles. We call this an 'Economic Moat'.
-**name**: Warren Buffett's 《 Economic Moat 》 Theory
+**title**: You've heard of Warren Buffett's 'Investment Moat' theory, right? Here are the 5 types and how to verify them.
+**description**: Drawing from Warren Buffett’s 'Investment Moat' theory, I’ll walk you through the five main types of investment moats using real-world examples. I’ll also show you how to use three key financial metrics to gauge the strength of a moat, so you can ignore the short-term market noise and build a portfolio that lets you sleep soundly at night.
+**keywords**: Investment moat, Buffett's moat theory, what is an investment moat, types of investment moats, moat stocks, investment moat examples, how to find companies with wide moats
+**list-summary**: If a great business is like a strong castle, what protects it and keeps it standing strong? It's a 'moat'—one that's wide, deep, and maybe even filled with crocodiles. We call this an 'Investment Moat'.
+**name**: Investment Moat
 
 ---
 
@@ -14,12 +14,12 @@
 <div class="column column-group">
 	<div class="heading">
 		<div class="heading-title">
-			<h1>You've heard of Warren Buffett's 'Economic Moat' theory, right? Here are the 5 types and how to verify them.</h1>
+			<h1>You've heard of Warren Buffett's 'Investment Moat' theory, right? Here are the 5 types and how to verify them.</h1>
 			<p class="description">To protect a castle from outside threats, you need more than just high walls. You also need a moat to keep the enemy at a distance so they can't even get close enough to start climbing.</p>
 			<p class="description">Businesses work the same way. Ideally, you want a moat that keeps your competitors from ever laying a finger on you. In the corporate world, common moats usually come in the form of things like brand recognition, patents, economies of scale, or exclusive legal rights.</p>
 		</div>
 	</div>
-	<img src="../images/philosophy/investment-moat/cover.webp" alt="'Economic Moat">
+	<img src="../images/philosophy/investment-moat/cover.webp" alt="'Investment Moat">
 </div>
 
 ---
@@ -34,7 +34,7 @@
 		<p>Here’s the deal: the key to winning at long-term investing isn't about predicting the outcome of the next little skirmish. It’s about learning how to identify which castles have the most reliable moats.</p>
 	</div>
 	<div class="column column-content">
-		<h2>Economic moats help you sleep soundly at night</h2>
+		<h2>Investment moats help you sleep soundly at night</h2>
 		<p>There is a reason why Warren Buffett’s moat theory is such a classic. It points out a harsh reality in business: any company making good money will eventually attract a swarm of competitors looking to take a piece of it. That castle and dragon analogy I mentioned earlier isn't just a metaphor. Without a solid line of defense, even the most successful business today will eventually see its profits eaten away.</p>
 		<p>Thinking in terms of moats helps us ask one vital question: Is this company’s profit built on a lucky one-time win, or is it based on a structural advantage that can actually last for decades?</p>
 		<p>A company with a wide moat can handle an economic downturn, raise prices without losing its customers, and keep reinvesting its profits to make that moat even wider and deeper. This is exactly why Buffett says he looks for businesses that "even a fool could run." It is because the real protection comes from the business's structure itself, not just from having some genius manager at the helm.</p>
@@ -62,7 +62,7 @@
 		<p>"<strong>Can you really produce stuff cheaper than Walmart or Costco?</strong>"</p>
 		<p>If a company can make and sell goods for less than any of its competitors, it can easily win a price war if it feels threatened. Even if there isn't a war, they just make higher profits. This advantage usually comes from being massive.</p>
 		<p>Take Walmart, for example. Because they buy in such huge volumes, they can negotiate prices that no one else can touch. They then pass those savings on to the customer, which is how they keep their "everyday low price" promise.</p>
-		<h3 class="inside">Economic moats through regulation</h3>
+		<h3 class="inside">Investment moats through regulation</h3>
 		<p>"<strong>It’s pretty much impossible for a new competitor to take on BNSF Railway.</strong>"</p>
 		<p>The strongest moat a company can have is being "hand-picked" by the government. Essentially, the government uses laws, licenses, or exclusive contracts to give one company the right to run a specific market, keeping everyone else out.</p>
 		<p>This moat is rock-solid because competitors aren't just fighting a business; they’re fighting a legal wall. Without government permission, you can't just go and build a new railroad system right next to BNSF. You see this a lot in utilities (like power companies), transportation, or businesses that need specific licenses like casinos or waste management.</p>
