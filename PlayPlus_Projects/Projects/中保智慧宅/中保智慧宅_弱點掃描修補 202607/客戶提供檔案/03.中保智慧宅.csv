@@ -1,0 +1,876 @@
+﻿項次,domain,URL,系統名稱,弱點名稱,弱點描述(英文),弱點描述(中文),修補建議(英文),修補建議(中文),風險等級,參數資訊,標的管理單位,弱點狀態,弱點發現時間,設備種類,檢測日期
+1,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Moment 2.17.1(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",High,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+2,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Moment 2.17.1(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",High,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+3,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gid(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+4,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gid(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+5,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的 Cross-Origin-Embedder-Policy（COEP）標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the header ""Cross-Origin-Embedder-Policy: require-corp"" to enforce that only CORS-enabled or same-origin resources can be loaded.
+","將標頭 ""Cross-Origin-Embedder-Policy: require-corp"" 設置為強制僅加載啟用 CORS 或同源的資源。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+6,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的跨來源資源政策（CORP）標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the ""Cross-Origin-Resource-Policy"" header on resources to ""same-origin"" or ""same-site"" to prevent unauthorized embedding or reuse by third parties.
+","將資源的「Cross-Origin-Resource-Policy」標頭設置為「same-origin」或「same-site」，以防止第三方未經授權的嵌入或重用。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+7,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的 Cross-Origin-Opener-Policy (COOP) 標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the header ""Cross-Origin-Opener-Policy: same-origin"" to ensure your site runs in a separate browsing context group, isolating it from other origins.
+","將標頭設置為 ""Cross-Origin-Opener-Policy: same-origin""，以確保您的網站在一個單獨的瀏覽上下文組中運行，將其與其他來源隔離。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+8,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_ut_csi(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+9,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gcl_au(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+10,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gcl_au(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+11,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_ga(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+12,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gat_gtag_UA_51764420_1(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+13,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:cookietest(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+14,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_ga_FHVFX711FB(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+15,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_gat_gtag_UA_51764420_1(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+16,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:__lt__cid(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+17,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:__lt__cid(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+18,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:__lt__sid(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+19,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:__lt__sid(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+20,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_fbp(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+21,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_fbp(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+22,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_tg_csi(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+23,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:cookietest(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+24,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/howtouse
+參數:howtouse(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+25,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_ut_csi(Cookie)",中保智慧宅,加密的階段作業 (SSL) Cookie 中遺漏安全屬性,The web application sends non-secure cookies over SSL,Web 應用程式會透過 SSL 傳送未受保護的 Cookie,"Basically the only required attribute for the cookie is the ""name"" field. Common optional attributes are: ""comment"", ""domain"", ""path"", etc.
+The ""secure"" attribute must be set accordingly in order to prevent to cookie from being sent unencrypted.
+For more information on how to set the secure flag, see OWASP ""Secure Attribute"" cheatsheet at 
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 states:
+""The Secure attribute (with no value) directs the user agent to use only (unspecified) secure means to contact the origin server whenever it sends back this cookie, to protect the confidentially and authenticity of the information in the cookie.""
+For further reference please see the HTTP State Management Mechanism RFC 2965 at: 
+http://www.ietf.org/rfc/rfc2965.txt
+and for ""Best current practice"" for use of HTTP State Management please see 
+http://tools.ietf.org/html/rfc2964
+","基本上，Cookie 的唯一必要屬性是 ""name"" 欄位。
+常見的選用屬性如下：""comment""、""domain""、""path""，等等。
+""secure"" 屬性必須相應地設定，才能防止以未加密的方式來傳送 Cookie。
+如需如何設定安全旗標的相關資訊，請前往以下鏈結，並參閱 OWASP "" 安全屬性 "" 題要
+https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#secure-attribute
+
+
+RFC 2965 指出：
+「Secure 屬性（不含值）會指示使用者代理程式再次傳回這個 Cookie 時，都只用（未指定）安全方法來聯絡原始伺服器，以保護 Cookie 中之資訊的機密性與確實性。」
+如需進一步的參照，請參閱「HTTP 狀態管理機制」RFC 2965，位置如下： 
+http://www.ietf.org/rfc/rfc2965.txt
+如需使用「HTTP 狀態管理」的「最佳現行實務」，請參閱： 
+http://tools.ietf.org/html/rfc2964
+",Medium,有可能竊取在加密階段作業期間傳送的使用者和階段作業資訊 (Cookie),中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+26,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/install
+參數:install(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+27,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的跨來源資源政策（CORP）標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the ""Cross-Origin-Resource-Policy"" header on resources to ""same-origin"" or ""same-site"" to prevent unauthorized embedding or reuse by third parties.
+","將資源的「Cross-Origin-Resource-Policy」標頭設置為「same-origin」或「same-site」，以防止第三方未經授權的嵌入或重用。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+28,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的 Cross-Origin-Embedder-Policy（COEP）標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the header ""Cross-Origin-Embedder-Policy: require-corp"" to enforce that only CORS-enabled or same-origin resources can be loaded.
+","將標頭 ""Cross-Origin-Embedder-Policy: require-corp"" 設置為強制僅加載啟用 CORS 或同源的資源。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+29,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,缺少或不安全的 Cross-Origin-Opener-Policy (COOP) 標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Set the header ""Cross-Origin-Opener-Policy: same-origin"" to ensure your site runs in a separate browsing context group, isolating it from other origins.
+","將標頭設置為 ""Cross-Origin-Opener-Policy: same-origin""，以確保您的網站在一個單獨的瀏覽上下文組中運行，將其與其他來源隔離。
+",Medium,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+30,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:None(Page)",中保智慧宅,主機標頭注入,The web application performs a redirection to an external site,Web 應用程式會執行重新導向至外部網站,"Validate and sanitize the user supplied inputs properly
+","適當地驗證並消毒使用者輸入的內容
+",Medium,有可能透過 Web 快取毒害來破壞網站內容有可能說服無經驗而易受騙的使用者提供機密性資訊，如：使用者名稱、密碼、信用卡號碼、社會保險號碼等等,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+31,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:None(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+32,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/contact
+參數:contact(Page)",中保智慧宅,主機標頭注入,The web application performs a redirection to an external site,Web 應用程式會執行重新導向至外部網站,"Validate and sanitize the user supplied inputs properly
+","適當地驗證並消毒使用者輸入的內容
+",Medium,有可能透過 Web 快取毒害來破壞網站內容有可能說服無經驗而易受騙的使用者提供機密性資訊，如：使用者名稱、密碼、信用卡號碼、社會保險號碼等等,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+33,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Bootstrap 4.0.0(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",Medium,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+34,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Bootstrap 4.0.0(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",Medium,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+35,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Bootstrap 4.0.0(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",Medium,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+36,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/assets/home-6fe18c6dfc208e5887d920b6e20297eb02ab0770be1e5e7bc739f808a680923b.js
+參數:Bootstrap 4.0.0(Component)",中保智慧宅,有弱點的元件,Latest patches or hotfixes for 3rd. party products were not installed,未安裝協力廠商產品的最新修補程式或緊急修復程式,"Upgrade to the latest version of the component. If the component has reached its End of Life (EOL), replace the component with a recent supported alternative. We highly recommend contacting the vendor of this product to see if a patch or fix has recently been made available.
+","升級到該組件的最新版本。如果該組件已達到其生命終結（EOL），請用最近支持的替代品替換該組件。我們強烈建議聯繫該產品的供應商，看看是否最近有補丁或修復可用。
+",Medium,攻擊者有可能使用 Web 伺服器來攻擊其他網站，讓其身分更加隱密,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+37,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/inquiries/privacy-modal
+參數:privacy-modal(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+38,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/package
+參數:package(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+39,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/inquiries/new
+參數:new(Page)",中保智慧宅,檢查是否有 SRI（子資源完整性）支援,SRI (Subresource Integrity) not supported,不支援 SRI（子資源完整性）,"Add Subresource Integrity to every script/link with source not in your domain
+W3C Subresource Integrity:
+https://www.w3.org/TR/SRI/
+SRI Hash Generator:
+https://srihash.org
+Sample Script Element Not Supporting SRI:
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+Sample Script Element Supporting SRI:
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+","將「子資源完整性」新增至每一個 Script/鏈結（其原始碼不在您網域中）
+W3C 子資源完整性：
+https://www.w3.org/TR/SRI/
+SRI雜湊生成器：
+https://srihash.org
+不支援SRI的範例腳本元素：
+<script src=""https://example.com/example-framework.js"" crossorigin=""anonymous""></script>
+範例劇本元素支援SRI：
+<script src=""https://example.com/example-framework.js"" integrity=""sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"" crossorigin=""anonymous""></script>
+",Medium,假設第三方伺服器已受損，網站的內容/行為會變更,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+40,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:_tg_csi(Cookie)",中保智慧宅,SameSite 屬性不安全、不適當或遺漏的 Cookie,Sensitive Cookie with Improper or Insecure or Missing SameSite Attribute,SameSite 屬性不適當、不安全或遺漏的機密 Cookie,"[1] Review possible solutions for configuring SameSite Cookie attribute to recommended values.
+[2] Restrict Cookies to a first-party or same-site context.
+[3] Verify and set the SameSite attribute of your cookie to Strict, to ensure that the cookie will only be sent in a first-party context.
+[4] Or, if you want to relax the restrictions of first-party context, then verify and set the SameSite attribute of the cookie to Lax with Secure Flag enabled and transferred over HTTPS.
+","[1] 檢閱將 SameSite Cookie 屬性配置為建議值的可能解決方案。[2] 將 Cookie 限制為第一方或相同網站環境定義。
+[3] 將 Cookie 的 SameSite 屬性設定為 Strict 並加以驗證，確保 Cookie 只能在第一方環境定義中傳送。
+[4] 或者，如果您想要放鬆第一方環境定義的限制，請將 Cookie 的 SameSite 屬性設定為 Lax 並啟用 Secure 旗標，再透過 HTTPS 傳輸，同時加以驗證。
+",Medium,將 Cookie 限制為第一方或相同網站環境定義以預防 Cookie 資訊洩漏。如果沒有設置額外的保護措施（如反 CSRF 記號），攻擊者可以延伸為偽造跨網站要求 (CSRF) 攻擊。,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+41,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,「Content-Security-Policy」中遺漏或包含不安全的「Style-src」或「Default-src」原則,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Configure your server to send the ""Content-Security-Policy"" header with proper values for ""style-src"".
+It is recommended to configure style-src directive with secure values such as 'self' or 'none' and if needed, you should use 'unsafe-inline' or 'unsafe-eval' with nonce or hash-algorithm.
+If style-src directive is not set explicitly, consider having default-src which acts as a fallback and insecure values should also be avoided for ""default-src"" directive. Safe ""default-src"" values include 'none', and 'unsafe-inline', 'unsafe-eval' together with nonce or hash algorithm.
+For Apache, see: 
+http://httpd.apache.org/docs/2.2/mod/mod_headers.html
+For IIS, see: 
+https://technet.microsoft.com/pl-pl/library/cc753133%28v=ws.10%29.aspx
+For nginx, see: 
+http://nginx.org/en/docs/http/ngx_http_headers_module.html
+","配置您的伺服器，以正確的「style-src」值傳送「Content-Security-Policy」標頭。
+建議使用「self」或「none」等安全值來配置 style-src 指引，如有需要，您應將「unsafe-inline」或「unsafe-eval」與隨機數或雜湊演算法搭配使用。
+如未明確設定 style-src 指引，請考慮使用 default-src 作為應變方案，並且也應避免在「default-src」指引中使用不安全的值。安全的「default-src」值包括「none」、「unsafe-inline」、「unsafe-eval」搭被隨機數或雜湊演算法。
+如為 Apache，請參閱：
+http://httpd.apache.org/docs/2.2/mod/mod_headers.html
+如為 IIS，請參閱：
+https://technet.microsoft.com/pl-pl/library/cc753133%28v=ws.10%29.aspx
+如為 nginx，請參閱：
+http://nginx.org/en/docs/http/ngx_http_headers_module.html
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置有可能說服無經驗而易受騙的使用者提供機密性資訊，如：使用者名稱、密碼、信用卡號碼、社會保險號碼等等,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+42,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/inquiries/new
+參數:new(Page)",中保智慧宅,找到可快取的 SSL 頁面,Sensitive information might have been cached by your browser,瀏覽器可能已快取機密性資訊,"Disable caching on all SSL pages or all pages that contain sensitive data.
+This can be achieved by using ""Cache-Control: no-store"" and either ""Pragma: no-cache"" or ""Cache-Control: no-cache"" response directives in your SSL page headers.
+
+Cache-Control: private - This directive instructs proxies that the page contains private information, and therefore should not be cached by a shared cache. However, it does not instruct browsers to refrain from caching the pages.
+
+Cache-Control: no-cache - This directive also instructs proxies that the page contains private information, and therefore should not be cached. It also instructs the browser to revalidate with the server to check if a new version is available. This means that the browser may store sensitive pages or information to be used in the revalidation. Certain browsers do not necessarily follow the RFC and may treat no-cache as no-store.
+
+Cache-Control: no-store - This is the most secure directive. It instructs both the proxy and the browser not to cache the page or store it in its cache folders.
+
+Pragma: no-cache - This directive is required for older browsers, that do not support the Cache-Control header.
+","在所有 SSL 頁面及含有機密資料的所有頁面上，停用快取。
+這可以透過在您的 SSL 頁面標頭中使用 ""Cache-Control: no-store"" 及 ""Pragma: no-cache"" 或 ""Cache-Control: no-cache"" 回應指引達成。
+
+Cache-Control: private - 這個指引指示 Proxy 頁面含有私密資訊，因此不應藉由共用快取進行快取。不過，它不會指示瀏覽器不要進行頁面快取。
+
+Cache-Control: no-cache - 這個指引也會指示 Proxy 頁面含有私密資訊，因此不能進行快取。它也會指示瀏覽器要向伺服器重新驗證，檢查是否有新的版本。這表示瀏覽器可以儲存敏感性頁面或資訊，在重新驗證時使用。某些瀏覽器不一定會遵循 RFC，因此可能會將 no-cache 視為 no-store。
+
+Cache-Control: no-store - 這是最安全的指引。它指示 Proxy 和瀏覽器不要快取頁面或將頁面儲存在快取資料夾。
+
+Pragma: no-cache - 不支援 Cache-Control 標頭的舊瀏覽器需要這項指引。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+43,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/inquiries/new
+參數:new(Page)",中保智慧宅,未停用密碼欄位的自動完成 HTML 屬性,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"If the ""autocomplete"" attribute is missing in the ""password"" field of the ""input"" element, add it and set it to ""off"".
+If the ""autocomplete"" attribute is set to ""on"", change it to ""off"".
+
+For example:
+
+Vulnerable site:
+  <form action=""AppScan.html"" method=""get"">
+      Username: <input type=""text"" name=""firstname"" /><br />
+      Password: <input type=""password"" name=""lastname"" />
+      <input type=""submit"" value=""Submit"" />
+  <form>
+
+
+Non-vulnerable site:
+  <form action=""AppScan.html"" method=""get"">
+      Username: <input type=""text"" name=""firstname"" /><br />
+      Password: <input type=""password"" name=""lastname"" autocomplete=""off""/>
+      <input type=""submit"" value=""Submit"" />
+  <form>
+
+","如果在 ""input"" 元素的 ""password"" 欄位中遺漏了 ""autocomplete"" 屬性，請新增它並設定為 ""off""。如果 ""autocomplete"" 屬性設定為 ""on""，請變更為 ""off""。
+
+例如：
+
+有弱點的網站：
+  <form action=""AppScan.html"" method=""get"">
+      Username: <input type=""text"" name=""firstname"" /><br />
+      Password: <input type=""password"" name=""lastname"" />
+      <input type=""submit"" value=""Submit"" />
+  <form>
+
+
+無弱點的網站：
+  <form action=""AppScan.html"" method=""get"">
+      Username: <input type=""text"" name=""firstname"" /><br />
+      Password: <input type=""password"" name=""lastname"" autocomplete=""off""/>
+      <input type=""submit"" value=""Submit"" />
+  <form>
+
+",Low,有可能略過 Web 應用程式的鑑別機制,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+44,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:robots.txt(Page)",中保智慧宅,Robots.txt 檔網站結構曝光,The web server or application server are configured in an insecure way,使用不安全的方式配置 Web 伺服器或應用程式伺服器,"[1] The robots.txt file should not be used to protect or hide information
+
+[2] You should move your sensitive files and directories into a different and isolated sub directory in order to exclude that directory from the web robot search. As in the following example, moving the files into a non-specific directory name such as ""folder"" is a better solution:
+
+New directory structure: 
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+New robots.txt: 
+User-agent: *
+Disallow: /folder/
+
+[3] If you cannot alter your directory structure and you need to exclude certain directories from web robots, use only partial names in the robots.txt file. Although this may not be the best solution, it will at least make it harder to guess full directory names. For example, to exclude ""sensitive_folder"" and ""passwords.txt"" use the following names (given that you don't have files or directories in the web root starting with those same characters): 
+
+robots.txt: 
+User-agent: *
+Disallow: /se
+Disallow: /pa
+","[1] robots.txt 檔不應用來保護或隱藏資訊
+
+[2] 您應該將機密的檔案和目錄移到另一個隔離的子目錄中，以便將這個目錄排除在 Web Robot 搜尋之外。
+如下列範例所示，將檔案移到 ""folder"" 之類非特定目錄名稱是比較好的解決方案：
+
+新目錄結構：
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+新目錄結構：
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+New robots.txt:
+User-agent: *
+Disallow: /folder/
+
+[3] 如果您無法變更目錄結構，且必須將特定目錄排除於 Web Robot 之外，在 robots.txt 檔中，請只用局部名稱。
+雖然這不是最好的解決方案，但至少它能加大完整目錄名稱的猜測難度。比方說，如果要排除 ""sensitive_folder"" 和 ""passwords.txt""，請使用下列名稱（假設 Web 根目錄中沒有起始於相同字元的檔案或目錄）：
+
+robots.txt:
+User-agent: *
+Disallow: /se
+Disallow: /pa
+",Low,有可能擷取網站檔案系統結構的相關資訊，其可能會幫助攻擊者對映網站,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+45,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/
+參數:robots.txt(Page)",中保智慧宅,Robots.txt 檔網站結構曝光,The web server or application server are configured in an insecure way,使用不安全的方式配置 Web 伺服器或應用程式伺服器,"[1] The robots.txt file should not be used to protect or hide information
+
+[2] You should move your sensitive files and directories into a different and isolated sub directory in order to exclude that directory from the web robot search. As in the following example, moving the files into a non-specific directory name such as ""folder"" is a better solution:
+
+New directory structure: 
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+New robots.txt: 
+User-agent: *
+Disallow: /folder/
+
+[3] If you cannot alter your directory structure and you need to exclude certain directories from web robots, use only partial names in the robots.txt file. Although this may not be the best solution, it will at least make it harder to guess full directory names. For example, to exclude ""sensitive_folder"" and ""passwords.txt"" use the following names (given that you don't have files or directories in the web root starting with those same characters): 
+
+robots.txt: 
+User-agent: *
+Disallow: /se
+Disallow: /pa
+","[1] robots.txt 檔不應用來保護或隱藏資訊
+
+[2] 您應該將機密的檔案和目錄移到另一個隔離的子目錄中，以便將這個目錄排除在 Web Robot 搜尋之外。
+如下列範例所示，將檔案移到 ""folder"" 之類非特定目錄名稱是比較好的解決方案：
+
+新目錄結構：
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+新目錄結構：
+/folder/passwords.txt
+/folder/sensitive_folder/
+
+New robots.txt:
+User-agent: *
+Disallow: /folder/
+
+[3] 如果您無法變更目錄結構，且必須將特定目錄排除於 Web Robot 之外，在 robots.txt 檔中，請只用局部名稱。
+雖然這不是最好的解決方案，但至少它能加大完整目錄名稱的猜測難度。比方說，如果要排除 ""sensitive_folder"" 和 ""passwords.txt""，請使用下列名稱（假設 Web 根目錄中沒有起始於相同字元的檔案或目錄）：
+
+robots.txt:
+User-agent: *
+Disallow: /se
+Disallow: /pa
+",Low,有可能擷取網站檔案系統結構的相關資訊，其可能會幫助攻擊者對映網站,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+46,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,應用程式中找到不必要的 HTTP 回應標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Configure your server to remove the default ""Server"" header from being sent to all outgoing requests.
+For IIS, see:
+https://techcommunity.microsoft.com/t5/iis-support-blog/remove-unwanted-http-response-headers/ba-p/369710
+For nginx, see: 
+https://www.getpagespeed.com/server-setup/nginx/how-to-remove-the-server-header-in-nginx
+For Weblogic, see: 
+https://docs.oracle.com/cd/E13222_01/wls/docs81/adminguide/web_server.html
+For Apache, see: 
+https://techglimpse.com/set-modify-response-headers-http-tip/
+","設定您的伺服器，以避免預設的 ""Server"" 標頭傳送至所有傳出要求。
+若為 IIS，請參閱：
+https://techcommunity.microsoft.com/t5/iis-support-blog/remove-unwanted-http-response-headers/ba-p/369710
+若為 nginx，請參閱： 
+https://www.getpagespeed.com/server-setup/nginx/how-to-remove-the-server-header-in-nginx
+若為 Weblogic，請參閱：
+https://docs.oracle.com/cd/E13222_01/wls/docs81/adminguide/web_server.html
+若為 Apache，請參閱： 
+https://techglimpse.com/set-modify-response-headers-http-tip/
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+47,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,「Content-Security-Policy」標頭中遺漏或包含不安全的「Script-Src」或「Default-src」原則,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Configure your server to send the ""Content-Security-Policy"" header with proper values for ""script-src"" and ""default-src"" directive
+It is recommended to configure script-src directive with secure values such as 'none',  'strict-dynamic' or if needed, you should use 'unsafe-inline' or 'unsafe-eval' with nonce or hash-algorithm, NOT with 'self' to 'script-src' or 'default-src'.
+For Apache, see: 
+http://httpd.apache.org/docs/2.2/mod/mod_headers.html
+For IIS, see: 
+https://technet.microsoft.com/pl-pl/library/cc753133%28v=ws.10%29.aspx
+For nginx, see: 
+http://nginx.org/en/docs/http/ngx_http_headers_module.html
+","設定您的伺服器以傳送「Content-Security-Policy」標頭，並帶有「script-src」和「default-src」指引適當的值
+建議以安全值來設定 script-src 指引，例如「none」、「strict-dynamic」。或者若有需要，您應該使用帶有隨機值 (nonce) 或雜湊演算法 (hash-algorithm) 的「unsafe-inline」或「unsafe-eval」，而不是使用「self」設定「script-src」或「default-src」。
+針對 Apache，請參閱： 
+http://httpd.apache.org/docs/2.2/mod/mod_headers.html
+針對 IIS，請參閱： 
+https://technet.microsoft.com/pl-pl/library/cc753133%28v=ws.10%29.aspx
+針對 nginx，請參閱： 
+http://nginx.org/en/docs/http/ngx_http_headers_module.html
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置有可能說服無經驗而易受騙的使用者提供機密性資訊，如：使用者名稱、密碼、信用卡號碼、社會保險號碼等等,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+48,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/howtouse
+參數:howtouse(Page)",中保智慧宅,找到可快取的 SSL 頁面,Sensitive information might have been cached by your browser,瀏覽器可能已快取機密性資訊,"Disable caching on all SSL pages or all pages that contain sensitive data.
+This can be achieved by using ""Cache-Control: no-store"" and either ""Pragma: no-cache"" or ""Cache-Control: no-cache"" response directives in your SSL page headers.
+
+Cache-Control: private - This directive instructs proxies that the page contains private information, and therefore should not be cached by a shared cache. However, it does not instruct browsers to refrain from caching the pages.
+
+Cache-Control: no-cache - This directive also instructs proxies that the page contains private information, and therefore should not be cached. It also instructs the browser to revalidate with the server to check if a new version is available. This means that the browser may store sensitive pages or information to be used in the revalidation. Certain browsers do not necessarily follow the RFC and may treat no-cache as no-store.
+
+Cache-Control: no-store - This is the most secure directive. It instructs both the proxy and the browser not to cache the page or store it in its cache folders.
+
+Pragma: no-cache - This directive is required for older browsers, that do not support the Cache-Control header.
+","在所有 SSL 頁面及含有機密資料的所有頁面上，停用快取。
+這可以透過在您的 SSL 頁面標頭中使用 ""Cache-Control: no-store"" 及 ""Pragma: no-cache"" 或 ""Cache-Control: no-cache"" 回應指引達成。
+
+Cache-Control: private - 這個指引指示 Proxy 頁面含有私密資訊，因此不應藉由共用快取進行快取。不過，它不會指示瀏覽器不要進行頁面快取。
+
+Cache-Control: no-cache - 這個指引也會指示 Proxy 頁面含有私密資訊，因此不能進行快取。它也會指示瀏覽器要向伺服器重新驗證，檢查是否有新的版本。這表示瀏覽器可以儲存敏感性頁面或資訊，在重新驗證時使用。某些瀏覽器不一定會遵循 RFC，因此可能會將 no-cache 視為 no-store。
+
+Cache-Control: no-store - 這是最安全的指引。它指示 Proxy 和瀏覽器不要快取頁面或將頁面儲存在快取資料夾。
+
+Pragma: no-cache - 不支援 Cache-Control 標頭的舊瀏覽器需要這項指引。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+49,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/package
+參數:package(Page)",中保智慧宅,找到可快取的 SSL 頁面,Sensitive information might have been cached by your browser,瀏覽器可能已快取機密性資訊,"Disable caching on all SSL pages or all pages that contain sensitive data.
+This can be achieved by using ""Cache-Control: no-store"" and either ""Pragma: no-cache"" or ""Cache-Control: no-cache"" response directives in your SSL page headers.
+
+Cache-Control: private - This directive instructs proxies that the page contains private information, and therefore should not be cached by a shared cache. However, it does not instruct browsers to refrain from caching the pages.
+
+Cache-Control: no-cache - This directive also instructs proxies that the page contains private information, and therefore should not be cached. It also instructs the browser to revalidate with the server to check if a new version is available. This means that the browser may store sensitive pages or information to be used in the revalidation. Certain browsers do not necessarily follow the RFC and may treat no-cache as no-store.
+
+Cache-Control: no-store - This is the most secure directive. It instructs both the proxy and the browser not to cache the page or store it in its cache folders.
+
+Pragma: no-cache - This directive is required for older browsers, that do not support the Cache-Control header.
+","在所有 SSL 頁面及含有機密資料的所有頁面上，停用快取。
+這可以透過在您的 SSL 頁面標頭中使用 ""Cache-Control: no-store"" 及 ""Pragma: no-cache"" 或 ""Cache-Control: no-cache"" 回應指引達成。
+
+Cache-Control: private - 這個指引指示 Proxy 頁面含有私密資訊，因此不應藉由共用快取進行快取。不過，它不會指示瀏覽器不要進行頁面快取。
+
+Cache-Control: no-cache - 這個指引也會指示 Proxy 頁面含有私密資訊，因此不能進行快取。它也會指示瀏覽器要向伺服器重新驗證，檢查是否有新的版本。這表示瀏覽器可以儲存敏感性頁面或資訊，在重新驗證時使用。某些瀏覽器不一定會遵循 RFC，因此可能會將 no-cache 視為 no-store。
+
+Cache-Control: no-store - 這是最安全的指引。它指示 Proxy 和瀏覽器不要快取頁面或將頁面儲存在快取資料夾。
+
+Pragma: no-cache - 不支援 Cache-Control 標頭的舊瀏覽器需要這項指引。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+50,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/install
+參數:install(Page)",中保智慧宅,找到可快取的 SSL 頁面,Sensitive information might have been cached by your browser,瀏覽器可能已快取機密性資訊,"Disable caching on all SSL pages or all pages that contain sensitive data.
+This can be achieved by using ""Cache-Control: no-store"" and either ""Pragma: no-cache"" or ""Cache-Control: no-cache"" response directives in your SSL page headers.
+
+Cache-Control: private - This directive instructs proxies that the page contains private information, and therefore should not be cached by a shared cache. However, it does not instruct browsers to refrain from caching the pages.
+
+Cache-Control: no-cache - This directive also instructs proxies that the page contains private information, and therefore should not be cached. It also instructs the browser to revalidate with the server to check if a new version is available. This means that the browser may store sensitive pages or information to be used in the revalidation. Certain browsers do not necessarily follow the RFC and may treat no-cache as no-store.
+
+Cache-Control: no-store - This is the most secure directive. It instructs both the proxy and the browser not to cache the page or store it in its cache folders.
+
+Pragma: no-cache - This directive is required for older browsers, that do not support the Cache-Control header.
+","在所有 SSL 頁面及含有機密資料的所有頁面上，停用快取。
+這可以透過在您的 SSL 頁面標頭中使用 ""Cache-Control: no-store"" 及 ""Pragma: no-cache"" 或 ""Cache-Control: no-cache"" 回應指引達成。
+
+Cache-Control: private - 這個指引指示 Proxy 頁面含有私密資訊，因此不應藉由共用快取進行快取。不過，它不會指示瀏覽器不要進行頁面快取。
+
+Cache-Control: no-cache - 這個指引也會指示 Proxy 頁面含有私密資訊，因此不能進行快取。它也會指示瀏覽器要向伺服器重新驗證，檢查是否有新的版本。這表示瀏覽器可以儲存敏感性頁面或資訊，在重新驗證時使用。某些瀏覽器不一定會遵循 RFC，因此可能會將 no-cache 視為 no-store。
+
+Cache-Control: no-store - 這是最安全的指引。它指示 Proxy 和瀏覽器不要快取頁面或將頁面儲存在快取資料夾。
+
+Pragma: no-cache - 不支援 Cache-Control 標頭的舊瀏覽器需要這項指引。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+51,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,應用程式中找到不必要的 HTTP 回應標頭,Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"Configure your server to remove the default ""Server"" header from being sent to all outgoing requests.
+For IIS, see:
+https://techcommunity.microsoft.com/t5/iis-support-blog/remove-unwanted-http-response-headers/ba-p/369710
+For nginx, see: 
+https://www.getpagespeed.com/server-setup/nginx/how-to-remove-the-server-header-in-nginx
+For Weblogic, see: 
+https://docs.oracle.com/cd/E13222_01/wls/docs81/adminguide/web_server.html
+For Apache, see: 
+https://techglimpse.com/set-modify-response-headers-http-tip/
+","設定您的伺服器，以避免預設的 ""Server"" 標頭傳送至所有傳出要求。
+若為 IIS，請參閱：
+https://techcommunity.microsoft.com/t5/iis-support-blog/remove-unwanted-http-response-headers/ba-p/369710
+若為 nginx，請參閱： 
+https://www.getpagespeed.com/server-setup/nginx/how-to-remove-the-server-header-in-nginx
+若為 Weblogic，請參閱：
+https://docs.oracle.com/cd/E13222_01/wls/docs81/adminguide/web_server.html
+若為 Apache，請參閱： 
+https://techglimpse.com/set-modify-response-headers-http-tip/
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+52,https://smarthome.myvita.com.tw/,"https://smarthome.myvita.com.tw/home/inquiries/new
+參數:new(Page)",中保智慧宅,找到可快取的 SSL 頁面,Sensitive information might have been cached by your browser,瀏覽器可能已快取機密性資訊,"Disable caching on all SSL pages or all pages that contain sensitive data.
+This can be achieved by using ""Cache-Control: no-store"" and either ""Pragma: no-cache"" or ""Cache-Control: no-cache"" response directives in your SSL page headers.
+
+Cache-Control: private - This directive instructs proxies that the page contains private information, and therefore should not be cached by a shared cache. However, it does not instruct browsers to refrain from caching the pages.
+
+Cache-Control: no-cache - This directive also instructs proxies that the page contains private information, and therefore should not be cached. It also instructs the browser to revalidate with the server to check if a new version is available. This means that the browser may store sensitive pages or information to be used in the revalidation. Certain browsers do not necessarily follow the RFC and may treat no-cache as no-store.
+
+Cache-Control: no-store - This is the most secure directive. It instructs both the proxy and the browser not to cache the page or store it in its cache folders.
+
+Pragma: no-cache - This directive is required for older browsers, that do not support the Cache-Control header.
+","在所有 SSL 頁面及含有機密資料的所有頁面上，停用快取。
+這可以透過在您的 SSL 頁面標頭中使用 ""Cache-Control: no-store"" 及 ""Pragma: no-cache"" 或 ""Cache-Control: no-cache"" 回應指引達成。
+
+Cache-Control: private - 這個指引指示 Proxy 頁面含有私密資訊，因此不應藉由共用快取進行快取。不過，它不會指示瀏覽器不要進行頁面快取。
+
+Cache-Control: no-cache - 這個指引也會指示 Proxy 頁面含有私密資訊，因此不能進行快取。它也會指示瀏覽器要向伺服器重新驗證，檢查是否有新的版本。這表示瀏覽器可以儲存敏感性頁面或資訊，在重新驗證時使用。某些瀏覽器不一定會遵循 RFC，因此可能會將 no-cache 視為 no-store。
+
+Cache-Control: no-store - 這是最安全的指引。它指示 Proxy 和瀏覽器不要快取頁面或將頁面儲存在快取資料夾。
+
+Pragma: no-cache - 不支援 Cache-Control 標頭的舊瀏覽器需要這項指引。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
+53,https://smarthome.myvita.com.tw/,"http://smarthome.myvita.com.tw/home/inquiries/new
+參數:smarthome.myvita.com.tw(Page)",中保智慧宅,"Missing or insecure ""frame-ancestors"" directive in CSP",Insecure web application programming or configuration,不安全的 Web 應用程式設計或配置,"To ensure that the API endpoints cannot be embedded in any frame or iframe, set the Content-Security-Policy: frame-ancestors 'none' header on all API endpoint responses.
+","為了確保 API 端點不能嵌入任何框架或 iframe，請在所有 API 端點回應中設置 Content-Security-Policy: frame-ancestors 'none' 標頭。
+",Low,有可能收集 Web 應用程式相關的機密性資訊，如：使用者名稱、密碼、機器名稱及/或機密檔案位置有可能說服無經驗而易受騙的使用者提供機密性資訊，如：使用者名稱、密碼、信用卡號碼、社會保險號碼等等,中興保全科技股份有限公司,新增弱點,2026/07/13 10:42,伺服器設備,2026/07/13
