@@ -1,7 +1,8 @@
 # API Keys and Secrets
-Trading/⚙️參數設定/*.json
-PlayPlus_Cold_Mail/⚙️參數設定/*.json
-!Trading/⚙️參數設定/README.md
+**/⚙️參數設定/*.json
+**/⚙️參數/*.json
+!**/⚙️參數設定/README.md
+!**/⚙️參數/README.md
 
 # OS files
 .DS_Store
@@ -11,6 +12,6 @@ PlayPlus_Cold_Mail/⚙️參數設定/*.json
 .vscode/
 
 # Temp files
-Trading/⌚️暫存/
+**/⌚️暫存/
 **/__pycache__/
 *.log

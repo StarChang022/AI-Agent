@@ -1,0 +1,17 @@
+# ===== Google Service Account 憑證（機密，絕對不上傳）=====
+**/eternal-skyline-494002-j8-356884d3e786.json
+**/*service_account*.json
+**/*credentials*.json
+**/*serviceAccountKey*.json
+
+# ===== Python 暫存檔 =====
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ===== 爬蟲暫存輸出 =====
+**/temporary_*.json
+**/debug_page_*.png
+
+# ===== macOS 系統檔 =====
+.DS_Store
