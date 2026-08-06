@@ -27,11 +27,11 @@ HEADLESS = False
 
 def load_companies_from_sheet():
     """
-    從 Google Sheets「名單」工作表讀取所有列，
+    從 Google Sheets「名單副本」工作表讀取所有列，
     篩選 G欄（index 6）開頭為 https://www.104.com.tw/ 的列。
     回傳 list of dict，每筆含 row_index（1-based，含標題）、company_name、source_url。
     """
-    print("[步驟 1] 連接 Google Sheets，讀取「名單」工作表...")
+    print("[步驟 1] 連接 Google Sheets，讀取「名單副本」工作表...")
     scope = ['https://www.googleapis.com/auth/spreadsheets',
              'https://www.googleapis.com/auth/drive']
     creds  = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)

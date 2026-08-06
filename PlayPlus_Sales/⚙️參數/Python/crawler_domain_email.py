@@ -30,7 +30,7 @@ WORKSHEET_NAME = '名單副本'  # gid=1539228012
 COL_COMPANY   = 0   # A欄 公司名稱
 COL_EMAIL     = 4   # E欄 email
 COL_WEBSITE   = 7   # H欄 官方網站
-TOTAL_COLS    = 18  # A~R = 18 欄
+TOTAL_COLS    = 19  # A~S = 19 欄
 
 # 爬蟲效能設定
 CONCURRENT_PAGES  = 5    # 同時開啟的 Playwright 分頁數
@@ -520,7 +520,7 @@ def write_back_to_sheet(sheet, updated_rows):
     data_rows = updated_rows[1:]  # 只寫資料列
 
     try:
-        end_col = chr(ord('A') + TOTAL_COLS - 1)  # 'R'
+        end_col = chr(ord('A') + TOTAL_COLS - 1)  # 'S'
         sheet.batch_clear([f'A2:{end_col}'])
     except Exception as e:
         print(f"  [警告] 清除舊資料失敗：{e}")
