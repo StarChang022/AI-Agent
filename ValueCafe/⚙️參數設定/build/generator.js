@@ -104,13 +104,26 @@ function replaceEditorBlock(html, commentLabel, replacer) {
   }
 
   const templateBlock = html.slice(nextTagStart, blockEnd);
-  let replacement   = replacer(templateBlock);
+  let replacement   = replacer(templateBlock, baseIndent);
 
   if (baseIndent && replacement) {
     replacement = replacement.split('\n<').join('\n' + baseIndent + '<');
   }
 
   return html.slice(0, idx) + replacement + html.slice(blockEnd);
+}
+
+/**
+ * 對廣告 HTML（相對縮排，從 0 開始）套用絕對縮排：
+ * 第一行不變，第二行起每行前面加 indent。
+ *
+ * @param {string} html   - 廣告 HTML 字串
+ * @param {string} indent - 目標縮排字串（e.g. '\t\t\t'）
+ * @returns {string}
+ */
+function applyIndent(html, indent) {
+  if (!indent || !html) return html;
+  return html.split('\n').map((line, i) => i === 0 ? line : (line ? indent + line : line)).join('\n');
 }
 
 /**
@@ -313,8 +326,10 @@ function generateArticlePage(article, templatePath, destPath, allArticles, categ
     // Step 2: Bookmarks Ads（<!-- Bookmarks Ads --> 區塊，最多 5 則）
     const bookmarkAds = buildBookmarksAds(pageRelPath, 5);
     if (bookmarkAds.length > 0) {
-      // 有廣告：填入廣告內容，清除佔位符
-      html = replaceEditorBlock(html, 'Bookmarks Ads', () => bookmarkAds.join('\n'));
+      // 有廣告：填入廣告內容（相對縮排→絕對縮排），清除佔位符
+      html = replaceEditorBlock(html, 'Bookmarks Ads', (tpl, baseIndent) =>
+        bookmarkAds.map(ad => applyIndent(ad, baseIndent)).join('\n')
+      );
     } else {
       // 無廣告：移除整個包含 Recommendation 的 div.column.column-content 容器
       html = removeBookmarksSection(html);
@@ -374,7 +389,11 @@ function generateLegendaryArticlePage(article, templatePath, destPath, allArticl
         lastIdx = m.index;
       }
       if (lastIdx !== -1) {
-        html = html.slice(0, lastIdx) + lgAds[0] + '\n' + html.slice(lastIdx);
+        // 計算 lastIdx 所在行的縮排，套用至廣告 HTML（相對縮排→絕對縮排）
+        let lineStart = html.lastIndexOf('\n', lastIdx);
+        if (lineStart === -1) lineStart = 0; else lineStart += 1;
+        const adIndent = html.slice(lineStart, lastIdx).replace(/[^\s]/g, '');
+        html = html.slice(0, lastIdx) + applyIndent(lgAds[0], adIndent) + '\n' + html.slice(lastIdx);
       }
     }
 
@@ -391,7 +410,7 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
 
   renderTemplate(templatePath, destPath, (html) => {
     // Step 1: More Resources（含廣告插入）— news 內頁每 3 篇插入 1 則 Cards Ads
-    html = replaceEditorBlock(html, 'More Resources Editor', (tpl) => {
+    html = replaceEditorBlock(html, 'More Resources Editor', (tpl, baseIndent) => {
       const sorted   = sortByDateDesc(pool);
       const selected = sorted.slice(0, MORE_RESOURCES_LIMIT);
 
@@ -412,10 +431,10 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
         });
         itemBlocks.push(block);
 
-        // 每 3 篇後插入 1 則廣告（取代原有 <a> 容器，直接以 <div class="oc-item"> 包裹廣告）
+        // 每 3 篇後插入 1 則廣告（相對縮排→絕對縮排後插入）
         if ((i + 1) % 3 === 0) {
           const adBlocks = buildCardsAds(pageRelPath, 1, '<div class="oc-item">');
-          itemBlocks.push(...adBlocks);
+          itemBlocks.push(...adBlocks.map(ad => applyIndent(ad, baseIndent)));
         }
       });
 
@@ -449,7 +468,7 @@ function generateNewsArticlePage(article, templatePath, destPath, allArticles) {
  */
 function generateListPage(articles, listHtmlPath, outputPath, adsPageKey, adsStyle) {
   renderTemplate(listHtmlPath, outputPath, (html) => {
-    html = replaceEditorBlock(html, 'List Editor', (tpl) => {
+    html = replaceEditorBlock(html, 'List Editor', (tpl, baseIndent) => {
       const items = [];
       articles.forEach((a, i) => {
         const articleHtml = tpl
@@ -459,14 +478,14 @@ function generateListPage(articles, listHtmlPath, outputPath, adsPageKey, adsSty
           .replace(/🟢ListSummary/g, a.head['list-summary'] || '');
         items.push(articleHtml);
 
-        // 每 3 篇文章後插入 1 則廣告（第 3、6、9... 篇之後）
+        // 每 3 篇文章後插入 1 則廣告（相對縮排→絕對縮排後插入）
         if (adsPageKey && (i + 1) % 3 === 0) {
           if (adsStyle === 'horizontal-bar') {
             const adBlocks = buildHorizontalBarAds(adsPageKey, 1);
-            items.push(...adBlocks);
+            items.push(...adBlocks.map(ad => applyIndent(ad, baseIndent)));
           } else if (adsStyle === 'cards') {
             const adBlocks = buildCardsAds(adsPageKey, 1, '<div class="col-md-3">');
-            items.push(...adBlocks);
+            items.push(...adBlocks.map(ad => applyIndent(ad, baseIndent)));
           }
         }
       });
@@ -542,10 +561,10 @@ function generateNewsListPage(articles, listHtmlPath, outputPath) {
       });
       itemBlocks.push(block);
 
-      // 每 4 篇後插入 1 則 Cards 廣告（第 4、8、12... 篇之後）
+      // 每 4 篇後插入 1 則 Cards 廣告（相對縮排→絕對縮排後插入）
       if ((i + 1) % 4 === 0) {
         const adBlocks = buildCardsAds('news.html', 1, '<div class="col-md-3">');
-        itemBlocks.push(...adBlocks);
+        itemBlocks.push(...adBlocks.map(ad => applyIndent(ad, baseIndent)));
       }
     });
 

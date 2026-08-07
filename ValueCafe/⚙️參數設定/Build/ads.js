@@ -150,9 +150,11 @@ function randomSampleAds(arr, n) {
  */
 function renderAdBlock(tmplBlock, ad, pageRelPath) {
   let html = tmplBlock
-    .replace(/🟢AdsUrl/g,         ad.url         || '')
-    .replace(/🟢AdsTitle/g,       ad.title       || '')
-    .replace(/🟢AdsDescription/g, ad.description || '');
+    .replace(/🟢AdsUrl/g,         ad.url              || '')
+    .replace(/🟢AdsTitle/g,       ad.title             || '')
+    .replace(/🟢AdsDescription/g, ad.description       || '')
+    .replace(/\{type\}/g,          (ad.type || '').toLowerCase())
+    .replace(/🟢AdsID/g,          ad.id               || '');
 
   // 依据 type 移除不需要的 tag 標籤
   if (ad.type === 'Books') {
