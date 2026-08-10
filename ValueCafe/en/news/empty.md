@@ -40,7 +40,7 @@
 # Content Editor
 
 <div class="column column-group">
-	<div class="column column-content">
+	<div class="column column-list">
 		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 		<div class="cards background-horizontal background2">
 			<ul>
@@ -50,10 +50,10 @@
 			</ul>
 		</div>
 	</div>
-	<div class="column column-content">
+	<div class="column column-list">
 		<h2>Lorem ipsum dolor</h2>
 		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-		<h3 class="inside">Lorem ipsum dolor</h3>
+		<h3 class="inside my-2">Lorem ipsum dolor</h3>
 		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
 	</div>
 </div>

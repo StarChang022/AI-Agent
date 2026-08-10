@@ -33,7 +33,7 @@ function parseMarkdown(filePath) {
 
   // ── 切分各個 Section ──────────────────────────────────────────────────────
   // 以 "# XYZ Editor" 為分隔點（不區分大小寫），取出每個 section 的內容
-  const sectionRegex = /^#\s+(.+?)\n([\s\S]*?)(?=^#\s+|\Z)/gm;
+  const sectionRegex = /^#\s+(.+?)\n([\s\S]*?)(?=^#\s+)/gm;
   const sections = {};
   let match;
   while ((match = sectionRegex.exec(text + '\n# END\n')) !== null) {
