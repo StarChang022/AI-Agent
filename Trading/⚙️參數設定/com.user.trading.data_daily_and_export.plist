@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- 排程服務名稱 -->
+    <key>Label</key>
+    <string>com.user.trading.data_daily_and_export</string>
+
+    <!-- 執行的指令與腳本路徑 -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Python/data_daily_and_export.py</string>
+    </array>
+
+    <!-- 工作目錄 -->
+    <key>WorkingDirectory</key>
+    <string>/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/Python</string>
+
+    <!-- 排程時間：每週一至週五 (Weekday 1~5) 17:30 -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict>
+            <key>Weekday</key>
+            <integer>1</integer>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>2</integer>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>3</integer>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>4</integer>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+        <dict>
+            <key>Weekday</key>
+            <integer>5</integer>
+            <key>Hour</key>
+            <integer>17</integer>
+            <key>Minute</key>
+            <integer>30</integer>
+        </dict>
+    </array>
+
+    <!-- 輸出 Log 紀錄 -->
+    <key>StandardOutPath</key>
+    <string>/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/daily_export_stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/daily_export_stderr.log</string>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
