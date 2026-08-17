@@ -80,6 +80,9 @@ def load_stocks(gc) -> list[dict]:
     僅回傳個股（排除 TAIEX / TPEx），
     且 google_sheet_quarterly 欄位必須是有效的 Google Sheet URL，
     且 H 欄 (quarterly) 必須為 TRUE。
+
+    注意：使用固定欄位索引讀取，避免標題列重複名稱（例如 F1 與 E1 同為
+    google_sheet_quarterly）導致 dict(zip()) 覆蓋正確的 URL 值。
     """
     m_id  = re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", WATCHLIST_URL)
     m_gid = re.search(r"gid=(\d+)", WATCHLIST_URL)
@@ -94,23 +97,34 @@ def load_stocks(gc) -> list[dict]:
         return []
 
     headers = wl_values[0]
+
+    # ── 固定欄位索引（不受重複標題影響）──
+    # A=0 stock_id, B=1 stock_name, E=4 quarterly URL, H=7 quarterly 開關
+    COL_SID       = 0   # A 欄
+    COL_SNAME     = 1   # B 欄
+    COL_Q_URL     = 4   # E 欄：google_sheet_quarterly URL
+    COL_QUARTERLY = 7   # H 欄：quarterly 開關（TRUE/FALSE）
+
     stocks = []
     for row in wl_values[1:]:
-        row_dict = dict(zip(headers, row))
-        sid   = row_dict.get('stock_id', '').strip()
-        q_url = row_dict.get('google_sheet_quarterly', '').strip()
-        
-        # 檢查 H 欄 (quarterly) 是否為 TRUE
-        is_enabled = False
-        if 'quarterly' in row_dict:
-            is_enabled = row_dict.get('quarterly', '').strip().upper() == 'TRUE'
-        elif len(row) > 7:
-            is_enabled = row[7].strip().upper() == 'TRUE'
-            
+        # 補齊短列，避免 IndexError
+        while len(row) <= COL_QUARTERLY:
+            row.append('')
+
+        sid   = row[COL_SID].strip()
+        sname = row[COL_SNAME].strip()
+        q_url = row[COL_Q_URL].strip()
+        is_enabled = row[COL_QUARTERLY].strip().upper() == 'TRUE'
+
         if not is_enabled:
             continue
-            
+
         if sid and sid not in EXCLUDED_IDS and q_url.startswith('https://'):
+            # 用 headers zip 建立基本 dict，再明確覆寫關鍵欄位確保正確性
+            row_dict = dict(zip(headers, row))
+            row_dict['stock_id']               = sid
+            row_dict['stock_name']             = sname
+            row_dict['google_sheet_quarterly'] = q_url
             stocks.append(row_dict)
     return stocks
 
