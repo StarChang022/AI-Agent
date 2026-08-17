@@ -568,10 +568,20 @@ async def fetch_all(stocks: list[dict], gc) -> dict[str, dict[str, dict]]:
             dates = [d.get("_date_raw") for d in cache_data.values() if d.get("_date_raw")]
             if dates:
                 dates.sort(reverse=True)
-                cache_latest = dates[0]
+                latest_raw = dates[0]
+                # 往前推 90 天，避免因股利除息日期晚於財報日期
+                # 而導致漏抓最新一季財報（如 cache 最新為 2026-07-09
+                # 而 Q2 財報日期為 2026-06-30 → 差 9 天就被略過）
+                from datetime import datetime, timedelta
+                try:
+                    latest_dt = datetime.strptime(latest_raw[:10], "%Y-%m-%d")
+                    adjusted_dt = latest_dt - timedelta(days=90)
+                    cache_latest = adjusted_dt.strftime("%Y-%m-%d")
+                except ValueError:
+                    cache_latest = latest_raw
                 
         start_dates[sid] = cache_latest
-        print(f"  [{sid}] 起始日期 (本地快取): {cache_latest}")
+        print(f"  [{sid}] 起始日期 (本地快取 -90天): {cache_latest}")
 
     # ── 並行從 FinMind 抓取（每支股票同時打 4 個 API）──
     connector = aiohttp.TCPConnector(limit=20)
