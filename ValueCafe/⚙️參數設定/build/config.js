@@ -3,7 +3,7 @@
 const path = require('path');
 
 // ─── 路徑設定 ────────────────────────────────────────────────────────────────
-const INPUT_DIR  = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/en';
+const INPUT_DIR  = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/English';
 const OUTPUT_DIR = '/Users/starchang/Documents/CloudFolder/GitHub/valuecafe';
 
 // ─── 分類設定 ────────────────────────────────────────────────────────────────

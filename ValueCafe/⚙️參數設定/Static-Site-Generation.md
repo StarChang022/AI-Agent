@@ -1,4 +1,4 @@
-我需要你將 `/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/en` 專案以 Static Site Generation 網頁渲染技術打包成靜態網站，寫出相應的執行腳本。
+我需要你將 `/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/English` 專案以 Static Site Generation 網頁渲染技術打包成靜態網站，寫出相應的執行腳本。
 先將 `/Users/starchang/Documents/CloudFolder/GitHub/valuecafe` 資料夾內容清除，再將打包結果直接輸出至 `/Users/starchang/Documents/CloudFolder/GitHub/valuecafe` 資料夾。記得不要刪除 GitHub 相關檔案，避免造成 GitHub 判定專案被刪除。
 
 以下是每個項目的需求。
