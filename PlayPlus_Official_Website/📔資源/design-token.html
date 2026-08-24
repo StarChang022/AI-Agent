@@ -1,0 +1,2019 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlayPlus Design System Spec (2026) — Kintsugi Organic Warm Tech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Aldrich&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ═══════════════════════════════════════════
+       1. PlayPlus & Kintsugi Design Tokens (:root)
+       ═══════════════════════════════════════════ */
+    :root {
+      /* ── 品牌核心色彩 (Brand Core) ── */
+      --k-neon: #B0ED9C;                /* 核心霓虹薄荷綠 */
+      --k-neon-glow: #D7F781;           /* 螢光黃綠（光暈） */
+      --k-neon-rgb: 176, 237, 156;
+      
+      --k-green-900: #213331;           /* 深森松墨綠（主文字/深色卡片） */
+      --k-green-950: #0E1716;           /* 極深墨綠（背景陰影） */
+      --k-green-900-rgb: 33, 51, 49;
+      
+      --k-lavender: #E5D1FA;            /* 柔和薰衣草紫（AI 輔助色） */
+      --k-lavender-vibrant: #C69CF4;    /* 活躍亮紫（邊框與圖標） */
+      --k-purple-deep: #5B3FA0;         /* 深紫（薰衣草標籤文字） */
+
+      /* ── 背景與表面色彩 (Surfaces & Backgrounds) ── */
+      --bg-main: #F2F2E8;               /* 全站底色：溫潤米灰 (Warm Ecru) */
+      --bg-card: #FFFFF9;               /* 淺色卡片：暖白 */
+      --bg-white: #FFFFFF;              /* 純白表面 */
+      --bg-peach: #FDF5EB;              /* 暖杏米色表面 */
+      --bg-sage: #E8F0D9;               /* 淺鼠尾草綠表面 */
+      --bg-lilac: #EDE4FB;              /* 淺粉紫表面 */
+      --bg-dark-frame: #213331;         /* 深色互動面板底色 */
+
+      /* ── 文字顏色 (Typography) ── */
+      --text-primary: #213331;          /* 淺色底主文字 */
+      --text-secondary: #6B7160;        /* 淺色底次要文字 */
+      --text-muted: #8D8A7B;            /* 淺色底輔助文字 */
+      
+      --text-inverse-primary: #FFFFFF;  /* 深色底主文字 */
+      --text-inverse-secondary: rgba(255, 255, 255, 0.75); /* 深色底次要文字 */
+      --text-inverse-muted: rgba(255, 255, 255, 0.55);     /* 深色底輔助文字 */
+      --text-accent: #B0ED9C;           /* 深色底高亮綠字 */
+
+      /* ── 狀態色彩 (Status & Alerts) ── */
+      --status-exposed: #FF5E5E;        /* 曝險紅 */
+      --status-exposed-bg: #FBD9D9;     /* 曝險紅淺底 */
+      --status-registered: #B0ED9C;     /* 合規綠 */
+      --status-registered-bg: #E8F0D9;  /* 合規綠淺底 */
+      --status-warning: #ED8936;        /* 警戒橘 */
+      --status-warning-bg: #FEF3C7;     /* 警戒橘淺底 */
+      --status-exempt: rgba(255, 255, 255, 0.16); /* 免稅中性 */
+
+      /* ── 邊框與分隔線 (Borders & Dividers) ── */
+      --border-light: rgba(0, 0, 0, 0.08);
+      --border-light-subtle: #DEE6D6;
+      --border-dark: rgba(255, 255, 255, 0.07);
+      --border-dark-strong: rgba(255, 255, 255, 0.16);
+      --border-neon: rgba(176, 237, 156, 0.30);
+
+      /* ── 漸層與光效 (Gradients & Glows) ── */
+      --gradient-mesh-glow: radial-gradient(38% 51% at 65% 47%, rgb(215, 247, 129) 0%, rgba(176, 237, 156, 0.4) 50%, transparent 100%);
+      --gradient-scanline: linear-gradient(90deg, transparent 0%, rgba(176, 237, 156, 0.22) 50%, transparent 100%);
+      --gradient-card-dark: linear-gradient(180deg, rgba(33, 51, 49, 1) 0%, rgba(14, 23, 22, 1) 100%);
+      --gradient-hero-dark: linear-gradient(160deg, #213331 0%, #152422 60%, #0E1716 100%);
+
+      /* ── 圓角規範 (Border Radii) ── */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-card: 22px;
+      --radius-pill: 9999px;
+
+      /* ── 陰影規範 (Elevation & Shadows) ── */
+      --shadow-1: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-2: 0 8px 24px rgba(33, 51, 49, 0.10);
+      --shadow-3: 0 18px 50px rgba(33, 51, 49, 0.16);
+      --shadow-neon: 0 0 14px rgba(176, 237, 156, 0.50);
+      --shadow-pulse: 0 0 10px rgba(176, 237, 156, 0.60);
+
+      /* ── 字型家族 (Font Stacks) ── */
+      --font-sans: 'DM Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-display: 'Aldrich', monospace, sans-serif;
+      --font-mono: 'Aldrich', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* ── 間距系統 (4px Baseline Grid) ── */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+      --space-20: 80px;
+      --space-24: 96px;
+      --space-32: 128px;
+
+      /* ── 動態與過渡 ── */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --duration-fast: 200ms;
+      --duration-med: 400ms;
+      --duration-slow: 700ms;
+
+      /* ── 規格書 UI 系統配色 ── */
+      --spec-bg: var(--bg-main);
+      --spec-surface: var(--bg-card);
+      --spec-border: var(--border-light-subtle);
+      --spec-text: var(--text-primary);
+      --spec-text-muted: var(--text-secondary);
+      --spec-chip-border: rgba(33, 51, 49, 0.12);
+    }
+
+    /* ═══════════════════════════════════════════
+       2. Base & Reset
+       ═══════════════════════════════════════════ */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-main);
+    }
+    body {
+      background: var(--spec-bg);
+      color: var(--spec-text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════════════════
+       3. Spec Layout Container
+       ═══════════════════════════════════════════ */
+    main {
+      width: min(1200px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 32px 0 80px;
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+    h1 { font-size: 32px; font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; color: var(--text-primary); }
+    h2 { font-size: 22px; font-weight: 800; line-height: 1.35; margin-bottom: 8px; color: var(--text-primary); }
+    h3 { font-size: 16px; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
+    code { font-family: var(--font-mono); font-size: 0.9em; background: rgba(33, 51, 49, 0.06); padding: 2px 6px; border-radius: 4px; color: var(--k-green-900); font-weight: 600; }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--spec-border);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13.5px;
+    }
+    th { color: var(--spec-text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: var(--bg-sage); }
+    td { color: var(--text-primary); }
+    tr:last-child td { border-bottom: 0; }
+
+    /* Top Quick Navigation Bar */
+    .top-nav {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 18px;
+      background: rgba(242, 242, 232, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--spec-border);
+      border-radius: var(--radius-pill);
+      box-shadow: 0 4px 20px rgba(33, 51, 49, 0.04);
+      margin-bottom: 24px;
+    }
+    .top-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .top-nav-link {
+      color: var(--spec-text-muted);
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      transition: all var(--duration-fast) ease;
+    }
+    .top-nav-link:hover {
+      color: var(--text-primary);
+      background: var(--k-neon);
+    }
+    .top-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+    .top-nav-badge {
+      background: var(--k-neon);
+      color: var(--k-green-900);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 0 8px rgba(176, 237, 156, 0.5);
+    }
+
+    /* Cards & Containers */
+    .hero, .section {
+      background: var(--spec-surface);
+      border: 1px solid var(--spec-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-2);
+    }
+    .hero {
+      padding: 28px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--k-neon), var(--k-neon-glow), var(--k-lavender));
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 6px;
+      padding-top: 14px;
+      border-top: 1px solid var(--spec-border);
+      color: var(--spec-text-muted);
+      font-size: 13px;
+    }
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hero-meta-item strong {
+      color: var(--text-primary);
+    }
+    .subhead, .note { color: var(--spec-text-muted); font-size: 13.5px; line-height: 1.55; }
+    .section {
+      padding: 24px;
+      margin-top: 24px;
+    }
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--k-green-900);
+      margin: 24px 0 12px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 14px;
+      height: 3px;
+      background: var(--k-neon);
+      border-radius: 2px;
+    }
+
+    /* Grids */
+    .grid { display: grid; gap: 12px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    /* Token Row */
+    .token-row {
+      display: grid;
+      grid-template-columns: 56px minmax(180px, 1.1fr) minmax(160px, 0.9fr) minmax(170px, 1.2fr);
+      gap: 14px;
+      align-items: center;
+      padding: 10px 14px;
+      border: 1px solid var(--spec-border);
+      border-radius: var(--radius-md);
+      background: var(--spec-surface);
+      transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+    }
+    .token-row:hover {
+      border-color: var(--k-neon);
+      box-shadow: 0 2px 12px rgba(33, 51, 49, 0.06);
+    }
+    .chip {
+      width: 56px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--spec-chip-border);
+      background: var(--c);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+    .token-name {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .token-name:hover {
+      color: var(--k-purple-deep);
+    }
+    .token-value {
+      color: var(--spec-text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .token-use {
+      color: var(--text-secondary);
+      font-size: 12.5px;
+    }
+
+    /* Dark Slab for contrast */
+    .dark-slab {
+      padding: 16px;
+      border-radius: var(--radius-card);
+      background: var(--k-green-900);
+      border: 1px solid var(--border-dark);
+    }
+    .dark-slab .token-row {
+      background: var(--k-green-950);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .dark-slab .token-name { color: #ffffff; }
+    .dark-slab .token-value { color: var(--k-neon); }
+    .dark-slab .token-use { color: rgba(255, 255, 255, 0.7); }
+
+    /* Typography Rows */
+    .type-row {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      align-items: center;
+      min-height: 70px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--spec-border);
+    }
+    .type-row:last-child { border-bottom: 0; }
+    .type-meta { color: var(--spec-text-muted); font-size: 12px; line-height: 1.4; }
+
+    /* Spacing Rows */
+    .space-row {
+      display: grid;
+      grid-template-columns: 140px 90px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--spec-border);
+    }
+    .space-row:last-child { border-bottom: 0; }
+    .space-bar {
+      width: var(--w);
+      max-width: 100%;
+      height: 22px;
+      border-radius: var(--radius-xs);
+      background: linear-gradient(90deg, rgba(176, 237, 156, 0.4), rgba(215, 247, 129, 0.8));
+      border: 1px solid rgba(33, 51, 49, 0.2);
+    }
+
+    /* Breakpoint Cards */
+    .breakpoint-card {
+      display: grid;
+      grid-template-columns: 130px 140px 1fr;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--spec-border);
+      border-radius: var(--radius-md);
+      background: var(--spec-surface);
+      align-items: center;
+    }
+
+    /* Component Pattern Comparison Panels */
+    .pattern {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .pattern.full {
+      grid-template-columns: 1fr;
+    }
+    .panel {
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--spec-border);
+      border-radius: var(--radius-card);
+    }
+    .panel.dark {
+      background: var(--k-green-900);
+      border-color: var(--border-dark);
+      color: #ffffff;
+    }
+    .panel-head {
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--spec-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(242, 242, 232, 0.7);
+      color: var(--text-primary);
+    }
+    .panel.dark .panel-head {
+      background: rgba(14, 23, 22, 0.8);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: var(--k-neon);
+    }
+    .panel-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ═══════════════════════════════════════════
+       4. Component Visual Styles (Kintsugi Aesthetic)
+       ═══════════════════════════════════════════ */
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.75rem 1.6rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.9rem;
+      font-weight: 700;
+      transition: all var(--duration-fast) var(--ease-out);
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      border: 1px solid transparent;
+      font-family: inherit;
+    }
+    .btn.primary {
+      background: var(--k-neon);
+      color: var(--k-green-900);
+      box-shadow: 0 4px 16px rgba(176, 237, 156, 0.45);
+    }
+    .btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-neon);
+      filter: brightness(1.05);
+    }
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+    }
+    .btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.4);
+      transform: translateY(-2px);
+    }
+    .btn.dark {
+      background: var(--k-green-900);
+      color: #ffffff;
+    }
+    .btn.dark:hover {
+      background: var(--k-green-950);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-3);
+    }
+    .btn.outline {
+      background: transparent;
+      border: 1.5px solid var(--k-green-900);
+      color: var(--k-green-900);
+    }
+    .btn.outline:hover {
+      background: rgba(33, 51, 49, 0.08);
+      transform: translateY(-2px);
+    }
+    .btn.disabled {
+      background: #E8E8DE;
+      color: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+      border-color: transparent;
+    }
+    .panel.dark .btn.disabled {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .btn.lavender {
+      background: var(--k-lavender);
+      color: var(--k-purple-deep);
+      border: 1px solid var(--k-lavender-vibrant);
+    }
+    .btn.lavender:hover {
+      background: #dabcf7;
+      transform: translateY(-2px);
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Badges & Chips */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(33, 51, 49, 0.06);
+      color: var(--text-primary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-light-subtle);
+      white-space: nowrap;
+    }
+    .panel.dark .tag {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+      border-color: rgba(176, 237, 156, 0.25);
+    }
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-chip.registered {
+      background: var(--status-registered);
+      color: var(--k-green-900);
+    }
+    .badge-chip.exposed {
+      background: var(--status-exposed);
+      color: #ffffff;
+    }
+    .badge-chip.warning {
+      background: var(--status-warning);
+      color: #ffffff;
+    }
+    .badge-chip.ai {
+      background: var(--k-lavender);
+      color: var(--k-purple-deep);
+      border: 1px solid rgba(198, 156, 244, 0.4);
+    }
+    .hero-badge-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(229, 209, 250, 0.8);
+      border: 1px solid rgba(198, 156, 244, 0.5);
+      color: var(--k-purple-deep);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-pill);
+    }
+    .hero-badge-dot-demo {
+      width: 7px;
+      height: 7px;
+      background: var(--k-neon);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(176, 237, 156, 0.8);
+      animation: liveDot 2s infinite;
+    }
+    @keyframes liveDot {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(176, 237, 156, 0.7); }
+      50% { opacity: 0.7; transform: scale(0.9); box-shadow: 0 0 0 6px rgba(176, 237, 156, 0); }
+    }
+    .floating-badge-demo {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 0.6rem 1rem;
+      box-shadow: var(--shadow-2);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      border: 1px solid var(--border-light-subtle);
+    }
+    .panel.dark .floating-badge-demo {
+      background: var(--k-green-950);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    /* Service Card Demo */
+    .service-card-demo {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: var(--radius-card);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all var(--duration-med) var(--ease-out);
+    }
+    .service-card-demo.peach { background: var(--bg-peach); }
+    .service-card-demo.sage { background: var(--bg-sage); }
+    .service-card-demo.lilac { background: var(--bg-lilac); }
+    .service-card-demo::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--k-neon), var(--k-neon-glow));
+    }
+    .service-card-demo:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-3);
+      border-color: var(--k-neon);
+    }
+    .panel.dark .service-card-demo {
+      background: var(--k-green-950);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+    .service-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--bg-sage);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .panel.dark .service-icon-box {
+      background: rgba(176, 237, 156, 0.15);
+      border: 1px solid rgba(176, 237, 156, 0.3);
+    }
+
+    /* Process Timeline Step Demo */
+    .process-step-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0.5rem;
+    }
+    .process-num-demo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--k-green-950);
+      border: 2px solid rgba(176, 237, 156, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--k-neon);
+      margin-bottom: 0.75rem;
+      transition: all var(--duration-med) var(--ease-out);
+    }
+    .process-step-demo:hover .process-num-demo {
+      background: var(--k-neon);
+      border-color: transparent;
+      color: var(--k-green-900);
+      transform: scale(1.1);
+      box-shadow: var(--shadow-neon);
+    }
+
+    /* FAQ Demo */
+    .faq-item-demo {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .faq-question-demo {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      background: var(--bg-card);
+      border: none;
+      cursor: pointer;
+    }
+    .panel.dark .faq-item-demo {
+      background: var(--k-green-950);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .panel.dark .faq-question-demo {
+      background: var(--k-green-950);
+      color: #ffffff;
+    }
+    .faq-icon-demo {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--k-neon);
+      color: var(--k-green-900);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .panel.dark .faq-icon-demo {
+      background: rgba(176, 237, 156, 0.2);
+      color: var(--k-neon);
+    }
+    .faq-answer-demo {
+      padding: 0.75rem 1.25rem 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      border-top: 1px solid var(--border-light-subtle);
+    }
+    .panel.dark .faq-answer-demo {
+      color: rgba(255, 255, 255, 0.7);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Form Fields */
+    .field-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field-label-demo {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .panel.dark .field-label-demo {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .input-demo {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 8px 14px;
+      border: 1.5px solid var(--border-light-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-white);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+      transition: all var(--duration-fast) ease;
+    }
+    .input-demo.focus {
+      border-color: var(--k-green-900);
+      box-shadow: 0 0 0 3px rgba(176, 237, 156, 0.5);
+    }
+    .input-demo.error {
+      border-color: var(--status-exposed);
+      box-shadow: 0 0 0 3px rgba(255, 94, 94, 0.2);
+    }
+    .input-demo.disabled {
+      background: #E8E8DE;
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+    .panel.dark .input-demo {
+      background: var(--k-green-950);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+    .panel.dark .input-demo.focus {
+      border-color: var(--k-neon);
+      box-shadow: 0 0 0 3px rgba(176, 237, 156, 0.3);
+    }
+    .panel.dark .input-demo.error {
+      border-color: var(--status-exposed);
+      box-shadow: 0 0 0 3px rgba(255, 94, 94, 0.3);
+    }
+    .panel.dark .input-demo.disabled {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Mockup Dashboard Stage Preview */
+    .mockup-preview-card {
+      background: var(--k-green-900);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-card);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-3);
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+    .mockup-header-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .mockup-dot-demo {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Navigation & Dropdown Preview */
+    .nav-preview-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(33, 51, 49, 0.95);
+      backdrop-filter: blur(16px);
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-dark);
+      color: white;
+    }
+    .nav-logo-demo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: white;
+    }
+    .nav-logo-mark-demo {
+      width: 32px;
+      height: 32px;
+      background: var(--k-neon);
+      color: var(--k-green-900);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 900;
+    }
+    .dropdown-demo-box {
+      background: var(--k-green-950);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius-md);
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 210px;
+    }
+    .dropdown-item-demo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all var(--duration-fast) ease;
+    }
+    .dropdown-item-demo:hover {
+      background: rgba(176, 237, 156, 0.12);
+      color: var(--k-neon);
+    }
+
+    /* Toast Notification for Copy */
+    #copy-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--k-green-900);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--k-neon);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.3s var(--ease-out), opacity 0.3s var(--ease-out);
+    }
+    #copy-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #copy-toast-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--k-neon);
+      box-shadow: 0 0 8px var(--k-neon);
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      main { width: min(100vw - 24px, 720px); padding-top: 16px; }
+      .grid.four, .grid.three, .grid.two, .pattern { grid-template-columns: 1fr; }
+      .token-row, .type-row, .space-row, .breakpoint-card { grid-template-columns: 1fr; }
+      .top-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div id="copy-toast" role="status" aria-live="polite">
+    <div id="copy-toast-dot"></div>
+    <span id="copy-toast-text">Token 代碼已複製到剪貼簿</span>
+  </div>
+
+  <main>
+    <!-- Top Sticky Quick Bar -->
+    <nav class="top-nav" aria-label="規格書快速索引">
+      <a href="#" class="top-nav-brand">
+        <span>PlayPlus</span>
+        <span class="top-nav-badge">KINTSUGI SPEC</span>
+      </a>
+      <div class="top-nav-links">
+        <a href="#colors" class="top-nav-link">1. 色彩 Tokens</a>
+        <a href="#typography" class="top-nav-link">2. 字體排版</a>
+        <a href="#spacing" class="top-nav-link">3. 間距節奏</a>
+        <a href="#breakpoints" class="top-nav-link">4. RWD 斷點</a>
+        <a href="#shape-elevation" class="top-nav-link">5. 形狀與陰影</a>
+        <a href="#components" class="top-nav-link">6. 組件模式</a>
+        <a href="#code" class="top-nav-link">7. CSS / Tailwind 變數</a>
+      </div>
+    </nav>
+
+    <!-- Header / Hero Section -->
+    <header class="hero">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h1>PlayPlus Design System Spec</h1>
+          <p class="subhead" style="margin-top: 6px;">
+            依據 <strong>Kintsugi (trykintsugi.com)</strong> 現代極簡科技與有機溫潤感（Organic Warm Tech）風格重塑之官方網站 Design Tokens、語意化色彩系統、組件應用與 CSS / Tailwind 交付規範。
+          </p>
+        </div>
+        <span class="hero-badge-demo">
+          <span class="hero-badge-dot-demo"></span>
+          Warm Tech v2026.2 Active
+        </span>
+      </div>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">🎨 <strong>設計哲學：</strong> Organic Warm Tech (Warm Ecru `#F2F2E8` + Forest Charcoal `#213331` + Neon Mint `#B0ED9C`)</div>
+        <div class="hero-meta-item">📐 <strong>網格標準：</strong> 4px Baseline Grid</div>
+        <div class="hero-meta-item">🔤 <strong>主文字體：</strong> DM Sans + Aldrich + Noto Sans TC</div>
+        <div class="hero-meta-item">📱 <strong>響應範圍：</strong> 320px ~ 1440px+</div>
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1: GLOBAL COLOR TOKENS
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="colors">
+      <h2>1. Global Color Tokens</h2>
+      <p class="subhead">
+        Kintsugi 視覺系統採用溫潤奶油米灰（<code>#F2F2E8</code>）為底色，搭配深森松墨綠（<code>#213331</code>）建立沉穩高對比，並以高明度電光薄荷綠（<code>#B0ED9C</code>）與柔和薰衣草紫（<code>#E5D1FA</code>）作為亮點引導。點擊 Token 名稱可直接複製變數。
+      </p>
+
+      <h3 class="section-label">1.1 品牌核心主色與亮點 (Brand Primary & Accents)</h3>
+      <div class="grid">
+        <div class="token-row">
+          <div class="chip" style="--c:#B0ED9C"></div>
+          <div class="token-name" onclick="copyToken('--k-neon')">--k-neon</div>
+          <div class="token-value">#B0ED9C (Neon Mint)</div>
+          <div class="token-use">核心行動按鈕（CTA）、動態脈衝光、進度條、深底數據高亮</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#D7F781"></div>
+          <div class="token-name" onclick="copyToken('--k-neon-glow')">--k-neon-glow</div>
+          <div class="token-value">#D7F781 (Neon Glow)</div>
+          <div class="token-use">霓虹漸層亮光、徑向發光高亮端</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#213331"></div>
+          <div class="token-name" onclick="copyToken('--k-green-900')">--k-green-900</div>
+          <div class="token-value">#213331 (Forest Charcoal)</div>
+          <div class="token-use">全站主要標題文字、深色卡片頂層底色、Hero / Footer 容器主色</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#0E1716"></div>
+          <div class="token-name" onclick="copyToken('--k-green-950')">--k-green-950</div>
+          <div class="token-value">#0E1716</div>
+          <div class="token-use">極深墨綠陰影、深色容器內層面板背景與深底邊界</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#E5D1FA"></div>
+          <div class="token-name" onclick="copyToken('--k-lavender')">--k-lavender</div>
+          <div class="token-value">#E5D1FA (Lavender)</div>
+          <div class="token-use">AI 輔助特性主色、智慧標籤背景、次要焦點膠囊</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#C69CF4"></div>
+          <div class="token-name" onclick="copyToken('--k-lavender-vibrant')">--k-lavender-vibrant</div>
+          <div class="token-value">#C69CF4 (Purple Vibrant)</div>
+          <div class="token-use">活躍亮紫，用於紫色標籤外框與 AI 圖標強調</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#5B3FA0"></div>
+          <div class="token-name" onclick="copyToken('--k-purple-deep')">--k-purple-deep</div>
+          <div class="token-value">#5B3FA0</div>
+          <div class="token-use">薰衣草紫標籤內部文字色彩、深紫文字</div>
+        </div>
+      </div>
+
+      <h3 class="section-label">1.2 背景與表面層次色 (Backgrounds & Surfaces)</h3>
+      <div class="grid">
+        <div class="token-row">
+          <div class="chip" style="--c:#F2F2E8"></div>
+          <div class="token-name" onclick="copyToken('--bg-main')">--bg-main</div>
+          <div class="token-value">#F2F2E8 (Warm Ecru)</div>
+          <div class="token-use">全站主要頁面底色，溫暖奶油米灰，捨棄刺眼冷白</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#FFFFF9"></div>
+          <div class="token-name" onclick="copyToken('--bg-card')">--bg-card</div>
+          <div class="token-value">#FFFFF9 (Warm White)</div>
+          <div class="token-use">淺色卡片頂層底色、溫潤珍珠白</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#FFFFFF"></div>
+          <div class="token-name" onclick="copyToken('--bg-white')">--bg-white</div>
+          <div class="token-value">#FFFFFF (Pure White)</div>
+          <div class="token-use">純白色表面，用於輸入框內部、卡片內子模組</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#FDF5EB"></div>
+          <div class="token-name" onclick="copyToken('--bg-peach')">--bg-peach</div>
+          <div class="token-value">#FDF5EB (Peach Cream)</div>
+          <div class="token-use">暖杏米色卡片表面，應用於促銷引導與重點引導區塊</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#E8F0D9"></div>
+          <div class="token-name" onclick="copyToken('--bg-sage')">--bg-sage</div>
+          <div class="token-value">#E8F0D9 (Sage Green)</div>
+          <div class="token-use">淺鼠尾草綠卡片表面，應用於合規成功、數據計算狀態</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#EDE4FB"></div>
+          <div class="token-name" onclick="copyToken('--bg-lilac')">--bg-lilac</div>
+          <div class="token-value">#EDE4FB (Lilac)</div>
+          <div class="token-use">淺粉紫色卡片表面，應用於 AI 助手、智慧對話預覽區塊</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#213331"></div>
+          <div class="token-name" onclick="copyToken('--bg-dark-frame')">--bg-dark-frame</div>
+          <div class="token-value">#213331</div>
+          <div class="token-use">深色互動面板主背景、模擬終端機/地圖面板的深綠色背景</div>
+        </div>
+      </div>
+
+      <h3 class="section-label">1.3 文字與排版色彩 (Typography Colors)</h3>
+      <div class="grid">
+        <div class="token-row">
+          <div class="chip" style="--c:#213331"></div>
+          <div class="token-name" onclick="copyToken('--text-primary')">--text-primary</div>
+          <div class="token-value">#213331 (Forest Charcoal)</div>
+          <div class="token-use">淺色背景主標題（H1~H4）、正文重點段落</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#6B7160"></div>
+          <div class="token-name" onclick="copyToken('--text-secondary')">--text-secondary</div>
+          <div class="token-value">#6B7160</div>
+          <div class="token-use">淺色背景次要說明、副標題、卡片描述內文</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#8D8A7B"></div>
+          <div class="token-name" onclick="copyToken('--text-muted')">--text-muted</div>
+          <div class="token-value">#8D8A7B</div>
+          <div class="token-use">次微弱文字、佔位文字（Placeholder）、時間戳記、註腳</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#FFFFFF;background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--text-inverse-primary')">--text-inverse-primary</div>
+          <div class="token-value">#FFFFFF / #FFFFF9</div>
+          <div class="token-use">深色背景主標題、深色卡片頂層文字</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(255,255,255,0.75);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--text-inverse-secondary')">--text-inverse-secondary</div>
+          <div class="token-value">rgba(255, 255, 255, 0.75)</div>
+          <div class="token-use">深色容器內的說明內文、次級文字</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(255,255,255,0.55);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--text-inverse-muted')">--text-inverse-muted</div>
+          <div class="token-value">rgba(255, 255, 255, 0.55)</div>
+          <div class="token-use">深色背景頁尾版權宣告、SKU 編號、次微標籤</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#B0ED9C;background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--text-accent')">--text-accent</div>
+          <div class="token-value">#B0ED9C</div>
+          <div class="token-use">深色背景中的數值、總計金額、關鍵數據強調綠字</div>
+        </div>
+      </div>
+
+      <h3 class="section-label">1.4 狀態與合規警示色彩 (Status & Alerts)</h3>
+      <div class="grid">
+        <div class="token-row">
+          <div class="chip" style="--c:#B0ED9C"></div>
+          <div class="token-name" onclick="copyToken('--status-registered')">--status-registered</div>
+          <div class="token-value">#B0ED9C (淺底 #E8F0D9)</div>
+          <div class="token-use">已註冊、稅務合規、正常狀態徽章、申報成功 Check 標記</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#FF5E5E"></div>
+          <div class="token-name" onclick="copyToken('--status-exposed')">--status-exposed</div>
+          <div class="token-value">#FF5E5E (淺底 #FBD9D9)</div>
+          <div class="token-use">稅務門檻超標、未註冊、曝險警告 Chip 與警示卡</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:#ED8936"></div>
+          <div class="token-name" onclick="copyToken('--status-warning')">--status-warning</div>
+          <div class="token-value">#ED8936 (淺底 #FEF3C7)</div>
+          <div class="token-use">接近門檻（80%+）、警戒提示條、即將超標警示</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(255,255,255,0.16);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--status-exempt')">--status-exempt</div>
+          <div class="token-value">rgba(255, 255, 255, 0.16)</div>
+          <div class="token-use">免稅中性標籤（Tax Exempt Badge）</div>
+        </div>
+      </div>
+
+      <h3 class="section-label">1.5 邊框、分隔線與微透明通道 (Borders & Dividers)</h3>
+      <div class="grid">
+        <div class="token-row">
+          <div class="chip" style="--c:#DEE6D6"></div>
+          <div class="token-name" onclick="copyToken('--border-light-subtle')">--border-light-subtle</div>
+          <div class="token-value">#DEE6D6 / rgba(0,0,0,0.08)</div>
+          <div class="token-use">淺色卡片外框、導航欄底部邊界、FAQ 分隔線</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(255,255,255,0.07);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--border-dark')">--border-dark</div>
+          <div class="token-value">rgba(255, 255, 255, 0.07)</div>
+          <div class="token-use">深色 Frame 外框（帶微發光感）、深色 Mockup 邊界</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(255,255,255,0.16);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--border-dark-strong')">--border-dark-strong</div>
+          <div class="token-value">rgba(255, 255, 255, 0.16)</div>
+          <div class="token-use">深色面板強調外框、深色按鈕外框</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:rgba(176,237,156,0.35);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--border-neon')">--border-neon</div>
+          <div class="token-value">rgba(176, 237, 156, 0.30~0.40)</div>
+          <div class="token-use">地圖節點、總計合計頂部高亮分隔線、重點聚焦框線</div>
+        </div>
+      </div>
+
+      <h3 class="section-label">1.6 漸層與光效系統 (Gradients & Glows)</h3>
+      <div class="grid two">
+        <div class="token-row">
+          <div class="chip" style="--c:radial-gradient(circle, #D7F781 0%, rgba(176,237,156,0.4) 50%, transparent 100%);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--gradient-mesh-glow')">--gradient-mesh-glow</div>
+          <div class="token-value">radial-gradient(...)</div>
+          <div class="token-use">科技光暈亮點與背景放射高光</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:linear-gradient(90deg, transparent, rgba(176,237,156,0.4), transparent);background:#213331;"></div>
+          <div class="token-name" onclick="copyToken('--gradient-scanline')">--gradient-scanline</div>
+          <div class="token-value">linear-gradient(90deg, ...)</div>
+          <div class="token-use">動態掃描光、水平推進發光條</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:linear-gradient(180deg, #213331 0%, #0E1716 100%);"></div>
+          <div class="token-name" onclick="copyToken('--gradient-card-dark')">--gradient-card-dark</div>
+          <div class="token-value">linear-gradient(180deg, #213331, #0E1716)</div>
+          <div class="token-use">深色卡片與互動終端區塊背景</div>
+        </div>
+        <div class="token-row">
+          <div class="chip" style="--c:linear-gradient(160deg, #213331 0%, #152422 60%, #0E1716 100%);"></div>
+          <div class="token-name" onclick="copyToken('--gradient-hero-dark')">--gradient-hero-dark</div>
+          <div class="token-value">linear-gradient(160deg, ...)</div>
+          <div class="token-use">Hero 滿版 CTA 深松綠高階漸層</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2: TYPOGRAPHY SYSTEM
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="typography">
+      <h2>2. Typography System</h2>
+      <p class="subhead">
+        字型排版採用 <code>DM Sans</code>（主 UI / 標題 / 內文）、<code>Aldrich</code>（科技數據 / 代碼 / 狀態金額）搭配 <code>Noto Sans TC</code>（繁體中文），體現溫潤又精準的 AI Fintech 質感。
+      </p>
+
+      <div class="type-row">
+        <div>
+          <strong>font.family.primary</strong><br>
+          <span class="type-meta">'DM Sans', 'Noto Sans TC', sans-serif</span>
+        </div>
+        <div style="font-size: 15px; color: var(--text-primary);">
+          PlayPlus 普魯士國際 —— 懂商業邏輯與 UI/UX 的高階數位顧問與系統開發團隊。
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>font.family.display (Data & Numbers)</strong><br>
+          <span class="type-meta">'Aldrich', monospace</span>
+        </div>
+        <div style="font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--k-green-900);">
+          $128,450.00 <span style="font-size: 14px; color: var(--status-registered); background: var(--k-green-900); padding: 2px 8px; border-radius: 4px;">+18.4% COMPLIANT</span>
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>display.hero (H1)</strong><br>
+          <span class="type-meta">clamp(2.6rem, 5.5vw, 4.2rem) · 800 · 1.08 · -0.04em</span>
+        </div>
+        <div>
+          <span style="font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; color: var(--text-primary);">
+            客製化系統<span style="color: var(--k-green-900); border-bottom: 4px solid var(--k-neon);">設計開發</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>heading.section (H2)</strong><br>
+          <span class="type-meta">clamp(2rem, 4vw, 3rem) · 800 · 1.15 · -0.03em</span>
+        </div>
+        <div style="font-size: 26px; font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; color: var(--text-primary);">
+          瞄準營運痛點，從最有效益的環節開始
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>heading.card (H3)</strong><br>
+          <span class="type-meta">1.1rem ~ 1.25rem (18px~20px) · 700 · 1.3 · -0.02em</span>
+        </div>
+        <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">
+          企業管理系統 (ERP/CRM) 與數據整合
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>body.lead (Section Desc)</strong><br>
+          <span class="type-meta">1.05rem ~ 1.1rem (17px~18px) · 400 · 1.75</span>
+        </div>
+        <div style="font-size: 15px; color: var(--text-secondary); line-height: 1.75;">
+          我們主張「先挑一條最痛的流程開始做起」，分階段落地，先體驗再擴大，讓每筆投資發揮最大商業效益。
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>body.standard</strong><br>
+          <span class="type-meta">0.88rem ~ 0.95rem (14px~15px) · 400 · 1.65</span>
+        </div>
+        <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.65;">
+          主流 ERP 的預算及功能適合你們嗎？我們擁有輕量化客製能力，捨棄冗餘功能，將預算投注於關鍵流程。
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>label.section (Uppercase)</strong><br>
+          <span class="type-meta">0.8rem (12.8px) · 700 · 0.08em tracking</span>
+        </div>
+        <div>
+          <span class="section-label" style="margin: 0;">企業系統設計 · SERVICES</span>
+        </div>
+      </div>
+
+      <div class="type-row">
+        <div>
+          <strong>chips / badges</strong><br>
+          <span class="type-meta">0.68rem ~ 0.78rem (11px~12.5px) · 700 · 1.4</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <span class="badge-chip registered">● 已註冊 (Registered)</span>
+          <span class="badge-chip exposed">⚠️ 曝險 (Exposed)</span>
+          <span class="badge-chip warning">⏳ 即將超標 (Warning)</span>
+          <span class="badge-chip ai">✦ AI Assistant</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3: SPACING & RHYTHM
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="spacing">
+      <h2>3. Spacing & Rhythm</h2>
+      <p class="subhead">
+        間距採 4px 基礎網格系統（4px Baseline Grid），元件內距標準為 8 / 12 / 16 / 20 / 24 / 32px，區塊垂直間距標準為 8rem (128px)。
+      </p>
+
+      <div class="space-row"><strong>--space-1</strong><code>4px</code><div class="space-bar" style="--w:4px"></div></div>
+      <div class="space-row"><strong>--space-2</strong><code>8px</code><div class="space-bar" style="--w:8px"></div></div>
+      <div class="space-row"><strong>--space-3</strong><code>12px</code><div class="space-bar" style="--w:12px"></div></div>
+      <div class="space-row"><strong>--space-4</strong><code>16px</code><div class="space-bar" style="--w:16px"></div></div>
+      <div class="space-row"><strong>--space-5</strong><code>20px</code><div class="space-bar" style="--w:20px"></div></div>
+      <div class="space-row"><strong>--space-6</strong><code>24px</code><div class="space-bar" style="--w:24px"></div></div>
+      <div class="space-row"><strong>--space-8</strong><code>32px</code><div class="space-bar" style="--w:32px"></div></div>
+      <div class="space-row"><strong>--space-10</strong><code>40px</code><div class="space-bar" style="--w:40px"></div></div>
+      <div class="space-row"><strong>--space-12</strong><code>48px</code><div class="space-bar" style="--w:48px"></div></div>
+      <div class="space-row"><strong>--space-16</strong><code>64px</code><div class="space-bar" style="--w:64px"></div></div>
+      <div class="space-row"><strong>--space-24</strong><code>96px</code><div class="space-bar" style="--w:96px"></div></div>
+      <div class="space-row"><strong>--space-32</strong><code>128px</code><div class="space-bar" style="--w:128px"></div></div>
+
+      <h3 class="section-label">Applied Layout Spacing</h3>
+      <div style="overflow-x: auto; border: 1px solid var(--spec-border); border-radius: var(--radius-md); margin-top: 10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>佈局場景</th>
+              <th>規格數值</th>
+              <th>Token / 應用對象</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Section Padding</td>
+              <td><code>8rem 0 (128px 0)</code></td>
+              <td>大區塊主垂直間距節奏（Hero、Services、Process、About、FAQ、CTA）</td>
+            </tr>
+            <tr>
+              <td>Container Max Width</td>
+              <td><code>1200px (padding: 0 2rem)</code></td>
+              <td>主內容居中對齊容器寬度</td>
+            </tr>
+            <tr>
+              <td>Card Padding (Standard)</td>
+              <td><code>2rem (32px)</code></td>
+              <td>Service Card、Surface 層次卡片內部邊界</td>
+            </tr>
+            <tr>
+              <td>Card Padding (Digital)</td>
+              <td><code>2.5rem 2rem (40px 32px)</code></td>
+              <td>大型重點卡片、擬真儀表板面板</td>
+            </tr>
+            <tr>
+              <td>Button Padding</td>
+              <td><code>0.75rem 1.6rem (12px 26px)</code></td>
+              <td>全圓角膠囊按鈕、主要行動按鈕</td>
+            </tr>
+            <tr>
+              <td>Badge Padding</td>
+              <td><code>4px 10px / 0.4rem 1rem</code></td>
+              <td>合規徽章、狀態標籤、Hero 脈衝光標籤</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 4: RWD BREAKPOINTS
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="breakpoints">
+      <h2>4. RWD Breakpoints & Layout</h2>
+      <p class="subhead">
+        響應式斷點與版面佈局規則，確保於手機、平板與桌上型螢幕皆能獲得最佳操作體驗。
+      </p>
+
+      <div class="grid" style="margin-top: 12px;">
+        <div class="breakpoint-card">
+          <strong>Mobile Small</strong>
+          <code>&lt;= 480px</code>
+          <span>極窄螢幕優化，按鈕改垂直堆疊、Header 緊湊模式、隱藏浮動徽章。</span>
+        </div>
+        <div class="breakpoint-card">
+          <strong>Mobile</strong>
+          <code>&lt;= 768px</code>
+          <span>桌機選單轉為漢堡選單抽屜、卡片 3 欄 / 2 欄全部轉為單欄、時間軸改 2 欄。</span>
+        </div>
+        <div class="breakpoint-card">
+          <strong>Tablet</strong>
+          <code>769px ~ 1024px</code>
+          <span>Hero 轉單欄垂直排列（視覺置頂）、服務卡片轉 2 欄、時間軸轉 3 欄、頁尾 2 欄。</span>
+        </div>
+        <div class="breakpoint-card">
+          <strong>Desktop</strong>
+          <code>&gt;= 1025px</code>
+          <span>全展開多欄排版，Hero 雙欄並排、服務卡片 3 欄、時間軸 6 欄線性推進。</span>
+        </div>
+        <div class="breakpoint-card">
+          <strong>Wide Desktop</strong>
+          <code>&gt;= 1440px</code>
+          <span>滿版寬螢幕，Container 鎖定 1200px 居中，兩側保留對稱留白。</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 5: SHAPE, ELEVATION & MOTION
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="shape-elevation">
+      <h2>5. Shape, Elevation & Motion Tokens</h2>
+      <p class="subhead">
+        圓角、立體陰影與過渡動畫規範，提供一致的高質感有機溫潤互動手感。
+      </p>
+
+      <div class="grid three" style="margin-top: 12px;">
+        <div style="background: var(--spec-surface); border: 1px solid var(--spec-border); border-radius: var(--radius-card); padding: 18px;">
+          <h3>Radius 圓角</h3>
+          <p class="note" style="margin-top: 8px;">
+            <code>--radius-xs: 4px</code><br>
+            <code>--radius-sm: 8px</code>（小標籤、輸入框）<br>
+            <code>--radius-md: 14px</code>（卡片內模組、下拉選單）<br>
+            <code>--radius-lg: 20px</code>（次級外框）<br>
+            <code>--radius-card: 22px</code>（標準卡片與 Mockup 外框）<br>
+            <code>--radius-pill: 9999px</code>（全圓角膠囊按鈕、徽章）
+          </p>
+        </div>
+
+        <div style="background: var(--spec-surface); border: 1px solid var(--spec-border); border-radius: var(--radius-card); padding: 18px;">
+          <h3>Elevation 陰影光效</h3>
+          <p class="note" style="margin-top: 8px;">
+            <code>--shadow-1: 0 4px 12px rgba(0,0,0,0.06)</code><br>
+            <code>--shadow-2: 0 8px 24px rgba(33,51,49,0.10)</code><br>
+            <code>--shadow-3: 0 18px 50px rgba(33,51,49,0.16)</code><br>
+            <code>--shadow-neon: 0 0 14px rgba(176,237,156,0.50)</code><br>
+            <code>--shadow-pulse: 0 0 10px rgba(176,237,156,0.60)</code>
+          </p>
+        </div>
+
+        <div style="background: var(--spec-surface); border: 1px solid var(--spec-border); border-radius: var(--radius-card); padding: 18px;">
+          <h3>Motion 動態與時間</h3>
+          <p class="note" style="margin-top: 8px;">
+            <code>--ease-out: cubic-bezier(0.16,1,0.3,1)</code><br>
+            <code>--duration-fast: 200ms</code>（按鈕、選單 Hover）<br>
+            <code>--duration-med: 400ms</code>（卡片位移、手風琴）<br>
+            <code>--duration-slow: 700ms</code>（滾動 Reveal 浮現）<br>
+            <code>liveDot: 2s infinite</code>（即時薄荷綠呼吸燈）
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 6: COMPONENT PATTERNS
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="components">
+      <h2>6. Component Patterns</h2>
+      <p class="subhead">
+        收錄依據 Kintsugi 規範設計之 UI 組件。提供 Light / Dark 雙色即時預覽與互動展示。
+      </p>
+
+      <!-- 6.1 Header & Navigation -->
+      <h3 class="section-label">6.1 Header & Navigation (導航欄與下拉選單)</h3>
+      <div class="pattern full">
+        <div class="panel dark">
+          <div class="panel-head">
+            <span>PlayPlus Header & Dark Glass Dropdown (Forest Charcoal Stage)</span>
+            <span class="tag">Fixed / Scrolled</span>
+          </div>
+          <div class="panel-body">
+            <div class="nav-preview-bar">
+              <div class="nav-logo-demo">
+                <div class="nav-logo-mark-demo">P+</div>
+                Play<span style="color: var(--k-neon);">Plus</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <span style="color: white; font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 4px;">
+                  專業服務 ▾
+                </span>
+                <span style="color: rgba(255,255,255,0.7); font-size: 13.5px;">作品集</span>
+                <span style="color: rgba(255,255,255,0.7); font-size: 13.5px;">知識庫</span>
+                <a href="#contact" class="btn primary" style="padding: 0.45rem 1.2rem; font-size: 12.5px;">預約諮詢 (Book a Demo)</a>
+              </div>
+            </div>
+
+            <!-- Dropdown Showcase -->
+            <div style="display: flex; gap: 20px; align-items: flex-start; margin-top: 10px;">
+              <div>
+                <p class="note" style="margin-bottom: 6px; color: rgba(255,255,255,0.6);">展開下拉選單 (Dropdown Menu)</p>
+                <div class="dropdown-demo-box">
+                  <a href="#" class="dropdown-item-demo"><span>⚙️</span> 企業系統設計 (ERP/CRM)</a>
+                  <a href="#" class="dropdown-item-demo"><span>🌐</span> 品牌官網開發</a>
+                  <a href="#" class="dropdown-item-demo"><span>📱</span> 跨平台 APP 開發</a>
+                  <a href="#" class="dropdown-item-demo"><span>🤖</span> AI 智慧助手與自動化</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.2 Buttons & CTAs -->
+      <h3 class="section-label">6.2 Buttons & Action Triggers (按鈕與行動呼籲)</h3>
+      <div class="pattern">
+        <!-- Light Panel -->
+        <div class="panel">
+          <div class="panel-head">Light Mode Buttons (Warm Ecru Surface)</div>
+          <div class="panel-body">
+            <div class="btn-row">
+              <button class="btn primary">核心按鈕 (Neon CTA) →</button>
+              <button class="btn dark">深森松綠按鈕</button>
+              <button class="btn lavender">✦ AI 功能</button>
+              <button class="btn outline">外框按鈕</button>
+              <button class="btn disabled">停用狀態</button>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Panel -->
+        <div class="panel dark">
+          <div class="panel-head">Dark Mode Buttons (Deep Forest Stage)</div>
+          <div class="panel-body">
+            <div class="btn-row">
+              <button class="btn primary">核心按鈕 (Neon CTA) →</button>
+              <button class="btn secondary">深色次要按鈕</button>
+              <button class="btn lavender">✦ AI 功能</button>
+              <button class="btn outline" style="border-color: var(--k-neon); color: var(--k-neon);">作品集</button>
+              <button class="btn disabled">停用狀態</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.3 Hero Visual & Interactive Mockup Stage -->
+      <h3 class="section-label">6.3 Hero Interactive Stage (深森松綠擬真互動儀表板)</h3>
+      <div class="pattern full">
+        <div class="panel dark">
+          <div class="panel-head">
+            <span>Hero Interactive Frame (`--k-green-900`) & Live Pulse</span>
+            <span class="tag">Live Scanning & Pulse</span>
+          </div>
+          <div class="panel-body">
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center;">
+              <!-- Mockup Card -->
+              <div class="mockup-preview-card" style="max-width: 560px; width: 100%;">
+                <div class="mockup-header-bar">
+                  <div class="mockup-dot-demo" style="background: var(--status-exposed);"></div>
+                  <div class="mockup-dot-demo" style="background: var(--status-warning);"></div>
+                  <div class="mockup-dot-demo" style="background: var(--k-neon);"></div>
+                  <div style="flex: 1; margin-left: 8px; background: rgba(255,255,255,0.06); border-radius: 6px; padding: 3px 8px; font-size: 11px; color: rgba(255,255,255,0.6); font-family: var(--font-mono); display: flex; align-items: center; justify-content: space-between;">
+                    <span>playplus.app / compliance-radar</span>
+                    <span style="color: var(--k-neon); display: flex; align-items: center; gap: 4px;">
+                      <span class="hero-badge-dot-demo"></span> LIVE
+                    </span>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 130px 1fr; gap: 14px;">
+                  <!-- Mockup Nav -->
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <div style="padding: 6px 8px; border-radius: 6px; font-size: 11px; background: rgba(176,237,156,0.18); color: var(--k-neon); font-weight: 700;">● 總體儀表板</div>
+                    <div style="padding: 6px 8px; border-radius: 6px; font-size: 11px; color: rgba(255,255,255,0.5);">○ 稅務合規分析</div>
+                    <div style="padding: 6px 8px; border-radius: 6px; font-size: 11px; color: rgba(255,255,255,0.5);">○ 營運流程監控</div>
+                    <div style="padding: 6px 8px; border-radius: 6px; font-size: 11px; color: rgba(255,255,255,0.5);">○ AI 助理紀錄</div>
+                  </div>
+
+                  <!-- Mockup Main Data -->
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                      <div style="background: var(--k-green-950); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 10px;">
+                        <div style="font-size: 10px; color: rgba(255,255,255,0.5);">合規狀態監控</div>
+                        <div style="font-size: 16px; font-weight: 800; color: var(--k-neon); font-family: var(--font-display);">100% OK</div>
+                      </div>
+                      <div style="background: var(--k-green-950); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 10px;">
+                        <div style="font-size: 10px; color: rgba(255,255,255,0.5);">累計節省工時</div>
+                        <div style="font-size: 16px; font-weight: 800; color: var(--k-neon-glow); font-family: var(--font-display);">+420 hrs</div>
+                      </div>
+                    </div>
+
+                    <!-- Total Amount Banner with Neon Border -->
+                    <div style="background: var(--k-green-950); border-radius: 8px; padding: 10px 12px; border-top: 1.5px solid rgba(176, 237, 156, 0.4);">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: rgba(255,255,255,0.6);">系統自動結算總額 (Total Settled)</span>
+                        <span class="badge-chip registered" style="font-size: 10px; padding: 2px 6px;">COMPLIANT</span>
+                      </div>
+                      <div style="font-size: 22px; font-weight: 800; color: var(--k-neon); font-family: var(--font-display); margin-top: 4px;">
+                        $1,284,500.00
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Floating Badges -->
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="floating-badge-demo">
+                  <span class="badge-chip registered">Registered</span> 門檻監控正常 · 0 曝險
+                </div>
+                <div class="floating-badge-demo">
+                  <span class="badge-chip ai">✦ AI Assistant</span> 自動梳理 12 條核心商業流程
+                </div>
+                <div class="floating-badge-demo">
+                  <span class="badge-chip warning">Warning</span> 逼近 80% 門檻即時通知
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.4 Surface Layers & Feature Cards -->
+      <h3 class="section-label">6.4 Surface Layers & Service Feature Cards (多層次卡片表面)</h3>
+      <div class="pattern">
+        <!-- Warm White Card -->
+        <div class="service-card-demo">
+          <div class="service-icon-box">⚙️</div>
+          <h3 style="font-size: 17px; margin-bottom: 6px;">企業管理系統 (ERP/CRM)</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+            採用 <code>--bg-card (#FFFFF9)</code> 暖白卡片底色。捨棄冗餘功能，將預算精準投注於關鍵流程。
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span class="tag">ERP 客製化</span>
+            <span class="tag">訂單銷貨</span>
+            <span class="tag">庫存整合</span>
+          </div>
+        </div>
+
+        <!-- Sage Green Card -->
+        <div class="service-card-demo sage">
+          <div class="service-icon-box" style="background: var(--bg-card);">📊</div>
+          <h3 style="font-size: 17px; margin-bottom: 6px;">數據整合與合規系統</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+            採用 <code>--bg-sage (#E8F0D9)</code> 淺鼠尾草綠底色。應用於數據計算、自動對帳與合規狀態。
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span class="tag">API 串接</span>
+            <span class="tag">自動報表</span>
+            <span class="badge-chip registered" style="font-size: 10px;">安全合規</span>
+          </div>
+        </div>
+
+        <!-- Peach Card -->
+        <div class="service-card-demo peach">
+          <div class="service-icon-box" style="background: var(--bg-card);">🎯</div>
+          <h3 style="font-size: 17px; margin-bottom: 6px;">數位顧問與商業規劃</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">
+            採用 <code>--bg-peach (#FDF5EB)</code> 暖杏米底色。專注於重點引導與前期流程梳理。
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span class="tag">流程診斷</span>
+            <span class="tag">MVP 定義</span>
+          </div>
+        </div>
+
+        <!-- Lilac AI Card -->
+        <div class="service-card-demo lilac">
+          <div class="service-icon-box" style="background: var(--bg-card);">✦</div>
+          <h3 style="font-size: 17px; margin-bottom: 6px; color: var(--k-purple-deep);">AI 落地與智慧助手</h3>
+          <p style="font-size: 13px; color: var(--k-purple-deep); line-height: 1.6; margin-bottom: 12px;">
+            採用 <code>--bg-lilac (#EDE4FB)</code> 淺粉紫底色。將 AI 技術深度整合於核心工作流程。
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <span class="badge-chip ai">企業知識庫</span>
+            <span class="badge-chip ai">文件智慧辨識</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.5 Process Timeline Step Nodes -->
+      <h3 class="section-label">6.5 Process Timeline Step Nodes (深松綠時間軸節點)</h3>
+      <div class="pattern full">
+        <div class="panel dark">
+          <div class="panel-head">Process Timeline 6-Steps Rhythm</div>
+          <div class="panel-body">
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; position: relative;">
+              <div class="process-step-demo">
+                <div class="process-num-demo">1</div>
+                <strong style="font-size: 13px; color: white;">需求訪談</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">梳理營運流程</span>
+              </div>
+              <div class="process-step-demo">
+                <div class="process-num-demo">2</div>
+                <strong style="font-size: 13px; color: white;">架構規劃</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">定義 MVP 範圍</span>
+              </div>
+              <div class="process-step-demo">
+                <div class="process-num-demo">3</div>
+                <strong style="font-size: 13px; color: white;">UI/UX</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">設計稿與 Prototype</span>
+              </div>
+              <div class="process-step-demo">
+                <div class="process-num-demo">4</div>
+                <strong style="font-size: 13px; color: white;">程式開發</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">分段測試交付</span>
+              </div>
+              <div class="process-step-demo">
+                <div class="process-num-demo">5</div>
+                <strong style="font-size: 13px; color: white;">系統上線</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">教育訓練與部署</span>
+              </div>
+              <div class="process-step-demo">
+                <div class="process-num-demo">6</div>
+                <strong style="font-size: 13px; color: white;">長期維運</strong>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">顧問持續陪跑</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.6 FAQ Accordion -->
+      <h3 class="section-label">6.6 FAQ Accordion (問答手風琴)</h3>
+      <div class="pattern">
+        <!-- Light FAQ -->
+        <div class="panel">
+          <div class="panel-head">Light Mode FAQ (Warm Ecru Base)</div>
+          <div class="panel-body">
+            <div class="faq-item-demo">
+              <button class="faq-question-demo">
+                <span>套版系統 vs 客製化系統，哪個適合我？</span>
+                <span class="faq-icon-demo">−</span>
+              </button>
+              <div class="faq-answer-demo">
+                <strong>套版系統</strong>適合預算有限的微型企業；<strong>客製化系統</strong>則適合營運流程固定、需要系統配合獨特流程的成長型企業。
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Dark FAQ -->
+        <div class="panel dark">
+          <div class="panel-head">Dark Mode FAQ Item</div>
+          <div class="panel-body">
+            <div class="faq-item-demo">
+              <button class="faq-question-demo">
+                <span>企業沒有專職 IT 部門，如何導入系統？</span>
+                <span class="faq-icon-demo">+</span>
+              </button>
+              <div class="faq-answer-demo">
+                讓 PlayPlus 扮演您的外部技術合夥人，從前期流程梳理、設計、開發到上線後的顧問陪跑，提供一條龍支援。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.7 Form & Input States -->
+      <h3 class="section-label">6.7 Form & Field States (表單輸入框狀態)</h3>
+      <div class="pattern">
+        <!-- Light Form -->
+        <div class="panel">
+          <div class="panel-head">Light Inputs</div>
+          <div class="panel-body">
+            <div class="field-demo">
+              <label class="field-label-demo">一般狀態 (Default)</label>
+              <input type="text" class="input-demo" value="service@playplus.com.tw" readonly>
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">聚焦狀態 (Focus with Neon Glow)</label>
+              <input type="text" class="input-demo focus" value="台北市大安區忠孝東路四段">
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">錯誤狀態 (Error with Exposed Red)</label>
+              <input type="text" class="input-demo error" value="請輸入有效的統一編號">
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">唯讀/停用 (Disabled)</label>
+              <input type="text" class="input-demo disabled" value="不可編輯欄位" disabled>
+            </div>
+          </div>
+        </div>
+        <!-- Dark Form -->
+        <div class="panel dark">
+          <div class="panel-head">Dark Inputs</div>
+          <div class="panel-body">
+            <div class="field-demo">
+              <label class="field-label-demo">一般狀態 (Default)</label>
+              <input type="text" class="input-demo" value="service@playplus.com.tw" readonly>
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">聚焦狀態 (Focus with Neon Glow)</label>
+              <input type="text" class="input-demo focus" value="台北市大安區忠孝東路四段">
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">錯誤狀態 (Error with Exposed Red)</label>
+              <input type="text" class="input-demo error" value="請輸入有效的統一編號">
+            </div>
+            <div class="field-demo">
+              <label class="field-label-demo">唯讀/停用 (Disabled)</label>
+              <input type="text" class="input-demo disabled" value="不可編輯欄位" disabled>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6.8 Call-to-Action Box -->
+      <h3 class="section-label">6.8 CTA Banner Box (主行動呼籲區塊)</h3>
+      <div class="pattern full">
+        <div class="panel dark" style="background: var(--gradient-hero-dark); border-radius: var(--radius-card); padding: 32px 24px; position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -50%; right: -20%; width: 400px; height: 400px; background: var(--gradient-mesh-glow); pointer-events: none; opacity: 0.6;"></div>
+          <div style="text-align: center; max-width: 620px; margin: 0 auto; padding: 20px 0; position: relative; z-index: 1;">
+            <h2 style="color: white; font-size: 28px; font-weight: 800; margin-bottom: 12px;">
+              準備好談談您的企業專屬系統了嗎？
+            </h2>
+            <p style="color: rgba(255,255,255,0.75); font-size: 15px; margin-bottom: 24px; line-height: 1.6;">
+              歡迎預約 30 分鐘免費顧問諮詢，由我們為您評估最適合的數位轉型與輕量化客製解法。
+            </p>
+            <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+              <button class="btn primary">預約顧問諮詢 (Book a Demo) →</button>
+              <button class="btn secondary">瀏覽客戶作品集</button>
+            </div>
+            <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 16px;">
+              免費諮詢 · 無須繁複準備 · 30 分鐘釐清方向
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 7: READY-TO-USE CSS & TAILWIND CODE
+         ═══════════════════════════════════════════ -->
+    <section class="section" id="code">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <h2>7. Ready-to-Use Tokens Code</h2>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn outline" onclick="copyCssBlock()" style="font-size: 12px; padding: 6px 14px;">
+            📋 複製 CSS :root
+          </button>
+          <button class="btn primary" onclick="copyTailwindBlock()" style="font-size: 12px; padding: 6px 14px;">
+            📋 複製 Tailwind Config
+          </button>
+        </div>
+      </div>
+      <p class="subhead">
+        可直接複製以下完整代碼至專案的 <code>index.css</code> 全域樣式表或 <code>tailwind.config.js</code> 配置文件中：
+      </p>
+
+      <pre id="css-code-block" style="background: var(--k-green-950); color: #e2e8f0; padding: 20px; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; overflow-x: auto; margin-top: 14px; border: 1px solid rgba(255,255,255,0.1);">
+/* ════════════════════════════════════════════════
+   Kintsugi / PlayPlus — Design Tokens CSS 變數清單
+   ================================================ */
+:root {
+  /* ===== 品牌核心色彩 (Brand Core) ===== */
+  --k-neon: #B0ED9C;                /* 核心霓虹薄荷綠 */
+  --k-neon-glow: #D7F781;           /* 螢光黃綠（光暈） */
+  --k-neon-rgb: 176, 237, 156;
+  
+  --k-green-900: #213331;           /* 深森松墨綠（主文字/深色卡片） */
+  --k-green-950: #0E1716;           /* 極深墨綠（背景陰影） */
+  --k-green-900-rgb: 33, 51, 49;
+  
+  --k-lavender: #E5D1FA;            /* 柔和薰衣草紫（AI 輔助色） */
+  --k-lavender-vibrant: #C69CF4;    /* 亮紫（邊框與高光） */
+  --k-purple-deep: #5B3FA0;         /* 深紫（薰衣草標籤文字） */
+
+  /* ===== 背景與表面色彩 (Surfaces & Backgrounds) ===== */
+  --bg-main: #F2F2E8;               /* 全站底色：溫潤米灰 */
+  --bg-card: #FFFFF9;               /* 淺色卡片：暖白 */
+  --bg-white: #FFFFFF;              /* 純白表面 */
+  --bg-peach: #FDF5EB;              /* 暖杏米色表面 */
+  --bg-sage: #E8F0D9;               /* 淺鼠尾草綠表面 */
+  --bg-lilac: #EDE4FB;              /* 淺粉紫表面 */
+  --bg-dark-frame: #213331;         /* 深色互動面板底色 */
+
+  /* ===== 文字顏色 (Typography) ===== */
+  --text-primary: #213331;          /* 淺色底主文字 */
+  --text-secondary: #6B7160;        /* 淺色底次要文字 */
+  --text-muted: #8D8A7B;            /* 淺色底輔助文字 */
+  
+  --text-inverse-primary: #FFFFFF;  /* 深色底主文字 */
+  --text-inverse-secondary: rgba(255, 255, 255, 0.75); /* 深色底次要文字 */
+  --text-inverse-muted: rgba(255, 255, 255, 0.55);     /* 深色底輔助文字 */
+  --text-accent: #B0ED9C;           /* 深色底高亮綠字 */
+
+  /* ===== 狀態色彩 (Status & Alerts) ===== */
+  --status-exposed: #FF5E5E;        /* 曝險紅 */
+  --status-exposed-bg: #FBD9D9;     /* 曝險紅淺底 */
+  --status-registered: #B0ED9C;     /* 合規綠 */
+  --status-registered-bg: #E8F0D9;  /* 合規綠淺底 */
+  --status-warning: #ED8936;        /* 警戒橘 */
+  --status-warning-bg: #FEF3C7;     /* 警戒橘淺底 */
+
+  /* ===== 邊框與分隔線 (Borders & Dividers) ===== */
+  --border-light: rgba(0, 0, 0, 0.08);
+  --border-light-subtle: #DEE6D6;
+  --border-dark: rgba(255, 255, 255, 0.07);
+  --border-dark-strong: rgba(255, 255, 255, 0.16);
+  --border-neon: rgba(176, 237, 156, 0.30);
+
+  /* ===== 圓角規範 (Border Radii) ===== */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-card: 22px;
+  --radius-pill: 9999px;
+
+  /* ===== 陰影規範 (Elevation & Shadows) ===== */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 8px 24px rgba(33, 51, 49, 0.10);
+  --shadow-3: 0 18px 50px rgba(33, 51, 49, 0.16);
+  --shadow-pulse: 0 0 10px rgba(176, 237, 156, 0.60);
+
+  /* ===== 字型家族 (Font Stacks) ===== */
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Aldrich', monospace, sans-serif;
+}</pre>
+
+      <pre id="tailwind-code-block" style="background: var(--k-green-950); color: #e2e8f0; padding: 20px; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; overflow-x: auto; margin-top: 14px; border: 1px solid rgba(255,255,255,0.1);">
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        kintsugi: {
+          neon: '#B0ED9C',
+          'neon-glow': '#D7F781',
+          'green-900': '#213331',
+          'green-950': '#0E1716',
+          lavender: '#E5D1FA',
+          'purple-vibrant': '#C69CF4',
+          'purple-deep': '#5B3FA0',
+          base: '#F2F2E8',
+          card: '#FFFFF9',
+          peach: '#FDF5EB',
+          sage: '#E8F0D9',
+          lilac: '#EDE4FB',
+          exposed: '#FF5E5E',
+          registered: '#B0ED9C',
+          warning: '#ED8936',
+        }
+      },
+      fontFamily: {
+        sans: ['"DM Sans"', 'sans-serif'],
+        display: ['"Aldrich"', 'monospace'],
+      },
+      borderRadius: {
+        'card': '22px',
+      },
+      boxShadow: {
+        'card-soft': '0 8px 24px rgba(33, 51, 49, 0.10)',
+        'card-deep': '0 18px 50px rgba(33, 51, 49, 0.16)',
+        'neon-glow': '0 0 12px rgba(176, 237, 156, 0.60)',
+      }
+    }
+  }
+}</pre>
+    </section>
+
+  </main>
+
+  <!-- Interactive JavaScript -->
+  <script>
+    // Copy Token Name or Value
+    function copyToken(tokenName) {
+      navigator.clipboard.writeText(`var(${tokenName})`).then(() => {
+        showToast(`已複製變數：var(${tokenName})`);
+      }).catch(() => {
+        showToast(`複製失敗，請手動複製`);
+      });
+    }
+
+    // Copy Full CSS Block
+    function copyCssBlock() {
+      const code = document.getElementById('css-code-block').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`已成功複製完整 CSS :root 變數代碼！`);
+      });
+    }
+
+    // Copy Tailwind Block
+    function copyTailwindBlock() {
+      const code = document.getElementById('tailwind-code-block').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        showToast(`已成功複製 Tailwind CSS 配置代碼！`);
+      });
+    }
+
+    // Show Toast Notification
+    function showToast(msg) {
+      const toast = document.getElementById('copy-toast');
+      const text = document.getElementById('copy-toast-text');
+      text.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+  </script>
+</body>
+</html>
