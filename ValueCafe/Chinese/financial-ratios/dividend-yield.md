@@ -1,83 +1,66 @@
-# Head Editor
+<!-- ----------- Head ----------- -->
 
 **id**: dividend-yield
-**title**: Is a higher 'Dividend Yield' always better? Watch out for high-yield traps and understand what dividends really are.
-**description**: Looking to start dividend investing but worried about falling into a high-yield trap? This post explains what dividend yield is and how to calculate it in plain English. We’ll use Warren Buffett’s investment philosophy to help you see past the 'gain the dividend, lose the principal' myth so you can find solid companies to hold for the long haul.
-**keywords**: Dividend yield, what is dividend yield, is high yield always good, high-yield trap, dividend investing, value investing, Warren Buffett, cash dividends, ex-dividend, price recovery.
-**list-summary**: Is higher always better? Not necessarily. A super-high yield can be a red flag. You need to understand the nature of that dividend first.
-**name**: Dividend Yield
+**title**: 《現金殖利率》越高越好嗎？高殖利率可能會有陷阱，先釐清股息的本質 | 善用財務比率 | ValueCafe
+**description**: 想做存股領息，卻擔心落入高殖利率陷阱？這篇文章用白話文帶你搞懂現金殖利率的計算與本質，結合 Warren Buffett 的投資哲學，破除「賺了股息、賠了價差」的迷思，挑選能穩健增長的好公司。
+**keywords**: 現金殖利率, 殖利率, 現金殖利率計算, 高殖利率陷阱, 存股, 價值投資, 巴菲特, 現金股利, 除息, 填息
+**list-summary**: 釐清股息本質與除息機制，避開「賺了股息賠了價差」的高殖利率陷阱。
+**name**: 現金殖利率
 
----
 
-# Hero Editor
+<!-- ----------- Hero ----------- -->
 
-<div class="column column-group">
-	<div class="heading">
-		<div class="heading-title">
-			<h1>Is a higher 'Dividend Yield' always better? Watch out for high-yield traps and understand what dividends really are.</h1>
-			<p class="description">Don't get carried away by numbers like 8% or 10%! Let's understand what "yield" is really about. I'll also share why Warren Buffett actually prefers companies that don't pay dividends.</p>
-		</div>
-	</div>
-	<img src="../images/financial-ratios/dividend-yield/cover.webp" alt="Dividend Yield">
-</div>
+# 《現金殖利率》越高越好嗎？高殖利率可能會有陷阱，先釐清股息的本質
 
----
+許多投資人熱愛高配息股票，但盲目追求 8%、10% 的高殖利率，往往是走向虧損的開始。先懂本質，才能穩健領息。
 
-# Content Editor
 
-<div class="column column-group">
-	<div class="column column-content">
-		<p>Do you ever hear people say that if you want steady passive income, you just need to find stocks with the highest "dividend yield"? It sounds professional, and the numbers look tempting. But is a higher yield really always better? If it were that simple, getting rich would be easy.</p>
-	</div>
-	<div class="column column-content">
-		<h2>So, what exactly is dividend yield?</h2>
-		<p>Let's forget about the stock market for a second. Imagine a simpler scenario. I'm going to use a simple story about a breakfast shop to help you wrap your head around dividend yield.</p>
-		<h3 class="inside">Cash dividends</h3>
-		<p>Let's say you and a few friends see an opportunity in the neighborhood breakfast market. You decide to pool your money and open a cozy breakfast spot. You each put in some cash and become "shareholders" of the shop. Your egg pancakes and milk tea turn out to be a huge hit.</p>
-		<p>After a year of hard work, you settle up at the end of the year. After paying for the flour, eggs, rent, and staff salaries, there is a nice chunk of cash profit left over. You all meet up and decide to take that money and split it among the partners based on how much each person originally put in. That cash bonus you take home is the return you deserve as a boss (or shareholder) of the breakfast shop.</p>
-		<p>This concept works exactly the same way in the stock market. When you buy stock in a company, you are one of that company's shareholders. When that company takes a portion of its annual profits and pays it back to you in cash, that is what we call a "cash dividend."</p>
-		<h3 class="inside">Dividend yield</h3>
-		<div class="group-box solid">
-			<div class="content">
-				<p>Dividend Yield % = Cash Dividend / Stock Price x 100%</p>
-			</div>
-		</div>
-		<p>So, what is "dividend yield"? It really just answers one simple question. "Based on the price I am paying right now, what percentage of that cash am I getting back this year?"</p>
-		<p>For example, let's say your share of the breakfast shop is currently worth $100. If you get a $5 cash dividend this year, then your dividend yield is 5% (5 / 100).</p>
-		<p>If you buy Alphabet stock at $202.16 and they pay out a cash dividend of $0.84 per share this year, that comes out to a dividend yield of 0.41%.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Could high dividend yield be a trap?</h2>
-		<p>Before you dive into those tempting 7%, 8%, or even 10% yields, you have to understand how the "ex-dividend" system works in the stock market. "Going ex-dividend" means that on the day a company pays out that cash dividend to you, its stock price drops by that exact same amount.</p>
-		<p>For example, take a company with a $100 stock price that pays a $5 cash dividend. On the payout day, the stock price immediately drops to $95. Your total assets haven't actually changed. You have $5 more in cash, but your stock is worth $5 less. It is like moving money from your left pocket to your right pocket. At the end of the day, your wealth hasn't increased.</p>
-		<p>The moment you actually make a profit is when the stock price "recovers." This means that after the drop, the company's strong performance pushes the price back up to the original $100. Only when that recovery happens does that $5 dividend count as real profit.</p>
-		<h3 class="inside">Getting the dividend but losing on the stock price</h3>
-		<p>If the price doesn't bounce back, or worse, if it keeps falling, then that dividend you got is basically just you getting your own principal back.</p>
-		<p>When times are good, "cyclical stocks" like shipping or display panel companies might rake in cash. They generously hand out huge dividends, creating beautiful yield numbers that attract tons of investors looking for steady payouts. But those good times usually don't last.</p>
-		<p>When the economy turns, shipping demand drops and panel prices crash. These companies' profits shrink fast or turn into losses, and the stock price falls off a cliff. Many investors who got lured in by the high yield at the peak realize too late that the few dollars in dividends can't cover the massive loss in the stock price.</p>
-		<h3 class="inside">A warning sign of declining growth</h3>
-		<p>There is another high-yield trap that is even sneakier.</p>
-		<p>Sometimes a company has a high yield not because it's making so much money, but because its stock price has crashed. Imagine a company pays a steady $3 dividend every year. If its stock price drops from $100 to $50, its yield instantly doubles from 3% to 6%! That number looks attractive, but it actually reflects a serious vote of no confidence from the market regarding the company's future.</p>
-		<p>Or, high dividends might mean a company has "stopped growing." When a business can't find good projects to invest in to expand or make more profit, its only choice is to give that cash back to shareholders. That isn't necessarily a bad thing, but for investors hoping for long-term growth, it is basically an admission that "the glory days might be over."</p>
-	</div>
-	<div class="column column-content">
-		<h2>Buy a great business, don't just chase the dividend numbers</h2>
-		<p>So, now that we know about the high-yield trap, what should we be looking for? We can take a page out of Warren Buffett's book, and honestly, it is surprisingly simple.</p>
-		<p>The goal of investing is to "own" a great company. Cash dividends are just the sweet "result" that naturally comes from owning a good business. They should never be the "goal" you are chasing.</p>
-		<h3 class="inside">The Coca-Cola story</h3>
-		<p>When Warren Buffett poured over a billion dollars into buying Coca-Cola stock, he wasn't concerned with Coke's dividend yield that year. What he saw was a simple product that billions of people around the world loved and couldn't replace. He saw a brand "moat" so strong it was almost impossible to breach. He saw a business that would keep generating an endless stream of cash flow for decades to come.</p>
-		<p>Think of Coca-Cola as a high-quality "money-printing machine." The annual dividends are just a few of the bills that the machine spits out. What Warren Buffett really wanted to buy was the machine itself, not just the few bills it produced in any single year.</p>
-		<h3 class="inside">Why is a "Low Yield" sometimes a good thing?</h3>
-		<p>This concept might completely flip how you think about dividends.</p>
-		<p>Imagine that your partner in the breakfast shop, the manager running the place, is a business genius. He tells you, "We made 100,000 this year. But if we take that 100,000 and open a branch right next door, I guarantee it will earn us 150,000 in value next year." As a shareholder, would you choose to split that 100,000 now, or would you hand it to him to build a bigger business?</p>
-		<p>Smart value investors will always choose the second option.</p>
-		<p>That is exactly how Warren Buffett thinks. If a company can effectively reinvest every dollar it earns to create "more than a dollar" of long-term value for shareholders, then keeping the profit inside the company is actually the best choice for the shareholders. In this scenario, not paying dividends or having a super low yield is actually fantastic news! It means the company is in a golden period of high growth. It is like a fruit tree that is working hard to grow big. You don't rush to pick the fruit now because you want it to bear even more fruit in the future.</p>
-		<p>This is exactly why Warren Buffett's own company, Berkshire Hathaway, never pays cash dividends. It is because he and all his shareholders believe that keeping the money in the company creates far more incredible long-term returns than if the shareholders invested it themselves.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Growing Your Wealth</h2>
-		<p>While you are eating, working, or even sleeping, the businesses you own are out there working hard to make you money. That growth over time is the real secret to building lasting wealth.</p>
-		<p>Pick a company you interact with every day and try asking yourself one simple question. "Will this company still be making money like this 10 years from now? Why?"</p>
-		<p>You should start learning to think like Buffett. That is how you officially kick off your value investing journey and start building real wealth.</p>
-	</div>
-</div>
+<!-- ----------- Content ----------- -->
+
+在亞洲投資市場，「存股領息」深受廣大投資人喜愛。每年看著現金股利入帳，確實能給人踏實的安心感。
+
+然而，許多人單憑「現金殖利率排行榜」由高到低無腦買進，往往落入**「賺了股息、賠了價差」**的悲劇。要成為聰明的價值投資者，我們必須先釐清股息的本質。
+
+## 什麼是現金殖利率？
+
+現金殖利率（Dividend Yield）衡量的是投資人買進這檔股票後，每年能獲得多少比例的現金分紅回報。
+
+### 計算公式
+
+```
+現金殖利率 = 每股現金股利 (Dividend per Share) ÷ 目前股價 (Stock Price) × 100%
+```
+
+例如：某公司發放現金股利 5 元，目前股價為 100 元，則現金殖利率 = 5 ÷ 100 = 5%。
+
+## 破除三大致命迷思
+
+### 迷思 1 ： 股息不是銀行利息，而是「左手換右手」
+
+銀行存款發利息，你的本金不會減少；但股票發股利時，會進行**「除息（Ex-dividend）」**，當天開盤價會直接扣除發放的現金金額。
+
+唯有當公司未來營運持續成長、股價重新漲回除息前的價格（也就是**「填息」**），這筆股息才真正落入你的口袋。如果公司體質變差，除息後股價一路破底，那就是實質虧損。
+
+### 迷思 2 ： 高殖利率往往是因為「股價暴跌」
+
+從公式可以看出：`殖利率 = 股利 ÷ 股價`。
+
+分母的股價如果腰斬暴跌，殖利率數字就會被動飆高！這種虛假的高殖利率，通常反映了市場對該公司未來業績暴跌的悲觀預期，這就是經典的**「高殖利率陷阱」**。
+
+### 迷思 3 ： 賣資產產生的一次回饋，不可持續
+
+有些公司靠著賣土地、處分轉投資公司，獲得了一筆單次的業外暴利並大方配息，使當年殖利率飆破 10%。但第二年沒有土地可賣時，配息便被打回原形。
+
+## 真正優秀的股利政策長什麼樣？
+
+價值投資者在挑選配息股時，看重的不是單一年的極端高殖利率，而是**「可持續性」與「股利成長性」**：
+
+1. **盈餘配發率（Payout Ratio）健康**：通常維持在 **50% ~ 70%** 之間最理想。既能回饋股東，又能保留適當資金再投資擴張。
+2. **自由現金流充沛**：股利必須是由真正的「自由現金流」支付，而不是靠舉債發股息。
+3. **長期連續穩定配息且持續成長**：能連續 10 年以上配息不中斷且逐年增長的公司，代表具備極深的護城河（如美股的 Dividend Aristocrats 股息貴族）。
+
+## Mr.Cafe 的投資備忘錄
+
+1. **不買殖利率異常過高的股票**：通常超過 8% ~ 10% 以上的股票，都必須嚴格檢驗是否為股價崩跌或單次業外收益所致。
+2. **填息能力才是硬實力**：唯有具備成長動能與護城河的企業，才能保證每年穩健填息。
+3. **巴菲特的思維**：如果企業能將獲利再投資並創造高於市場的報酬率（高 ROE），保留資金反而比全部配發更能為股東累積巨大財富。

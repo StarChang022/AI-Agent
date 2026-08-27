@@ -1,106 +1,83 @@
-# Head Editor
+<!-- ----------- Head ----------- -->
 
 **id**: current-ratio-and-quick-ratio
-**title**: What are the 'Current Ratio and Quick Ratio' ? Think of them as the 'Financial first aid kit' for a company's ability to pay debts.
-**description**: Wondering what the real difference is between the current ratio and the quick ratio? We’re using a 'financial first-aid kit' analogy to help you master the formulas and definitions in a flash. Learn how to use these metrics to make smarter moves with your investments.
-**keywords**: Current ratio, quick ratio, current ratio vs quick ratio, what’s a good current ratio, current vs quick ratio difference, quick ratio formula, current ratio by industry, financial analysis, value investing.
-**list-summary**: Think of these as the company's 'financial first-aid kit' for paying its short-term bills.
-**name**: Current Ratio and Quick Ratio
+**title**: 《流動比率》與《速動比率》是什麼？類似企業償債能力的「財務急救箱」 | 善用財務比率 | ValueCafe
+**description**: 想知道流動比率與速動比率的真正差別？我們用「財務急救箱」生動比喻，帶你快速掌握公式與定義，學會用這兩大指標精準衡量企業短期償債能力，避開潛在財務危機。
+**keywords**: 流動比率, 速動比率, 流動比率速動比率差別, 流動比率多少算好, 速動比率公式, 償債能力, 財務分析, 價值投資
+**list-summary**: 這就像是企業用來應付短期帳單的「財務急救箱」，衡量隨時變現還債的能力。
+**name**: 流動比率與速動比率
 
----
 
-# Hero Editor
+<!-- ----------- Hero ----------- -->
 
-<div class="column column-group">
-	<div class="heading">
-		<div class="heading-title">
-			<h1>What are the 'Current Ratio and Quick Ratio' ? Think of them as the 'Financial first aid kit' for a company's ability to pay debts.</h1>
-			<p class="description">Why do some companies look like they have a ton of assets, but when the market crashes, they can't pay up? The key is liquidity, or how fast they can turn those assets into cash.</p>
-			<p class="description">Open up the corporate "financial first aid kit" to quickly judge if a company can survive a crisis. By looking at two key metrics, the current ratio and the quick ratio, you can learn in five minutes how to tell the strong survivors from the "landmine stocks" that look tough but are actually hollow.</p>
-		</div>
-	</div>
-	<img src="../images/financial-ratios/current-ratio-and-quick-ratio/cover.webp" alt="'Current Ratio and Quick Ratio">
-</div>
+# 《流動比率》與《速動比率》是什麼？類似企業償債能力的「財務急救箱」
 
----
+為什麼有些公司看起來資產很多，但在市場危機來臨時卻突然週轉不靈？關鍵就在於資產的變現流動性。
 
-# Content Editor
 
-<div class="column column-group">
-	<div class="column column-content">
-		<p>As a careful investor, your biggest fear probably isn't the stock price jumping up and down in the short term. It is watching your hard-earned cash vanish overnight because the company suddenly goes belly up.</p>
-		<p>When the market crashes, weak companies collapse like a house of cards. So how do you spot these "landmine companies" with shaky financials? You open up the company's "financial first aid kit." Inside, you will find the Current Ratio and the Quick Ratio. With just these two metrics, you can figure out a company's ability to survive a crisis in under five minutes.</p>
-	</div>
-	<div class="column column-content">
-		<h2>What are the current ratio and quick ratio? Think of them as the company's financial first aid kit</h2>
-		<p>We mentioned the "financial first aid kit" idea earlier for checking a company's health. Now, let's crack that kit open and see what is inside.</p>
-		<p>The kit has two layers. The bottom layer is the Current Ratio, which is like your "complete kit" stocked for everything. The top layer is the Quick Ratio, which is like your "emergency trauma pack" that you grab for sudden disasters.</p>
-		<div id="oc-images" class="owl-carousel image-carousel carousel-widget mb-3" data-items-xs="1" data-items-sm="1" data-items-lg="2" data-items-xl="2">
-			<div class="oc-item">
-				<div class="cards border-vertical">
-					<h5>Current Ratio</h5>
-					<hr>
-					<ul>
-						<li>Cash and cash equivalents</li>
-						<li>Bank deposits</li>
-						<li>Marketable securities</li>
-						<li>Short-term investments</li>
-						<li>Accounts receivable</li>
-						<li>Notes receivable</li>
-						<li>Inventory</li>
-						<li>Prepaid expenses</li>
-					</ul>
-				</div>
-			</div>
-			<div class="oc-item">
-				<div class="cards border-vertical">
-					<h5>Quick Ratio</h5>
-					<hr>
-					<ul>
-						<li>Cash and cash equivalents</li>
-						<li>Bank deposits</li>
-						<li>Marketable securities</li>
-						<li>Short-term investments</li>
-						<li>Accounts receivable</li>
-						<li>Notes receivable</li>
-						<li>Inventory</li>
-						<li>Prepaid expenses</li>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<h3 class="inside">Current ratio: The complete first aid kit</h3>
-		<div class="group-box solid">
-			<div class="content">
-				<p>Current Ratio = Current Assets / Current Liabilities</p>
-			</div>
-		</div>
-		<p>Imagine the Current Ratio is like that fully stocked first aid kit you have at home. In practical terms, it represents the company's ability to use "assets that can be turned into cash within a year" to pay off "debts due within a year." Simply put, it answers the investor's question: "Are all the short-term resources enough to pay off the debt?"</p>
-		<p>Current assets include <strong>cash and cash equivalents</strong>, <strong>bank deposits</strong>, <strong>marketable securities</strong>, <strong>short-term investments</strong>, <strong>accounts receivable</strong>, <strong>notes receivable</strong>, <strong>inventory</strong>, and <strong>prepaid expenses</strong>. Current liabilities refer to short-term debts the company must pay back within a year, like short-term loans or accounts payable.</p>
-		<h3 class="inside">Quick ratio: The emergency trauma pack</h3>
-		<div class="group-box solid">
-			<div class="content">
-				<p>Quick Ratio = (Current Assets - Inventory - Prepaid Expenses) / Current Liabilities</p>
-			</div>
-		</div>
-		<p>Let's say a critical emergency happens and you need to stop the bleeding right now. You wouldn't leisurely dig through the whole first aid kit. You would immediately grab the "emergency trauma pack" right next to you. The Quick Ratio is a stricter, more conservative survival metric. It represents a tough test of a company's ability to handle emergencies.</p>
-		<p>Why do we specifically take out "<strong>Inventory</strong>"? Because out of all the current assets, inventory is the hardest to turn into cash and has the highest uncertainty. This is especially true for products that go out of season or expire. For example, old phone inventory might be worthless in a year, and food inventory runs the risk of spoiling.</p>
-		<p>As for "<strong>Prepaid Expenses</strong>," this represents money the company paid upfront but hasn't received the goods or services for yet (like prepaid rent or insurance). Since that money is already gone, it basically has zero ability to pay off debt in the short term.</p>
-		<p>That is why the quick ratio often gives a more realistic picture of how many resources a company can cough up immediately to pay debts when push comes to shove.</p>
-	</div>
-	<div class="column column-content">
-		<h2>What is a reasonable current ratio?</h2>
-		<p>Generally, there is a "standard answer" that the market accepts.</p>
-		<ul>
-			<li>Current ratio > 200%</li>
-			<li>Quick ratio > 100%</li>
-		</ul>
-		<p>The logic behind this is pretty intuitive. A current ratio over 200% means the company's short-term assets are more than double its short-term liabilities. This provides a comfortable safety buffer.</p>
-		<p>A quick ratio over 100% means that even without relying on inventory at all, the company can pay off all its short-term debts immediately. That is definitely a reassuring signal. For everyone, this works as a filter to quickly weed out the companies that are clearly in bad shape.</p>
-	</div>
-	<div class="column column-content">
-		<h2>The ability to pay off debt</h2>
-		<p>Analyzing a company's safety isn't just about looking at the "debt" side of things. The ability to actually pay that debt off is just as important. Think back to that "first aid kit" metaphor we have been using throughout the article.</p>
-		<p>Every company is going to have different current and quick ratios, especially across different industries. If you spot something that looks weird, dig in to find out what is causing the difference and check if their peers are in the same boat.</p>
-	</div>
-</div>
+<!-- ----------- Content ----------- -->
+
+在投資世界中，很多投資人只關注公司賺了多少錢，卻忽略了「公司會不會突然倒閉」。
+
+當黑天鵝事件或景氣寒冬來臨時，能夠讓企業活下去的關鍵，不是遙遠的未來願景，而是眼前的**短期償債能力**。
+
+這時候，**流動比率（Current Ratio）**與**速動比率（Quick Ratio）**就是你的最佳診斷工具，它們就像是企業隨身攜帶的「財務急救箱」。
+
+## 什麼是流動比率？企業的常備醫療包
+
+流動比率衡量的是企業在「一年之內」是否有足夠的流動資產來償還一年內到期的流動負債。
+
+### 計算公式
+
+```
+流動比率 = 流動資產 ÷ 流動負債 × 100%
+```
+
+- **流動資產**：預計一年內可變現的資產（包含現金、應收帳款、存貨、短期有價證券）。
+- **流動負債**：預計一年內必須償還的債務（包含應付帳款、短期借款）。
+
+### 標準判斷
+
+- **一般標準**：通常**大於 200%（或 2:1）**被視為健康安全的水準。
+- **意涵**：代表企業每欠 1 元短期負債，手上就有 2 元的流動資產可以應付，具備足夠的緩衝空間。
+
+## 什麼是速動比率？抽乾水分的極限急救針
+
+流動比率雖然好用，但有一個盲點：**「存貨（Inventory）」**真的能在緊急時立刻換成現金嗎？
+
+如果是一間服飾店或電子廠，遇到滯銷或技術過時，倉庫裡的存貨可能打折都賣不掉。因此，速動比率剔除了變現較慢的「存貨」與「預付費用」，直接檢視最核心的變現資產。
+
+### 計算公式
+
+```
+速動比率 = 速動資產 ÷ 流動負債 × 100%
+速動資產 = 流動資產 - 存貨 - 預付費用
+```
+
+### 標準判斷
+
+- **一般標準**：通常**大於 100%（或 1:1）**是良好的安全指標。
+- **意涵**：代表就算不靠賣存貨，公司手邊立即可用的現金與應收帳款，也足以 100% 還清所有短期負債。
+
+## 流動比率 vs 速動比率：關鍵差異對比
+
+| 比較項目 | 流動比率 (Current Ratio) | 速動比率 (Quick Ratio) |
+| :--- | :--- | :--- |
+| **涵蓋資產** | 包含所有流動資產（含存貨、預付款） | 僅包含高流動性資產（現金、應收帳款、短期投資） |
+| **測試情境** | 正常營運狀態下的償債能力 | 極端突發狀況下的即時變現能力 |
+| **安全標準** | 通常建議 ≥ 150% ~ 200% | 通常建議 ≥ 100% |
+| **適用行業** | 適用多數製造業與一般商業 | 存貨跌價風險高（如消費電子、快時尚）的行業更需看重 |
+
+## 產業特性與實戰解讀
+
+解讀流動與速動比率時，不能死記硬背數字，必須結合產業商業模式：
+
+1. **傳統製造業**：供應鏈週期長、需要備料，流動比率最好維持在 150% ~ 200% 以上才安全。
+2. **零售與超商龍頭（如好市多、統一超）**：由於收現金且存貨週轉極快、對供應商具備強大議價延期付款能力，這類企業即使流動比率低於 100%，往往也不會有倒閉風險，因為它們具備強大的「現金造血能力」。
+3. **軟體與訂閱制公司**：幾乎沒有實體存貨，速動比率通常與流動比率非常接近，且擁有充沛的現金儲備。
+
+## Mr.Cafe 的投資備忘錄
+
+1. **不只看利潤，更要看安全底線**：利潤決定公司能飛多高，償債能力決定公司能走多遠。
+2. **兩者差距過大要注意**：若流動比率很高但速動比率極低，代表大量資產都卡在「存貨」裡，需高度警惕存貨滯銷與跌價損失。
+3. **結合自由現金流綜合評估**：健康的流動比率搭配正向的自由現金流，才能確保企業在景氣寒冬中穩健前行、安心持有。

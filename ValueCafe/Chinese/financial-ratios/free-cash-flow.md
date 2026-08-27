@@ -1,189 +1,64 @@
-# Head Editor
+<!-- ----------- Head ----------- -->
 
 **id**: free-cash-flow
-**title**: How do you read 'Free Cash Flow' ? Why seeing a negative number sometimes isn't a bad thing. 
-**description**: If you're serious about value investing, you’ve got to get a handle on Free Cash Flow (FCF). We’re breaking it down with simple examples to show you how FCF stacks up against net income. Once you understand what free cash flow really tells you, you’ll be able to see the real truth behind a company’s financial health. 
-**keywords**: Free Cash Flow, FCF, what is free cash flow, calculating FCF, FCF vs net income, negative free cash flow, Buffett on FCF, cash flow statement, value investing, financial analysis. 
-**list-summary**: How should you read this one? A negative number isn't always a bad thing. In some cases, it's actually acceptable.
-**name**: Free Cash Flow
+**title**: 《自由現金流》要怎麼看？有時候出現負數其實可以被允許 | 善用財務比率 | ValueCafe
+**description**: 如果你認真想學價值投資，就必須搞懂自由現金流（FCF）。我們用淺顯易懂的實例，拆解自由現金流與淨利的差別，告訴你何時負數反而是成長的訊號，看清企業最真實的財務體質。
+**keywords**: 自由現金流, FCF, 什麼是自由現金流, 自由現金流計算, 自由現金流與淨利差別, 自由現金流負數, 巴菲特自由現金流, 現金流量表, 價值投資, 財務分析
+**list-summary**: 揭露企業賺進口袋的真實現金，是價值投資估值與防守的核心指標。
+**name**: 自由現金流
 
----
 
-# Hero Editor
+<!-- ----------- Hero ----------- -->
 
-<div class="column column-group">
-	<div class="heading">
-		<div class="heading-title">
-			<h1>How do you read 'Free Cash Flow' ? Why seeing a negative number sometimes isn't a bad thing.</h1>
-			<p class="description">Does a negative free cash flow mean the company is about to go under? Not necessarily. There are "good" negatives and "bad" negatives. A good negative number could be the key to a company's rise, while a bad one is a warning sign of collapse. We can use a simple table to figure out if the company is "investing in its future" or just "bleeding cash to survive."</p>
-		</div>
-	</div>
-	<img src="../images/financial-ratios/free-cash-flow/cover.webp" alt="Free Cash Flow">
-</div>
+# 《自由現金流》要怎麼看？有時候出現負數其實可以被允許
 
----
+損益表上的淨利可能透過會計手法修飾，但銀行帳戶裡的自由現金流絕對無法做假。它是企業最真實的造血能力。
 
-# Content Editor
-<div class="column column-group">
-	<div class="column column-content">
-		<p>Picture this. It is Saturday night, and the restaurant is packed. When you close up shop, the register is stuffed with cash (quick reminder, we call it <strong>Revenue</strong>). Business is on fire. And the best part? It is your restaurant. Nice work!</p>
-		<p>Business stays hot like that for pretty much the whole month. Finally, you make it to the end of the month, and you are excited to tally up your profits. You deduct the costs for top-tier ingredients, rent, salaries, and new equipment. But after doing all the math, you realize something weird. Your "Net Profit" and the "Cash Left Over" do not match up.</p>
-		<p>That is actually how financial reports work in the real world. Many "expenses" get deducted from your profit even if they didn't cost you a single dime of actual cash (like equipment depreciation). Or maybe your revenue looks amazing on paper, but you haven't actually collected any cash yet (like stuffing the channel with inventory). A lot of companies look profitable but are actually super tight on cash. That is why Warren Buffett focuses so heavily on "Free Cash Flow." You just cannot fake the numbers on that report.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Why is "Free Cash Flow" More Honest Than "Net Income"?</h2>
-		<p>"Net Income" on the Income Statement is like a carefully photoshopped picture with full makeup. It is the company showing you their absolute best side. Accountants can use legal rules to make those numbers look way prettier than they actually are.</p>
-		<p>On the other hand, "Free Cash Flow" on the Cash Flow Statement is like an unfiltered medical report. You get the raw truth. Cash in is cash in, and cash out is cash out. It is almost impossible to fake.</p>
-		<h3 class="inside">A Real Comparison Between "Free Cash Flow" and "Net Income"</h3>
-		<p>Below are a simplified Income Statement and Cash Flow Statement. I have included a few key items as examples.</p>
-		<p>Looking at this simple table, you can see that the two sides are connected, but the final numbers don't match. Some items get subtracted on the Income Statement but have to be added back on the Cash Flow Statement. That is because the logic is different. The Income Statement tracks "performance," while the Cash Flow Statement tracks "actual cash collected." Value investors use this to find companies that have both "growth momentum" and "real money coming in the door."</p>
-		<div class="cards border-vertical">
-			<h3 class="inside">Simplified Income Statement</h3>
-			<div class="column">
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Revenues</strong></p>
-							</div>
-							<div class="content">
-								<p>$1,000,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Gross Profit</strong></p>
-							</div>
-							<div class="content">
-								<p>$700,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Operating Income</strong></p>
-							</div>
-							<div class="content">
-								<p>$300,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Net Income</strong></p>
-							</div>
-							<div class="content">
-								<p>$250,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<ul>
-			<li><strong>Revenues</strong>: The sales performance earned during this period. But remember, some of this might be inventory that is just sitting there and hasn't actually been sold yet.</li>
-			<li><strong>Gross Profit</strong>: Subtract the cost of ingredients to calculate the Gross Profit.</li>
-			<li><strong>Operating Income</strong>: Subtract rent, staff salaries, and equipment depreciation to calculate the Operating Income.</li>
-			<li><strong>Net Income</strong>: Then deduct any non-operating income or expenses to finally arrive at your Net Income number.</li>
-		</ul>
-		<div class="cards border-vertical">
-			<h3 class="inside">Simplified Cash Flow Statement</h3>
-			<div class="column">
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Net Income</strong></p>
-							</div>
-							<div class="content">
-								<p>$250,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Equipment Depreciation</strong></p>
-							</div>
-							<div class="content">
-								<p>+$80,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Inventory</strong></p>
-							</div>
-							<div class="content">
-								<p>-$100,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Buying Equipment</strong></p>
-							</div>
-							<div class="content">
-								<p>-$65,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-				<hr>
-				<div class="item">
-					<div class="title">
-						<div class="spread">
-							<div class="title">
-								<p class="inside"><i class="bi-caret-right-fill"></i> <strong>Free Cash Flow</strong></p>
-							</div>
-							<div class="content">
-								<p>$165,000</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<ul>
-			<li><strong>Net Income</strong>: We start the Cash Flow calculation using the Net Income figure from the Income Statement.</li>
-			<li><strong>Equipment Depreciation</strong>: Depreciation on the Income Statement is just an accounting rule for writing off value over time. You didn't actually pay cash for the equipment during this specific period since that bill was paid ages ago. So you have to add that amount back in on the Cash Flow Statement.</li>
-			<li><strong>Inventory</strong>: On the Income Statement, increasing inventory might count toward business activity, but inventory means you haven't actually sold it to get the cash yet. So we have to subtract that amount on the Cash Flow Statement.</li>
-			<li><strong>Buying Equipment</strong>: On the Income Statement, the cost of buying equipment is deducted slowly over time as "depreciation." But on the Cash Flow Statement, it counts as a "one-time expense" right when you buy it. That causes a gap between the two calculations.</li>
-			<li><strong>Free Cash Flow</strong>: The final result you get after taking that starting Net Income and adding or subtracting each item down the list.</li>
-		</ul>
-	</div>
-	<div class="column column-content">
-		<h2>Does Negative Free Cash Flow Mean the Company is About to Go Under?</h2>
-		<p>It is actually a lot like cholesterol. Hearing your levels are high sounds scary at first, but you can actually split it into "good cholesterol" and "bad cholesterol." When you see a company with negative free cash flow, you need to tell if it is a "good negative" or a "bad negative." Learn to read the root cause of that negative number just like a senior analyst.</p>
-		<h3 class="inside">A Good Negative Means Investing in the Future</h3>
-		<p>A "good negative" is usually a huge strategic investment focused on the future. The core business is making money and bringing in cash nonstop. But management decides to take that money, plus some savings and bank loans, and put it all into a project that will generate even more revenue (like a new factory or production line). At that moment, the total money going out is higher than the money coming in, so free cash flow turns negative.</p>
-		<p>Is this negative number scary? No. It is not a crisis. It is proof of ambition. It means the company is planting seeds for massive success tomorrow. It is investing in the future. Amazon in the early days is the classic example. For a long time, it poured all its cash into building warehouses and R&D. This caused its free cash flow to often be negative, but that is how it built an unbeatable e-commerce empire.</p>
-		<p>However, if it stays negative for several accounting periods in a row (like multiple quarters or years) because of this, you have to watch out and make sure they aren't gambling too hard.</p>
-		<h3 class="inside">A Bad Negative Is a Warning Sign of Bleeding Cash</h3>
-		<p>A "bad negative" is much more dangerous. The root cause isn't investing in the future. It is that the core business itself can't generate positive cash flow. This means the company is burning money just trying to keep the lights on (selling products and paying bills). There is zero extra cash to even talk about investing in the future.</p>
-		<p>This kind of negative number is a huge red flag. It means the business model might be broken, and the core business is bleeding out. If this keeps up, the company will have to keep borrowing money or asking shareholders for cash just to stay alive. That is a hard road to sustain for long.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Think About What the Free Cash Flow Numbers Really Mean</h2>
-		<p>Don't just follow what the tutorials say by plugging numbers into formulas or checking boxes. You need to look at this like you are truly analyzing a business. Think about what each number implies and how it will shape the future. Treat yourself like a real partner in the business.</p>
-		<p>As a partner, you stop caring only about the sales figures on the Income Statement or even just the numbers on the Cash Flow Statement. You have to use these financial reports to judge whether this company is making the right moves for your investment!</p>
-	</div>
-</div>
+
+<!-- ----------- Content ----------- -->
+
+在所有財務指標中，如果只能挑選一個最能代表企業真實價值與體質的數據，巴菲特一定會毫不猶豫地選擇：**自由現金流（Free Cash Flow, FCF）**。
+
+會計上的淨利（Net Income）受折舊攤提、應收帳款認列等規則影響，可能存在「紙上富貴」的幻覺。只有自由現金流，才能告訴你企業扣除維持營運所需的支出後，手上到底剩下多少可以自由花用的真金白銀。
+
+## 什麼是自由現金流？
+
+自由現金流是指企業在本業營運賺進的現金中，扣除為了維持現有競爭力或擴大生產所必須投入的「資本支出（CapEx）」後，真正可以自由分配給股東或進行戰略配置的現金。
+
+### 計算公式
+
+```
+自由現金流 (FCF) = 營運活動現金流量 (Operating Cash Flow) - 資本支出 (CapEx)
+```
+
+- **營運現金流**：本業產品或服務賣出後，扣除營業成本與費用後實際收到的現金淨額。
+- **資本支出**：購買、升級、維護廠房、機器設備、伺服器等固定資產所支出的現金。
+
+## 自由現金流的四大用途
+
+擁有充沛自由現金流的企業，就像擁有一台源源不絕的提款機，可以靈活進行以下高價值操作：
+
+1. **發放現金股利**：直接將真金白銀回饋給股東。
+2. **買回庫藏股（Share Repurchases）**：註銷股本、提高每股盈餘（EPS），推升每股內在價值。
+3. **償還債務**：降低財務槓桿，強化資產負債表安全度。
+4. **戰略併購與擴張**：在競爭對手陷入財務危機時，低價收購優質資產。
+
+## 自由現金流出現負數，一定是壞事嗎？
+
+不一定！我們必須區分兩種完全不同的負值情境：
+
+### 1. 致命型負數（本業失血）
+
+- **特徵**：營運現金流本身就是負數（本業根本賺不到現金），且應收帳款或存貨大幅飆升。
+- **結論**：這是嚴重的危險訊號，代表商業模式可能面臨崩潰或作假帳風險。
+
+### 2. 成長型負數（積極擴產再投資）
+
+- **特徵**：營運現金流極度強勁（本業非常賺錢），但公司看到巨大的未來市場機遇，決定投入超大額的資本支出擴建廠房或研發（例如台積電衝刺先進製程、亞馬遜早期擴建雲端伺服器與物流中心）。
+- **結論**：這是為了未來更龐大的自由現金流奠定基礎，屬於健康的戰略投入，是可以被允許且值得期待的。
+
+## Mr.Cafe 的投資備忘錄
+
+1. **長期 FCF 趨勢比單季更重要**：觀察至少 5 年以上的自由現金流總和是否穩定為正。
+2. **比淨利更值得信賴**：若一家公司獲利年年成長，但自由現金流連年為負且沒有合理的資本支出，一定要堅決避開。
+3. **估值模型的基石**：所有的現金流折現法（DCF）都是建立在自由現金流的預估之上，掌握 FCF 就掌握了估值的鑰匙。

@@ -1,77 +1,46 @@
-# Head Editor
+<!-- ----------- Head ----------- -->
 
 **id**: 20251222-uber-lyft-baidu-london-robotaxi-2026
-**title**: Robotaxi war hits the streets of London: Uber and Lyft team up with Baidu's Apollo Go to launch in 2026!
-**description**: Uber and Lyft have announced a partnership with Baidu's Apollo Go to deploy robotaxis in London in 2026. Boosted by the UK's Automated Vehicles Act, which clarifies liability, this move is set to push ride-hailing platforms toward an algorithm-driven model and reshape both actuarial insurance and EV charging supply chains. While the technology has logged over 240 million kilometers, Baidu's entry has sparked data sovereignty and national security concerns, and safety in low-light conditions remains a critical test for public trust.
-**keywords**: Uber, Lyft, Baidu, Apollo Go, robotaxi, autonomous driving, London transport, Automated Vehicles Act 2024, RT6, U.S.-China tech war, transportation sector transformation, UK national security
-**Source**: https://www.bbc.com/news/articles/cy8jmx1dl9ro
+**title**: 倫敦無人計程車大戰開打！Uber 與 Lyft 攜手百度 Apollo Go 預計 2026 年上路 | 時事與觀點 | ValueCafe
+**description**: Uber 與 Lyft 宣布與百度旗下自動駕駛平台 Apollo Go 結盟，計劃於 2026 年在英國倫敦正式部署 Robotaxi 無人車隊。受惠於英國《自動駕駛車輛法》對責任歸屬的釐清，出行平台正加速從傳統司機分潤轉向演算法調度，重塑城市交通版圖。
+**keywords**: Robotaxi, 無人計程車, Uber, Lyft, 百度, Apollo Go, 倫敦交通, 自動駕駛法, 共享出行, 價值投資
+**TAGs**: Autonomous Vehicles, Mobility, AI, Uber
 **date**: 2025-12-22
-**TAGs**: Robotaxi, Global
 
----
 
-# Hero Editor
+<!-- ----------- Hero ----------- -->
 
-<div class="column column-group">
-	<div class="heading">
-		<div class="heading-title">
-			<h1>Robotaxi war hits the streets of London: Uber and Lyft team up with Baidu's Apollo Go to launch in 2026!</h1>
-			<div class="meta">
-				<time datetime="2025-12-22">2025-12-22</time>
-				<ul class="tags">
-					<li class="yolk">Robotaxi</li>
-					<li class="yolk">Global</li>
-				</ul>
-			</div>
-		</div>
-	</div>
-	<img src="../images/news/20251222-uber-lyft-baidu-london-robotaxi-2026/cover.webp" alt="Robotaxi war hits the streets of London: Uber and Lyft team up with Baidu's Apollo Go to launch in 2026!">
-</div>
+# 倫敦無人計程車大戰開打！Uber 與 Lyft 攜手百度 Apollo Go 預計 2026 年上路
 
----
+**Date**: 2025-12-22
+**TAGs**: Autonomous Vehicles, Mobility, AI, Uber
 
-# Content Editor
 
-<div class="column column-group">
-	<div class="column column-list">
-		<p>London’s famous streets are about to be the first European battleground in the U.S.-China fight for self-driving dominance. Uber and Lyft have both confirmed they’re teaming up with Chinese tech giant Baidu to roll out a robotaxi fleet in the city as early as 2026. This huge announcement is more than just a total game-changer for London’s traffic. It’s dropped like a bombshell, sparking heated debates over high-tech, national security, and global business rivalries.</p>
-		<ul>
-			<li>U.S. ride-hailing giants Uber and Lyft are forming a first-of-its-kind partnership with Baidu.</li>
-			<li>They’ll be using Baidu’s Apollo Go autonomous fleet, specifically the RT6 all-electric car designed for ride-sharing.</li>
-			<li>A pilot program is planned for London in 2026.</li>
-		</ul>
-	</div>
-	<div class="column column-list">
-		<h2>Why London has become the place to be for self-driving cars</h2>
-		<p>The UK government’s proactive stance has been a huge factor. They have been fast-tracking legislation, specifically the Automated Vehicles Act 2024, which finally provides a clear legal framework for who is responsible when something goes wrong with a driverless car.</p>
-		<p>This law shifts the liability from the person in the car to the "authorized autonomous vehicle entity," removing one of the biggest hurdles for companies trying to go commercial. With a solid legal foundation and its status as a top-tier European market, London has naturally become the perfect stage for global tech giants to flex their muscles.</p>
-		<h3 class="inside my-2">Big names are teaming up to grab a spot in London</h3>
-		<p>In the scramble for the London market, both Uber and Lyft have decided to partner with Baidu. Uber plans to start testing in the first half of 2026, integrating Baidu’s Apollo Go vehicles directly into its app. Not to be outdone, Lyft, which recently bought the European platform FreeNow to get a foothold in the region, is moving just as fast. This is a major step in their international expansion. Lyft announced it will test "dozens" of Apollo Go RT6 cars in London starting in 2026, with plans to eventually scale up to "hundreds."</p>
-		<p>Lyft CEO David Risher has a vision for a "hybrid network." He believes that for the foreseeable future, self-driving cars will work alongside human drivers to handle everything from late-night rides and airport runs to the early morning commute.</p>
-		<h3 class="inside my-2">It’s more than just a U.S. vs. China showdown</h3>
-		<p>There are three main tech heavyweights at the table in London, and the competition feels more like a philosophical debate over technology. On one side, you have Google’s Waymo. This data-heavy giant relies on meticulously detailed high-def maps for its testing, representing a slow and steady, experience-based approach. On the other side is Wayve, a UK-based startup backed by Uber. They are developing "mapless" end-to-end AI that tries to teach cars to drive like humans do, making them the more flexible, disruptive "AI-native" choice.</p>
-		<p>Baidu’s entry into this race is a total wild card. Its Apollo Go platform is definitely not a rookie. It has already clocked over 17 million rides and 240 million kilometers of autonomous driving across 22 cities. Currently, it handles about 250,000 fully driverless rides every week. That kind of scale and data is something nobody can ignore.</p>
-		<h3 class="inside my-2">Concerns over national security and public trust</h3>
-		<p>The influx of Chinese tech is forcing UK policymakers to face a tough dilemma: they want to be leaders in autonomous tech, but they are also getting serious warnings from security agencies.</p>
-		<p>Charles Parton, an expert at the defense think tank Rusi, says bringing in Chinese tech could pose a major national security risk. He pointed out that these highly connected vehicles could be used to harvest massive amounts of data or make the UK dependent on foreign technology. There is even a fear that during a political crisis, these cars could be remotely controlled to paralyze city traffic.</p>
-		<p>Geopolitics aside, winning over the public is another huge challenge. According to a YouGov poll, nearly 60% of Brits say they wouldn't feel comfortable in a driverless taxi under any circumstances. London’s famous cab drivers aren't impressed either. The head of their association, Steve McNamara, dismissed the whole thing as a "gimmick" and a solution in search of a problem.</p>
-		<p>The reliability of the tech is also under the microscope. A recent power outage in San Francisco left several Waymo cars stranded in the street, causing a total traffic jam. On top of that, a 2024 study found that while self-driving cars are generally safer than humans, they are five times more likely to get into an accident during low-light conditions like dawn or dusk.</p>
-	</div>
-	<div class="column column-list">
-		<h2>Zero-occupancy vehicles</h2>
-		<p>London is going all-in on its "Vision Zero" goal, hoping to wipe out all serious traffic deaths and injuries by 2041. They see self-driving tech as the key to making that happen since it has the potential to be a lot safer.</p>
-		<p>In what’s likely to be a "hybrid city" setup, self-driving fleets would probably stick to fixed, busy routes, like airport shuttles or the main drags through downtown.</p>
-		<p>But for the messy, unpredictable stuff, like quiet neighborhoods late at night or old parts of town where you have to deal with tons of pedestrians, experienced human drivers will still be the ones in control.</p>
-		<h3 class="inside my-2">What the experts are worried about</h3>
-		<p>Not everyone is sold on the idea, though. Jack Stilgoe, a tech policy professor at UCL, points out that there’s a massive gap between using a few test cars as a "lab" on public streets and building a scaled-up system that actually works as a real transportation option for people.</p>
-		<p>He even added a bit of a dig, saying that when it comes to traffic, "the only thing worse than a car with one person in it is a car with zero people in it." His point is that if robotaxis aren’t managed right, they could actually clog up the streets even more, which would go against London’s bigger goals for improving quality of life.</p>
-	</div>
-	<div class="column column-list">
-		<h2>How the global robotaxi rollout could trigger an industry ripple effect</h2>
-		<p>Baidu’s Apollo Go entering London is going to have a massive impact on transportation, tech, and financial supply chains. The way Uber and Lyft are partnering up shows that ride-hailing is moving away from being a labor-heavy business and toward being driven by assets and algorithms. As robotaxis take over a bigger piece of the pie, the platform's costs will shift from driver payouts to vehicle depreciation and maintenance. While everyone is talking about a "hybrid network" for now, human drivers will eventually be pushed toward higher-value services like long-distance or specialized trips. Short city hops will likely face huge price pressure as they become a low-barrier game.</p>
-		<h3 class="inside my-2">Changes in insurance and legal tech</h3>
-		<p>The UK’s 2024 Automated Vehicles Act is a major piece of the puzzle. For the last century, the insurance system has been built around how a person drives, but now it’s shifting toward product liability. Insurance companies will need to build entirely new models to assess the risk of autonomous vehicles, which is going to create a brand new multi-billion pound market.</p>
-		<h3 class="inside my-2">EV supply chain and energy management</h3>
-		<p>Baidu’s RT6 is an all-electric car designed specifically for ride-sharing. Rolling it out on a large scale will directly force an upgrade to London’s charging infrastructure, since the city will need a much denser network of automated charging stations. Plus, this partnership between Baidu and U.S. companies proves that the future of the car industry isn't about who assembles the vehicle. It's about the operating system and being the gateway to the service.</p>
-	</div>
-</div>
+<!-- ----------- Content ----------- -->
+
+歐洲出行市場即將迎來重大顛覆。共享乘車雙雄 Uber 與 Lyft 幾乎同時宣布，將與中國自動駕駛巨頭百度旗下 Apollo Go 建立戰略聯盟，預計於 2026 年在英國倫敦市中心正式投入首批商業化運營的 Robotaxi（無人駕駛計程車）車隊。
+
+這項合作標誌著全球出行巨頭不再單打獨鬥自研造車，而是選擇將其強大的「網絡效應調度平台」與領先的「自動駕駛軟硬體技術」強強聯手。
+
+- **合作核心**：Uber / Lyft 提供前端叫車應用與龐大客流網絡，百度 Apollo 提供成熟的第六代 RT6 自動駕駛車輛與演算法系統。
+- **法規突破**：英國國會通過《自動駕駛車輛法（Automated Vehicles Act）》，明確界定事故責任歸屬，為商業化落地鋪平道路。
+- **商業模式升級**：從 75% 營收分給司機的「人力密集型」模式，進化為高毛利的「資產輕量化演算法抽成」模式。
+
+## 為什麼是倫敦？
+
+倫敦作為全球公共交通最繁忙且監管最成熟的超大型城市之一，一直是出行巨頭兵家必爭之地：
+
+1. **明確清晰的法規架構**：英國法規明定當車輛處於自動駕駛狀態時，責任由授權運營商承擔而非車內乘客，排除了最大的法律灰色地帶。
+2. **高昂的傳統計程車與人力成本**：倫敦 Black Cab 收費高昂且司機短缺，無人駕駛計程車預計能將每英里出行成本降低 40% ~ 50%，具備巨大的價格顛覆空間。
+
+## 出行平台的雙邊網絡效應
+
+這項合作再次印證了巴菲特推崇的**「網絡效應護城河」**：
+
+自動駕駛硬體與演算法公司（如百度 Apollo、Waymo）即使技術再強，也需要耗費巨資與時間去獲取消費者用戶；而 Uber 與 Lyft 手握全球數億活躍乘客，其平台成為任何自駕車隊商業化變現最無法繞過的超級分發入口。
+
+## Mr.Cafe 的投資觀點
+
+1. **平台型企業的護城河再次得到強化**：Uber/Lyft 轉型為自駕車的調度網絡，無需承擔重資產折舊，利潤率將顯著提升。
+2. **關注單位經濟效益（Unit Economics）的轉折點**：當無人車硬體成本降至 3 萬美元以下、每英里成本低於人類駕駛時，將引爆出行產業的獲利爆發。
+3. **地緣政治與數據安全監管仍是潛在變數**：中資技術在歐美核心城市的落地仍需密切關注數據合規審查。

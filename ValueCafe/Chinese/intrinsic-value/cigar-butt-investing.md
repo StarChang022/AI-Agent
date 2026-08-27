@@ -1,72 +1,64 @@
-# Head Editor
+<!-- ----------- Head ----------- -->
 
 **id**: cigar-butt-investing
-**title**: Cigar Butt Investing : This is the strategy Warren Buffett used to build his early wealth. Let's talk about what makes it worth learning.
-**description**: Take a deep dive into Benjamin Graham’s famous 'cigar butt' investing strategy. We’ll look at how Warren Buffett used this approach to build his foundation and how he eventually evolved his strategy over time. This post goes beyond just the numbers to explain the 'margin of safety,' which is the single most important rule in all of value investing.
-**keywords**: Cigar butt investing, value investing, margin of safety, net-net valuation, Benjamin Graham, Warren Buffett, Graham’s investment philosophy.
-**list-summary**: This was Buffett's original strategy for getting rich. It was his 'early-days' playbook.
-**name**: Cigar Butt Investing
+**title**: 《雪茄菸屁股投資法》是 Warren Buffett 早期致富的投資策略，談談值得學習的地方 | 計算內在價值 | ValueCafe
+**description**: 深入探索班傑明·葛拉漢著名的「雪茄菸屁股」投資法，剖析巴菲特早期如何以此策略致富、後來又如何演進。帶你跳脫數字表面，理解價值投資中最精華的核心——「安全邊際」。
+**keywords**: 雪茄菸屁股, 菸屁股投資法, 葛拉漢, 巴菲特早期投資, 淨流動資產價值, Net-Net, 安全邊際, 內在價值, 價值投資
+**list-summary**: 葛拉漢與巴菲特早期的經典策略，尋找市價低於清算價值的極致折扣股。
+**name**: 雪茄菸屁股投資法
 
----
 
-# Hero Editor
+<!-- ----------- Hero ----------- -->
 
-<div class="column column-group">
-	<div class="heading">
-		<div class="heading-title">
-			<h1>Cigar Butt Investing : This is the strategy Warren Buffett used to build his early wealth. Let's talk about what makes it worth learning.</h1>
-			<p class="description">The "Cigar Butt" theory is legendary in value investing circles. It is basically 101 stuff from the founding father, Benjamin Graham.</p>
-			<p class="description">Here is the gist. If you see a cigar butt on the ground, you can pick it up and get one last good puff out of it for free. In the stock market, this means buying a company at a rock-bottom price. Even if the business itself is pretty lousy, as long as you buy it cheap enough, you can still make a solid profit.</p>
-			<p class="description">This approach used to be incredibly effective. It is actually how Warren Buffett made his first fortune back in the day. But nowadays, it really doesn't work that well anymore.</p>
-		</div>
-	</div>
-	<img src="../images/intrinsic-value/cigar-butt-investing/cover.webp" alt="Cigar Butt Investing">
-</div>
+# 《雪茄菸屁股投資法》是 Warren Buffett 早期致富的投資策略，談談值得學習的地方
 
----
+路邊撿起一根被丟棄的雪茄菸屁股，雖然只剩一口，但因為是免費的，吸上那一口就是純粹的利潤。這就是早期價值投資的精髓。
 
-# Content Editor
 
-<div class="column column-group">
-	<div class="column column-content">
-		<p>Most people see investing as this big, glamorous party where everyone is chasing the hottest trends and the biggest stars.</p>
-		<p>But Benjamin Graham, the pioneer of the "Cigar Butt" theory, figured out that the real treasure is hiding in the dark, ignored corners after the party is over. These are the opportunities Mr. Market tossed aside just because he was getting a little emotional.</p>
-		<p>Graham wasn't just the guy who came up with this theory; he was also Warren Buffett's mentor. He used to find these totally unremarkable, even boring companies. But when he added up all their assets and subtracted the debts, he’d realize that the company's liquidation value was way higher than its stock price. It’s like spotting a nasty, discarded cigar butt on the sidewalk. It looks gross and nobody wants it, but if you pick it up, you realize there’s still one good puff left in it for free. It’s not going to make you filthy rich, but it is free profit. That is the core concept of the "Cigar Butt" theory.</p>
-		<p>This strategy might not really work in today's financial world. Even Warren Buffett stopped using it (thanks to Charlie Munger's influence). Still, I recommend trying to understand it. It will give you a much deeper grasp of what value investing is really about.</p>
-	</div>
-	<div class="column column-content">
-		<h2>The core of the cigar butt theory</h2>
-		<p>The Cigar Butt strategy is actually a very strict and conservative way to invest. I mentioned earlier that Benjamin Graham was the pioneer here. I wouldn't call him the inventor—he probably tweaked some existing ideas—but he is definitely the guy who put it on the map.</p>
-		<p>The logic behind it is super simple. You look for a company where, even if it went belly-up tomorrow and sold off every single asset to pay its debts, the cash left over would still be more than what you paid for the stock today. That gap in price is what Graham called the "Margin of Safety."</p>
-		<p>Think of it this way. If you see a bridge with a 10-ton weight limit, would you drive a 9.9-ton truck across it? Probably not. You’d feel a lot better driving a 5-ton truck across, right? That 5-ton difference is your margin of safety. It gives you a wide enough buffer so that even if your math is slightly off, or if bad weather messes with the bridge, you’re still safe.</p>
-		<p>In investing, that buffer is where your profit comes from. It is also the line of defense that keeps you from losing your shirt.</p>
-	</div>
-	<div class="column column-content">
-		<h2>How to calculate value using the cigar butt strategy</h2>
-		<div class="group-box solid">
-			<div class="content">
-				<p>NCAV = Current Assets - Total Liabilities</p>
-			</div>
-		</div>
-		<p>First off, let me say there isn't exactly a standard formula for the Cigar Butt method. You could totally just use the "Book Value Per Share" right out of the financial report if you wanted. But there is a more conservative metric you can use called "Net Current Asset Value," or NCAV.</p>
-		<p>You might be asking, "Why only count current assets? Aren't fixed assets like factories, land, and machinery worth real money?"</p>
-		<p>Benjamin Graham figured that if a company is on the brink of collapse, those factories and machines are likely worthless or really hard to sell off quickly. To make the margin of safety actually mean something, he treated the value of fixed assets as zero. He only counted the stuff that could turn into cash in the short term and then subtracted all the liabilities.</p>
-		<p>As for the ratio of NCAV to the current stock price? Again, there's no standard answer. You could go with Graham’s 3x rule (like if the stock is $10 but the NCAV is $30), or you can just come up with your own multiplier.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Why isn't it a good idea to pick up cigar butts anymore?</h2>
-		<p>The Cigar Butt method definitely made Warren Buffett a ton of cash early in his career. It was simple and it worked. But as time went on, a problem with this strategy became unavoidable: "A cigar butt you pick up off the street is still just a cigar butt."</p>
-		<p>These are usually crummy companies with a bleak future. Sure, they are so cheap it’s almost impossible to lose money, but you can't really count on them for big long-term returns. That means you have to act like a scavenger, constantly bending over to look for the next discarded butt. Plus, you miss out on the most beautiful thing in investing: "compound interest." You can't hold onto a terrible company for the long haul and expect to enjoy the compounding growth that comes with a good business.</p>
-		<h3 class="inside">Switching from cheap, average companies to buying great companies</h3>
-		<p>"It's far better to buy a wonderful company at a fair price than a fair company at a wonderful price." That is Charlie Munger’s famous line.</p>
-		<p>Investing shouldn't just be about digging through the bargain bin for the cheapest stuff that's about to expire. Instead, you should be looking for great businesses with high quality, wide moats, and the ability to keep creating value. When their price becomes reasonable, you buy them and hold on tight.</p>
-		<p>The margin of safety is still the cornerstone of making investment decisions. It’s just that the target has changed. We don't apply it to dying, trashy companies anymore. We apply it to great enterprises with a bright future.</p>
-		<p>Picking up cigar butts can teach you the arithmetic of investing, but to really build massive wealth, you have to learn how to appreciate business quality.</p>
-	</div>
-	<div class="column column-content">
-		<h2>Should you still use the cigar butt method?</h2>
-		<p>Should you keep scouring the corners of the market for those discarded cigar butts?</p>
-		<p>In today’s world where information moves instantly, investment opportunities that actually meet Graham's strict standards are getting rarer and rarer. Anyone can pull up public data and find companies with a P/B ratio under 1 or an NCAV greater than zero. Plus, the Cigar Butt strategy is known by pretty much everyone now. It’s not exactly a secret.</p>
-		<p>You can still learn the concept of "Margin of Safety" from it, though. The idea of buying assets for way less than their intrinsic value is solid. Even though we know we should be buying great companies now, the margin of safety is still a condition you can't just throw away.</p>
-	</div>
-</div>
+<!-- ----------- Content ----------- -->
+
+在價值投資的歷史中，**「雪茄菸屁股投資法（Cigar Butt Investing）」**是一個極具傳奇色彩的名詞。
+
+它是「價值投資之父」班傑明·葛拉漢（Benjamin Graham）在經歷 1929 年美國大蕭條後所開創的經典策略，也是年輕時期的華倫·巴菲特（Warren Buffett）累積第一桶金並建立龐大財富的關鍵武器。
+
+## 雪茄菸屁股理論的核心
+
+巴菲特曾生動地比喻過這套方法：
+
+> 「如果你在路邊看到一根被扔掉的雪茄菸屁股，它可能又髒又濕、只剩下短短一口可以抽，但因為它是免費撿來的，那一小口吞吐就是 100% 的純利潤。」
+
+將這個比喻放到股市中：有些公司經營平庸、甚至面臨衰退，但因為市場極度悲觀與恐慌，導致**整家公司的市值，竟然比它變賣所有流動資產並還清全部債務後的『清算現金』還要便宜！**
+
+以這種極度折價的價格買入，即使公司未來不成長甚至清算關門，你也能穩穩賺取巨大的價值回歸利潤。
+
+## 葛拉漢如何計算淨流動資產價值 (Net-Net)
+
+葛拉漢設計了一套極為嚴苛保守的估值公式，稱為 **Net-Net（淨淨資產價值）**：
+
+```
+淨淨流動資產價值 (NCAV) = 流動資產 - 總負債 - 特別股負債
+每股 NCAV = NCAV ÷ 流通在外股數
+```
+
+- **安全邊際原則**：葛拉漢只在**股價 ≤ 每股 NCAV 的 2/3（約 67 折以下）**時才出手買進。
+- **極致防守**：這套公式直接將廠房、土地、設備等固定資產視為 0 元價值！代表你用極便宜的價格買下了公司的現金與應收帳款，剩下的實體資產全都是市場白白送給你的。
+
+## 為什麼巴菲特後來不再撿雪茄菸屁股？
+
+雖然靠著菸屁股策略賺進大筆財富，但隨著資金規模擴大，巴菲特在合夥人查理·蒙格（Charlie Munger）的影響下，徹底轉變了投資哲學：
+
+> **「用合理的價格買入一家偉大的公司，遠勝於用便宜的價格買入一家平庸的公司。」**
+
+巴菲特放棄菸屁股策略的三大原因：
+
+1. **時間是平庸公司的敵人**：平庸公司如果遲遲等不到清算或股價回歸，管理層每年都在燒錢虧損，原本算好的資產價值會隨時間不斷蒸發。
+2. **容量限制**：隨著管理資金暴增到數百億美元，市場上根本沒有足夠多且市值足夠大的菸屁股股票可買。
+3. **無法享受複利的甜美**：買菸屁股賺到的是單次價差，賣出後必須不斷重複尋找下一個垃圾堆；而偉大的企業則能陪伴你 20 年、30 年，持續滾出百倍複利。
+
+## 我們今天還能從菸屁股學到什麼？
+
+儘管在資訊高度透明的現代市場中，純粹的 Net-Net 股票已經非常罕見，但這套理論留給我們最寶貴的遺產永遠不變：
+
+1. **極致的安全邊際**：永遠不要以市價全額買進，折扣越深，你的本金就越安全。
+2. **獨立思考、逆向投資**：敢於在市場一片恐慌、人人棄之如敝屣的角落尋找被標錯價格的黃金。
+3. **從資產保護出發**：在考慮賺錢之前，先確保在最壞情況下自己依然不會賠錢。
