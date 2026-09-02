@@ -1,0 +1,1062 @@
+{
+  "financial-ratios": [
+    {
+      "pages": "financial-ratios.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "financial-ratios.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "financial-ratios/current-ratio-and-quick-ratio.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "financial-ratios/current-ratio-and-quick-ratio.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "financial-ratios/debt-ratio.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "financial-ratios/debt-ratio.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "financial-ratios/dividend-yield.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "financial-ratios/free-cash-flow.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "financial-ratios/free-cash-flow.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "financial-ratios/profit-margin.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "financial-ratios/profit-margin.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    },
+    {
+      "pages": "financial-ratios/roe-and-roa.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "financial-ratios/roe-and-roa.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    }
+  ],
+  "intrinsic-value": [
+    {
+      "pages": "intrinsic-value.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "intrinsic-value/cigar-butt-investing.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "intrinsic-value/cigar-butt-investing.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "intrinsic-value/cigar-butt-investing.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "intrinsic-value/discounted-cash-flow.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "intrinsic-value/discounted-cash-flow.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "intrinsic-value/dividend-yield-valuation.html",
+      "id": "courses-dividend-growth-investing",
+      "type": "Courses",
+      "title": "The Ultimate Guide to Dividend & Dividend Growth Investing",
+      "description": "Learn how to analyze and build a high-quality dividend growth portfolio for consistent long-term cash flow.",
+      "url": "https://www.udemy.com/topic/dividend-investing/"
+    },
+    {
+      "pages": "intrinsic-value/pb-ratio.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "intrinsic-value/pb-ratio.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "intrinsic-value/pb-ratio.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    },
+    {
+      "pages": "intrinsic-value/pb-ratio.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "intrinsic-value/pe-ratio.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "intrinsic-value/pe-ratio.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "intrinsic-value/pe-ratio.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    },
+    {
+      "pages": "intrinsic-value/pe-ratio.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    }
+  ],
+  "legendary": [
+    {
+      "pages": "legendary/charlie-munger.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "legendary/charlie-munger.html",
+      "id": "books-poor-charlies-almanack",
+      "type": "Books",
+      "title": "Poor Charlie's Almanack: The Essential Wit and Wisdom of Charles T. Munger",
+      "description": "A collection of speeches, lectures, and public commentary from Charlie Munger, detailing his multidisciplinary thinking framework and mental models.",
+      "url": "https://www.amazon.com/Poor-Charlies-Almanack-Wisdom-Charles/dp/1578065011"
+    },
+    {
+      "pages": "legendary/charlie-munger.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "legendary/charlie-munger.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "legendary/charlie-munger.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "legendary/peter-lynch.html",
+      "id": "books-one-up-on-wall-street",
+      "type": "Books",
+      "title": "One Up On Wall Street: How To Use What You Already Know To Make Money In The Market",
+      "description": "Peter Lynch's classic guide showing regular investors how to leverage common sense and daily observations to find high-growth companies before the professionals do.",
+      "url": "https://www.amazon.com/One-Up-Wall-Street-Already/dp/0743200403"
+    },
+    {
+      "pages": "legendary/peter-lynch.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "legendary/peter-lynch.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "legendary/warren-buffett.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    }
+  ],
+  "news": [
+    {
+      "pages": "news.html",
+      "id": "books-autonomy-driverless-car",
+      "type": "Books",
+      "title": "Autonomy: The Quest to Build the Driverless Car—and How It Will Reshape Our World",
+      "description": "An inside look at the corporate rivalries, technological breakthroughs, and massive societal impacts of the self-driving car revolution.",
+      "url": "https://www.amazon.com/Autonomy-Quest-Build-Driverless-Reshape/dp/0062661132"
+    },
+    {
+      "pages": "news.html",
+      "id": "books-quality-of-earnings",
+      "type": "Books",
+      "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+      "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+      "url": "https://www.amazon.com/dp/0684863758"
+    },
+    {
+      "pages": "news/20251222-alphabet-acquires-intersect-power-ai-energy-strategy.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "news/20251222-alphabet-acquires-intersect-power-ai-energy-strategy.html",
+      "id": "courses-renewable-energy-specialization",
+      "type": "Courses",
+      "title": "Renewable Energy Specialization",
+      "description": "A comprehensive Coursera specialization covering technologies, economics, and electric power system integrations for clean energy projects.",
+      "url": "https://www.coursera.org/specializations/renewable-energy"
+    },
+    {
+      "pages": "news/20251222-gold-silver-price-record-high-2026-market-analysis.html",
+      "id": "books-new-case-for-gold",
+      "type": "Books",
+      "title": "The New Case for Gold",
+      "description": "James Rickards explains why gold is the ultimate safe-haven asset, protecting wealth against currency devaluation, inflation, and geopolitical crises.",
+      "url": "https://www.amazon.com/New-Case-Gold-James-Rickards/dp/1101980761"
+    },
+    {
+      "pages": "news/20251222-gold-silver-price-record-high-2026-market-analysis.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20251222-trump-suspends-us-offshore-wind-national-security-impact.html",
+      "id": "courses-renewable-energy-specialization",
+      "type": "Courses",
+      "title": "Renewable Energy Specialization",
+      "description": "A comprehensive Coursera specialization covering technologies, economics, and electric power system integrations for clean energy projects.",
+      "url": "https://www.coursera.org/specializations/renewable-energy"
+    },
+    {
+      "pages": "news/20251222-uber-lyft-baidu-london-robotaxi-2026.html",
+      "id": "books-autonomy-driverless-car",
+      "type": "Books",
+      "title": "Autonomy: The Quest to Build the Driverless Car—and How It Will Reshape Our World",
+      "description": "An inside look at the corporate rivalries, technological breakthroughs, and massive societal impacts of the self-driving car revolution.",
+      "url": "https://www.amazon.com/Autonomy-Quest-Build-Driverless-Reshape/dp/0062661132"
+    },
+    {
+      "pages": "news/20251222-uber-lyft-baidu-london-robotaxi-2026.html",
+      "id": "courses-self-driving-cars-specialization",
+      "type": "Courses",
+      "title": "Self-Driving Cars Specialization",
+      "description": "Learn the engineering and software fundamentals behind autonomous driving systems, covering state estimation, localization, and motion planning.",
+      "url": "https://www.coursera.org/specializations/self-driving-cars"
+    },
+    {
+      "pages": "news/20251222-waymo-driverless-taxis-were-paralyzed.html",
+      "id": "books-autonomy-driverless-car",
+      "type": "Books",
+      "title": "Autonomy: The Quest to Build the Driverless Car—and How It Will Reshape Our World",
+      "description": "An inside look at the corporate rivalries, technological breakthroughs, and massive societal impacts of the self-driving car revolution.",
+      "url": "https://www.amazon.com/Autonomy-Quest-Build-Driverless-Reshape/dp/0062661132"
+    },
+    {
+      "pages": "news/20251222-waymo-driverless-taxis-were-paralyzed.html",
+      "id": "courses-self-driving-cars-specialization",
+      "type": "Courses",
+      "title": "Self-Driving Cars Specialization",
+      "description": "Learn the engineering and software fundamentals behind autonomous driving systems, covering state estimation, localization, and motion planning.",
+      "url": "https://www.coursera.org/specializations/self-driving-cars"
+    },
+    {
+      "pages": "news/20260716-super-el-nino-climateflation.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260716-super-el-nino-climateflation.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260722-tsmc-arizona-expansion.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "news/20260722-tsmc-arizona-expansion.html",
+      "id": "books-quality-of-earnings",
+      "type": "Books",
+      "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+      "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+      "url": "https://www.amazon.com/dp/0684863758"
+    },
+    {
+      "pages": "news/20260722-tsmc-arizona-expansion.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "news/20260722-tsmc-arizona-expansion.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260722-tsmc-arizona-expansion.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "news/20260723-iran-war-economic-stock-impact.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260723-iran-war-economic-stock-impact.html",
+      "id": "books-new-case-for-gold",
+      "type": "Books",
+      "title": "The New Case for Gold",
+      "description": "James Rickards explains why gold is the ultimate safe-haven asset, protecting wealth against currency devaluation, inflation, and geopolitical crises.",
+      "url": "https://www.amazon.com/New-Case-Gold-James-Rickards/dp/1101980761"
+    },
+    {
+      "pages": "news/20260723-iran-war-economic-stock-impact.html",
+      "id": "books-the-new-map",
+      "type": "Books",
+      "title": "The New Map: Energy, Climate, and the Clash of Nations",
+      "description": "Pulitzer Prize winner Daniel Yergin explores how the revolution in energy is transforming geopolitics, the global economy, and the future of energy security.",
+      "url": "https://www.amazon.com/dp/1594206430"
+    },
+    {
+      "pages": "news/20260723-iran-war-economic-stock-impact.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260723-kospi-etf-circuit-breaker.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260723-kospi-etf-circuit-breaker.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "news/20260723-kospi-etf-circuit-breaker.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "news/20260723-kospi-etf-circuit-breaker.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260723-kospi-etf-circuit-breaker.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "news/20260801-memory-stocks-selloff-but-supply-crunch.html",
+      "id": "books-chip-war",
+      "type": "Books",
+      "title": "Chip War: The Fight for the World's Most Critical Technology",
+      "description": "Chris Miller details the high-stakes geopolitical battle to control microchip technology, the critical foundation of the modern economy and artificial intelligence.",
+      "url": "https://www.amazon.com/dp/1982172002"
+    },
+    {
+      "pages": "news/20260801-memory-stocks-selloff-but-supply-crunch.html",
+      "id": "books-one-up-on-wall-street",
+      "type": "Books",
+      "title": "One Up On Wall Street: How To Use What You Already Know To Make Money In The Market",
+      "description": "Peter Lynch's classic guide showing regular investors how to leverage common sense and daily observations to find high-growth companies before the professionals do.",
+      "url": "https://www.amazon.com/One-Up-Wall-Street-Already/dp/0743200403"
+    },
+    {
+      "pages": "news/20260801-memory-stocks-selloff-but-supply-crunch.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "news/20260801-memory-stocks-selloff-but-supply-crunch.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260808-cxmt-expansion-micron-stock-analysis.html",
+      "id": "books-chip-war",
+      "type": "Books",
+      "title": "Chip War: The Fight for the World's Most Critical Technology",
+      "description": "Chris Miller details the high-stakes geopolitical battle to control microchip technology, the critical foundation of the modern economy and artificial intelligence.",
+      "url": "https://www.amazon.com/dp/1982172002"
+    },
+    {
+      "pages": "news/20260808-cxmt-expansion-micron-stock-analysis.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260808-cxmt-expansion-micron-stock-analysis.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260808-cxmt-expansion-micron-stock-analysis.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "news/20260810-ai-capex-big-tech-nvidia-analysis.html",
+      "id": "books-chip-war",
+      "type": "Books",
+      "title": "Chip War: The Fight for the World's Most Critical Technology",
+      "description": "Chris Miller details the high-stakes geopolitical battle to control microchip technology, the critical foundation of the modern economy and artificial intelligence.",
+      "url": "https://www.amazon.com/dp/1982172002"
+    },
+    {
+      "pages": "news/20260810-ai-capex-big-tech-nvidia-analysis.html",
+      "id": "books-quality-of-earnings",
+      "type": "Books",
+      "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+      "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+      "url": "https://www.amazon.com/dp/0684863758"
+    },
+    {
+      "pages": "news/20260810-ai-capex-big-tech-nvidia-analysis.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "news/20260810-ai-capex-big-tech-nvidia-analysis.html",
+      "id": "courses-deep-learning-specialization",
+      "type": "Courses",
+      "title": "Deep Learning Specialization",
+      "description": "Master the foundational concepts of artificial intelligence and deep learning, created by AI pioneer Andrew Ng.",
+      "url": "https://www.coursera.org/specializations/deep-learning"
+    },
+    {
+      "pages": "news/20260811-nvidia-500b-ai-infrastructure-financing-platform.html",
+      "id": "books-chip-war",
+      "type": "Books",
+      "title": "Chip War: The Fight for the World's Most Critical Technology",
+      "description": "Chris Miller details the high-stakes geopolitical battle to control microchip technology, the critical foundation of the modern economy and artificial intelligence.",
+      "url": "https://www.amazon.com/dp/1982172002"
+    },
+    {
+      "pages": "news/20260811-nvidia-500b-ai-infrastructure-financing-platform.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260811-nvidia-500b-ai-infrastructure-financing-platform.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "news/20260811-nvidia-500b-ai-infrastructure-financing-platform.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260813-global-sme-insolvencies-quiet-exit-k-shaped-economy.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "news/20260813-global-sme-insolvencies-quiet-exit-k-shaped-economy.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "news/20260813-global-sme-insolvencies-quiet-exit-k-shaped-economy.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260813-global-sme-insolvencies-quiet-exit-k-shaped-economy.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    },
+    {
+      "pages": "news/20260816-amat-earnings-fast-paced-bull-market-investing-strategy.html",
+      "id": "books-chip-war",
+      "type": "Books",
+      "title": "Chip War: The Fight for the World's Most Critical Technology",
+      "description": "Chris Miller details the high-stakes geopolitical battle to control microchip technology, the critical foundation of the modern economy and artificial intelligence.",
+      "url": "https://www.amazon.com/dp/1982172002"
+    },
+    {
+      "pages": "news/20260816-amat-earnings-fast-paced-bull-market-investing-strategy.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "news/20260816-amat-earnings-fast-paced-bull-market-investing-strategy.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "news/20260816-amat-earnings-fast-paced-bull-market-investing-strategy.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    }
+  ],
+  "philosophy": [
+    {
+      "pages": "philosophy.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "philosophy.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "philosophy/circle-of-competence.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "philosophy/circle-of-competence.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "philosophy/circle-of-competence.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "philosophy/circle-of-competence.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "philosophy/circle-of-competence.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "philosophy/investment-moat.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "philosophy/investment-moat.html",
+      "id": "books-poor-charlies-almanack",
+      "type": "Books",
+      "title": "Poor Charlie's Almanack: The Essential Wit and Wisdom of Charles T. Munger",
+      "description": "A collection of speeches, lectures, and public commentary from Charlie Munger, detailing his multidisciplinary thinking framework and mental models.",
+      "url": "https://www.amazon.com/Poor-Charlies-Almanack-Wisdom-Charles/dp/1578065011"
+    },
+    {
+      "pages": "philosophy/investment-moat.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "philosophy/investment-moat.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "philosophy/margin-of-safety.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "philosophy/margin-of-safety.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "philosophy/margin-of-safety.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "philosophy/margin-of-safety.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "philosophy/margin-of-safety.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    },
+    {
+      "pages": "philosophy/non-operating-income.html",
+      "id": "books-quality-of-earnings",
+      "type": "Books",
+      "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+      "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+      "url": "https://www.amazon.com/dp/0684863758"
+    },
+    {
+      "pages": "philosophy/non-operating-income.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "philosophy/non-operating-income.html",
+      "id": "courses-corporate-finance",
+      "type": "Courses",
+      "title": "Corporate Finance",
+      "description": "Learn the fundamentals of corporate finance, including cash flows, valuation, and capital budgeting.",
+      "url": "https://www.coursera.org/learn/wharton-finance"
+    },
+    {
+      "pages": "philosophy/non-operating-income.html",
+      "id": "courses-introduction-financial-accounting",
+      "type": "Courses",
+      "title": "Introduction to Financial Accounting",
+      "description": "Master the technical skills needed to analyze financial statements and make informed business decisions.",
+      "url": "https://www.coursera.org/learn/wharton-accounting"
+    },
+    {
+      "pages": "philosophy/patience-of-value-investing.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "philosophy/patience-of-value-investing.html",
+      "id": "books-most-important-thing",
+      "type": "Books",
+      "title": "The Most Important Thing: Uncommon Sense for the Thoughtful Investor",
+      "description": "Howard Marks shares Oaktree Capital's keys to successful value investing, focusing on risk management, margin of safety, and contrarian cycles.",
+      "url": "https://www.amazon.com/dp/0231153686"
+    },
+    {
+      "pages": "philosophy/patience-of-value-investing.html",
+      "id": "books-poor-charlies-almanack",
+      "type": "Books",
+      "title": "Poor Charlie's Almanack: The Essential Wit and Wisdom of Charles T. Munger",
+      "description": "A collection of speeches, lectures, and public commentary from Charlie Munger, detailing his multidisciplinary thinking framework and mental models.",
+      "url": "https://www.amazon.com/Poor-Charlies-Almanack-Wisdom-Charles/dp/1578065011"
+    },
+    {
+      "pages": "philosophy/patience-of-value-investing.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "philosophy/patience-of-value-investing.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "philosophy/value-trap.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "philosophy/value-trap.html",
+      "id": "books-quality-of-earnings",
+      "type": "Books",
+      "title": "Quality of Earnings: The Investor's Guide to How Much Money a Company Is Really Making",
+      "description": "Scrutinize financial statements and identify potential earnings traps, distinguishing between sustainable profits and accounting windfalls.",
+      "url": "https://www.amazon.com/dp/0684863758"
+    },
+    {
+      "pages": "philosophy/value-trap.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "philosophy/value-trap.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "philosophy/value-trap.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    }
+  ],
+  "worldview": [
+    {
+      "pages": "worldview.html",
+      "id": "books-essays-of-warren-buffett",
+      "type": "Books",
+      "title": "The Essays of Warren Buffett: Lessons for Corporate America",
+      "description": "A modern classic, The Essays of Warren Buffett: Lessons for Corporate America is the book Buffett autographs most and likes best.",
+      "url": "https://www.amazon.com/-/zh_TW/Essays-Warren-Buffett-Lessons-Corporate/dp/0966446143/ref=sr_1_4"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "books-poor-charlies-almanack",
+      "type": "Books",
+      "title": "Poor Charlie's Almanack: The Essential Wit and Wisdom of Charles T. Munger",
+      "description": "A collection of speeches, lectures, and public commentary from Charlie Munger, detailing his multidisciplinary thinking framework and mental models.",
+      "url": "https://www.amazon.com/Poor-Charlies-Almanack-Wisdom-Charles/dp/1578065011"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "books-security-analysis",
+      "type": "Books",
+      "title": "Security Analysis: Principles and Technique",
+      "description": "The Bible of value investing, written by Benjamin Graham and David Dodd, laying the foundation for intrinsic value and margin of safety.",
+      "url": "https://www.amazon.com/dp/1264932405"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "books-the-intelligent-investor",
+      "type": "Books",
+      "title": "The Intelligent Investor",
+      "description": "The classic text on value investing, providing realistic guidance on market psychology, diversification, and safety margins.",
+      "url": "https://www.amazon.com/Intelligent-Investor-Definitive-Value-Investing/dp/0060555661"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "books-the-snowball",
+      "type": "Books",
+      "title": "The Snowball: Warren Buffett and the Business of Life",
+      "description": "The comprehensive, authorized biography of Warren Buffett, detailing his life, his business philosophy, and his unique approach to compounding wealth and character.",
+      "url": "https://www.amazon.com/Snowball-Warren-Buffett-Business-Life/dp/0553805096"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "courses-financial-markets-global",
+      "type": "Courses",
+      "title": "Financial Markets",
+      "description": "An overview of the ideas, methods, and institutions that permit human society to manage risks and foster enterprise.",
+      "url": "https://www.coursera.org/learn/financial-markets-global"
+    },
+    {
+      "pages": "worldview.html",
+      "id": "courses-value-investing-masterclass",
+      "type": "Courses",
+      "title": "The Complete Value Investing Course",
+      "description": "A comprehensive guide to stock market valuation, analyzing financial statements, and using key metrics like P/E and P/B ratios to spot undervalued businesses.",
+      "url": "https://www.udemy.com/topic/value-investing/"
+    }
+  ]
+}
