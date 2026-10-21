@@ -1,6 +1,8 @@
-請熟讀 [valuecafe](file;file:///Users/starchang/Documents/CloudFolder/GitHub/valuecafe) 網站架構和  [%E7%9B%AE%E6%A8%99%E5%8F%97%E7%9C%BE.md](file;file:///Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/%F0%9F%93%94%E8%B3%87%E6%BA%90/%E7%9B%AE%E6%A8%99%E5%8F%97%E7%9C%BE.md)[%E9%97%9C%E9%8D%B5%E5%AD%97.md](file;file:///Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/%F0%9F%93%94%E8%B3%87%E6%BA%90/%E9%97%9C%E9%8D%B5%E5%AD%97.md) 文件。
+請熟讀以下指定項目，接下來我要逐頁討論內容。
 
-接下來我要逐頁討論內容。
+- **網站架構** : [[Users/starchang/Documents/CloudFolder/GitHub/valuecafe]]
+- **目標受眾文件** : [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/📔資源/目標受眾.md]]
+- **關鍵字文件** : [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/ValueCafe/📔資源/關鍵字.md]]
 
 ---
 
