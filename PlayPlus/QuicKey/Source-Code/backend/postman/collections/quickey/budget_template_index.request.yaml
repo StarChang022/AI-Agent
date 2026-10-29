@@ -1,0 +1,8 @@
+$kind: http-request
+description: "列出基本預算範本（可用 cycle 篩選）"
+url: "{{base_url}}/api/budget-templates?cycle=month"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3200

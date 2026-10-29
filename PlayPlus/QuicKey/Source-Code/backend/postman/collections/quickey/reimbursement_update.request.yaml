@@ -1,0 +1,27 @@
+$kind: http-request
+description: "編輯請款。僅 draft / rejected 可改（否則 409 NOT_EDITABLE）。rejected 一律重送（in_review）；draft 依 as_draft。每次更新 version +1"
+url: "{{base_url}}/api/reimbursements/{{reimbursement_id}}"
+method: PATCH
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "category_id":"{{category_id}}",
+        "amount":980,
+        "description":"計程車車資（更新）",
+        "incurred_at":"2026-09-28",
+        "receipt_urls":["data:image/png;base64,iVBORw0KGgo="],
+        "receipt_names":["receipt1.jpg"],
+        "document_type":"receipt",
+        "vendor":"台灣大車隊",
+        "tax_id":null,
+        "invoice_no":null,
+        "tax_rate":"exempt_0",
+        "pre_tax_amt":null,
+        "tax_amt":null,
+        "as_draft":true
+    }
+order: 3303

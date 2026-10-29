@@ -1,0 +1,5 @@
+$kind: http-request
+description: "public：Accept 頁驗 token；不需 auth。status 值：valid / expired / revoked / already_used / not_found"
+url: "{{base_url}}/api/invitations/by-token/{{invitation_token}}"
+method: GET
+order: 2003

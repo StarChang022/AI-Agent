@@ -1,0 +1,20 @@
+name: quickey
+values:
+  - key: base_url
+    value: ''
+  - key: token
+    secret: true
+  - key: signup_token
+    value: ''
+  - key: invitation_id
+    value: ''
+  - key: invitation_token
+    value: ''
+  - key: category_id
+    value: ''
+  - key: budget_id
+    value: ''
+  - key: template_id
+    value: ''
+  - key: reimbursement_id
+    value: ''

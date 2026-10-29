@@ -1,0 +1,8 @@
+$kind: http-request
+description: "刪除預算。找不到回 404"
+url: "{{base_url}}/api/budgets/{{budget_id}}"
+method: DELETE
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3103

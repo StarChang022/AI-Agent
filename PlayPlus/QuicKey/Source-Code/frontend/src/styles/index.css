@@ -1,0 +1,672 @@
+@layer theme, base, primevue, utilities;
+
+@import 'tailwindcss';
+@import './qds.css';
+
+@theme static {
+  /* ============================================================
+   * Quickey Design System tokens（見 design-system/design-colors.html）
+   * 品牌綠 #00B39F 取自 Logo；按鈕/文字/選取用 primary-700（#008072）確保對比
+   * 數值與 presets/quickey.ts 一一對應
+   * ============================================================ */
+  --color-primary-50: #edfaf8;
+  --color-primary-100: #d1f1ee;
+  --color-primary-200: #8cddd4;
+  --color-primary-300: #58cdc0;
+  --color-primary-400: #2abfaf;
+  --color-primary-500: #00b39f;
+  --color-primary-600: #019181;
+  --color-primary-700: #008072;
+  --color-primary-800: #035a50;
+  --color-primary-900: #053f38;
+  --color-primary-950: #062a25;
+  --color-primary-solid: #008072;
+  --color-primary-text: #008072;
+
+  /* 語意色 */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-warning-text: #b45309;
+  --color-info: #0ea5e9;
+  --color-info-text: #0369a1;
+  --color-danger: #dc2626;
+  --color-danger-text: #b91c1c;
+
+  /* 6 種請款狀態：各自獨立、不借用主色 */
+  --color-status-draft: #6b7280;
+  --color-status-draft-bg: #eef1f5;
+  --color-status-review: #d97706;
+  --color-status-review-bg: #fef3c7;
+  --color-status-rejected: #dc2626;
+  --color-status-rejected-bg: #fee2e2;
+  --color-status-approved: #6d28d9;
+  --color-status-approved-bg: #ede9fe;
+  --color-status-paid: #059669;
+  --color-status-paid-bg: #d1fae5;
+  --color-status-voided: #485266;
+  --color-status-voided-bg: #485266;
+
+  /* 中性色 */
+  --color-canvas: #ffffff;
+  --color-surface: #f4f5f8;
+  --color-surface-soft: #eef1f5;
+  --color-hairline: #e3e6ec;
+  --color-hairline-strong: #c9cedd;
+  --color-ink: #2a3140;
+  --color-slate: #485266;
+  --color-muted: #646d80;
+  --color-muted-soft: #a6acb8;
+
+  /* 圖表 */
+  --color-chart-series: #00b39f;
+  --color-chart-series-soft: #8cddd4;
+  --color-chart-grid: #e3e6ec;
+
+  /* 圓角 */
+  --radius-card-lg: 20px;
+  --radius-card: 18px;
+  --radius-control: 16px;
+  --radius-chip: 14px;
+  --radius-tag: 8px;
+
+  /* 陰影 */
+  --shadow-primary: 0 6px 16px rgba(0, 128, 114, 0.22);
+  --shadow-card: 0 8px 24px rgba(26, 31, 41, 0.1);
+  --shadow-float: 0 20px 60px rgba(26, 31, 41, 0.1);
+
+  /* 版面 */
+  --spacing-sidenav: 240px;
+  --spacing-topbar: 64px;
+}
+
+/* ============================================================
+ * 元件 utility classes（Tailwind v4 @utility 語法）
+ *
+ * 這些是「重複 3 次以上 + 有明確語意」的組合，抽出來讓 template 更精簡；
+ * 只承載視覺骨架（背景/邊框/圓角/間距/字級），其他修飾（hover、寬度、額外
+ * 間距）仍用 Tailwind 原生 utility 疊加。
+ *
+ * 用法：
+ *   <section class="card-lg p-5">  (原：bg-white rounded-card-lg border border-hairline)
+ *   <span class="category-chip">材料</span>
+ *   <label class="field-label">金額 *</label>
+ *   <dt class="field-caption">費用類別</dt>
+ *   <h2 class="section-title">簽核進度</h2>
+ * ============================================================ */
+
+/* 卡片外殼：主卡（首頁 KPI / Form 主容器） — 20px 圓角 */
+@utility card-lg {
+  background-color: #fff;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-card-lg);
+}
+
+/* 卡片外殼：內層/次卡（詳情頁區塊、歷史記錄列表卡） — 18px 圓角 */
+@utility card {
+  background-color: #fff;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-card);
+}
+
+/* 表格內狀態/來源膠囊標籤（帶背景色的 pill）—動態 bg/text 顏色仍由 :class 傳入 */
+@utility chip-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* 類別小灰標籤（材料/工具/交通/服務費/其他） */
+@utility category-chip {
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-tag);
+  white-space: nowrap;
+}
+
+/* Form field 主標籤（金額 / 費用類別 / …） */
+@utility field-label {
+  display: block;
+  color: var(--color-slate);
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+/* 欄位群組內的子標籤（例：金額 → 未稅金額／稅率／含稅金額） */
+@utility field-sublabel {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* 詳情頁 dl <dt> 小灰標 */
+@utility field-caption {
+  color: var(--color-muted-soft);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+/* 卡片內 subsection 標題（發票或收據 / 簽核進度） */
+@utility section-title {
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* ============================================================
+ * PrimeVue Checkbox
+ * ============================================================ */
+.p-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  vertical-align: middle;
+}
+
+.p-checkbox .p-checkbox-box {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-hairline-strong);
+  border-radius: 6px;
+  background: var(--color-canvas);
+  color: #fff;
+  box-shadow: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.p-checkbox:not(.p-disabled):hover .p-checkbox-box {
+  border-color: var(--color-slate);
+}
+
+.p-checkbox.p-checkbox-checked .p-checkbox-box,
+.p-checkbox.p-checkbox-indeterminate .p-checkbox-box,
+.p-checkbox:has(.p-checkbox-input:checked) .p-checkbox-box {
+  border-color: var(--color-primary-solid);
+  background: var(--color-primary-solid);
+}
+
+.p-checkbox .p-checkbox-icon {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  font-size: 12px;
+  stroke-width: 3px;
+}
+
+.p-checkbox:has(.p-checkbox-input:focus-visible) .p-checkbox-box,
+.p-checkbox .p-checkbox-input:focus-visible + .p-checkbox-box {
+  outline: 2px solid var(--color-primary-solid);
+  outline-offset: 2px;
+}
+
+.p-checkbox.p-invalid .p-checkbox-box,
+.p-checkbox:has(.p-checkbox-input[aria-invalid='true']) .p-checkbox-box {
+  border-color: var(--color-danger);
+}
+
+.p-checkbox.p-disabled .p-checkbox-box,
+.p-checkbox:has(.p-checkbox-input:disabled) .p-checkbox-box {
+  border-color: var(--color-hairline);
+  background: var(--color-surface-soft);
+  color: var(--color-muted-soft);
+}
+
+/* 讓 scrollbar 位置固定佔位，避免內容變多/變少時整頁左右跳動 */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  /* 對齊 reference 的字體堆疊：Noto Sans TC 為主，中文優先，系統 fallback */
+  font-family:
+    'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+ * PrimeVue Button — 對齊設計系統 Button 頁
+ *   - 高度：一般 44px、小尺寸 44px（同列元件等高）
+ *   - Primary：primary-700 實色＋柔和陰影
+ *   - Secondary（outlined）：白底、1.5px primary-300 淡框（hover primary-400）、主色字；有字、只有圖示都一樣
+ *   - Danger outlined：白底、淡紅框、紅字
+ *   - Text：無框無底
+ *   - Disabled：surface-soft 底＋muted-soft 字（不降透明度）
+ *   - 鍵盤聚焦：2px 主色外框
+ * ============================================================ */
+.p-button {
+  min-height: 44px;
+  font-size: 16px;
+  white-space: nowrap;
+}
+.p-button.p-button-sm {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 16px;
+}
+.p-button.p-button-icon-only {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.p-button.p-button-icon-only.p-button-sm {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.p-button.p-button-outlined {
+  border-width: 1.5px;
+  background: #fff;
+  border-color: currentColor;
+}
+.p-button.p-button-outlined:not(.p-button-danger):not(.p-button-secondary) {
+  color: var(--color-primary-700);
+  border-color: var(--color-primary-300);
+}
+.p-button.p-button-outlined:not(.p-button-danger):not(.p-button-secondary):not(:disabled):hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-400);
+}
+.p-button.p-button-danger.p-button-outlined {
+  color: #c0362c;
+  border-color: #f1b3ac;
+}
+.p-button.p-button-danger.p-button-outlined:not(:disabled):hover {
+  background: #fef2f2;
+  border-color: #e88a80;
+}
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-link):not(.p-button-secondary):not(.p-button-success):not(.p-button-info):not(.p-button-warn):not(.p-button-help):not(.p-button-danger):not(.p-button-contrast) {
+  box-shadow: var(--shadow-primary);
+}
+.p-button:disabled,
+.p-button.p-disabled {
+  opacity: 1;
+  background: var(--color-surface-soft) !important;
+  border-color: var(--color-surface-soft) !important;
+  color: var(--color-muted-soft) !important;
+  box-shadow: none !important;
+}
+.p-button:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+/* focus 外框跟著按鈕本身的顏色：危險紅、次要灰 */
+.p-button.p-button-danger:focus-visible {
+  outline-color: var(--color-danger);
+}
+.p-button.p-button-secondary:focus-visible {
+  outline-color: var(--color-slate);
+}
+/* 抽屜／視窗的關閉鈕：打開時會被自動 focus，只在鍵盤操作時顯示細的灰框 */
+.p-drawer-close-button:focus,
+.p-dialog-close-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+.p-drawer-close-button:focus-visible,
+.p-dialog-close-button:focus-visible {
+  outline: 2px solid var(--color-slate);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+ * PrimeVue 表單元件 — 只留 token 表達不了的部分
+ *   - border-width 1.5px（Aura formField 無 border-width token）
+ *   - placeholder opacity: 1（Firefox 預設 < 1）
+ * borderRadius / padding / borderColor / placeholderColor 已搬到 presets/quickey.ts
+ * ============================================================ */
+.p-inputtext,
+.p-textarea,
+.p-select,
+.p-multiselect,
+.p-datepicker-input,
+.p-inputnumber-input {
+  border-width: 1.5px;
+  font-size: 16px;
+}
+.p-select-label,
+.p-multiselect-label {
+  font-size: 16px;
+}
+.p-inputtext::placeholder,
+.p-textarea::placeholder,
+.p-datepicker-input::placeholder,
+.p-inputnumber-input::placeholder {
+  opacity: 1;
+}
+
+/* 表單欄位靜態不設陰影（design.md：input 只有 focus 光暈）；focus 規則的 specificity 較高，不受影響 */
+.p-inputtext,
+.p-textarea,
+.p-select,
+.p-multiselect,
+.p-datepicker,
+.p-datepicker-input,
+.p-inputnumber,
+.p-inputnumber-input,
+.search-sm,
+.period-trigger {
+  box-shadow: none;
+}
+
+/* 所有頁面 DataTable 標頭一律不換行（避免手機版擠成兩行破壞欄寬） */
+.p-datatable-thead > tr > th {
+  white-space: nowrap;
+}
+
+/* MultiSelect display="chip" 的選中膠囊：縮小 padding 避免撐高輸入框 */
+.p-multiselect .p-multiselect-chip {
+  padding-block: 1px;
+  padding-inline: 8px;
+  font-size: 14px;
+}
+.p-multiselect .p-multiselect-chip .p-chip-remove-icon {
+  font-size: 12px;
+}
+
+/* Toast 預設寬 25rem，在窄螢幕會蓋出裝置邊界；限制在視窗內 */
+.p-toast {
+  width: min(25rem, calc(100vw - 2.5rem));
+  max-width: calc(100vw - 2.5rem);
+}
+/* Toast 圖示與標題第一行垂直置中：圖示區塊高度 = 標題行高 */
+.p-toast-message-icon { height: 1.5rem; display: flex; align-items: center; margin: 0; }
+.p-toast-summary { line-height: 1.5rem; }
+@media (max-width: 639.98px) {
+  .p-toast-summary { font-size: 14px; }
+}
+
+/*
+ * 修 modal 開啟時 body 右側被推出一格空白的 bug。
+ * PrimeVue 為了補「消失的 scrollbar 寬度」會在 body 加 padding-right，
+ * 但我們用了 scrollbar-gutter: stable 保留 scrollbar gutter，
+ * 桌機的 scrollbar 位置不會消失、body 也沒 scrollbar，此 padding 反而製造空白。
+ */
+body.p-overflow-hidden {
+  padding-right: 0 !important;
+}
+
+/* Placeholder 與輸入文字同字級（16px），只靠淺灰色區分 */
+.p-inputtext::placeholder,
+.p-textarea::placeholder,
+.p-inputnumber-input::placeholder,
+.p-datepicker-input::placeholder {
+  font-size: inherit;
+}
+
+/* Textarea autoResize：隨行數長高，超過約 8 行改為內部捲動 */
+.p-textarea.p-textarea-resizable {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* Message 內文比 parent 縮 2px（提示文字希望比 body 小一些） */
+.p-message .p-message-text {
+  font-size: calc(1em - 2px);
+}
+
+.p-datepicker-panel {
+  max-width: calc(100vw - 32px);
+}
+/* PrimeVue 會把月曆面板 min-width 設成輸入框寬度；寬欄位會把月曆拉得很長，固定為 320px */
+.p-datepicker-panel:not(.p-datepicker-panel-inline) {
+  width: 320px !important;
+  min-width: 0 !important;
+}
+.p-datepicker-panel .p-datepicker-title,
+.p-datepicker-panel .p-datepicker-select-month,
+.p-datepicker-panel .p-datepicker-select-year {
+  font-size: 16px;
+}
+.p-datepicker-panel .p-datepicker-weekday,
+.p-datepicker-panel .p-datepicker-day {
+  font-size: 14px;
+}
+.status-chip {
+  font-size: 14px !important;
+}
+
+/* ConfirmDialog：不顯示內容區左側的警示 icon，危險程度由按鈕顏色表達 */
+.p-confirmdialog .p-confirmdialog-icon {
+  display: none;
+}
+
+/* ConfirmDialog 桌機下最小寬度，避免預設寬度過窄 */
+@media (min-width: 640px) {
+  .p-confirmdialog {
+    width: min(24rem, calc(100vw - 2.5rem));
+  }
+}
+
+/* ConfirmDialog：取消（reject，footer 第一顆按鈕）改為 primary outlined（1.5px 邊） */
+.p-confirmdialog .p-dialog-footer .p-button:first-child {
+  background: transparent;
+  border: 1.5px solid var(--color-primary-700);
+  color: var(--color-primary-700);
+  box-shadow: none;
+}
+.p-confirmdialog .p-dialog-footer .p-button:first-child:hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-700);
+  color: var(--color-primary-800);
+}
+
+/* 電腦版 (lg+)：內文 12px (text-xs) 一律放大到 14px；狀態徽章、類別 chip、icon 除外
+ * 只覆寫 font-size，行高交給 Tailwind 的 leading-* 或 text-xs 本身 line-height 決定 */
+@media (min-width: 1024px) {
+  .text-xs:not(.status-chip):not(.category-chip):not(.pi) {
+    font-size: 14px;
+  }
+  .text-sm:not(.pi) {
+    font-size: 16px;
+  }
+  .field-caption {
+    font-size: 14px;
+  }
+}
+
+/* 手機版：按鈕與輸入元件文字統一 14px */
+@media (max-width: 639.98px) {
+  .p-inputtext,
+  .p-textarea,
+  .p-datepicker-input,
+  .p-select .p-select-label,
+  .p-inputnumber-input {
+    font-size: 14px;
+  }
+  .p-inputtext::placeholder,
+  .p-textarea::placeholder,
+  .p-datepicker-input::placeholder,
+  .p-inputnumber-input::placeholder {
+    font-size: 14px;
+  }
+
+  /* ConfirmDialog 手機版縮小寬度 */
+  .p-confirmdialog {
+    width: min(320px, calc(100vw - 2.5rem));
+    max-width: calc(100vw - 2.5rem);
+  }
+
+  /* Dialog / ConfirmDialog 內文字統一 14px */
+  .p-dialog-title {
+    font-size: 14px;
+  }
+  .p-dialog-content,
+  .p-confirmdialog-message {
+    font-size: 14px;
+  }
+}
+
+/* ============================================================
+ * driver.js Onboarding tour — 覆寫預設樣式對齊 Quickey tokens
+ *   - popover 圓角 / 陰影 / 邊框 對齊卡片語言
+ *   - 主要按鈕（下一步 / 完成）用 primary 主色 + shadow-primary
+ *   - 關閉按鈕改為簡潔 X icon 對齊 muted 色
+ *   - 手機（<640px）縮 max-width 至 320px + safe-area padding
+ *   - 保留 driver.js 預設 focus outline 供鍵盤導航
+ * 見 openspec add-onboarding-wizard design.md Decision 6 / 10
+ * ============================================================ */
+.driver-popover.quickey-tour-popover {
+  background: #fff;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  padding: 20px 20px 16px;
+  color: var(--color-ink);
+  font-family: inherit;
+  max-width: 360px;
+}
+.driver-popover.quickey-tour-popover .driver-popover-title {
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-right: 96px; /* 讓右上角的「結束導覽」按鈕不會撞到 */
+}
+.driver-popover.quickey-tour-popover .driver-popover-description {
+  color: var(--color-slate);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.driver-popover.quickey-tour-popover .driver-popover-arrow {
+  border-color: #fff !important;
+}
+.driver-popover.quickey-tour-popover .driver-popover-footer {
+  margin-top: 16px;
+  gap: 8px;
+}
+.driver-popover.quickey-tour-popover .driver-popover-progress-text {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+.driver-popover.quickey-tour-popover .driver-popover-navigation-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.driver-popover.quickey-tour-popover .driver-popover-prev-btn,
+.driver-popover.quickey-tour-popover .driver-popover-next-btn {
+  background: var(--color-primary-700);
+  border: 1px solid var(--color-primary-700);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: none;
+  box-shadow: var(--shadow-primary);
+  cursor: pointer;
+}
+.driver-popover.quickey-tour-popover .driver-popover-prev-btn {
+  background: #fff;
+  border-color: var(--color-hairline-strong);
+  color: var(--color-slate);
+  box-shadow: none;
+}
+.driver-popover.quickey-tour-popover .driver-popover-prev-btn:hover {
+  background: var(--color-surface);
+}
+.driver-popover.quickey-tour-popover .driver-popover-next-btn:hover {
+  background: var(--color-primary-800);
+  border-color: var(--color-primary-800);
+}
+/* 「結束導覽」按鈕（原 X icon 由 onPopoverRender 換成文字） */
+.driver-popover.quickey-tour-popover .driver-popover-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid var(--color-hairline);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.driver-popover.quickey-tour-popover .driver-popover-close-btn:hover {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-hairline-strong);
+}
+/* 保留鍵盤 focus outline（driver.js 預設會用 outline: none 覆蓋） */
+.driver-popover.quickey-tour-popover .driver-popover-next-btn:focus-visible,
+.driver-popover.quickey-tour-popover .driver-popover-prev-btn:focus-visible,
+.driver-popover.quickey-tour-popover .driver-popover-close-btn:focus-visible {
+  outline: 2px solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+
+/* 手機版：縮寬 + 字級 ≤ 14px + safe-area padding */
+@media (max-width: 639.98px) {
+  .driver-popover.quickey-tour-popover {
+    max-width: 320px;
+    padding: 16px 16px 12px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .driver-popover.quickey-tour-popover .driver-popover-title {
+    font-size: 14px;
+  }
+  .driver-popover.quickey-tour-popover .driver-popover-description {
+    font-size: 14px;
+  }
+  .driver-popover.quickey-tour-popover .driver-popover-prev-btn,
+  .driver-popover.quickey-tour-popover .driver-popover-next-btn {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+}
+
+/**
+ * Onboarding tour 同步打亮左側 sidebar 對應項目（見 spec Requirement 2）。
+ *
+ * 為什麼視覺全部塞進 RouterLink 自己的 box：
+ * 父層 `<nav class="overflow-y-auto">` 會把外側 box-shadow / halo 裁掉，
+ * 所以不用外圈光暈，改用「深色實心底 + 白字 + inset 白框 + 脈動微縮放」
+ * 造成強烈對比。z-index 10001 讓它浮在 driver overlay 之上，仍是「第二處
+ * 挖空 spotlight」的視覺。手機 sidebar 藏在 drawer 內不受影響。
+ */
+.tour-nav-active {
+  position: relative;
+  z-index: 10001;
+  background-color: var(--color-primary-700) !important;
+  color: #fff !important;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 0 0 2px #fff,
+    inset 0 0 0 3px var(--color-primary-700);
+}
+.tour-nav-active > i {
+  color: #fff !important;
+}

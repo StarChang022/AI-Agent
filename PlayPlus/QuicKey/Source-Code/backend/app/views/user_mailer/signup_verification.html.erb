@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p>Hi,</p>
+    <p>
+      您於 Quickey 使用 <strong><%= @email %></strong> 申請註冊管理員帳號。
+      請於 <strong>30 分鐘內</strong> 點擊以下連結繼續完成註冊；逾時後連結失效，請重新申請。
+    </p>
+    <p>
+      <a href="<%= @verify_url %>"><%= @verify_url %></a>
+    </p>
+    <p>若您並未申請註冊，請忽略此信。</p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

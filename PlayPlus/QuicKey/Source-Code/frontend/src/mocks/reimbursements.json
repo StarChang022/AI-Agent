@@ -1,0 +1,1065 @@
+[
+  {
+    "id": "rb-20260924-01",
+    "amount": 2450,
+    "preTaxAmt": 2450,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "台北大車隊",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "客戶場勘交通與停車",
+    "incurredAt": "2026-09-24",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCI+PHJlY3Qgd2lkdGg9IjQyMCIgaGVpZ2h0PSI1NjAiIHJ4PSIyOCIgZmlsbD0iI2Y4ZmFmYyIvPjxyZWN0IHg9IjQ0IiB5PSI0OCIgd2lkdGg9IjMzMiIgaGVpZ2h0PSI0NjQiIHJ4PSIxOCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI3MCIgeT0iMTA0IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPlJFQ0VJUFQ8L3RleHQ+PHRleHQgeD0iNzAiIHk9IjE1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIyIiBmaWxsPSIjNjQ3NDhiIj5UYWlwZWkgVGF4aTwvdGV4dD48bGluZSB4MT0iNzAiIHkxPSIxOTAiIHgyPSIzNTAiIHkyPSIxOTAiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIzIi8+PHRleHQgeD0iNzAiIHk9IjIzOCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij5TaXRlIHZpc2l0IHRyYW5zcG9ydDwvdGV4dD48dGV4dCB4PSI3MCIgeT0iMjkyIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiPk5UJCAyLDQ1MDwvdGV4dD48dGV4dCB4PSI3MCIgeT0iNDM2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5NGEzYjgiPjIwMjYvMDkvMjQ8L3RleHQ+PC9zdmc+"
+    ],
+    "receiptNames": [
+      "台北大車隊收據.png"
+    ],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-22T09:20:00Z",
+    "updatedAt": "2026-09-24T09:20:00Z",
+    "history": [
+      {
+        "type": "submit",
+        "at": "2026-09-22T09:20:00Z",
+        "by": {
+          "id": "u-emp-01",
+          "name": "王小明"
+        }
+      },
+      {
+        "type": "reject",
+        "at": "2026-09-23T10:05:00Z",
+        "by": {
+          "id": "u-admin-01",
+          "name": "系統管理員"
+        },
+        "stage": "管理員簽核",
+        "comment": "停車費缺收據，請補上後重送"
+      },
+      {
+        "type": "resubmit",
+        "at": "2026-09-24T09:20:00Z",
+        "by": {
+          "id": "u-emp-01",
+          "name": "王小明"
+        }
+      }
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "travel",
+      "name": "交通費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "rb-20260924-02",
+    "amount": 920,
+    "preTaxAmt": 920,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "光南大批發",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "展場備品臨時採購",
+    "incurredAt": "2026-09-24",
+    "receiptUrls": [
+      "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y="
+    ],
+    "receiptNames": [
+      "光南大批發發票.pdf"
+    ],
+    "status": "approved",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-24T15:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-24T12:10:00Z",
+    "updatedAt": "2026-09-24T15:30:00Z",
+    "employee": {
+      "id": "u-emp-03",
+      "name": "張美玲"
+    },
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "rb-20260923-01",
+    "amount": 1980,
+    "preTaxAmt": 1980,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "臨時工 陳大明",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "現場臨時搬運工資",
+    "incurredAt": "2026-09-23",
+    "receiptUrls": [],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-23T18:40:00Z",
+    "updatedAt": "2026-09-23T18:40:00Z",
+    "employee": {
+      "id": "u-emp-02",
+      "name": "陳大華"
+    },
+    "category": {
+      "id": "other",
+      "name": "其他費用",
+      "accountCode": "6134"
+    }
+  },
+  {
+    "id": "rb-20260922-01",
+    "amount": 5600,
+    "preTaxAmt": 5333,
+    "taxAmt": 267,
+    "taxRate": "business_5",
+    "documentType": "invoice",
+    "vendor": "誠泰塗料工程行",
+    "taxId": "56789012",
+    "invoiceNo": "GH-45678901",
+    "description": "工地防水塗料兩桶",
+    "incurredAt": "2026-09-22",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuiqoOazsOWhl+aWmeW3peeoi+ihjDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzIyPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lt6XlnLDpmLLmsLTloZfmlpnlhanmobY8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjUsNjAwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjM5MCIgeDI9IjM2NCIgeTI9IjM5MCIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIvPjx0ZXh0IHg9IjU2IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWQiOioiDwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyIgdGV4dC1hbmNob3I9ImVuZCI+TlQkIDUsNjAwPC90ZXh0Pjwvc3ZnPg==",
+      "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y="
+    ],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-22T19:00:00Z",
+    "updatedAt": "2026-09-22T19:00:00Z",
+    "receiptNames": [
+      "塗料發票.jpg",
+      "報價單.pdf"
+    ],
+    "employee": {
+      "id": "u-emp-02",
+      "name": "陳大華"
+    },
+    "category": {
+      "id": "maintenance",
+      "name": "修繕費",
+      "accountCode": "6117"
+    }
+  },
+  {
+    "id": "rb-20260922-02",
+    "amount": 4300,
+    "preTaxAmt": 4300,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "欣葉台菜",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "客戶簡報餐費代墊",
+    "incurredAt": "2026-09-22",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuaso+iRieWPsOiPnDwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4xLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMjwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5L2b6Lez54mGPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4xLDI4MDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7oj5zohK/om4s8L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIyNzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjI2MDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMzEwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7mu7fogok8L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIzMTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjQyMDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMzUwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7ngpLpnZLoj5w8L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIzNTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjIyMDwvdGV4dD48L3N2Zz4=",
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuaso+iRieWPsOiPnDwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4yLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMjwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+57SF6J+z57Gz57OVPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj44ODA8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjI3MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+6a2a57+F5765PC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj40ODA8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjMxMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+55m96aOvIHg2PC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMzEwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4xMjA8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjM1MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+55Sc5rmvPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMzUwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4yNDA8L3RleHQ+PC9zdmc+",
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuaso+iRieWPsOiPnDwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4zLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMjwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+6Iy26LOHPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4yMDA8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjI3MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5pyN5YuZ6LK7PC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4yMDA8L3RleHQ+PGxpbmUgeDE9IjU2IiB5MT0iNDcwIiB4Mj0iMzA0IiB5Mj0iNDcwIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2Ii8+PHRleHQgeD0iNTYiIHk9IjUxMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyI+5ZCI6KiIPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iNTEyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3IiB0ZXh0LWFuY2hvcj0iZW5kIj5OVCQgNCwzMDA8L3RleHQ+PC9zdmc+"
+    ],
+    "status": "approved",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-22T16:00:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-22T13:15:00Z",
+    "updatedAt": "2026-09-22T16:00:00Z",
+    "receiptNames": [
+      "欣葉餐費長收據_1.jpg",
+      "欣葉餐費長收據_2.jpg",
+      "欣葉餐費長收據_3.jpg"
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "meal",
+      "name": "伙食費",
+      "accountCode": "6128"
+    }
+  },
+  {
+    "id": "rb-20260921-01",
+    "amount": 780,
+    "preTaxAmt": 780,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "三源熱炒",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "團隊聚餐 AA 補墊",
+    "incurredAt": "2026-09-21",
+    "receiptUrls": [
+      "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y="
+    ],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-21T21:00:00Z",
+    "updatedAt": "2026-09-21T21:00:00Z",
+    "receiptNames": [
+      "三源熱炒電子發票.pdf"
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "other",
+      "name": "其他費用",
+      "accountCode": "6134"
+    }
+  },
+  {
+    "id": "rb-20260920-01",
+    "amount": 1680,
+    "preTaxAmt": 1680,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "台中商旅",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "台中會議住宿訂金",
+    "incurredAt": "2026-09-20",
+    "receiptUrls": [],
+    "status": "approved",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-21T09:10:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-20T20:20:00Z",
+    "updatedAt": "2026-09-21T09:10:00Z",
+    "employee": {
+      "id": "u-emp-03",
+      "name": "張美玲"
+    },
+    "category": {
+      "id": "business_travel",
+      "name": "差旅費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "rb-20260919-01",
+    "amount": 3600,
+    "preTaxAmt": 3429,
+    "taxAmt": 171,
+    "taxRate": "business_5",
+    "documentType": "invoice",
+    "vendor": "鼎泰豐信義店",
+    "taxId": "22111234",
+    "invoiceNo": "RM-19004567",
+    "description": "合作夥伴工作午餐",
+    "incurredAt": "2026-09-19",
+    "receiptUrls": [],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-19T14:40:00Z",
+    "updatedAt": "2026-09-19T14:40:00Z",
+    "employee": {
+      "id": "u-emp-02",
+      "name": "陳大華"
+    },
+    "category": {
+      "id": "meal",
+      "name": "伙食費",
+      "accountCode": "6128"
+    }
+  },
+  {
+    "id": "rb-20260918-01",
+    "amount": 1250,
+    "preTaxAmt": 1250,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "台北捷運",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "悠遊卡加值與停車費",
+    "incurredAt": "2026-09-18",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWPsOWMl+aNt+mBizwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzE4PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7mgqDpgYrljaHliqDlgLzoiIflgZzou4rosrs8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjEsMjUwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjM5MCIgeDI9IjM2NCIgeTI9IjM5MCIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIvPjx0ZXh0IHg9IjU2IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWQiOioiDwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyIgdGV4dC1hbmNob3I9ImVuZCI+TlQkIDEsMjUwPC90ZXh0Pjwvc3ZnPg==",
+      "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y="
+    ],
+    "status": "in_review",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "pending",
+          "reviewedBy": null,
+          "comment": null,
+          "reviewedAt": null
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-18T22:00:00Z",
+    "updatedAt": "2026-09-18T22:00:00Z",
+    "receiptNames": [
+      "停車費收據.jpg",
+      "悠遊卡加值明細.pdf"
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "travel",
+      "name": "交通費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "rb-20260918-02",
+    "amount": 850,
+    "preTaxAmt": 850,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "台北大車隊",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "計程車去內湖客戶場勘",
+    "incurredAt": "2026-09-18",
+    "receiptUrls": [],
+    "status": "approved",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-19T10:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-18T18:00:00Z",
+    "updatedAt": "2026-09-19T10:30:00Z",
+    "employee": {
+      "id": "u-emp-03",
+      "name": "張美玲"
+    },
+    "category": {
+      "id": "travel",
+      "name": "交通費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "rb-20260916-01",
+    "amount": 450,
+    "preTaxAmt": 450,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "全家影印小舖",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "文件代印",
+    "incurredAt": "2026-09-16",
+    "receiptUrls": [],
+    "status": "draft",
+    "approvalProgress": null,
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-16T11:00:00Z",
+    "updatedAt": "2026-09-16T11:00:00Z",
+    "employee": {
+      "id": "u-emp-02",
+      "name": "陳大華"
+    },
+    "category": {
+      "id": "other",
+      "name": "其他費用",
+      "accountCode": "6134"
+    }
+  },
+  {
+    "id": "rb-20260914-01",
+    "amount": 2100,
+    "preTaxAmt": 2000,
+    "taxAmt": 100,
+    "taxRate": "business_5",
+    "documentType": "invoice",
+    "vendor": "大盛建材行",
+    "taxId": "45678901",
+    "invoiceNo": "EF-34567890",
+    "description": "水泥修補材料",
+    "incurredAt": "2026-09-14",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWkp+ebm+W7uuadkOihjDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzE0PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7msLTms6Xkv67oo5zmnZDmlpk8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjIsMTAwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjM5MCIgeDI9IjM2NCIgeTI9IjM5MCIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIvPjx0ZXh0IHg9IjU2IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWQiOioiDwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyIgdGV4dC1hbmNob3I9ImVuZCI+TlQkIDIsMTAwPC90ZXh0Pjwvc3ZnPg=="
+    ],
+    "status": "rejected",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "rejected",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "發票模糊看不清品項，請補件重送",
+          "reviewedAt": "2026-09-15T10:00:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-14T19:00:00Z",
+    "updatedAt": "2026-09-15T10:00:00Z",
+    "receiptNames": [
+      "大盛建材收據.jpg"
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "maintenance",
+      "name": "修繕費",
+      "accountCode": "6117"
+    }
+  },
+  {
+    "id": "rb-20260910-01",
+    "amount": 3200,
+    "preTaxAmt": 3048,
+    "taxAmt": 152,
+    "taxRate": "business_5",
+    "documentType": "invoice",
+    "vendor": "中盛五金行",
+    "taxId": "23456789",
+    "invoiceNo": "AB-12345678",
+    "description": "客戶案場採購五金零件",
+    "incurredAt": "2026-09-10",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuS4reebm+S6lOmHkeihjDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzEwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lrqLmiLbmoYjloLTmjqHos7zkupTph5Hpm7bku7Y8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjMsMjAwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjM5MCIgeDI9IjM2NCIgeTI9IjM5MCIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIvPjx0ZXh0IHg9IjU2IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWQiOioiDwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyIgdGV4dC1hbmNob3I9ImVuZCI+TlQkIDMsMjAwPC90ZXh0Pjwvc3ZnPg=="
+    ],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-12T14:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-10T09:20:00Z",
+    "updatedAt": "2026-09-12T14:30:00Z",
+    "receiptNames": [
+      "中盛五金收據.jpg"
+    ],
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "employee": {
+      "id": "u-emp-03",
+      "name": "張美玲"
+    },
+    "category": {
+      "id": "maintenance",
+      "name": "修繕費",
+      "accountCode": "6117"
+    }
+  },
+  {
+    "id": "rb-20260905-01",
+    "amount": 1450,
+    "preTaxAmt": 1450,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "中華郵政",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "大量合約寄送郵資",
+    "incurredAt": "2026-09-05",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuS4reiPr+mDteaUvzwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzA1PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7mjpvomZ8geDEyPC90ZXh0Pjx0ZXh0IHg9IjM2NCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj43MjA8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjI3MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5L+h5bCBPC90ZXh0Pjx0ZXh0IHg9IjM2NCIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4xMDA8L3RleHQ+PGxpbmUgeDE9IjU2IiB5MT0iMzkwIiB4Mj0iMzY0IiB5Mj0iMzkwIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2Ii8+PHRleHQgeD0iNTYiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyI+5ZCI6KiIPC90ZXh0Pjx0ZXh0IHg9IjM2NCIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3IiB0ZXh0LWFuY2hvcj0iZW5kIj5OVCQgODIwPC90ZXh0Pjwvc3ZnPg==",
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuS4reiPr+mDteaUvzwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzA1PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7pmZDmmYIgeDk8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjYzMDwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIzOTAiIHgyPSIzNjQiIHkyPSIzOTAiIHN0cm9rZT0iI2NiZDVlMSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiLz48dGV4dCB4PSI1NiIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3Ij7lkIjoqIg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciIHRleHQtYW5jaG9yPSJlbmQiPk5UJCA2MzA8L3RleHQ+PC9zdmc+"
+    ],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-09-06T09:40:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-09-02T14:10:00Z",
+    "updatedAt": "2026-09-10T10:00:00Z",
+    "receiptNames": [
+      "郵資收據_1.jpg",
+      "郵資收據_2.jpg"
+    ],
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "paidAt": "2026-09-10",
+    "history": [
+      {
+        "type": "submit",
+        "at": "2026-09-02T14:10:00Z",
+        "by": {
+          "id": "u-emp-01",
+          "name": "王小明"
+        }
+      },
+      {
+        "type": "reject",
+        "at": "2026-09-03T11:00:00Z",
+        "by": {
+          "id": "u-admin-01",
+          "name": "系統管理員"
+        },
+        "stage": "管理員簽核",
+        "comment": "金額與收據不符，請確認"
+      },
+      {
+        "type": "resubmit",
+        "at": "2026-09-05T16:45:00Z",
+        "by": {
+          "id": "u-emp-01",
+          "name": "王小明"
+        }
+      },
+      {
+        "type": "approve",
+        "at": "2026-09-06T09:40:00Z",
+        "by": {
+          "id": "u-admin-01",
+          "name": "系統管理員"
+        },
+        "stage": "管理員簽核",
+        "comment": "已核銷"
+      },
+      {
+        "type": "pay",
+        "at": "2026-09-10",
+        "by": {
+          "id": "u-admin-01",
+          "name": "系統管理員"
+        }
+      }
+    ],
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "postage",
+      "name": "郵電費",
+      "accountCode": "6116"
+    }
+  },
+  {
+    "id": "rb-20260828-01",
+    "amount": 1860,
+    "preTaxAmt": 1860,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "Hahow 好學校",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "線上課程教材費",
+    "incurredAt": "2026-08-28",
+    "receiptUrls": [],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-08-30T11:00:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-08-28T10:20:00Z",
+    "updatedAt": "2026-08-30T11:00:00Z",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "employee": {
+      "id": "u-emp-02",
+      "name": "陳大華"
+    },
+    "category": {
+      "id": "training",
+      "name": "教育訓練費",
+      "accountCode": "6132"
+    }
+  },
+  {
+    "id": "rb-20260818-01",
+    "amount": 2750,
+    "preTaxAmt": 2750,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "高雄商旅",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "高雄客戶會議住宿",
+    "incurredAt": "2026-08-18",
+    "receiptUrls": [],
+    "status": "approved",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-08-20T09:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-08-18T22:10:00Z",
+    "updatedAt": "2026-08-20T09:30:00Z",
+    "employee": {
+      "id": "u-emp-03",
+      "name": "張美玲"
+    },
+    "category": {
+      "id": "business_travel",
+      "name": "差旅費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "rb-20260811-01",
+    "amount": 690,
+    "preTaxAmt": 690,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "九乘九文具",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "白板筆與便利貼",
+    "incurredAt": "2026-08-11",
+    "receiptUrls": [
+      "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuS5neS5mOS5neaWh+WFtzwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA4LzExPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7nmb3mnb/nrYboiIfkvr/liKnosrw8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjY5MDwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIzOTAiIHgyPSIzNjQiIHkyPSIzOTAiIHN0cm9rZT0iI2NiZDVlMSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiLz48dGV4dCB4PSI1NiIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3Ij7lkIjoqIg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciIHRleHQtYW5jaG9yPSJlbmQiPk5UJCA2OTA8L3RleHQ+PC9zdmc+"
+    ],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-08-12T09:00:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-08-11T13:25:00Z",
+    "updatedAt": "2026-08-12T09:00:00Z",
+    "receiptNames": [
+      "文具發票.jpg"
+    ],
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "rb-20260721-01",
+    "amount": 780,
+    "preTaxAmt": 780,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "三源熱炒",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "團隊聚餐 AA 補墊",
+    "incurredAt": "2026-07-21",
+    "receiptUrls": [],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-07-22T11:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-07-21T21:00:00Z",
+    "updatedAt": "2026-07-22T11:30:00Z",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "other",
+      "name": "其他費用",
+      "accountCode": "6134"
+    }
+  },
+  {
+    "id": "rb-20260718-01",
+    "amount": 1980,
+    "preTaxAmt": 1980,
+    "taxAmt": 0,
+    "taxRate": "exempt_0",
+    "documentType": "receipt",
+    "vendor": "臨時工 陳大明",
+    "taxId": null,
+    "invoiceNo": null,
+    "description": "現場臨時搬運工資",
+    "incurredAt": "2026-07-18",
+    "receiptUrls": [],
+    "status": "rejected",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "rejected",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "缺少廠商收據，僅有轉帳截圖，請補齊後重送",
+          "reviewedAt": "2026-07-19T11:30:00Z"
+        }
+      ]
+    },
+    "expenseId": null,
+    "version": 1,
+    "createdAt": "2026-07-18T20:15:00Z",
+    "updatedAt": "2026-07-19T11:30:00Z",
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "other",
+      "name": "其他費用",
+      "accountCode": "6134"
+    }
+  },
+  {
+    "id": "rb-20260625-01",
+    "amount": 12500,
+    "preTaxAmt": 11905,
+    "taxAmt": 595,
+    "taxRate": "business_5",
+    "documentType": "invoice",
+    "vendor": "力得工具行",
+    "taxId": "34567890",
+    "invoiceNo": "CD-23456789",
+    "description": "電動起子機一組",
+    "incurredAt": "2026-06-25",
+    "receiptUrls": [],
+    "status": "paid",
+    "approvalProgress": {
+      "currentStep": 1,
+      "steps": [
+        {
+          "order": 1,
+          "stageName": "管理員簽核",
+          "candidates": [
+            "u-admin-01"
+          ],
+          "status": "approved",
+          "reviewedBy": {
+            "id": "u-admin-01",
+            "name": "系統管理員"
+          },
+          "comment": "已核銷",
+          "reviewedAt": "2026-06-30T10:00:00Z"
+        }
+      ]
+    },
+    "expenseId": "exp-seed-20260625-01",
+    "version": 1,
+    "createdAt": "2026-06-25T20:00:00Z",
+    "updatedAt": "2026-06-30T10:00:00Z",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "employee": {
+      "id": "u-emp-01",
+      "name": "王小明"
+    },
+    "category": {
+      "id": "maintenance",
+      "name": "修繕費",
+      "accountCode": "6117"
+    }
+  }
+]

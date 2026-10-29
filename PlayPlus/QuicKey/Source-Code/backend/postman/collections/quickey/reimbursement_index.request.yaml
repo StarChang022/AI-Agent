@@ -1,0 +1,8 @@
+$kind: http-request
+description: "我的請款歷史（申請人本人，新到舊）。可用 status 篩選單一狀態"
+url: "{{base_url}}/api/reimbursements?status=in_review"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3300

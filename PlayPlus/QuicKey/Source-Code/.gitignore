@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Claude Code 本機設定（settings.local.json / commands / skills）
+.claude/
+
+# Playwright MCP artifacts (screenshots / snapshots from Claude 開發時)
+.playwright-mcp/
+# 開發時暫存於 repo 根目錄的截圖
+/*.png
+
+# Rails (backend, 之後才會用到)
+backend/tmp/
+backend/log/
+backend/storage/
+backend/.env
+backend/db/*.sqlite3
+backend/db/*.sqlite3-journal

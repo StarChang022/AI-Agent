@@ -1,0 +1,69 @@
+      <a class="proto-link" href="design-prototype.html#home">在後台原型中查看<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+
+      <h3>結構 — <code>dash-shell</code></h3>
+      <div class="dash-wire" aria-hidden="true">
+        <div class="wb w-nav"><code>side-nav</code><small>240px</small></div>
+        <div class="w-col">
+          <div class="wb"><code>topbar</code><small>高 64px</small></div>
+          <div class="w-page">
+            <div class="wb"><code>page-head</code><small>頁面標題＋動作</small></div>
+            <div class="wb w-tall w-content"><code>頁面內容</code><small>依頁面類型套用「首頁（儀表板）」或「列表頁（CRUD）」</small></div>
+          </div>
+        </div>
+      </div>
+      <table style="margin-top:var(--space-md);">
+        <tr><th>區塊</th><th>規格</th><th>規則</th></tr>
+        <tr><td><code>side-nav</code></td><td>固定寬 240px</td><td>不隨內容縮放；可收合（見下方）</td></tr>
+        <tr><td><code>topbar</code></td><td>高 64px</td><td>橫跨主內容區，不含側邊導覽</td></tr>
+        <tr><td><code>dash-page</code></td><td>內距 24px；區塊間距 16px</td><td>頁面內只用這兩個間距，不另外微調</td></tr>
+        <tr><td><code>page-head</code></td><td>標題 20/600</td><td>右側放動作按鈕，見「頁首」</td></tr>
+        <tr><td><code>dash-panel</code></td><td>白底、<code>hairline</code>、圓角 20px、內距 20px</td><td>頁面內容一律裝在 panel 裡；同一列的 panel 等高</td></tr>
+      </table>
+
+      <h3>側邊導覽 — <code>side-nav</code></h3>
+      <table>
+        <tr><th>分組</th><th>項目</th><th>說明</th></tr>
+        <tr><td rowspan="2">主選單</td><td>儀表板</td><td>套用「首頁（儀表板）」</td></tr>
+        <tr><td>支出管理</td><td>公司所有支出（一般支出＋核准後轉入的代墊款）；新增/編輯用整頁表單</td></tr>
+        <tr><td rowspan="2">請款</td><td>請款記錄</td><td>員工送出的代墊款請款單</td></tr>
+        <tr><td>簽核</td><td>待管理員簽核的請款單；右側徽章顯示待簽核筆數</td></tr>
+        <tr><td rowspan="3">系統</td><td>類別管理</td><td>費用類別與對應的會計科目（多個類別可共用一個科目）；新增、編輯、停用</td></tr>
+        <tr><td>預算管理</td><td>每個類別的月預算或年預算、基本預算設定</td></tr>
+        <tr><td>人員管理</td><td>邀請、編輯、重設密碼、刪除人員；邀請 3 天內有效</td></tr>
+        <tr><td>—</td><td>個人設定</td><td>不放側邊導覽，從頂欄右上角頭像選單進入</td></tr>
+      </table>
+      <p class="note">名詞與分組以後台前端為準：首頁 → <b>儀表板</b>、支出紀錄 → <b>支出管理</b>、請款紀錄 → <b>請款記錄</b>、審核 → <b>簽核</b>、類別與預算 → 拆成<b>類別管理</b>與<b>預算管理</b>；付款／發放狀態整合在支出管理與請款明細裡，不另設「發放」側邊導覽項。分組為「主選單/請款/系統」。介面文字、按鈕、提示訊息都用新名詞。徽章數字為 0 時不顯示。</p>
+
+      <h3>頂欄 — <code>topbar</code></h3>
+      <div class="demo" style="padding:0; overflow:hidden;">
+        <div class="topbar-demo">
+          <button type="button" class="nav-toggle" aria-label="收合側邊選單"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+          <div class="tb-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="搜尋請款單號、申請人…" aria-label="全域搜尋"></div>
+          <div class="tb-actions">
+            <button type="button" class="btn btn-secondary btn-icon-only" aria-label="通知" style="position:relative;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 004 0"/></svg><span class="dash-dot"></span></button>
+            <span class="avatar">陳</span>
+          </div>
+        </div>
+      </div>
+      <p class="note">由左到右固定為：漢堡按鈕（收合側邊導覽）→ 全域搜尋 → 通知鈴（有未讀時右上紅點）→ 頭像。全域搜尋找的是整個系統的請款單與支出，結果以下拉清單顯示，點選直接開明細；列表頁「自己的」篩選搜尋放在頁面工具列，不用頂欄搜尋。頭像選單：個人設定、切換到員工前台、登出。</p>
+
+      <h3>收合 — <code>nav-collapsed</code></h3>
+      <ul class="rules">
+        <li>點頂欄漢堡按鈕收合/展開，側邊導覽用寬度滑入滑出（0.24s），主內容跟著變寬；系統設定「減少動態效果」時不播動畫。</li>
+        <li>可用寬度不足（範本內容區 &lt; 960px）時預設收合，初次載入不播動畫。</li>
+        <li>按鈕加 <code>aria-expanded</code> 與 <code>aria-controls</code>，說明文字在「收合/展開側邊選單」之間切換；收合時側邊導覽設為 <code>inert</code>，Tab 鍵不會跳進去。</li>
+      </ul>
+
+      <h3>頁首 — <code>page-head</code></h3>
+      <div class="demo">
+        <div class="dash-page-head" style="margin:0;">
+          <div><div class="dash-page-title">支出管理</div></div>
+          <div class="dash-page-actions"><button type="button" class="btn btn-secondary">匯入 Excel</button><button type="button" class="btn btn-primary">新增支出</button></div>
+        </div>
+      </div>
+      <ul class="rules">
+        <li>左側：頁面標題（跟側邊導覽名稱一致），不放副標題/說明文字；頁面用途靠標題、分頁與空狀態說清楚。</li>
+        <li>右側：頁面層級的動作，主要動作（新增、套用）用實心主按鈕、只能有一個；次要動作（匯出、匯入）用外框按鈕放在它左邊。</li>
+        <li>不常用的設定類動作（例如預算管理的「基本預算設定」）不另外佔一顆按鈕，收進主要動作右邊的「⋯ 更多動作」選單，讓主次一眼分明。</li>
+        <li>只影響部分資料的動作（批次核准、批次刪除）不放頁首，放在列表的批次操作列。</li>
+      </ul>

@@ -1,0 +1,106 @@
+/*
+ * Scroll Reveal 動態 tokens 與狀態
+ * 由 src/motion/reveal.ts 的 v-reveal 指令套用（data-reveal + .is-revealed）。
+ * 只使用 opacity 與 transform；JS 未執行時不會有隱藏狀態。
+ */
+
+:root {
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* 時長 */
+  --motion-dur-up: 600ms;
+  --motion-dur-soft: 520ms;
+  --motion-dur-image: 720ms;
+
+  /* 位移距離（Desktop） */
+  --motion-dist-up: 16px;
+  --motion-dist-soft: 10px;
+  --motion-dist-image: 12px;
+
+  /* 延遲係數：Desktop 完整延遲，手機版減半，避免多張卡片排隊太久 */
+  --motion-delay-factor: 1;
+}
+
+/* Tablet / Mobile：縮短距離與時長 */
+@media (max-width: 1023.98px) {
+  :root {
+    --motion-dist-up: 12px;
+    --motion-dist-image: 10px;
+  }
+}
+
+@media (max-width: 639.98px) {
+  :root {
+    --motion-dur-up: 520ms;
+    --motion-dur-soft: 460ms;
+    --motion-dur-image: 620ms;
+    --motion-dist-up: 10px;
+    --motion-dist-soft: 6px;
+    --motion-dist-image: 8px;
+    --motion-delay-factor: 0.5;
+  }
+}
+
+/* 尚未進入視窗：保持透明，等待進場 */
+[data-reveal]:not(.is-revealed) {
+  opacity: 0;
+}
+
+@keyframes motion-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-dist-up), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-soft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-dist-soft), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes motion-image {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--motion-dist-image), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* backwards：延遲期間套用起始狀態，結束後不保留 transform，不影響 hover 等互動 */
+[data-reveal='up'].is-revealed {
+  animation: motion-up var(--motion-dur-up) var(--motion-ease)
+    calc(var(--reveal-delay, 0ms) * var(--motion-delay-factor)) backwards;
+}
+
+[data-reveal='soft'].is-revealed {
+  animation: motion-soft var(--motion-dur-soft) var(--motion-ease)
+    calc(var(--reveal-delay, 0ms) * var(--motion-delay-factor)) backwards;
+}
+
+[data-reveal='image'].is-revealed {
+  animation: motion-image var(--motion-dur-image) var(--motion-ease)
+    calc(var(--reveal-delay, 0ms) * var(--motion-delay-factor)) backwards;
+}
+
+/* 減少動態效果：直接顯示，不播放位移與淡入 */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal]:not(.is-revealed) {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}

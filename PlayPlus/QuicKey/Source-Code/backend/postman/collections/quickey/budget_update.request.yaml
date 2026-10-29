@@ -1,0 +1,14 @@
+$kind: http-request
+description: 更新預算金額（僅 amount）。改期間 / 類別走 delete + create
+url: '{{base_url}}/api/budgets/{{budget_id}}'
+method: PATCH
+headers:
+  - key: Authorization
+    value: 'Bearer {{token}}'
+body:
+  type: json
+  content: |-
+    {
+        "amount":5000
+    }
+order: 3102

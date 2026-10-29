@@ -1,0 +1,8 @@
+$kind: http-request
+description: "刪除某筆 template。找不到回 404"
+url: "{{base_url}}/api/budget-templates/{{template_id}}"
+method: DELETE
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3202

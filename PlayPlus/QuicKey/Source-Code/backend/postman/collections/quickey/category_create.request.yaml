@@ -1,0 +1,16 @@
+$kind: http-request
+description: "新增類別。同公司內名稱重複回 409 DUPLICATE_NAME"
+url: "{{base_url}}/api/categories"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "name":"雲端服務訂閱",
+        "account_code":"6299",
+        "sort_order":13
+    }
+order: 3001

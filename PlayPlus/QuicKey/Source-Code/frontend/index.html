@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#00b39f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Quickey" />
+    <title>Quickey — 中小企業收支帳簿</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* PWA 冷啟動 splash（只在 standalone 模式顯示，見下方 inline script） */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #f4f5f8;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: opacity 280ms ease;
+      }
+      #app-splash > div {
+        width: 96px;
+        height: 96px;
+        border-radius: 24px;
+        background: #00b39f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-splash" style="display: none" aria-hidden="true">
+      <div>
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 21 L28 6"
+            stroke="#10b981"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M22 6 L28 6 L28 12"
+            stroke="#10b981"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+          />
+          <rect
+            x="12"
+            y="9"
+            width="12"
+            height="15"
+            rx="1.5"
+            fill="white"
+            fill-opacity="0.4"
+          />
+          <rect
+            x="9"
+            y="11.5"
+            width="12"
+            height="15"
+            rx="1.5"
+            fill="white"
+            fill-opacity="0.7"
+          />
+          <rect x="6" y="14" width="12" height="15" rx="1.5" fill="white" />
+          <path
+            d="M8.5 22 L11 24.5 L16 19"
+            stroke="#3b5bdb"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+          />
+        </svg>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var el = document.getElementById('app-splash')
+        var isStandalone =
+          window.matchMedia('(display-mode: standalone)').matches ||
+          window.navigator.standalone === true
+        if (el && isStandalone) el.style.display = 'flex'
+      })()
+    </script>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

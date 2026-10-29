@@ -1,0 +1,11 @@
+$kind: http-request
+description: "public：接受邀請並建立員工 User，回 auth_token 供 client 自動登入"
+url: "{{base_url}}/api/invitations/by-token/{{invitation_token}}/accept"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "password":"password123"
+    }
+order: 2004

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>列表頁（CRUD） — Quickey Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="design-tokens.css?v=1792653813">
+<script>
+(function(){
+  var KEY = "qds-nav-collapsed";
+  var collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === "1"; } catch (e) {}
+  if (collapsed) { document.documentElement.classList.add("nav-collapsed"); }
+})();
+</script>
+<script src="design-search-index.js?v=1792653813"></script>
+<script src="design-components.js?v=1792653813"></script>
+</head>
+<body>
+<div class="shell">
+  <nav class="side-nav-demo doc-sidenav">
+   <div class="sn-inner">
+    <div class="sn-brand"><span class="sn-logo-icon"><svg width="32" height="32" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M671.06 770.833C622.695 813.962 563.449 839.355 499.365 839.355C376.64 839.355 271.447 746.044 227.112 613.433C197.892 585.419 167.463 556.398 133.607 531.609L122.927 523.749H122.725L116.881 519.718C106.402 512.664 95.7216 506.215 85.041 500.572C99.3489 716.619 279.507 887.321 499.365 887.321C568.285 887.321 633.376 870.593 690.809 840.766C694.84 811.745 680.33 784.739 671.06 770.833Z" fill="#2B2B2B"/>
+<path d="M205.751 442.733C218.044 254.297 344.8 106.167 499.567 106.167C662.395 106.167 794.188 270.42 794.188 472.762C794.188 571.918 762.55 662.005 710.961 728.109L712.17 729.52V729.721C712.573 730.124 712.976 730.729 713.379 731.132C713.984 731.938 714.588 732.744 715.193 733.55C715.596 734.155 715.999 734.76 716.402 735.163C716.603 735.566 717.006 735.969 717.208 736.17C719.626 739.395 721.843 742.217 724.06 745.038L724.866 746.247C725.47 747.053 726.075 748.061 726.881 748.867C727.284 749.27 727.687 749.875 727.888 750.278C728.694 751.286 729.299 752.092 729.904 753.1C730.508 753.906 730.911 754.51 731.516 755.316L732.523 756.526C737.158 762.975 741.793 769.424 746.227 776.075L748.846 779.904C749.854 781.315 750.66 782.725 751.668 784.136L752.071 784.741L752.675 785.547C753.078 785.95 753.28 786.555 753.683 786.958L759.729 796.027C854.443 720.048 915.1 603.358 915.1 472.561C914.899 243.615 728.896 58 499.365 58C284.142 58 107.007 221.648 86.25 431.246C126.151 432.253 166.253 436.083 205.751 442.733Z" fill="#2B2B2B"/>
+<path d="M785.322 876.641L776.254 858.301L772.626 851.65L771.82 850.038C771.82 850.038 771.619 850.038 771.619 850.24C767.185 852.456 761.946 850.643 759.729 846.209C757.714 841.977 759.326 836.938 763.356 834.52L761.543 831.295C754.49 818.8 747.033 806.708 738.973 794.615C738.57 793.809 737.965 793.205 737.562 792.399C736.554 790.786 735.547 789.376 734.539 787.763C733.733 786.554 732.725 785.143 731.919 783.934C727.687 777.485 723.254 771.237 718.619 764.99C717.813 763.78 717.007 762.773 715.999 761.563C715.395 760.757 714.79 759.75 713.984 758.943C712.977 757.533 711.969 756.122 710.961 754.913C710.76 754.51 710.357 754.107 710.155 753.704C707.939 750.882 705.722 747.859 703.505 745.037C702.901 744.231 702.094 743.224 701.49 742.417C700.079 740.805 698.669 738.991 697.46 737.178C691.414 729.519 685.167 722.062 678.718 714.605C561.837 578.971 406.868 495.334 243.234 465.909C163.432 447.973 81.4139 442.33 0 449.383C43.9313 460.266 81.0109 477.195 113.859 497.752C145.9 506.015 179.352 508.434 210.588 498.76C187.01 506.821 162.022 511.457 136.832 513.27L142.877 517.503C176.128 541.889 205.55 569.701 234.569 597.311C275.88 606.783 319.61 607.59 360.317 595.296C326.26 605.373 291.599 614.643 256.131 617.868L256.333 618.069L269.633 630.565C279.306 639.432 288.979 648.3 298.854 656.764L319.812 673.895C365.758 679.135 410.294 663.214 446.971 636.409C421.781 663.415 391.553 685.383 358.503 701.304C425.408 743.224 509.039 767.206 635.593 747.859C637.407 747.657 639.422 747.859 641.437 747.657C602.141 690.824 552.567 633.185 473.974 575.948C542.491 615.651 605.768 667.244 660.38 730.728C664.813 735.767 669.045 741.007 673.277 746.247C674.889 748.262 676.502 750.277 678.114 752.091C678.315 752.293 678.517 752.494 678.517 752.696C689.6 767.005 714.186 805.498 705.52 847.821C721.239 849.433 739.577 860.316 756.505 873.416C760.737 876.641 764.767 880.067 768.596 883.292C768.999 883.695 769.604 884.098 770.007 884.702C770.41 885.105 770.813 885.307 771.216 885.71C792.375 904.453 808.295 922.994 808.295 922.994L785.322 876.641Z" fill="#00B39F"/>
+</svg></span>Quickey Design System</div>
+      <div class="sn-group">總覽</div>
+      <a class="sn-item" href="design.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>總覽</a>
+      <div class="sn-group">基礎</div>
+      <a class="sn-item" href="design-colors.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1.2" fill="currentColor" stroke="none"/><circle cx="14" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/><path d="M12 21a2 2 0 01-2-2c0-1 1-1 1-2a1.5 1.5 0 00-1.5-1.5H9a4 4 0 01-4-4"/></svg>色彩</a>
+      <a class="sn-item" href="design-type-space.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M12 6v14M8 20h8"/></svg>字級/間距/圓角/陰影</a>
+      <div class="sn-group">元件</div>
+      <a class="sn-item" href="design-button.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="8" rx="4"/></svg>Button</a>
+      <a class="sn-item" href="design-form-layout.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg>Form Layout</a>
+      <a class="sn-item" href="design-input.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="8" width="18" height="8" rx="2"/><path d="M8 8v8"/></svg>Input</a>
+      <a class="sn-item" href="design-select-date.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="10" rx="3"/><path d="M14 11l2 2 2-2"/></svg>Select & DatePicker</a>
+      <a class="sn-item" href="design-card.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/></svg>Card</a>
+      <a class="sn-item" href="design-badge-tag.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 12.6L12 21.2 2.8 12 2.8 3.4h8.6z"/><circle cx="7.6" cy="8.2" r="1.2" fill="currentColor" stroke="none"/></svg>Badge & Tag</a>
+      <a class="sn-item" href="design-tab.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8a2 2 0 012-2h4l2 2h8a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Tab</a>
+      <a class="sn-item" href="design-table.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>Table</a>
+      <a class="sn-item" href="design-paginator.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h.01M20 12h.01"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>Paginator</a>
+      <a class="sn-item" href="design-alert.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Alert</a>
+      <a class="sn-item" href="design-toast.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Toast</a>
+      <a class="sn-item" href="design-dialog.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Dialog & Drawer</a>
+      <a class="sn-item" href="design-empty-state.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M4 10h16M9 6V4h6v2"/></svg>Empty State</a>
+      <a class="sn-item" href="design-upload.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Upload</a>
+      <a class="sn-item" href="design-navigation.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>Navigation</a>
+      <a class="sn-item" href="design-stat-chart.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 4-8"/></svg>Stat & Chart</a>
+      <a class="sn-item" href="design-list.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>List</a>
+      <a class="sn-item" href="design-timeline.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M6 12h4M14 12h4"/></svg>Timeline</a>
+      <div class="sn-group">版型</div>
+      <a class="sn-item" href="design-prototype.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="17" rx="1"/></svg>後台原型</a>
+      <a class="sn-item" href="design-layout-shell.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>頁面骨架</a>
+      <a class="sn-item" href="design-layout-home.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 4-8"/></svg>首頁（儀表板）</a>
+      <a class="sn-item active" href="design-layout-list.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>列表頁（CRUD）</a>
+      <div class="sn-group">指南</div>
+      <a class="sn-item" href="design-architecture.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></svg>架構規則/無障礙</a>
+   </div>
+  </nav>
+  <main>
+    <div class="doc-topbar">
+      <button type="button" id="nav-toggle-btn" class="nav-toggle" aria-label="收合/展開側邊選單" title="收合/展開側邊選單"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+      <div class="sn-search">
+        <input type="text" id="qds-search-input" class="sn-search-input" placeholder="搜尋元件、頁面…（按 / 快速定位）" autocomplete="off" />
+        <div id="qds-search-results" class="sn-search-results" hidden></div>
+      </div>
+    </div>
+<section id="layout-list"><h2>列表頁（CRUD）</h2><p class="lede">「一張表管一種資料」的頁面怎麼排：工具列、批次操作、每列操作、刪除確認、空狀態、分頁與手機版。</p>
+      <a class="proto-link" href="design-prototype.html#expenses">在後台原型中查看<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <p class="note" style="margin-top:0;">適用於支出管理、請款記錄、簽核、發放、類別管理、人員管理等「一張表管一種資料」的頁面。實作以 PrimeVue <code>&lt;DataTable&gt;</code> 為基礎（勾選 <code>selection</code>、排序 <code>sortable</code>、分頁 <code>paginator</code>），這頁定義它在 Quickey 裡的排法與規則。</p>
+
+      <h3 id="list-page">結構 — <code>list-page</code></h3>
+      <div class="dash-wire" aria-hidden="true">
+        <div class="w-col">
+          <div class="w-page">
+            <div class="w-split"><div class="wb"><code>page-head</code><small>標題＋說明</small></div><div class="wb"><small>次要動作</small><code>主要動作</code></div></div>
+            <div class="w-page w-panel">
+              <div class="wb"><code>toolbar</code><small>搜尋＋篩選＋清除</small></div>
+              <div class="wb w-tall"><code>data-table</code><small>勾選｜單號｜內容欄位｜金額｜狀態｜操作</small></div>
+              <div class="wb"><code>table-summary</code><small>筆數/合計</small></div>
+              <div class="wb"><code>paginator</code><small>超過一頁才顯示</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 id="list-toolbar">工具列 — <code>list-toolbar</code></h3>
+      <div class="demo"><div class="dash-filter"><label class="search-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" placeholder="搜尋說明、登錄人" aria-label="搜尋說明、登錄人"></label><div class="qds-select qds-select-sm" data-qds-select><button type="button" class="qds-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="qds-select-value">全部類別</span><svg class="qds-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><ul class="qds-select-panel" role="listbox"><li role="option" data-value="all" class="sel" aria-selected="true">全部類別</li><li role="option" data-value="交通費" aria-selected="false">交通費</li><li role="option" data-value="餐費" aria-selected="false">餐費</li></ul></div><div class="qds-datepicker qds-select-sm" data-qds-datepicker data-mode="range"><button type="button" class="qds-select-trigger qds-dp-trigger"><span class="qds-select-value">日期區間</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></button></div><button type="button" class="btn btn-text btn-sm">清除篩選</button></div><div class="dash-table-summary">共 86 筆<span class="sep" aria-hidden="true"></span>合計 NT$ 248,300</div></div>
+      <ul class="rules">
+        <li>放在表格所在的 panel 裡、表格正上方。由左到右：搜尋（240px）→ 篩選（Select/DatePicker 小尺寸）→「清除篩選」文字按鈕（有套用篩選時才出現）。結果資訊（共幾筆/合計）不放在工具列，統一放在表格底部的 <code>table-summary</code>。</li>
+        <li>搜尋只找這張表的資料，輸入即篩選；找整個系統用頂欄的全域搜尋。</li>
+        <li>工具列所有元件高 44px，跟小尺寸 Select、<code>btn-sm</code> 等高。</li>
+      </ul>
+
+      <h3 id="selection-bar">批次操作 — <code>selection-bar</code></h3>
+      <div class="demo">
+        <div class="selection-bar" role="region" aria-label="批次操作"><span class="sel-count">已選 3 筆</span><button type="button" class="btn btn-text btn-sm sel-clear">取消選取</button><span class="sel-actions"><button type="button" class="btn btn-danger btn-sm">刪除</button><button type="button" class="btn btn-primary btn-sm">核准</button></span></div>
+      </div>
+      <ul class="rules">
+        <li>勾選至少一列時，批次操作列獨立顯示在表格正上方，不取代搜尋/篩選工具列：左邊「已選 N 筆」＋「取消選取」，批次動作一律靠右，主要動作放最右邊、危險動作在它左邊（跟 Dialog 底部按鈕的順序一致）。取消全部勾選後隱藏批次操作列。</li>
+        <li>外觀：<code>primary-50</code> 淡綠底、全圓角，高 56px、四周留 6px，讓 44px 的按鈕完整包在列裡（按鈕維持標準尺寸，不另做小按鈕）；「已選 N 筆」與「取消選取」都用 16px。</li>
+        <li>不要在頁首或工具列放一顆常駐的、停用中的「刪除」按鈕，沒選資料時就不顯示批次動作。</li>
+        <li>表頭勾選框可以全選目前這一頁；部分選取時顯示半選狀態。只有「有批次動作」的表格才出現勾選欄。</li>
+      </ul>
+
+      <h3 id="data-table">表格欄位與每列操作 — <code>data-table</code></h3>
+      <div class="demo demo-flush">
+        <table class="dash-table list-demo-table">
+          <thead><tr><th class="chk"><input type="checkbox" class="dash-check" aria-label="全選"></th><th>單號</th><th>申請人</th><th>類別</th><th class="num">金額</th><th>狀態</th><th class="act"><span class="sr-only">操作</span></th></tr></thead>
+          <tbody><tr><td class="chk"><input type="checkbox" class="dash-check" aria-label="選取 #05895"></td><td class="mono">#05895</td><td>王小明</td><td>交通費</td><td class="num">NT$ 320</td><td><span class="status-badge" style="color:var(--status-review);background:var(--status-review-bg)">簽核中</span></td><td class="act"><span class="row-actions"><button type="button" class="btn btn-secondary btn-icon-only btn-sm" aria-label="編輯 #05895" title="編輯"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button type="button" class="btn btn-danger btn-icon-only btn-sm" aria-label="刪除 #05895" title="刪除"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></span></td></tr><tr><td class="chk"><input type="checkbox" class="dash-check" aria-label="選取 #05852"></td><td class="mono">#05852</td><td>林美惠</td><td>餐費</td><td class="num">NT$ 1,280</td><td><span class="status-badge" style="color:var(--status-review);background:var(--status-review-bg)">簽核中</span></td><td class="act"><span class="row-actions"><button type="button" class="btn btn-secondary btn-icon-only btn-sm" aria-label="編輯 #05852" title="編輯"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button type="button" class="btn btn-danger btn-icon-only btn-sm" aria-label="刪除 #05852" title="刪除"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></span></td></tr><tr><td class="chk"><input type="checkbox" class="dash-check" aria-label="選取 #05772"></td><td class="mono">#05772</td><td>王小明</td><td>交通費</td><td class="num">NT$ 460</td><td><span class="status-badge" style="color:var(--status-rejected);background:var(--status-rejected-bg)">駁回</span></td><td class="act"><span class="row-actions"><button type="button" class="btn btn-secondary btn-icon-only btn-sm" aria-label="編輯 #05772" title="編輯"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button type="button" class="btn btn-danger btn-icon-only btn-sm" aria-label="刪除 #05772" title="刪除"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></span></td></tr></tbody>
+        </table>
+      </div>
+      <ul class="rules">
+        <li>欄位順序：勾選 → 識別（單號，主色粗體）→ 內容欄位 → 金額（靠右、<code>tabular-nums</code>）→ 狀態（Status Badge）→ 操作。文字靠左、數字靠右。</li>
+        <li>每列操作放在最右欄、靠右對齊，用 44px 正圓圖示按鈕，最多 2 個（常見：編輯、刪除）；刪除用 Danger 外框。只有圖示的按鈕一定要有 <code>aria-label</code> 和提示文字。超過 2 個動作改成「⋯」選單。</li>
+        <li>整列可點時（開明細），點操作按鈕不會觸發整列點擊；列 hover 用 <code>surface-soft</code> 底。</li>
+        <li>唯一且明確的動作可以用文字按鈕取代圖示，例如簽核頁每列的「通過」「駁回」、發放頁的「發放」「作廢」。</li>
+        <li>新增/編輯：欄位少（約 4 欄以內）用 Dialog，例如類別、邀請人員；欄位多、含上傳或明細時用整頁表單，例如支出。新增與編輯共用同一頁，頂部放「返回列表」。</li>
+      </ul>
+
+      <h3 id="confirm-dialog">刪除確認 — <code>confirm-dialog</code></h3>
+      <div class="demo">
+        <div class="dialog-preview" role="dialog" aria-label="刪除確認範例" style="width:400px;">
+          <div class="dh">刪除這筆支出？</div>
+          <div class="db">「影印紙、碳粉」NT$ 3,150（2026/09/20）<br>刪除後無法復原，也會從支出趨勢與預算中扣除。</div>
+          <div class="df"><button type="button" class="btn btn-secondary">取消</button><button type="button" class="btn btn-danger">刪除</button></div>
+        </div>
+      </div>
+      <ul class="rules">
+        <li>刪除、作廢等無法復原的動作一律先跳確認視窗：標題直接問「刪除這筆支出？」，內文寫出是哪一筆、會有什麼影響。</li>
+        <li>確認按鈕寫出動作本身（刪除），不寫「確定」；焦點預設停在「取消」，Esc 等於取消。</li>
+        <li>已發放的代墊款、已簽核的請款單不能刪除，操作欄不顯示刪除按鈕。</li>
+      </ul>
+
+      <h3 id="empty">空狀態 — <code>empty / no-results / loading</code></h3>
+      <div class="demo">
+        <div class="spec-grid">
+          <div class="spec-cell"><span class="spec-label">還沒有資料</span><div class="empty-mini"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 5V3h6v2"/></svg><b>還沒有支出紀錄</b><span>新增第一筆，或從 Excel 匯入</span><button type="button" class="btn btn-primary btn-sm">新增支出</button></div></div>
+          <div class="spec-cell"><span class="spec-label">搜尋/篩選沒有結果</span><div class="empty-mini"><b>沒有符合條件的支出</b><span>試試其他關鍵字，或</span><button type="button" class="btn btn-text btn-sm">清除篩選</button></div></div>
+          <div class="spec-cell"><span class="spec-label">載入中</span><div class="skeleton-rows" aria-busy="true" aria-label="載入中"><span></span><span></span><span></span><span></span></div></div>
+        </div>
+      </div>
+      <ul class="rules">
+        <li>「還沒有資料」跟「搜尋不到」要分開：前者引導新增，後者引導清除篩選。</li>
+        <li>載入中用骨架列（跟表格列同高），不要用整頁轉圈圈；超過 0.3 秒才顯示，避免閃一下。</li>
+      </ul>
+
+      <h3 id="paginator">分頁 — <code>paginator</code></h3>
+      <ul class="rules">
+        <li>放在表格正下方，超過一頁才顯示；預設每頁 10 筆，可選 10/20/50。規格見 <a href="design-paginator.html">Paginator</a>。</li>
+        <li>換頁、改篩選或搜尋後回到第 1 頁；已勾選的資料在換頁時保留，並在批次操作列顯示總勾選數。</li>
+      </ul>
+
+      <h3 id="list-card">手機版 — <code>list-card</code></h3>
+      <div class="demo">
+        <div class="m-list">
+          <div class="m-toolbar"><label class="search-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" placeholder="搜尋" aria-label="搜尋"></label><button type="button" class="btn btn-secondary btn-icon-only btn-sm" aria-label="篩選"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg></button></div>
+          <div class="m-card"><div class="m-top"><span class="mono">#05895</span><span class="status-badge" style="color:var(--status-review);background:var(--status-review-bg)">簽核中</span></div><div class="m-mid"><span>王小明<span class="sep" aria-hidden="true"></span>交通費</span><b>NT$ 320</b></div></div>
+          <div class="m-card"><div class="m-top"><span class="mono">#05811</span><span class="status-badge" style="color:var(--status-approved);background:var(--status-approved-bg)">已核銷</span></div><div class="m-mid"><span>林美惠<span class="sep" aria-hidden="true"></span>交通費</span><b>NT$ 2,140</b></div></div>
+          <div class="m-card"><div class="m-top"><span class="mono">#05790</span><span class="status-badge" style="color:var(--status-paid);background:var(--status-paid-bg)">已發放</span></div><div class="m-mid"><span>張家豪<span class="sep" aria-hidden="true"></span>辦公用品</span><b>NT$ 850</b></div></div>
+        </div>
+      </div>
+      <ul class="rules">
+        <li>寬度 &lt; 640px 時表格改成卡片清單：上排單號＋狀態、下排說明＋金額；點卡片開明細，每列操作移到明細裡。</li>
+        <li>工具列只留搜尋和「篩選」圖示按鈕，篩選條件放進從下方滑出的 Drawer；分頁改用精簡版。</li>
+      </ul>
+</section>
+    <div class="doc-pager"><span><a class="btn btn-secondary" href="design-layout-home.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14 17l-5-5 5-5"/></svg>首頁（儀表板）</a></span><span><a class="btn btn-primary" href="design-architecture.html">架構規則/無障礙<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10 17l5-5-5-5"/></svg></a></span></div>
+  </main>
+</div>
+<script>
+(function(){
+  var KEY = "qds-nav-collapsed";
+  var btn = document.getElementById("nav-toggle-btn");
+  if (!btn) return;
+  btn.addEventListener("click", function(){
+    var collapsed = !document.documentElement.classList.contains("nav-collapsed");
+    document.documentElement.classList.toggle("nav-collapsed", collapsed);
+    try { localStorage.setItem(KEY, collapsed ? "1" : "0"); } catch (e) {}
+  });
+})();
+</script>
+<script>
+(function(){
+  // 關鍵字搜尋：索引資料由建置腳本產生在 design-search-index.js 的
+  // QDS_SEARCH_INDEX（純 <script src> 載入，避開 file:// 開啟時 fetch()
+  // 會被瀏覽器擋下 CORS 的問題）。比對頁面標題/小節標題/摘要文字，
+  // 點擊結果會直接連到該頁面（小節有對應 id 的話會直接跳到該卡片）。
+  var input = document.getElementById("qds-search-input");
+  var results = document.getElementById("qds-search-results");
+  if (!input || !results || typeof QDS_SEARCH_INDEX === "undefined") return;
+
+  var activeIndex = -1;
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];
+    });
+  }
+  function highlight(text, q){
+    if (!q) return escapeHtml(text);
+    var idx = text.toLowerCase().indexOf(q.toLowerCase());
+    if (idx === -1) return escapeHtml(text);
+    return escapeHtml(text.slice(0, idx)) + '<mark class="sn-hl">' +
+      escapeHtml(text.slice(idx, idx + q.length)) + "</mark>" +
+      escapeHtml(text.slice(idx + q.length));
+  }
+  function render(items, q){
+    activeIndex = -1;
+    if (!items.length){
+      results.innerHTML = '<div class="sn-search-empty">沒有符合「' + escapeHtml(q) + '」的結果</div>';
+      results.hidden = false;
+      return;
+    }
+    results.innerHTML = items.map(function(it){
+      var href = it.anchor ? (it.file + "#" + it.anchor) : it.file;
+      return '<a class="sn-search-item" href="' + href + '">' +
+        '<div class="ssi-title">' + highlight(it.title, q) +
+        '<span class="ssi-page">' + escapeHtml(it.page) + "</span></div>" +
+        (it.snippet ? '<div class="ssi-snippet">' + highlight(it.snippet, q) + "</div>" : "") +
+        "</a>";
+    }).join("");
+    results.hidden = false;
+  }
+  function search(q){
+    q = q.trim();
+    if (!q){ results.hidden = true; results.innerHTML = ""; return; }
+    var ql = q.toLowerCase();
+    var scored = [];
+    for (var i = 0; i < QDS_SEARCH_INDEX.length; i++){
+      var it = QDS_SEARCH_INDEX[i];
+      var t = it.title.toLowerCase();
+      var s = (it.snippet || "").toLowerCase();
+      var score = -1;
+      if (t.indexOf(ql) === 0) score = 0;
+      else if (t.indexOf(ql) !== -1) score = 1;
+      else if (s.indexOf(ql) !== -1) score = 2;
+      if (score !== -1) scored.push({ it: it, score: score });
+    }
+    scored.sort(function(a, b){ return a.score - b.score; });
+    render(scored.slice(0, 20).map(function(x){ return x.it; }), q);
+  }
+  input.addEventListener("input", function(){ search(input.value); });
+  input.addEventListener("focus", function(){ if (input.value.trim()) results.hidden = false; });
+  input.addEventListener("keydown", function(e){
+    var items = results.querySelectorAll(".sn-search-item");
+    if (e.key === "Escape"){ results.hidden = true; input.blur(); return; }
+    if (!items.length) return;
+    if (e.key === "ArrowDown"){ e.preventDefault(); activeIndex = Math.min(activeIndex + 1, items.length - 1); }
+    else if (e.key === "ArrowUp"){ e.preventDefault(); activeIndex = Math.max(activeIndex - 1, 0); }
+    else if (e.key === "Enter"){ if (activeIndex >= 0) items[activeIndex].click(); return; }
+    else return;
+    items.forEach(function(el, i){ el.classList.toggle("active", i === activeIndex); });
+    if (items[activeIndex]) items[activeIndex].scrollIntoView({ block: "nearest" });
+  });
+  document.addEventListener("click", function(e){
+    if (!results.contains(e.target) && e.target !== input) results.hidden = true;
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key !== "/" || e.target === input) return;
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+    input.focus();
+  });
+})();
+</script>
+</body>
+</html>

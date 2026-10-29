@@ -1,0 +1,27 @@
+$kind: http-request
+description: "新增代墊款。as_draft=true → 存草稿（draft）；false → 送審（in_review，自動產生單層管理員簽核進度）。category_id 不屬本公司回 422"
+url: "{{base_url}}/api/reimbursements"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "category_id":"{{category_id}}",
+        "amount":1200,
+        "description":"計程車車資",
+        "incurred_at":"2026-09-28",
+        "receipt_urls":["data:image/png;base64,iVBORw0KGgo="],
+        "receipt_names":["receipt1.jpg"],
+        "document_type":"receipt",
+        "vendor":"台灣大車隊",
+        "tax_id":null,
+        "invoice_no":null,
+        "tax_rate":"exempt_0",
+        "pre_tax_amt":null,
+        "tax_amt":null,
+        "as_draft":false
+    }
+order: 3302

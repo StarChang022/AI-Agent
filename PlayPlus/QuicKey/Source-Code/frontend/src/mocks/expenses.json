@@ -1,0 +1,899 @@
+[
+  {
+    "id": "exp-seed-20260926-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "講師 陳怡君",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 6000,
+    "taxAmt": 0,
+    "amount": 6000,
+    "date": "2026-09-26",
+    "note": "內訓講師費（講師要求月底前入帳）",
+    "attachments": [
+      {
+        "dataUrl": "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y=",
+        "filename": "講師費請款單.pdf",
+        "mimeType": "application/pdf"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-26T10:20:00.000Z",
+    "updatedAt": "2026-09-26T10:25:00.000Z",
+    "plannedPayoutDate": "2026-09-30",
+    "plannedPayoutManual": true,
+    "category": {
+      "id": "training",
+      "name": "教育訓練費",
+      "accountCode": "6132"
+    }
+  },
+  {
+    "id": "exp-seed-20260924-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "誠品生活南西店",
+    "taxId": "11223344",
+    "invoiceNo": "QA-24090123",
+    "taxRate": "business_5",
+    "preTaxAmt": 1314,
+    "taxAmt": 66,
+    "amount": 1380,
+    "date": "2026-09-24",
+    "note": "營運管理書籍",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCI+PHJlY3Qgd2lkdGg9IjQyMCIgaGVpZ2h0PSI1NjAiIHJ4PSIyOCIgZmlsbD0iI2Y4ZmFmYyIvPjxyZWN0IHg9IjQ0IiB5PSI0OCIgd2lkdGg9IjMzMiIgaGVpZ2h0PSI0NjQiIHJ4PSIxOCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjMiLz48dGV4dCB4PSI3MCIgeT0iMTA0IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPlJFQ0VJUFQ8L3RleHQ+PHRleHQgeD0iNzAiIHk9IjE1NCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIyIiBmaWxsPSIjNjQ3NDhiIj7lhYnljZflpKfmibnnmbw8L3RleHQ+PGxpbmUgeDE9IjcwIiB5MT0iMTkwIiB4Mj0iMzUwIiB5Mj0iMTkwIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMyIvPjx0ZXh0IHg9IjcwIiB5PSIyMzgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5bGV5aC05YKZ5ZOB6Ieo5pmC5o6h6LO8PC90ZXh0Pjx0ZXh0IHg9IjcwIiB5PSIyOTIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+TlQkIDkyMDwvdGV4dD48dGV4dCB4PSI3MCIgeT0iNDM2IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5NGEzYjgiPjIwMjYvMDkvMjQ8L3RleHQ+PC9zdmc+",
+        "filename": "會議文具收據.png",
+        "mimeType": "image/png"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-24T08:55:00.000Z",
+    "updatedAt": "2026-09-24T08:55:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "training",
+      "name": "教育訓練費",
+      "accountCode": "6132"
+    }
+  },
+  {
+    "id": "exp-seed-20260924-02",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "統一超商",
+    "taxId": "12345678",
+    "invoiceNo": "QA-24094567",
+    "taxRate": "business_5",
+    "preTaxAmt": 914,
+    "taxAmt": 46,
+    "amount": 960,
+    "date": "2026-09-24",
+    "note": "會議文具與包材",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPue1seS4gOi2heWVhjwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzI0PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7mnIPorbDmloflhbfoiIfljIXmnZA8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjk2MDwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIzOTAiIHgyPSIzNjQiIHkyPSIzOTAiIHN0cm9rZT0iI2NiZDVlMSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiLz48dGV4dCB4PSI1NiIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3Ij7lkIjoqIg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciIHRleHQtYW5jaG9yPSJlbmQiPk5UJCA5NjA8L3RleHQ+PC9zdmc+",
+        "filename": "統一超商發票.jpg",
+        "mimeType": "image/svg+xml"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-24T11:30:00.000Z",
+    "updatedAt": "2026-09-24T11:30:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "exp-seed-20260923-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "台北大車隊",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 520,
+    "taxAmt": 0,
+    "amount": 520,
+    "date": "2026-09-23",
+    "note": "拜訪客戶交通",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWPsOWMl+Wkp+i7iumaijwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4xLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMzwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+6LW36LezPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj44NTwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7ph4znqIs8L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIyNzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjMxMDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMzEwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lpJzplpPliqDmiJA8L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIzMTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjIwPC90ZXh0Pjx0ZXh0IHg9IjU2IiB5PSIzNTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiPuW7tua7rzwvdGV4dD48dGV4dCB4PSIzMDQiIHk9IjM1MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSIgdGV4dC1hbmNob3I9ImVuZCI+MzA8L3RleHQ+PC9zdmc+",
+        "filename": "計程車長收據_1.jpg",
+        "mimeType": "image/svg+xml"
+      },
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWPsOWMl+Wkp+i7iumaijwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4yLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMzwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+6YGO6Lev6LK7PC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj40MDwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMjcwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7ooYzmnY48L3RleHQ+PHRleHQgeD0iMzA0IiB5PSIyNzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjEwPC90ZXh0Pjx0ZXh0IHg9IjU2IiB5PSIzMTAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiPumgkOe0hDwvdGV4dD48dGV4dCB4PSIzMDQiIHk9IjMxMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSIgdGV4dC1hbmNob3I9ImVuZCI+MTU8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjM1MCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5YW25LuWPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMzUwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj4xMDwvdGV4dD48L3N2Zz4=",
+        "filename": "計程車長收據_2.jpg",
+        "mimeType": "image/svg+xml"
+      },
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiB2aWV3Qm94PSIwIDAgMzYwIDY0MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSIzNjAiIGhlaWdodD0iNjQwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzA0IiBoZWlnaHQ9IjU2OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWPsOWMl+Wkp+i7iumaijwvdGV4dD48dGV4dCB4PSIzMTIiIHk9Ijk2IiBmb250LXNpemU9IjE4IiBmaWxsPSIjOTRhM2I4IiB0ZXh0LWFuY2hvcj0iZW5kIj4zLzM8L3RleHQ+PHRleHQgeD0iNTYiIHk9IjE0MCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY0NzQ4YiI+MjAyNi8wOS8yMzwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIxNzYiIHgyPSIzMDQiIHkyPSIxNzYiIHN0cm9rZT0iI2Q5ZTJlYyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNTYiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSI+5bCP6KiIPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1IiB0ZXh0LWFuY2hvcj0iZW5kIj41MjA8L3RleHQ+PGxpbmUgeDE9IjU2IiB5MT0iNDcwIiB4Mj0iMzA0IiB5Mj0iNDcwIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2Ii8+PHRleHQgeD0iNTYiIHk9IjUxMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyI+5ZCI6KiIPC90ZXh0Pjx0ZXh0IHg9IjMwNCIgeT0iNTEyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3IiB0ZXh0LWFuY2hvcj0iZW5kIj5OVCQgNTIwPC90ZXh0Pjwvc3ZnPg==",
+        "filename": "計程車長收據_3.jpg",
+        "mimeType": "image/svg+xml"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-23T13:20:00.000Z",
+    "updatedAt": "2026-09-23T13:20:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "travel",
+      "name": "交通費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "exp-seed-20260922-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "Amazon Web Services Taiwan",
+    "taxId": "24536810",
+    "invoiceNo": "QA-22001234",
+    "taxRate": "business_5",
+    "preTaxAmt": 7429,
+    "taxAmt": 371,
+    "amount": 7800,
+    "date": "2026-09-22",
+    "note": "雲端服務月費",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPkFtYXpvbiBXZWIgU2VydmljZXMgVGFpd2FuPC90ZXh0Pjx0ZXh0IHg9IjU2IiB5PSIxNDAiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NDc0OGIiPjIwMjYvMDkvMjI8L3RleHQ+PGxpbmUgeDE9IjU2IiB5MT0iMTc2IiB4Mj0iMzY0IiB5Mj0iMTc2IiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiPumbsuerr+acjeWLmeaciOiyuzwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjIzMCIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzMzNDE1NSIgdGV4dC1hbmNob3I9ImVuZCI+Nyw4MDA8L3RleHQ+PGxpbmUgeDE9IjU2IiB5MT0iMzkwIiB4Mj0iMzY0IiB5Mj0iMzkwIiBzdHJva2U9IiNjYmQ1ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iNiA2Ii8+PHRleHQgeD0iNTYiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyI+5ZCI6KiIPC90ZXh0Pjx0ZXh0IHg9IjM2NCIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3IiB0ZXh0LWFuY2hvcj0iZW5kIj5OVCQgNyw4MDA8L3RleHQ+PC9zdmc+",
+        "filename": "AWS 帳單截圖.png",
+        "mimeType": "image/svg+xml"
+      },
+      {
+        "dataUrl": "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y=",
+        "filename": "AWS 九月帳單.pdf",
+        "mimeType": "application/pdf"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-22T10:10:00.000Z",
+    "updatedAt": "2026-09-22T10:10:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "utilities",
+      "name": "水電瓦斯費",
+      "accountCode": "6119"
+    }
+  },
+  {
+    "id": "exp-seed-20260921-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "台灣高鐵",
+    "taxId": "16446274",
+    "invoiceNo": "QA-21007890",
+    "taxRate": "business_5",
+    "preTaxAmt": 1562,
+    "taxAmt": 78,
+    "amount": 1640,
+    "date": "2026-09-21",
+    "note": "台中客戶會議來回票",
+    "attachments": [
+      {
+        "dataUrl": "data:application/pdf;base64,JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgMzAwIDE4MF0vQ29udGVudHMgNCAwIFIvUmVzb3VyY2VzPDwvRm9udDw8L0YxIDUgMCBSPj4+Pj4+ZW5kb2JqCjQgMCBvYmo8PC9MZW5ndGggNjc+PnN0cmVhbQpCVCAvRjEgMTYgVGYgNDAgMTIwIFRkIChJbnZvaWNlIFBERiBTYW1wbGUpIFRqIDAgLTI4IFRkIChOVCQgNSw2MDApIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iajw8L1R5cGUvRm9udC9TdWJ0eXBlL1R5cGUxL0Jhc2VGb250L0hlbHZldGljYT4+ZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDIyOSAwMDAwMCBuIAowMDAwMDAwMzQ2IDAwMDAwIG4gCnRyYWlsZXI8PC9TaXplIDYvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgo0MTYKJSVFT0Y=",
+        "filename": "高鐵電子票證.pdf",
+        "mimeType": "application/pdf"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-21T18:40:00.000Z",
+    "updatedAt": "2026-09-21T18:40:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "business_travel",
+      "name": "差旅費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "exp-seed-20260920-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "鼎泰豐信義店",
+    "taxId": "22111234",
+    "invoiceNo": "QA-20003456",
+    "taxRate": "business_5",
+    "preTaxAmt": 4000,
+    "taxAmt": 200,
+    "amount": 4200,
+    "date": "2026-09-20",
+    "note": "客戶簡報後餐敘",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPum8juazsOixkOS/oee+qeW6lzwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzIwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lrqLmiLbnsKHloLHlvozppJDmlZg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjQsMjAwPC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjM5MCIgeDI9IjM2NCIgeTI9IjM5MCIgc3Ryb2tlPSIjY2JkNWUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjYgNiIvPjx0ZXh0IHg9IjU2IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuWQiOioiDwvdGV4dD48dGV4dCB4PSIzNjQiIHk9IjQzMiIgZm9udC1zaXplPSIyMiIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzFmMjkzNyIgdGV4dC1hbmNob3I9ImVuZCI+TlQkIDQsMjAwPC90ZXh0Pjwvc3ZnPg==",
+        "filename": "鼎泰豐發票.jpg",
+        "mimeType": "image/svg+xml"
+      }
+    ],
+    "items": [
+      {
+        "name": "餐費",
+        "quantity": 1,
+        "unitPrice": 4000,
+        "subtotal": 4000
+      },
+      {
+        "name": "服務費",
+        "quantity": 1,
+        "unitPrice": 200,
+        "subtotal": 200
+      }
+    ],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-20T20:05:00.000Z",
+    "updatedAt": "2026-09-20T20:05:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "meal",
+      "name": "伙食費",
+      "accountCode": "6128"
+    }
+  },
+  {
+    "id": "exp-seed-20260919-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "Slack Technologies",
+    "taxId": "90817263",
+    "invoiceNo": "QA-19005678",
+    "taxRate": "business_5",
+    "preTaxAmt": 2476,
+    "taxAmt": 124,
+    "amount": 2600,
+    "date": "2026-09-19",
+    "note": "團隊協作軟體月費",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-19T09:45:00.000Z",
+    "updatedAt": "2026-09-19T09:45:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "utilities",
+      "name": "水電瓦斯費",
+      "accountCode": "6119"
+    }
+  },
+  {
+    "id": "exp-seed-20260918-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "文華影印輸出",
+    "taxId": "67342190",
+    "invoiceNo": "QA-18001234",
+    "taxRate": "business_5",
+    "preTaxAmt": 648,
+    "taxAmt": 32,
+    "amount": 680,
+    "date": "2026-09-18",
+    "note": "合約列印與裝訂",
+    "attachments": [
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuaWh+iPr+W9seWNsOi8uOWHujwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzE4PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lkIjntITliJfljbDoiIfoo53oqII8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjY4MDwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIzOTAiIHgyPSIzNjQiIHkyPSIzOTAiIHN0cm9rZT0iI2NiZDVlMSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiLz48dGV4dCB4PSI1NiIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3Ij7lkIjoqIg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciIHRleHQtYW5jaG9yPSJlbmQiPk5UJCA2ODA8L3RleHQ+PC9zdmc+",
+        "filename": "影印發票_1.jpg",
+        "mimeType": "image/svg+xml"
+      },
+      {
+        "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiB2aWV3Qm94PSIwIDAgNDIwIDU2MCIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiPjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNTYwIiBmaWxsPSIjZWVmMmY2Ii8+PHJlY3QgeD0iMjgiIHk9IjM2IiB3aWR0aD0iMzY0IiBoZWlnaHQ9IjQ4OCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNkOWUyZWMiIHN0cm9rZS13aWR0aD0iMiIvPjx0ZXh0IHg9IjU2IiB5PSIxMDAiIGZvbnQtc2l6ZT0iMjYiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciPuaWh+iPr+W9seWNsOi8uOWHujwvdGV4dD48dGV4dCB4PSI1NiIgeT0iMTQwIiBmb250LXNpemU9IjE4IiBmaWxsPSIjNjQ3NDhiIj4yMDI2LzA5LzE4PC90ZXh0PjxsaW5lIHgxPSI1NiIgeTE9IjE3NiIgeDI9IjM2NCIgeTI9IjE3NiIgc3Ryb2tlPSIjZDllMmVjIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1NiIgeT0iMjMwIiBmb250LXNpemU9IjIwIiBmaWxsPSIjMzM0MTU1Ij7lkIjntITliJfljbDoiIfoo53oqII8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSIyMzAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiMzMzQxNTUiIHRleHQtYW5jaG9yPSJlbmQiPjY4MDwvdGV4dD48bGluZSB4MT0iNTYiIHkxPSIzOTAiIHgyPSIzNjQiIHkyPSIzOTAiIHN0cm9rZT0iI2NiZDVlMSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI2IDYiLz48dGV4dCB4PSI1NiIgeT0iNDMyIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBmaWxsPSIjMWYyOTM3Ij7lkIjoqIg8L3RleHQ+PHRleHQgeD0iMzY0IiB5PSI0MzIiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMxZjI5MzciIHRleHQtYW5jaG9yPSJlbmQiPk5UJCA2ODA8L3RleHQ+PC9zdmc+",
+        "filename": "影印發票_2.jpg",
+        "mimeType": "image/svg+xml"
+      }
+    ],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-18T15:25:00.000Z",
+    "updatedAt": "2026-09-18T15:25:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "exp-seed-20260915-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "Google Ads",
+    "taxId": "54321098",
+    "invoiceNo": "QA-15006789",
+    "taxRate": "business_5",
+    "preTaxAmt": 8381,
+    "taxAmt": 419,
+    "amount": 8800,
+    "date": "2026-09-15",
+    "note": "搜尋廣告投放",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-15T10:00:00.000Z",
+    "updatedAt": "2026-09-15T10:00:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "advertising",
+      "name": "廣告費",
+      "accountCode": "6118"
+    }
+  },
+  {
+    "id": "exp-seed-20260912-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "遠傳電信",
+    "taxId": "97179430",
+    "invoiceNo": "QA-12001111",
+    "taxRate": "business_5",
+    "preTaxAmt": 2267,
+    "taxAmt": 113,
+    "amount": 2380,
+    "date": "2026-09-12",
+    "note": "公司門號與網路",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-12T09:00:00.000Z",
+    "updatedAt": "2026-09-12T09:00:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "utilities",
+      "name": "水電瓦斯費",
+      "accountCode": "6119"
+    }
+  },
+  {
+    "id": "exp-seed-20260909-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "國泰產險",
+    "taxId": "89345702",
+    "invoiceNo": "QA-09002222",
+    "taxRate": "business_5",
+    "preTaxAmt": 3429,
+    "taxAmt": 171,
+    "amount": 3600,
+    "date": "2026-09-09",
+    "note": "辦公室設備保險",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-09T12:00:00.000Z",
+    "updatedAt": "2026-09-09T12:00:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "insurance",
+      "name": "保險費",
+      "accountCode": "6120"
+    }
+  },
+  {
+    "id": "exp-seed-20260905-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "共享辦公空間 A 棟",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 26000,
+    "taxAmt": 0,
+    "amount": 26000,
+    "date": "2026-09-05",
+    "note": "九月辦公空間租金",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-05T09:00:00.000Z",
+    "updatedAt": "2026-09-05T09:00:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "rent",
+      "name": "租金支出",
+      "accountCode": "6112"
+    }
+  },
+  {
+    "id": "exp-seed-20260904-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "統一超商",
+    "taxId": "12345678",
+    "invoiceNo": "AB-12345678",
+    "taxRate": "business_5",
+    "preTaxAmt": 476,
+    "taxAmt": 24,
+    "amount": 500,
+    "date": "2026-09-04",
+    "note": "會議用文具",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-04T09:15:00.000Z",
+    "updatedAt": "2026-09-04T09:15:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "exp-seed-20260902-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "台北大車隊",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 320,
+    "taxAmt": 0,
+    "amount": 320,
+    "date": "2026-09-02",
+    "note": "拜訪客戶",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-09-02T14:20:00.000Z",
+    "updatedAt": "2026-09-02T14:20:00.000Z",
+    "plannedPayoutDate": "2026-10-05",
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "travel",
+      "name": "交通費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "exp-seed-20260828-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "鼎泰豐信義店",
+    "taxId": "22111234",
+    "invoiceNo": "CD-98765432",
+    "taxRate": "business_5",
+    "preTaxAmt": 3429,
+    "taxAmt": 171,
+    "amount": 3600,
+    "date": "2026-08-28",
+    "note": "團隊聚餐",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-08-28T20:05:00.000Z",
+    "updatedAt": "2026-08-28T20:05:00.000Z",
+    "plannedPayoutDate": "2026-09-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "meal",
+      "name": "伙食費",
+      "accountCode": "6128"
+    }
+  },
+  {
+    "id": "exp-seed-20260820-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "誠品書店信義店",
+    "taxId": "11223344",
+    "invoiceNo": "EF-55554444",
+    "taxRate": "business_5",
+    "preTaxAmt": 1429,
+    "taxAmt": 71,
+    "amount": 1500,
+    "date": "2026-08-20",
+    "note": "進修用書",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "pending",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-08-20T11:40:00.000Z",
+    "updatedAt": "2026-08-20T11:40:00.000Z",
+    "plannedPayoutDate": "2026-09-05",
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "training",
+      "name": "教育訓練費",
+      "accountCode": "6132"
+    }
+  },
+  {
+    "id": "exp-seed-20260816-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "Canva Pty Ltd",
+    "taxId": "70391824",
+    "invoiceNo": "AU-16007777",
+    "taxRate": "business_5",
+    "preTaxAmt": 3143,
+    "taxAmt": 157,
+    "amount": 3300,
+    "date": "2026-08-16",
+    "note": "設計工具訂閱",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-08-16T10:30:00.000Z",
+    "updatedAt": "2026-08-16T10:30:00.000Z",
+    "plannedPayoutDate": "2026-09-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "advertising",
+      "name": "廣告費",
+      "accountCode": "6118"
+    }
+  },
+  {
+    "id": "exp-seed-20260808-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "全國電子",
+    "taxId": "90887766",
+    "invoiceNo": "HE-08008888",
+    "taxRate": "business_5",
+    "preTaxAmt": 12286,
+    "taxAmt": 614,
+    "amount": 12900,
+    "date": "2026-08-08",
+    "note": "會議室螢幕",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-08-08T16:10:00.000Z",
+    "updatedAt": "2026-08-08T16:10:00.000Z",
+    "plannedPayoutDate": "2026-09-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "office",
+      "name": "文具用品",
+      "accountCode": "6113"
+    }
+  },
+  {
+    "id": "exp-seed-20260722-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "講師 林以安",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 12000,
+    "taxAmt": 0,
+    "amount": 12000,
+    "date": "2026-07-22",
+    "note": "內部流程訓練",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-07-22T13:00:00.000Z",
+    "updatedAt": "2026-07-22T13:00:00.000Z",
+    "plannedPayoutDate": "2026-08-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "training",
+      "name": "教育訓練費",
+      "accountCode": "6132"
+    }
+  },
+  {
+    "id": "exp-seed-20260715-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "台灣高鐵",
+    "taxId": "16446274",
+    "invoiceNo": "GH-11223344",
+    "taxRate": "business_5",
+    "preTaxAmt": 1414,
+    "taxAmt": 71,
+    "amount": 1485,
+    "date": "2026-07-15",
+    "note": "出差高雄",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-07-15T08:30:00.000Z",
+    "updatedAt": "2026-07-15T08:30:00.000Z",
+    "plannedPayoutDate": "2026-08-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "business_travel",
+      "name": "差旅費",
+      "accountCode": "6114"
+    }
+  },
+  {
+    "id": "exp-seed-20260710-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "invoice",
+    "vendor": "Uber Eats",
+    "taxId": "88776655",
+    "invoiceNo": "IJ-77889900",
+    "taxRate": "business_5",
+    "preTaxAmt": 762,
+    "taxAmt": 38,
+    "amount": 800,
+    "date": "2026-07-10",
+    "note": "加班便當",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-07-10T19:45:00.000Z",
+    "updatedAt": "2026-07-10T19:45:00.000Z",
+    "plannedPayoutDate": "2026-08-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "meal",
+      "name": "伙食費",
+      "accountCode": "6128"
+    }
+  },
+  {
+    "id": "exp-seed-20260625-01",
+    "source": "reimbursement",
+    "sourceRefId": "rb-20260625-01",
+    "documentType": "receipt",
+    "vendor": "力得工具行",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 12500,
+    "taxAmt": 0,
+    "amount": 12500,
+    "date": "2026-06-25",
+    "note": "電動起子機一組",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-06-27T15:00:00.000Z",
+    "updatedAt": "2026-06-27T15:00:00.000Z",
+    "plannedPayoutDate": "2026-07-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "maintenance",
+      "name": "修繕費",
+      "accountCode": "6117"
+    }
+  },
+  {
+    "id": "exp-seed-20260612-01",
+    "source": "general",
+    "sourceRefId": null,
+    "documentType": "receipt",
+    "vendor": "郵局快捷",
+    "taxId": null,
+    "invoiceNo": null,
+    "taxRate": "exempt_0",
+    "preTaxAmt": 740,
+    "taxAmt": 0,
+    "amount": 740,
+    "date": "2026-06-12",
+    "note": "合約寄送",
+    "attachments": [],
+    "items": [],
+    "payoutStatus": "paid",
+    "createdBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "createdAt": "2026-06-12T14:30:00.000Z",
+    "updatedAt": "2026-06-12T14:30:00.000Z",
+    "plannedPayoutDate": "2026-07-05",
+    "paidBy": {
+      "id": "u-admin-01",
+      "name": "系統管理員"
+    },
+    "plannedPayoutManual": false,
+    "category": {
+      "id": "postage",
+      "name": "郵電費",
+      "accountCode": "6116"
+    }
+  }
+]

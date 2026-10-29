@@ -1,0 +1,8 @@
+$kind: http-request
+description: "刪除請款（申請人放棄）。僅 draft / rejected 可刪（否則 409 NOT_EDITABLE）；非本人或不存在回 404"
+url: "{{base_url}}/api/reimbursements/{{reimbursement_id}}"
+method: DELETE
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3304

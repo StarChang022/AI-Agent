@@ -1,0 +1,30 @@
+# 避免把本機產物 / 機密 塞進 docker build context
+
+# 依賴 & build 產物
+node_modules
+dist
+dist-ssr
+.pnpm-store
+
+# Env & 本機設定
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+.claude
+.playwright-mcp
+
+# 系統與 log
+.DS_Store
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# Dockerfile 本身不需要進 context
+Dockerfile
+.dockerignore

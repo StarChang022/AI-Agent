@@ -1,0 +1,15 @@
+$kind: http-request
+description: "邀請員工：admin token 必要。回 201 + invitation DTO"
+url: "{{base_url}}/api/invitations"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "email":"new-employee@example.com",
+        "name":"新員工"
+    }
+order: 2000

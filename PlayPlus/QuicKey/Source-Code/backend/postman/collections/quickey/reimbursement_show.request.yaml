@@ -1,0 +1,8 @@
+$kind: http-request
+description: "請款詳情。僅能取申請人本人的請款；非本人或不存在回 404"
+url: "{{base_url}}/api/reimbursements/{{reimbursement_id}}"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3301

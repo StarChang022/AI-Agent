@@ -1,0 +1,8 @@
+$kind: http-request
+description: "批次把本人全部未讀通知標為已讀；回傳本次標了幾筆 { updated: n }"
+url: "{{base_url}}/api/notifications/mark-all-read"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3702

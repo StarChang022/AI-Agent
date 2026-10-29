@@ -1,0 +1,112 @@
+schema: spec-driven
+
+context: |
+  # 專案：Quickey（中小企業支出管理 + 代墊款請款）
+
+  ## 產品概念
+  Quickey 解決「錢花到哪裡、誰花的、有沒有超預算、審核有沒有卡住」，不是取代會計做帳或報稅。
+  雙軌功能：
+    - 一般支出：行政/財務直接登錄（採購、廠商發票、訂閱費），無簽核
+    - 代墊款請款：員工前台提交 → 財務一層審核 → 撥款 → 併入正式支出
+  角色（過渡期）：現有程式碼 employee / finance / admin 4 種；新 PRD 目標將簡化為 superadmin + employee，尚未動。
+
+  ## 現階段狀態
+  Prototype：只有前端 + Pinia mock 資料。後端未建立。
+  所有互動改 Pinia store 內狀態，之後接 API 時只需把 mutation 換成 fetch，component 不用動。
+  **不寫測試**（MVP 跳過）；每個 change 提供 QA checklist 人工驗收。
+
+  ## 技術棧（frontend/）
+  - Vue 3.5 + Vite 8 + TypeScript
+  - Tailwind CSS v4（CSS-first config，見 frontend/src/styles/index.css 的 @theme）
+  - PrimeVue 4.5（Aura theme 客製為 Trust Blue，主色 #3e6fc4）
+  - Pinia（stores/auth.ts、stores/expenses.ts、stores/users.ts）
+  - Vue Router（router/index.ts，含 role-based guard）
+  - PrimeIcons
+  - PWA：vite-plugin-pwa
+  - Package manager：pnpm
+
+  ## 目錄結構
+  quickey/
+    ├── openspec/                    # OpenSpec specs & changes（本目錄）
+    ├── CLAUDE.md                    # 專案給 AI 的說明（含關鍵領域概念）
+    ├── docs/                        # 產品/技術/資料/開發文件
+    │   ├── dev/                     # 開發文件
+    │   │   ├── design.md            # 設計系統（色彩 / 圓角 / 陰影 / 元件規範）
+    │   │   ├── dev-style.md         # 寫程式風格（樣式三層架構、utils 規則）
+    │   │   └── CONTEXT.md           # 舊 ExpensePal 期交接紀錄
+    │   ├── 產品規格文件.md          # 新 PRD @2026-08-19
+    │   ├── sitemap.md
+    │   ├── 資料模型.md              # Reimbursement + Expense 雙 model 決策
+    │   ├── 技術選型.md              # 後端/DB/OCR 選項比較（待定案）
+    │   └── 產品延伸分工討論.md      # Miki/Peggy/阿星 分工、MVP 邊界
+    └── frontend/src/
+        ├── App.vue、main.ts、styles/（index.css + qds.css）
+        ├── presets/                 # PrimeVue Trust Blue preset
+        ├── router/
+        ├── layouts/                 # FrontLayout（員工前台）/ AdminLayout（後台）
+        ├── views/
+        │   ├── front/               # 員工前台
+        │   └── admin/               # 後台
+        ├── stores/                  # Pinia
+        ├── mocks/                   # JSON 種子資料
+        ├── types/domain.ts          # 領域型別
+        ├── components/              # 共用元件（StatusBadge, AmountText, PageHeader, EmptyState 等）
+        ├── utils/                   # 純函數（format.ts, approval.ts）
+        └── api/                     # 待建
+
+  ## 樣式三層架構（動 UI 前必讀 dev-style.md）
+  由下往上選擇：
+    1. Design tokens（styles/index.css @theme / CSS vars）— 顏色、圓角、陰影、字體的單一來源
+    2. Utility class（styles/index.css @utility）— 重複 3 次以上有語意的視覺骨架，如 .card / .card-lg / .category-chip / .field-label / .field-caption / .section-title
+    3. Vue 元件（.vue）— 有邏輯 / props / slot 才做
+  PrimeVue 元件的全域覆寫（圓角、字重、邊框寬度）集中在 styles/index.css 用 .p-button / .p-inputtext 等 class 選擇器覆寫，不做個別 :pt pass-through。
+
+  ## 手機版限制
+  手機版（max-width: 639.98px）文字上限 14px（含 modal、button、input、卡片內文）；頁面主標 PageHeader 例外。
+  後台管理頁面必須支援手機瀏覽（行政人員可能在外面用手機處理審核）。
+
+  ## 請款狀態機（Reimbursement 6 狀態）
+  draft（草稿）→ in_review（簽核中）→ approved（已核銷/待發放）→ paid（已發放）
+                                    └→ rejected（駁回）→ 員工可修改 resubmit
+  approved 可 void → voided（作廢）；paid 之後不可 void。
+
+  ## Prototype 開發原則
+  - 不建構後端相關功能
+  - 所有資料互動只操作 Pinia store 中的 mock 資料
+  - 新增/審核/駁回等動作在 Pinia store 內「就地改狀態」實作
+  - 不新增測試；每個 change 提供人工驗收 checklist
+  - 頁面 UI 一律套用 design.md 的 tokens 與元件模式，避免各頁自定顏色/間距
+  - 狀態徽章、金額格式、日期格式抽成共用元件或 utility
+
+  ## Git 慣例
+  Commit message 用中文，格式 `type: 中文描述`（例：`feat: 加入請款分組側邊欄`、`chore: 品牌改名 ExpensePal → Quickey`）。
+  Type：feat / fix / chore / docs / refactor / style。
+
+rules:
+  proposal:
+    - 用繁體中文書寫（terminology 例外可用英文，例如 store / component / spec）
+    - 明確列 Non-goals（避免 scope 蔓延）
+    - 若牽動 UI，說明是動 layout / view / component / tokens 哪一層
+    - 若牽動資料模型，先確認是否符合 docs/資料模型.md 的雙 model 決策
+  tasks:
+    - 每項任務控制在 2 小時內
+    - 明確標出「動哪個檔案」，不寫模糊的「更新 UI」
+    - Prototype 階段：只動 Pinia store 與 view，不寫後端 / API 呼叫
+    - 最後一項固定為「pnpm build 通過 + 人工 QA checklist」
+  specs:
+    - Spec 以行為為主（"系統必須支援 X"），避免綁死實作細節
+    - 涉及狀態機時明確列出合法轉換
+    - 若對應 docs/ 內既有文件，在 spec 內引用檔名讓讀者對照
+
+operations:
+  apply:
+    guidance:
+      - 動 UI 前先讀 design.md 與 dev-style.md
+      - 一律優先用現有 utility class（.card / .card-lg / .category-chip …）與共用元件（StatusBadge / AmountText / PageHeader / EmptyState）
+      - 新增顏色 / 圓角 / 陰影 → 先加 @theme token，不要在 template 寫 hex
+      - 手機版字級檢查（≤ 14px 除主標外）
+      - 每完成一項 tasks.md 立刻打勾
+  archive:
+    guidance:
+      - "Archive 前確認 pnpm build 通過"
+      - "Archive 後在 commit message 標出 change name（例：feat(admin-sidebar-restructure) ...）"

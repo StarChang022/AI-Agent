@@ -1,0 +1,15 @@
+$kind: http-request
+description: "更新類別（name / account_code / sort_order）。禁止改 is_archived"
+url: "{{base_url}}/api/categories/{{category_id}}"
+method: PATCH
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "name":"雲端訂閱費",
+        "account_code":"6270"
+    }
+order: 3002

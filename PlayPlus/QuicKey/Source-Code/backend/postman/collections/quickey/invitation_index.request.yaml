@@ -1,0 +1,8 @@
+$kind: http-request
+description: "列出邀請。預設只回有效邀請；?include_inactive=true 含歷史"
+url: "{{base_url}}/api/invitations?include_inactive=false"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 2001

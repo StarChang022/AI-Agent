@@ -1,0 +1,5 @@
+$kind: http-request
+description: "Step 2: 前端點驗證信連結後呼叫，回 { email, provider }"
+url: "{{base_url}}/api/auth/signup/verify?token={{signup_token}}"
+method: GET
+order: 1001

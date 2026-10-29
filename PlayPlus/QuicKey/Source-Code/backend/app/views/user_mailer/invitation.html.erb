@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @invitee_name %> 您好，</p>
+    <p>
+      <strong><%= @company_name %></strong> 邀請您加入 Quickey，開始使用線上代墊款請款流程。
+      請於 <strong>3 天內</strong>點擊以下連結設定密碼並啟用帳號；逾時後連結失效，請聯絡管理員重新發送。
+    </p>
+    <p>
+      <a href="<%= @accept_url %>"><%= @accept_url %></a>
+    </p>
+    <p>若您不清楚此邀請，請忽略此信。</p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

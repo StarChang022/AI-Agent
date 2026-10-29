@@ -1,0 +1,148 @@
+name: Deploy
+
+# push main 即部署到 quickey 主機（1 vCPU / 2GB，不適合在主機上 build），
+# 所以 image 在 Actions 上 build 好推到 GHCR，主機只負責 pull + up。
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 避免連續 push 時舊 run 較晚結束、把新版 image 蓋回去
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  # GHCR image 名稱必須全小寫
+  IMAGE_PREFIX: ghcr.io/playplustw/quickey
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: web
+            context: ./frontend
+          - name: backend
+            context: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          # sha tag 供回滾用：把主機 .env 的 IMAGE_TAG 改成舊 sha 再 up 即可
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+          # 兩個 image 共用 gha cache，用 scope 分開才不會互蓋
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # db container 首次啟動會掛載 init-db.prod.sh 建立 backend user 與 4 個 DB
+      - name: Copy compose files to VPS
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "compose.prod.yml,backend/script/init-db.prod.sh"
+          target: "~/deploy/quickey"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          # OCR 金鑰 JSON 是多行內容，用 envs 以環境變數傳到主機，不直接嵌進下面的 script 文字
+          GCP_OCR_KEY_JSON: ${{ secrets.GCP_OCR_KEY_JSON }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: GCP_OCR_KEY_JSON
+          script: |
+            set -e
+            cd ~/deploy/quickey
+
+            # .env 每次都從 GitHub Secrets 重寫，Secrets 是唯一來源。
+            # ⚠️ BACKEND_DATABASE_PASSWORD 只在 DB 首次初始化時寫進 Postgres，
+            #    之後改 secret 不會同步改 DB 密碼，Rails 會連不上。
+            cat > .env << 'ENVEOF'
+            IMAGE_TAG=${{ github.sha }}
+            RAILS_MASTER_KEY=${{ secrets.RAILS_MASTER_KEY }}
+            POSTGRES_SUPERUSER_PASSWORD=${{ secrets.POSTGRES_SUPERUSER_PASSWORD }}
+            BACKEND_DATABASE_PASSWORD=${{ secrets.BACKEND_DATABASE_PASSWORD }}
+            SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}
+            SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+            SMTP_FROM=${{ secrets.SMTP_FROM }}
+            GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+            GCP_LOCATION=${{ secrets.GCP_LOCATION }}
+            GCP_OCR_PROCESSOR_ID=${{ secrets.GCP_OCR_PROCESSOR_ID }}
+            GCP_CREDENTIALS_FILE=./secrets/gcp-ocr.json
+            ENVEOF
+            sed -i 's/^[[:space:]]*//' .env
+            chmod 600 .env
+
+            # OCR 金鑰檔：每次從 Secret 重寫，必須在 compose up 之前寫好。
+            # 主機上檔案不存在時 Docker 會在掛載路徑建一個 root 擁有的資料夾，之後就寫不進去；
+            # 所以 Secret 沒設也放一個空檔（後端讀不到金鑰 → OCR 回 503，其他功能不受影響）。
+            # 容器以 uid 1000 執行，檔案給 644 讓它讀得到；外層資料夾 700 擋住主機上其他使用者。
+            mkdir -p secrets
+            chmod 700 secrets
+            if [ -n "$GCP_OCR_KEY_JSON" ]; then
+              printf '%s' "$GCP_OCR_KEY_JSON" > secrets/gcp-ocr.json
+            else
+              echo "⚠ 未設定 GCP_OCR_KEY_JSON，OCR 辨識會回 503"
+              : > secrets/gcp-ocr.json
+            fi
+            chmod 644 secrets/gcp-ocr.json
+
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose -f compose.prod.yml pull
+            docker logout ghcr.io
+
+            # backend 的 docker-entrypoint 啟動時會自動跑 db:prepare（含 migration）
+            docker compose -f compose.prod.yml up -d --remove-orphans
+
+            # 等 Rails 起來；失敗就讓 job 變紅並印出 backend log
+            for i in $(seq 1 30); do
+              if curl -fsS -o /dev/null http://localhost/up; then
+                echo "✓ /up 健康檢查通過"
+                docker image prune -f
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "✗ 150 秒內 /up 沒有回應"
+            docker compose -f compose.prod.yml ps
+            docker compose -f compose.prod.yml logs --tail=100 backend
+            exit 1

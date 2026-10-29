@@ -1,0 +1,8 @@
+$kind: http-request
+description: "解除停用。未停用回 409 NOT_ARCHIVED"
+url: "{{base_url}}/api/categories/{{category_id}}/unarchive"
+method: PATCH
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3004

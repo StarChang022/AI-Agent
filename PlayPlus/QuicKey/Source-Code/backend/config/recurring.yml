@@ -1,0 +1,20 @@
+# examples:
+#   periodic_cleanup:
+#     class: CleanSoftDeletedRecordsJob
+#     queue: background
+#     args: [ 1000, { batch_size: 500 } ]
+#     schedule: every hour
+#   periodic_cleanup_with_command:
+#     command: "SoftDeletedRecord.due.delete_all"
+#     priority: 2
+#     schedule: at 5am every day
+
+production:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+  notify_overdue_payouts:
+    class: NotifyOverduePayoutsJob
+    queue: default
+    # 台北 09:00 = UTC 01:00（server 以 UTC 執行 cron）。job 內以 Asia/Taipei 判定當日。
+    schedule: "0 1 * * *"

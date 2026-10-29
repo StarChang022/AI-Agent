@@ -1,0 +1,8 @@
+$kind: http-request
+description: "撤回邀請（軟刪）。已接受則回 409 ALREADY_ACCEPTED"
+url: "{{base_url}}/api/invitations/{{invitation_id}}"
+method: DELETE
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 2002

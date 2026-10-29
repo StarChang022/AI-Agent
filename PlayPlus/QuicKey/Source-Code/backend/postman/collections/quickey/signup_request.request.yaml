@@ -1,0 +1,11 @@
+$kind: http-request
+description: "Step 1: 送 email 到後端 → 寄驗證信（一律回 202）"
+url: "{{base_url}}/api/auth/signup/request"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "email":"newadmin@example.com"
+    }
+order: 1000

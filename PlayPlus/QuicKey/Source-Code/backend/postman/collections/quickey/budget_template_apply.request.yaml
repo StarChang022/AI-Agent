@@ -1,0 +1,16 @@
+$kind: http-request
+description: "把該 cycle 所有 template 套用到指定期間（覆寫該期間 Budget；無 template 則刪除當期）"
+url: "{{base_url}}/api/budget-templates/apply"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "cycle":"month",
+        "period_start":"2026-10-01",
+        "period_end":"2026-10-31"
+    }
+order: 3203

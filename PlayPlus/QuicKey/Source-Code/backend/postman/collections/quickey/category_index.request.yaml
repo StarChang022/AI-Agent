@@ -1,0 +1,8 @@
+$kind: http-request
+description: "列出類別。未帶 archived 回未停用；?archived=true 只回已停用"
+url: "{{base_url}}/api/categories"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3000

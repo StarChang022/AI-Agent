@@ -1,0 +1,8 @@
+$kind: http-request
+description: "列出預算。可用 category_id / cycle / period_start 篩選"
+url: "{{base_url}}/api/budgets?cycle=month&period_start=2026-09-01"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3100

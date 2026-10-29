@@ -1,0 +1,405 @@
+/* 服務區塊示意畫面的共用樣式：沿用後台的按鈕、狀態標籤、進度條、分段控制與上傳區樣式 */
+
+.mk-card {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  color: #1a1f29;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.28);
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 639.98px) {
+  .mk-card {
+    padding: 20px;
+  }
+}
+
+.mk-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.mk-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.mk-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #5b6575;
+}
+
+/* 按鈕：後台 Button（主色圓角膠囊） */
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #008072;
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+.mk-btn:hover:not(:disabled) {
+  background: #006b5f;
+}
+.mk-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.mk-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.mk-btn:focus-visible,
+.mk-seg button:focus-visible,
+.mk-drop:focus-visible {
+  outline: 2px solid #00b39f;
+  outline-offset: 2px;
+}
+
+/* 狀態標籤：與後台 StatusBadge 顏色一致 */
+.mk-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.mk-chip--draft {
+  background: #eef1f5;
+  color: #5b6575;
+}
+.mk-chip--in_review {
+  background: #fef3c7;
+  color: #d97706;
+}
+.mk-chip--approved {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.mk-chip--paid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+/* 上傳區：與後台 .upload-drop 一致（虛線框） */
+.mk-drop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 104px;
+  overflow: hidden;
+  padding: 16px;
+  border: 1.5px dashed #00b39f;
+  border-radius: 16px;
+  background: #f4fbfa;
+  color: #5b6575;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.mk-drop.is-filled {
+  border-style: solid;
+  background: #ffffff;
+}
+.mk-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1a1f29;
+  font-weight: 600;
+  animation: mk-fade-in 0.4s ease both;
+}
+.mk-file-thumb {
+  display: inline-block;
+  width: 28px;
+  height: 34px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #d9f3ef 0 40%, #eef1f5 40%);
+  box-shadow: inset 0 0 0 1px #c7d0db;
+}
+.mk-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: #00b39f;
+  box-shadow: 0 0 12px #00b39f;
+  animation: mk-scan 0.9s linear infinite;
+}
+@keyframes mk-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(104px);
+  }
+}
+
+/* 欄位列表（辨識結果） */
+.mk-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin: 18px 0 0;
+}
+.mk-field dt {
+  font-size: 12px;
+  color: #6b7280;
+}
+.mk-field dd {
+  margin: 2px 0 0;
+  min-height: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9aa3b0;
+  transition: color 0.4s ease;
+}
+.mk-field dd.is-on {
+  color: #1a1f29;
+  animation: mk-fade-in 0.5s ease both;
+}
+
+/* 進度條：與後台 budget-bar 一致 */
+.mk-bar {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #eef1f5;
+  overflow: hidden;
+}
+.mk-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #00b39f;
+  transition: width 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.mk-bar.is-warn .mk-bar-fill {
+  background: #d97706;
+}
+
+/* 分段控制：與後台 SlideSelectButton 一致 */
+.mk-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: #eef1f5;
+}
+.mk-seg button {
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #5b6575;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.mk-seg button.is-on {
+  background: #ffffff;
+  color: #008072;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* 步驟時間軸（請款進度） */
+.mk-steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mk-steps li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  color: #9aa3b0;
+  font-size: 14px;
+  transition: color 0.4s ease;
+}
+.mk-steps li.is-done {
+  color: #1a1f29;
+}
+.mk-steps li.is-current {
+  font-weight: 600;
+}
+.mk-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d5dbe3;
+  transition: background-color 0.4s ease, transform 0.4s ease;
+}
+.mk-steps li.is-done .mk-dot {
+  background: #00b39f;
+}
+.mk-steps li.is-current .mk-dot {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 4px rgba(0, 179, 159, 0.18);
+}
+
+/* 預算列 */
+.mk-budget + .mk-budget {
+  margin-top: 16px;
+}
+.mk-budget-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.mk-budget-top b {
+  font-variant-numeric: tabular-nums;
+}
+.mk-amt {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 彙整列表 */
+.mk-sum {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  animation: mk-fade-in 0.4s ease both;
+}
+.mk-sum li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1f5;
+}
+.mk-sum li:last-child {
+  border-bottom: 0;
+}
+.mk-sum .mk-dot {
+  width: 8px;
+  height: 8px;
+}
+.mk-sum .mk-name {
+  flex: 1;
+  color: #5b6575;
+}
+.mk-sum b {
+  font-variant-numeric: tabular-nums;
+}
+.mk-sum b.is-pos {
+  color: #008072;
+}
+
+/* 提示訊息（匯出完成） */
+.mk-toast {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+  animation: mk-fade-in 0.4s ease both;
+}
+
+/* 假游標 */
+.mk-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  pointer-events: none;
+  transition: transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.25s ease;
+}
+.mk-cursor svg {
+  display: block;
+  transition: transform 0.14s ease;
+}
+.mk-cursor.is-pressed svg {
+  transform: scale(0.9);
+}
+.mk-ripple {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 179, 159, 0.35);
+  opacity: 0;
+}
+.mk-cursor.is-pressed .mk-ripple {
+  animation: mk-ripple 0.5s ease-out;
+}
+@keyframes mk-ripple {
+  from {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+@keyframes mk-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-cursor,
+  .mk-scan {
+    display: none;
+  }
+  .mk-file,
+  .mk-field dd.is-on,
+  .mk-sum,
+  .mk-toast {
+    animation: none;
+  }
+  .mk-bar-fill,
+  .mk-seg button,
+  .mk-chip,
+  .mk-steps li,
+  .mk-dot,
+  .mk-drop {
+    transition: none;
+  }
+}

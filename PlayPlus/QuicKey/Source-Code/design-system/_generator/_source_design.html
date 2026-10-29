@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quickey Design System — 品牌綠</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary-50:#edfaf8; --primary-100:#d1f1ee; --primary-200:#8cddd4; --primary-300:#58cdc0;
+    --primary-400:#2abfaf; --primary-500:#00b39f; --primary-600:#019181; --primary-700:#008072;
+    --primary-800:#035a50; --primary-900:#053f38; --primary-950:#062a25;
+    --primary-solid:var(--primary-700); --primary-text:var(--primary-700);
+    --on-primary:#ffffff;
+    --success:#10b981; --warning:#f59e0b; --info:#0ea5e9; --danger:#dc2626;
+    --status-draft:#6b7280; --status-draft-bg:#eef1f5;
+    --status-review:#d97706; --status-review-bg:#fef3c7;
+    --status-rejected:#dc2626; --status-rejected-bg:#fee2e2;
+    --status-approved:#6d28d9; --status-approved-bg:#ede9fe;
+    --status-paid:#059669; --status-paid-bg:#d1fae5;
+    --status-voided:#485266; --status-voided-bg:#485266;
+    --canvas:#ffffff; --surface:#f4f5f8; --surface-soft:#eef1f5;
+    --hairline:#e3e6ec; --hairline-strong:#c9cedd;
+    --ink:#2a3140; --slate:#485266; --muted:#646d80; --muted-soft:#a6acb8;
+    --radius-none:0; --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+    --radius-xl:16px; --radius-full:9999px; --radius-tag:8px; --radius-chip:14px;
+    --radius-control:16px; --radius-card:18px; --radius-card-lg:20px;
+    --space-xxs:4px; --space-xs:8px; --space-sm:12px; --space-md:16px; --space-lg:20px;
+    --space-xl:24px; --space-xxl:32px; --space-xxxl:40px;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.04); --shadow-md:0 4px 12px rgba(15,23,42,.06);
+    --shadow-lg:0 8px 24px rgba(15,23,42,.08); --shadow-primary:0 6px 16px rgba(0,128,114,.22);
+    --shadow-card:0 8px 24px rgba(26,31,41,.10); --shadow-float:0 20px 60px rgba(26,31,41,.10);
+    --font-sans:'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    /* stat card 實色背景（KPI 卡） */
+    --stat-primary-bg:var(--primary-solid); --stat-neutral-bg:var(--slate);
+    --stat-dark-bg:var(--ink); --stat-warning-bg:var(--warning);
+    /* 圖表色票：序列色（單一指標 + 對照的淺色）與分類色（多類別，如圓餅圖） */
+    --chart-series:var(--primary-500); --chart-series-soft:var(--primary-200);
+    --chart-cat-1:var(--primary-500); --chart-cat-2:var(--warning); --chart-cat-3:var(--info);
+    --chart-cat-4:var(--slate); --chart-cat-5:var(--muted-soft);
+    --chart-grid:var(--hairline);
+    /* 側邊導覽 / 頂欄 */
+    --sidenav-w:240px; --topbar-h:64px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--surface); color:var(--ink); font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--primary-text);}
+  code{background:var(--surface-soft); padding:2px 6px; border-radius:var(--radius-tag); font-size:.9em;}
+
+  /* ==== layout ==== */
+  .shell{display:flex; min-height:100vh;}
+  nav.toc{
+    width:220px; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:var(--canvas); border-right:1px solid var(--hairline); padding:var(--space-lg) var(--space-md);
+  }
+  nav.toc .brand{font-weight:600; font-size:16px; margin-bottom:var(--space-lg); color:var(--ink);}
+  nav.toc .brand span{display:block; font-size:12px; font-weight:400; color:var(--muted-soft); margin-top:2px;}
+  nav.toc a{display:block; padding:6px 0; font-size:14px; color:var(--slate); text-decoration:none; transition:color .15s ease;}
+  nav.toc a:hover{color:var(--primary-text);}
+  nav.toc a.sub{padding-left:12px; font-size:13px; color:var(--muted);}
+  main{flex:1; min-width:0; padding:var(--space-xl) var(--space-xl) 80px;}
+  section{max-width:1200px; margin:0 auto var(--space-xxxl);}
+  section:first-of-type{margin-top:0;}
+  h1{font-size:32px; font-weight:600; line-height:1.2; letter-spacing:-0.5px; margin:0 0 8px;}
+  h2{font-size:24px; font-weight:600; line-height:1.25; margin:0 0 var(--space-md); padding-top:var(--space-xl); border-top:1px solid var(--hairline);}
+  section:first-of-type h2{border-top:none; padding-top:0;}
+  h3{font-size:18px; font-weight:600; margin:var(--space-xl) 0 var(--space-sm);}
+  h3 code{font-size:.75em; font-weight:400;}
+  p.lede{font-size:16px; color:var(--slate); line-height:1.6;}
+  p.lede.intro{max-width:640px;}
+  p.note{font-size:13px; color:var(--muted); line-height:1.6; margin-top:8px;}
+  .badge-note{display:inline-block; background:var(--surface-soft); color:var(--slate); font-size:12px; padding:2px 8px; border-radius:var(--radius-tag); margin-bottom:var(--space-md);}
+
+  /* ==== swatches ==== */
+  .grid{display:grid; gap:var(--space-md);}
+  .grid.colors{grid-template-columns:repeat(auto-fill, minmax(140px,1fr));}
+  .swatch{border-radius:var(--radius-card); overflow:hidden; border:1px solid var(--hairline); background:var(--canvas);}
+  .swatch .swatch-color{display:block; width:100%; height:64px;}
+  .swatch .meta{padding:10px 12px; font-size:12px;}
+  .swatch .meta .name{font-weight:600; color:var(--ink); display:block;}
+  .swatch .meta .val{color:var(--muted); font-family:monospace;}
+
+  table{width:100%; border-collapse:collapse; font-size:14px; margin-top:var(--space-sm);}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--hairline);}
+  th{color:var(--slate); font-weight:500; background:var(--surface); font-size:12px;}
+  td code{white-space:nowrap;}
+
+  /* ==== type scale ==== */
+  .type-row{display:flex; align-items:baseline; gap:var(--space-lg); padding:var(--space-md) 0; border-bottom:1px solid var(--hairline);}
+  .type-row .label{width:110px; flex-shrink:0; font-size:12px; color:var(--muted-soft); font-family:monospace;}
+  .type-row .sample{color:var(--ink);}
+
+  /* ==== spacing/radius bars ==== */
+  .bars{display:flex; flex-direction:column; gap:10px;}
+  .bar-row{display:flex; align-items:center; gap:var(--space-md); font-size:13px;}
+  .bar-row .tok{width:90px; flex-shrink:0; font-family:monospace; color:var(--slate);}
+  .bar-row .bar{background:var(--primary-300); height:16px; border-radius:4px;}
+  .bar-row .val{width:56px; color:var(--muted); font-family:monospace;}
+
+  .radius-demo{display:flex; flex-wrap:wrap; gap:var(--space-lg);}
+  .radius-demo .box{width:72px; height:72px; background:var(--primary-100); border:1.5px solid var(--primary-300); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--primary-700); font-family:monospace; text-align:center;}
+  .radius-demo .box.pill{background:var(--primary-50); border-color:var(--primary-500);}
+
+  .shadow-demo{display:flex; flex-wrap:wrap; gap:var(--space-xl);}
+  .shadow-demo .box{width:120px; height:80px; background:var(--canvas); border-radius:var(--radius-card); display:flex; align-items:center; justify-content:center; font-size:12px; font-family:monospace; color:var(--slate);}
+
+  /* ==== components ==== */
+  .demo{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--radius-card-lg); padding:var(--space-xl); margin-top:var(--space-sm);}
+  .demo-row{display:flex; flex-wrap:wrap; gap:var(--space-md); align-items:center;}
+  .demo-row + .demo-row{margin-top:var(--space-md);}
+  .demo-row svg{display:block;}
+  .demo-row > .field{flex:1 1 220px; width:auto;}
+  .demo-row > .card-lg, .demo-row > .card-nested, .demo-row > .empty-state,
+  .demo-row > .dialog-preview, .demo-row > .drawer-preview{flex:0 0 auto;}
+  .demo-row > .upload-drop{flex:1 1 320px; max-width:480px;}
+
+  .btn{border:none; border-radius:var(--radius-full); padding:12px 20px; font-size:14px; font-weight:600; font-family:var(--font-sans); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .05s ease;}
+  .btn-primary{background:var(--primary-solid); color:var(--on-primary); box-shadow:var(--shadow-primary);}
+  .btn-primary:hover{background:var(--primary-600);}
+  .btn-primary:active{background:var(--primary-800); transform:translateY(1px);}
+  .btn-secondary{background:var(--canvas); color:var(--primary-text); border:1.5px solid var(--primary-solid);}
+  .btn-secondary:hover{background:var(--primary-50);}
+  .btn-secondary:active{background:var(--primary-100);}
+  .btn-danger{background:var(--canvas); color:#c0362c; border:1.5px solid #f1b3ac; box-shadow:none;}
+  .btn-danger:hover{background:#fef2f1; border-color:#e8938a;}
+  .btn-text{background:transparent; color:var(--primary-text); padding:10px 12px;}
+  .btn-text:hover{background:var(--surface-soft);}
+  .btn-icon-only{width:40px; height:40px; padding:0; justify-content:center;}
+  .btn[disabled]{cursor:not-allowed;}
+  .btn[disabled]:hover{background:var(--primary-solid);}
+  .btn svg{width:16px; height:16px; stroke:currentColor; flex-shrink:0;}
+
+  .field{display:flex; flex-direction:column; gap:8px; width:240px;}
+  .field label{font-size:14px; font-weight:500; color:var(--slate);}
+  .field input, .field .input-shell{font-family:var(--font-sans); font-size:14px; color:var(--ink); background:var(--canvas); border:1.5px solid var(--hairline); border-radius:var(--radius-control); padding:12px 14px; transition:border-color .15s ease, box-shadow .15s ease;}
+  .field input:hover, .field .input-shell:hover{border-color:var(--hairline-strong);}
+  .field input:focus{outline:none; border-color:var(--primary-solid); box-shadow:0 0 0 3px var(--primary-100);}
+  .field input::placeholder{color:var(--muted-soft); opacity:1;}
+  .field .input-shell{display:flex; align-items:center; gap:8px;}
+  .field .input-shell svg{width:18px; height:18px; stroke:var(--muted); flex-shrink:0;}
+  .field .input-shell input{border:none; padding:0; flex:1; min-width:0;}
+  .field .input-shell input:focus{box-shadow:none;}
+  .field .input-shell:focus-within, .field .input-shell.focus{border-color:var(--primary-solid); box-shadow:0 0 0 3px var(--primary-100);}
+
+  .input-shell.ms-box{min-height:44px; align-items:center; flex-wrap:wrap; gap:6px; padding:8px 10px;}
+  .ms-chip{display:inline-flex; align-items:center; gap:4px; background:var(--primary-50); color:var(--primary-text); font-size:13px; font-weight:600; padding:3px 10px; border-radius:var(--radius-full);}
+  .ms-chip svg{width:12px; height:12px; cursor:pointer; border-radius:50%; transition:background-color .15s ease;}
+  .ms-chip svg:hover{background:var(--primary-100);}
+
+  .dd-wrap{position:relative;}
+  .dd-panel{display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--radius-control); box-shadow:var(--shadow-float); overflow:hidden; z-index:2;}
+  .dd-wrap.open .dd-panel{display:block;}
+  .dd-opt{padding:10px 14px; font-size:14px; color:var(--ink); cursor:pointer; transition:background-color .1s ease;}
+  .dd-opt:hover{background:var(--surface-soft);}
+  .dd-opt.hi{background:var(--primary-50); color:var(--primary-text); font-weight:600;}
+  .dd-opt.hi:hover{background:var(--primary-100);}
+  .dd-wrap .input-shell[tabindex]{cursor:pointer;}
+
+  .cal-panel{padding:12px; overflow:visible;}
+  .cal-head{font-size:13px; font-weight:600; color:var(--ink); text-align:center; margin-bottom:8px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px;}
+  .cal-dow{font-size:11px; color:var(--muted-soft); text-align:center; padding:4px 0;}
+  .cal-cell{font-size:12px; text-align:center; padding:6px 0; border-radius:var(--radius-full); cursor:pointer; color:var(--ink); transition:background-color .1s ease;}
+  .cal-cell:hover{background:var(--surface-soft);}
+  .cal-cell.sel{background:var(--primary-solid); color:var(--on-primary); font-weight:600;}
+  .cal-cell.sel:hover{background:var(--primary-600);}
+  .cal-cell.blank{cursor:default;}
+  .cal-cell.blank:hover{background:none;}
+
+  .card-lg{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--radius-card-lg); padding:var(--space-lg); width:220px;}
+  .card-nested{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--radius-card); padding:16px; width:220px;}
+  .kpi-label{font-size:15px; color:var(--slate); font-weight:500; margin-bottom:4px;}
+  .kpi-value{font-size:24px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .card-title{font-size:14px; font-weight:600; color:var(--ink); margin-bottom:12px;}
+  .card-body{font-size:14px; color:var(--slate);}
+
+  .status-badge{display:inline-block; font-size:12px; font-weight:600; padding:3px 10px; border-radius:var(--radius-full);}
+  .chip{display:inline-block; background:var(--surface); border:1px solid var(--hairline); color:var(--ink); font-size:12px; font-weight:600; padding:2px 9px; border-radius:var(--radius-tag);}
+
+  .tag{display:inline-flex; align-items:center; font-size:14px; font-weight:600; padding:4px 12px; border-radius:var(--radius-full);}
+  .tag-default{background:var(--surface); color:var(--slate); border:1px solid var(--hairline);}
+  .tag-danger{background:#fee2e2; color:var(--danger);}
+
+  .tabbar{display:flex; gap:var(--space-xl); border-bottom:1px solid var(--hairline);}
+  .tabbar .tab{position:relative; padding:0 0 12px; font-size:16px; color:var(--muted); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; font-family:var(--font-sans); transition:color .15s ease;}
+  .tabbar .tab:hover:not(.active){color:var(--slate);}
+  .tabbar .tab.active{color:var(--primary-text); font-weight:600;}
+  .tabbar .tab.active::after{content:"";position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--primary-solid); border-radius:2px;}
+  .tab-count{font-size:12px; font-weight:600; padding:1px 8px; border-radius:var(--radius-full); background:var(--surface); color:var(--slate); transition:background-color .15s ease, color .15s ease;}
+  .tabbar .tab.active .tab-count{background:var(--primary-50); color:var(--primary-text);}
+
+  .stack-table{border:1px solid var(--hairline); border-radius:var(--radius-card); overflow:hidden;}
+  .stack-table .row{display:flex; justify-content:space-between; padding:12px 14px; font-size:14px; border-bottom:1px solid var(--hairline); background:var(--canvas); transition:background-color .15s ease;}
+  .stack-table .row:last-child{border-bottom:none;}
+  .stack-table .row:hover{background:var(--surface-soft);}
+  .stack-table .head{background:var(--surface); color:var(--slate); font-size:12px; font-weight:500;}
+
+  .upload-drop{border:2px dashed var(--hairline); border-radius:var(--radius-card); padding:32px 20px; background:var(--canvas); text-align:center; width:320px; cursor:pointer; transition:border-color .15s ease, background-color .15s ease;}
+  .upload-drop:hover{border-color:var(--primary-solid); background:var(--primary-50);}
+  .upload-drop svg{display:block; width:40px; height:40px; stroke:var(--muted); margin:0 auto 10px;}
+  .upload-drop .u-title{font-size:14px; font-weight:600; color:var(--ink);}
+  .upload-drop .u-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+
+  .dialog-preview{width:340px; background:var(--canvas); border-radius:var(--radius-card-lg); box-shadow:var(--shadow-float); overflow:hidden;}
+  .dialog-preview .dh{padding:16px 20px; border-bottom:1px solid var(--hairline); font-size:18px; font-weight:600;}
+  .dialog-preview .db{padding:20px; font-size:14px; color:var(--slate);}
+  .dialog-preview .df{padding:14px 20px; border-top:1px solid var(--hairline); display:flex; justify-content:flex-end; gap:8px;}
+
+  .drawer-preview{width:280px; background:var(--canvas); border-radius:var(--radius-card-lg); box-shadow:var(--shadow-float); overflow:hidden;}
+  .drawer-preview .dh{padding:16px 20px; border-bottom:1px solid var(--hairline); font-size:16px; font-weight:600; display:flex; justify-content:space-between; align-items:center;}
+  .drawer-preview .dh .close-btn{cursor:pointer; color:var(--muted); width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; border-radius:var(--radius-full); font-size:14px; font-weight:400; transition:background-color .15s ease, color .15s ease;}
+  .drawer-preview .dh .close-btn:hover{background:var(--surface-soft); color:var(--ink);}
+  .drawer-preview .db{padding:16px 20px; font-size:14px; color:var(--slate); display:flex; flex-direction:column; gap:12px;}
+
+  .empty-state{border:1px dashed var(--hairline); border-radius:var(--radius-control); padding:36px 20px; text-align:center; color:var(--muted); width:320px;}
+  .empty-state svg{display:block; width:36px; height:36px; stroke:var(--muted); margin:0 auto 10px;}
+  .empty-state .e-title{font-size:18px; font-weight:600; color:var(--ink); margin-bottom:4px;}
+
+  .alert{display:flex; gap:10px; padding:12px 14px; border-radius:var(--radius-card); font-size:13px; line-height:1.5; max-width:420px;}
+  .alert svg{width:18px; height:18px; flex-shrink:0; margin-top:1px;}
+  .alert-info{background:#eaf5fb; color:#0c5a80; border:1px solid #bfe3f2;}
+
+  ul.rules{padding-left:1.2em; font-size:14px; color:var(--slate); line-height:1.7;}
+  ul.rules li{margin-bottom:4px;}
+  ul.rules code{color:var(--ink);}
+
+  .density-table td:first-child, .density-table th:first-child{color:var(--slate);}
+
+  /* ==== side nav ==== */
+  .side-nav-demo{width:var(--sidenav-w); flex-shrink:0; background:var(--canvas); border-right:1px solid var(--hairline); padding:var(--space-md) 0;}
+  .sn-brand{display:flex; align-items:center; gap:10px; padding:0 var(--space-md) var(--space-lg); font-size:16px; font-weight:700; color:var(--ink);}
+  .sn-logo{width:28px; height:28px; border-radius:var(--radius-sm); background:var(--primary-solid); color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;}
+  .sn-group{padding:var(--space-md) var(--space-md) 6px; font-size:11px; font-weight:600; letter-spacing:.04em; color:var(--muted-soft); text-transform:uppercase;}
+  .sn-item{display:flex; align-items:center; gap:10px; padding:9px var(--space-md); margin:0 8px; border-radius:var(--radius-sm); font-size:14px; color:var(--slate); text-decoration:none; transition:background-color .15s ease, color .15s ease;}
+  .sn-item svg{width:18px; height:18px; stroke:currentColor; flex-shrink:0;}
+  .sn-item:hover{background:var(--surface-soft); color:var(--ink);}
+  .sn-item.active{background:var(--primary-50); color:var(--primary-text); font-weight:600;}
+  .sn-item .sn-badge{margin-left:auto; font-size:11px; font-weight:700; background:var(--primary-solid); color:#fff; border-radius:var(--radius-full); padding:1px 7px;}
+
+  /* ==== topbar ==== */
+  .topbar-demo{display:flex; align-items:center; gap:var(--space-md); height:var(--topbar-h); padding:0 var(--space-lg); background:var(--canvas); border-bottom:1px solid var(--hairline);}
+  .tb-search{flex:1; max-width:320px; display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:var(--radius-full); padding:9px 16px;}
+  .tb-search svg{width:16px; height:16px; stroke:var(--muted); flex-shrink:0;}
+  .tb-search input{border:none; background:none; outline:none; font-family:var(--font-sans); font-size:14px; color:var(--ink); width:100%;}
+  .tb-search input::placeholder{color:var(--muted-soft);}
+  .tb-actions{margin-left:auto; display:flex; align-items:center; gap:10px;}
+  .avatar{width:36px; height:36px; border-radius:var(--radius-full); background:var(--primary-100); color:var(--primary-700); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0;}
+
+  /* ==== stat card（KPI，實色底） ==== */
+  .stat-card{width:220px; border-radius:var(--radius-card-lg); padding:var(--space-lg); color:#fff; box-shadow:var(--shadow-card);}
+  .stat-card .stat-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .stat-card .stat-icon{width:32px; height:32px; border-radius:var(--radius-sm); background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center;}
+  .stat-card .stat-icon svg{width:16px; height:16px; stroke:#fff;}
+  .stat-card .stat-label{font-size:14px; font-weight:500; opacity:.92; margin-top:var(--space-md);}
+  .stat-card .stat-value{font-size:26px; font-weight:700; margin-top:4px; font-variant-numeric:tabular-nums;}
+  .stat-primary{background:var(--stat-primary-bg);}
+  .stat-neutral{background:var(--stat-neutral-bg);}
+  .stat-dark{background:var(--stat-dark-bg);}
+  .stat-warning{background:var(--stat-warning-bg);}
+
+  /* ==== action list（含分頁的待處理清單） ==== */
+  .action-list .row-top{display:flex; justify-content:space-between; align-items:baseline; font-size:14px; font-weight:600; color:var(--ink);}
+  .action-list .ar-id{color:var(--primary-text);}
+  .action-list .ar-time{font-size:12px; font-weight:400; color:var(--muted-soft);}
+  .action-list .ar-sub{font-size:13px; color:var(--muted); margin-top:2px;}
+  .action-list .ar-row{padding:var(--space-md) 0; border-bottom:1px solid var(--hairline);}
+  .action-list .ar-row:last-child{border-bottom:none;}
+
+  /* ==== legend（圖表用） ==== */
+  .legend{display:flex; flex-direction:column; gap:8px;}
+  .legend-item{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--slate);}
+  .legend-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+
+  /* ==== dashboard grid（後台首頁版型骨架） ==== */
+  .dash-shell{display:flex; border:1px solid var(--hairline); border-radius:var(--radius-card-lg); overflow:hidden; background:var(--surface);}
+  .dash-main{flex:1; min-width:0; padding:var(--space-lg);}
+  .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:var(--space-md);}
+  .content-grid{display:grid; grid-template-columns:2fr 1fr; gap:var(--space-md); margin-top:var(--space-md);}
+  @media (max-width:720px){.content-grid{grid-template-columns:1fr;}}
+  .banner-soft{background:var(--canvas); border:1px solid var(--hairline); border-radius:var(--radius-card); padding:14px 18px; font-size:14px; color:var(--slate);}
+
+  footer{max-width:960px; margin:0 auto; padding-top:var(--space-xl); border-top:1px solid var(--hairline); font-size:13px; color:var(--muted-soft);}
+
+  @media (max-width:800px){
+    nav.toc{display:none;}
+    main{padding:var(--space-lg);}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="toc">
+    <div class="brand">Quickey<span>Design System · 品牌綠</span></div>
+    <a href="#principles">設計理念</a>
+    <a href="#density">前台/後台密度</a>
+    <a href="#colors">色彩</a>
+    <a href="#typography">字級字重</a>
+    <a href="#spacing">間距</a>
+    <a href="#radius">圓角</a>
+    <a href="#shadow">陰影</a>
+    <a href="#components">元件規範</a>
+    <a href="#dashboard">Dashboard 版型元件</a>
+    <a href="#architecture">樣式三層架構</a>
+    <a href="#a11y">無障礙</a>
+    <a href="#notes">待整理 / 相關文件</a>
+  </nav>
+  <main>
+
+    <section id="principles">
+      <span class="badge-note">v1.3 · 彙整自 docs/dev/design.md + 視覺優化提案 + Dashboard 版型補件</span>
+      <h1>Quickey Design System</h1>
+      <p class="lede intro">代墊款管理工具（Quickey）設計系統。主色為品牌綠 <code>#00B39F</code>（取自 Logo），實心底/文字強調走 WCAG 合格的 <code>#008072</code>。前台採 mobile-first 大圓角卡片語言，後台繼承相同 tokens。</p>
+
+      <h2 style="border:none;padding-top:0;">設計理念</h2>
+      <ul class="rules">
+        <li><strong>主色克制</strong>：品牌綠只用在主要動作按鈕、選中分頁、Logo。頁面主體以中性灰階為主，表頭/卡片/背景不鋪主色。</li>
+        <li><strong>狀態語意化，且與主色脫鉤</strong>：6 種請款狀態各有專屬顏色，一眼可辨。<strong>主色不可挪用當狀態色</strong>——「已核銷」已改成固定紫色，不再借用 primary，避免未來主色再換色時撞色。</li>
+        <li><strong>數字第一</strong>：金額使用 <code>currency</code> 文字樣式 + <code>tabular-nums</code> 等寬對齊。</li>
+        <li><strong>不炫技</strong>：避免大範圍漸層、大 hero、插畫、pastel 卡片色。</li>
+        <li><strong>重要動作要有存在感</strong>：多數元件走克制路線，但憑證上傳這種流程關鍵動作，改用比一般 input 更明顯的拖放區樣式。</li>
+      </ul>
+    </section>
+
+    <section id="density">
+      <h2>前台 vs 後台密度差異</h2>
+      <table class="density-table">
+        <tr><th>面向</th><th>前台（員工）</th><th>後台（財務/管理員）</th></tr>
+        <tr><td>響應式優先</td><td>手機（375px+）</td><td>桌面（1280px+）</td></tr>
+        <tr><td>Layout 寬度</td><td>max-w-3xl 置中</td><td>側邊 sidebar + flex-1 內容區</td></tr>
+        <tr><td>資訊密度</td><td>低（一次一件事）</td><td>高（表格、篩選、批次操作）</td></tr>
+        <tr><td>字級基準</td><td>較大（16–20px）</td><td>較小（14px 為主）</td></tr>
+        <tr><td>導覽</td><td>底部 tab bar</td><td>側邊 sidebar</td></tr>
+      </table>
+      <p class="lede" style="margin-top:12px;">手機版（&lt;640px）文字上限 14px（含 modal、button、input、卡片內文）；桌機版（≥1024px）原本 12px 的內文一律放大到 14px（狀態徽章、類別 chip、icon 除外）。</p>
+    </section>
+
+    <section id="colors">
+      <h2>色彩</h2>
+      <h3>Primary — 品牌綠</h3>
+      <div class="grid colors">
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-50)"></div><div class="meta"><span class="name">primary-50</span><span class="val">#edfaf8</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-100)"></div><div class="meta"><span class="name">primary-100</span><span class="val">#d1f1ee</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-200)"></div><div class="meta"><span class="name">primary-200</span><span class="val">#8cddd4</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-300)"></div><div class="meta"><span class="name">primary-300</span><span class="val">#58cdc0</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-400)"></div><div class="meta"><span class="name">primary-400</span><span class="val">#2abfaf</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-500)"></div><div class="meta"><span class="name">primary-500</span><span class="val">#00b39f 品牌色</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-600)"></div><div class="meta"><span class="name">primary-600</span><span class="val">#019181 hover</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-700)"></div><div class="meta"><span class="name">primary-700</span><span class="val">#008072 solid/text</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-800)"></div><div class="meta"><span class="name">primary-800</span><span class="val">#035a50</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-900)"></div><div class="meta"><span class="name">primary-900</span><span class="val">#053f38</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--primary-950)"></div><div class="meta"><span class="name">primary-950</span><span class="val">#062a25</span></div></div>
+      </div>
+      <p class="note"><code>primary-500</code>（#00b39f）跟白字對比只有 2.64:1，未達 WCAG AA 4.5:1，所以按鈕實心底、選中分頁、連結文字一律走語意別名 <code>primary-solid</code> / <code>primary-text</code>（都等於 <code>primary-700</code> #008072，對比 4.85:1，過關）。<code>primary-500</code> 保留給不疊文字對比的場合：icon、分頁下方指示條、圖表點狀標記。</p>
+
+      <h3>語意色</h3>
+      <div class="grid colors">
+        <div class="swatch"><div class="swatch-color" style="background:var(--success)"></div><div class="meta"><span class="name">success</span><span class="val">#10b981</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--warning)"></div><div class="meta"><span class="name">warning</span><span class="val">#f59e0b</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--info)"></div><div class="meta"><span class="name">info</span><span class="val">#0ea5e9</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--danger)"></div><div class="meta"><span class="name">danger</span><span class="val">#dc2626</span></div></div>
+      </div>
+
+      <h3>請款狀態（6 種，與主色脫鉤）</h3>
+      <table>
+        <tr><th>狀態</th><th>徽章</th><th>文字色</th><th>底色</th></tr>
+        <tr><td>草稿</td><td><span class="status-badge" style="color:var(--status-draft);background:var(--status-draft-bg)">草稿</span></td><td><code>#6b7280</code></td><td><code>#eef1f5</code></td></tr>
+        <tr><td>簽核中</td><td><span class="status-badge" style="color:var(--status-review);background:var(--status-review-bg)">簽核中</span></td><td><code>#d97706</code></td><td><code>#fef3c7</code></td></tr>
+        <tr><td>駁回</td><td><span class="status-badge" style="color:var(--status-rejected);background:var(--status-rejected-bg)">駁回</span></td><td><code>#dc2626</code></td><td><code>#fee2e2</code></td></tr>
+        <tr><td>已核銷</td><td><span class="status-badge" style="color:var(--status-approved);background:var(--status-approved-bg)">已核銷</span></td><td><code>#6d28d9</code></td><td><code>#ede9fe</code></td></tr>
+        <tr><td>已發放</td><td><span class="status-badge" style="color:var(--status-paid);background:var(--status-paid-bg)">已發放</span></td><td><code>#059669</code></td><td><code>#d1fae5</code></td></tr>
+        <tr><td>已作廢</td><td><span class="status-badge" style="color:#ffffff;background:var(--status-voided)">已作廢</span></td><td><code>#ffffff</code></td><td><code>#485266</code></td></tr>
+      </table>
+      <p class="note">「已核銷」過去直接借用 primary 色，主色一換就可能撞色（例如換成綠色後會跟「已發放」的綠混淆），已改成固定紫色，不隨主色調整。「已作廢」改用深底白字，跟其餘 5 個「淺底深字」的徽章做出區別，強調這是已結束、不可逆的狀態。</p>
+
+      <h3>中性色</h3>
+      <div class="grid colors">
+        <div class="swatch"><div class="swatch-color" style="background:var(--canvas);border-bottom:1px solid var(--hairline)"></div><div class="meta"><span class="name">canvas</span><span class="val">#ffffff</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--surface)"></div><div class="meta"><span class="name">surface</span><span class="val">#f4f5f8</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--surface-soft)"></div><div class="meta"><span class="name">surface-soft</span><span class="val">#eef1f5</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--hairline)"></div><div class="meta"><span class="name">hairline</span><span class="val">#e3e6ec</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--hairline-strong)"></div><div class="meta"><span class="name">hairline-strong</span><span class="val">#c9cedd</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--ink)"></div><div class="meta"><span class="name">ink</span><span class="val">#2a3140</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--slate)"></div><div class="meta"><span class="name">slate</span><span class="val">#485266</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--muted)"></div><div class="meta"><span class="name">muted</span><span class="val">#646d80</span></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:var(--muted-soft)"></div><div class="meta"><span class="name">muted-soft</span><span class="val">#a6acb8</span></div></div>
+      </div>
+      <h3>文字色階</h3>
+      <p class="lede">文字只用這 4 階，都是同一個藍灰色相、只差明度；不使用純黑 #000。PrimeVue 元件的預設文字色也指定為 <code>ink</code>／<code>muted</code>，避免出現第二套黑色。</p>
+      <table class="density-table">
+        <tr><th>色票</th><th>用途</th><th>白底對比</th></tr>
+        <tr><td><code>ink</code> #2a3140</td><td>標題、內文、欄位值、金額數字</td><td>13:1</td></tr>
+        <tr><td><code>slate</code> #485266</td><td>表頭、側邊導覽、次要文字</td><td>7.9:1</td></tr>
+        <tr><td><code>muted</code> #646d80</td><td>欄位名稱、說明文字、時間等輔助資訊（灰底卡片上 4.8:1）</td><td>5.2:1</td></tr>
+        <tr><td><code>muted-soft</code> #a6acb8</td><td>placeholder、停用狀態；不可用於需要閱讀的內容</td><td>2.3:1</td></tr>
+      </table>
+      <p class="note">背景與線條：<code>canvas</code> 白底、<code>surface</code> 灰底卡片、<code>surface-soft</code> 停用與 hover、<code>hairline</code> 邊框、<code>hairline-strong</code> hover 邊框與直線分隔 <code>.sep</code>。</p>
+    </section>
+
+    <section id="typography">
+      <h2>字級字重</h2>
+      <p class="lede">字體：Noto Sans TC 為主體，-apple-system / PingFang TC / Microsoft JhengHei 等系統字體 fallback。</p>
+      <div class="type-row"><div class="label">hero<br>32/600</div><div class="sample" style="font-size:32px;font-weight:600;line-height:1.2;letter-spacing:-0.5px;">代墊款管理工具</div></div>
+      <div class="type-row"><div class="label">heading-1<br>24/600</div><div class="sample" style="font-size:24px;font-weight:600;">後台頁面主標</div></div>
+      <div class="type-row"><div class="label">heading-2<br>20/600</div><div class="sample" style="font-size:20px;font-weight:600;">前台頁面主標</div></div>
+      <div class="type-row"><div class="label">heading-3<br>18/600</div><div class="sample" style="font-size:18px;font-weight:600;">卡片內副標、Modal 標題</div></div>
+      <div class="type-row"><div class="label">body-md<br>16/400</div><div class="sample" style="font-size:16px;">主要內文文字範例</div></div>
+      <div class="type-row"><div class="label">body-sm<br>14/400</div><div class="sample" style="font-size:14px;">表格內容、次要文字</div></div>
+      <div class="type-row"><div class="label">caption<br>12/400</div><div class="sample" style="font-size:12px;color:var(--muted);">提示、輔助說明文字</div></div>
+      <div class="type-row"><div class="label">currency<br>24/600</div><div class="sample" style="font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;">NT$ 12,340</div></div>
+      <div class="type-row"><div class="label">button<br>14/600</div><div class="sample" style="font-size:14px;font-weight:600;">送出請款</div></div>
+    </section>
+
+    <section id="spacing">
+      <h2>間距</h2>
+      <div class="bars">
+        <div class="bar-row"><div class="tok">xxs</div><div class="bar" style="width:4px"></div><div class="val">4px</div></div>
+        <div class="bar-row"><div class="tok">xs</div><div class="bar" style="width:8px"></div><div class="val">8px</div></div>
+        <div class="bar-row"><div class="tok">sm</div><div class="bar" style="width:12px"></div><div class="val">12px</div></div>
+        <div class="bar-row"><div class="tok">md</div><div class="bar" style="width:16px"></div><div class="val">16px</div></div>
+        <div class="bar-row"><div class="tok">lg</div><div class="bar" style="width:20px"></div><div class="val">20px</div></div>
+        <div class="bar-row"><div class="tok">xl</div><div class="bar" style="width:24px"></div><div class="val">24px</div></div>
+        <div class="bar-row"><div class="tok">xxl</div><div class="bar" style="width:32px"></div><div class="val">32px</div></div>
+        <div class="bar-row"><div class="tok">xxxl</div><div class="bar" style="width:40px"></div><div class="val">40px</div></div>
+      </div>
+      <p class="lede" style="margin-top:12px;">前台慣例：卡片內距 16px（p-4）常用、20px（p-5）主要卡片；卡片間距 12px（gap-3）；欄位間距 16px（space-y-4）。Input padding 統一為 <strong>12px 14px</strong>（上下 12px、左右 14px）；Button padding 12px 20px。</p>
+    </section>
+
+    <section id="radius">
+      <h2>圓角</h2>
+      <div class="radius-demo">
+        <div class="box" style="border-radius:var(--radius-xs)">xs<br>4px</div>
+        <div class="box" style="border-radius:var(--radius-sm)">sm<br>6px</div>
+        <div class="box" style="border-radius:var(--radius-tag)">tag<br>8px</div>
+        <div class="box" style="border-radius:var(--radius-lg)">lg<br>12px</div>
+        <div class="box" style="border-radius:var(--radius-chip)">chip<br>14px</div>
+        <div class="box" style="border-radius:var(--radius-control)">control<br>16px</div>
+        <div class="box" style="border-radius:var(--radius-card)">card<br>18px</div>
+        <div class="box" style="border-radius:var(--radius-card-lg)">card-lg<br>20px</div>
+        <div class="box pill" style="border-radius:var(--radius-full)">full<br>9999px</div>
+      </div>
+      <p class="note">按鈕、分頁 Tab、狀態徽章、Tag 全部改用 <code>full</code>（全圓角 pill），不再用 <code>control</code>（16px，偏方形）——這是這輪視覺調整的決定之一。Input / Select / Textarea 仍維持 <code>control</code> 16px，兩者用途不同，不要混用。</p>
+    </section>
+
+    <section id="shadow">
+      <h2>陰影</h2>
+      <div class="shadow-demo">
+        <div class="box" style="box-shadow:var(--shadow-sm)">sm</div>
+        <div class="box" style="box-shadow:var(--shadow-md)">md</div>
+        <div class="box" style="box-shadow:var(--shadow-lg)">lg</div>
+        <div class="box" style="box-shadow:var(--shadow-primary)">primary</div>
+        <div class="box" style="box-shadow:var(--shadow-card)">card</div>
+        <div class="box" style="box-shadow:var(--shadow-float)">float</div>
+      </div>
+    </section>
+
+    <section id="components">
+      <h2>元件規範</h2>
+      <p class="lede">專案優先使用 PrimeVue 元件（已由 <code>presets/trust-blue.ts</code> 對齊主色，未來改名對齊品牌綠），以下僅供 PrimeVue 無對應元件、或需自製共用元件時參考。以下圖示為手繪示意 SVG，實際專案一律使用 PrimeIcons（<code>pi pi-*</code>）。</p>
+
+      <h3>Buttons — <code>button-primary / secondary / danger / text</code></h3>
+      <div class="demo">
+        <div class="demo-row">
+          <button class="btn btn-primary">送出請款</button>
+          <button class="btn btn-secondary">取消</button>
+          <button class="btn btn-danger">駁回</button>
+          <button class="btn btn-text">取消選取</button>
+          <button class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>新增類別</button>
+          <button class="btn btn-secondary btn-icon-only" aria-label="搜尋"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+          <button class="btn btn-primary" style="opacity:.45;cursor:not-allowed;" disabled>送出請款</button>
+        </div>
+      </div>
+      <p class="note">危險動作（駁回、作廢）改成外框樣式而非實心紅底，跟其餘按鈕的克制感一致。Icon+文字按鈕的 icon 跟隨文字顏色（<code>currentColor</code>），icon-only 按鈕固定 40×40 置中。</p>
+
+      <h3>基礎表單元件 — <code>input</code></h3>
+      <div class="demo"><div class="demo-row">
+        <div class="field"><label>金額 *</label><input placeholder="請輸入金額"></div>
+        <div class="field"><label>備註</label><input value="計程車資 — 客戶拜訪" style="border-color:var(--primary-solid);box-shadow:0 0 0 3px var(--primary-100)"></div>
+      </div></div>
+
+      <h3>進階表單元件 — <code>select / date-picker / icon-field / multi-select / autocomplete</code></h3>
+      <div class="demo">
+        <div class="demo-row">
+          <div class="field dd-wrap" id="select-demo">
+            <label>費用類別（下拉選單，點擊試試）</label>
+            <div class="input-shell" tabindex="0" onfocus="document.getElementById('select-demo').classList.add('open')" onblur="setTimeout(()=>document.getElementById('select-demo').classList.remove('open'),150)">
+              <span style="flex:1;color:var(--ink);" id="select-demo-value">交通</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div class="dd-panel">
+              <div class="dd-opt hi" onmousedown="event.preventDefault();document.getElementById('select-demo-value').textContent=this.textContent;document.getElementById('select-demo').classList.remove('open')">交通</div>
+              <div class="dd-opt" onmousedown="event.preventDefault();document.getElementById('select-demo-value').textContent=this.textContent;document.getElementById('select-demo').classList.remove('open')">材料</div>
+              <div class="dd-opt" onmousedown="event.preventDefault();document.getElementById('select-demo-value').textContent=this.textContent;document.getElementById('select-demo').classList.remove('open')">服務費</div>
+              <div class="dd-opt" onmousedown="event.preventDefault();document.getElementById('select-demo-value').textContent=this.textContent;document.getElementById('select-demo').classList.remove('open')">其他</div>
+            </div>
+          </div>
+          <div class="field dd-wrap" id="date-demo">
+            <label>請款日期（點擊試試）</label>
+            <div class="input-shell" tabindex="0" onfocus="document.getElementById('date-demo').classList.add('open')" onblur="setTimeout(()=>document.getElementById('date-demo').classList.remove('open'),150)">
+              <span style="flex:1;color:var(--ink);" id="date-demo-value">2026 / 09 / 18</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            </div>
+            <div class="dd-panel cal-panel">
+              <div class="cal-head">2026 年 9 月</div>
+              <div class="cal-grid">
+                <div class="cal-dow">日</div><div class="cal-dow">一</div><div class="cal-dow">二</div><div class="cal-dow">三</div><div class="cal-dow">四</div><div class="cal-dow">五</div><div class="cal-dow">六</div>
+                <div class="cal-cell blank"></div><div class="cal-cell blank"></div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 01';document.getElementById('date-demo').classList.remove('open')">1</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 02';document.getElementById('date-demo').classList.remove('open')">2</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 03';document.getElementById('date-demo').classList.remove('open')">3</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 04';document.getElementById('date-demo').classList.remove('open')">4</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 05';document.getElementById('date-demo').classList.remove('open')">5</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 06';document.getElementById('date-demo').classList.remove('open')">6</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 07';document.getElementById('date-demo').classList.remove('open')">7</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 08';document.getElementById('date-demo').classList.remove('open')">8</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 09';document.getElementById('date-demo').classList.remove('open')">9</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 10';document.getElementById('date-demo').classList.remove('open')">10</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 11';document.getElementById('date-demo').classList.remove('open')">11</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 12';document.getElementById('date-demo').classList.remove('open')">12</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 13';document.getElementById('date-demo').classList.remove('open')">13</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 14';document.getElementById('date-demo').classList.remove('open')">14</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 15';document.getElementById('date-demo').classList.remove('open')">15</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 16';document.getElementById('date-demo').classList.remove('open')">16</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 17';document.getElementById('date-demo').classList.remove('open')">17</div>
+                <div class="cal-cell sel" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 18';document.getElementById('date-demo').classList.remove('open')">18</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 19';document.getElementById('date-demo').classList.remove('open')">19</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 20';document.getElementById('date-demo').classList.remove('open')">20</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 21';document.getElementById('date-demo').classList.remove('open')">21</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 22';document.getElementById('date-demo').classList.remove('open')">22</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 23';document.getElementById('date-demo').classList.remove('open')">23</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 24';document.getElementById('date-demo').classList.remove('open')">24</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 25';document.getElementById('date-demo').classList.remove('open')">25</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 26';document.getElementById('date-demo').classList.remove('open')">26</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 27';document.getElementById('date-demo').classList.remove('open')">27</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 28';document.getElementById('date-demo').classList.remove('open')">28</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 29';document.getElementById('date-demo').classList.remove('open')">29</div>
+                <div class="cal-cell" onmousedown="event.preventDefault();document.getElementById('date-demo-value').textContent='2026 / 09 / 30';document.getElementById('date-demo').classList.remove('open')">30</div>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>搜尋</label>
+            <div class="input-shell focus">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input placeholder="搜尋請款項目">
+            </div>
+          </div>
+          <div class="field">
+            <label>費用類別（多選）</label>
+            <div class="input-shell ms-box">
+              <span class="ms-chip">交通<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+              <span class="ms-chip">材料<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" style="margin-left:auto;"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="field dd-wrap" id="ac-demo">
+            <label>客戶名稱（自動完成，點擊輸入框試試）</label>
+            <div class="input-shell"><input value="普魯士" placeholder="輸入客戶名稱" onfocus="document.getElementById('ac-demo').classList.add('open')" onblur="setTimeout(()=>document.getElementById('ac-demo').classList.remove('open'),150)"></div>
+            <div class="dd-panel">
+              <div class="dd-opt hi" onmousedown="event.preventDefault();document.querySelector('#ac-demo input').value=this.textContent;document.getElementById('ac-demo').classList.remove('open')">普魯士國際</div>
+              <div class="dd-opt" onmousedown="event.preventDefault();document.querySelector('#ac-demo input').value=this.textContent;document.getElementById('ac-demo').classList.remove('open')">普魯士貿易</div>
+              <div class="dd-opt" onmousedown="event.preventDefault();document.querySelector('#ac-demo input').value=this.textContent;document.getElementById('ac-demo').classList.remove('open')">普發科技</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="note">輸入框內功能性圖示（日期、搜尋、下拉箭頭）統一用 <code>muted</code> 淺灰，不用 <code>slate</code>，線條粗細統一 1.8px，避免深淺、粗細不一致。Select / Date-picker 點擊會展開選單/小月曆，AutoComplete 點擊輸入框展開建議清單，選中項目走 <code>primary-50</code> 底、<code>primary-text</code> 文字這組配色，跟 MultiSelect 選中 chip 一致。</p>
+
+      <h3>上傳元件 — <code>upload-dropzone</code></h3>
+      <div class="demo"><div class="demo-row">
+        <div class="upload-drop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          <div class="u-title">拖放檔案，或點擊上傳</div>
+          <div class="u-sub">憑證（發票/收據）— 支援 JPG、PNG、PDF，單檔 10MB 以內</div>
+        </div>
+      </div></div>
+      <p class="note">憑證上傳是核銷流程的關鍵動作，改用比一般 input 更明顯的拖放區樣式（虛線邊框、大圖示、明確文案），取代原本「邊框按鈕＋小字提示」的樣式。Hover 時邊框與底色轉為主色系。</p>
+
+      <h3>Card — <code>card / card-lg</code></h3>
+      <div class="demo"><div class="demo-row">
+        <div class="card-lg"><div class="kpi-label">本月已核銷</div><div class="kpi-value">NT$ 12,340</div></div>
+        <div class="card-nested"><div class="card-title">簽核進度</div><div class="card-body">送出 → 主管審核 → 財務發放</div></div>
+      </div></div>
+
+      <h3>Status Badge / Tag / Category Chip — <code>status-badge / tag / category-chip</code></h3>
+      <div class="demo">
+        <div class="demo-row">
+          <span class="status-badge" style="color:var(--status-draft);background:var(--status-draft-bg)">草稿</span>
+          <span class="status-badge" style="color:var(--status-review);background:var(--status-review-bg)">簽核中</span>
+          <span class="status-badge" style="color:var(--status-rejected);background:var(--status-rejected-bg)">駁回</span>
+          <span class="status-badge" style="color:var(--status-approved);background:var(--status-approved-bg)">已核銷</span>
+          <span class="status-badge" style="color:var(--status-paid);background:var(--status-paid-bg)">已發放</span>
+          <span class="status-badge" style="color:#ffffff;background:var(--status-voided)">已作廢</span>
+          <span class="tag tag-default">一般標記</span>
+          <span class="tag tag-danger">超支警示</span>
+          <span class="chip">材料</span><span class="chip">交通</span><span class="chip">服務費</span>
+        </div>
+      </div>
+      <p class="note"><code>Tag</code>（對應 PrimeVue <code>&lt;Tag&gt;</code>）跟 <code>category-chip</code> 用途不同：category-chip 是分類本身（統一灰底、不做強調變體），Tag 是附加在資料上的一般語意標記，例如 BudgetsView 的超支警示用 <code>severity="danger"</code>。</p>
+
+      <h3>Tab（含數量徽章） — <code>tab</code></h3>
+      <div class="demo">
+        <div class="tabbar">
+          <button class="tab active">待發放<span class="tab-count">12</span></button>
+          <button class="tab">已完成</button>
+          <button class="tab">已作廢</button>
+        </div>
+      </div>
+      <p class="note">對應 PayoutView / ReviewView / CategoriesView 三處手刻 tab，統一成同一種樣式：下方 2px 指示條貼齊文字下緣，數量徽章選中時底色 <code>primary-50</code>、文字 <code>primary-text</code>，未選中時走灰階。</p>
+      <p class="note"><strong>數量徽章只放在「還需要有人處理」的分頁</strong>（例如簽核中、駁回、已核銷待發放、待簽核、待付款、未讀）。「全部」與終點狀態（已發放、已作廢、已付款、完成、已處理、已讀）不顯示數字——這些數字只會一直累加、看了也不用做什麼；總數看表格底部「共 N 筆」。類別、人員這類清單盤點的分頁也不顯示。</p>
+
+      <h3>提示訊息 — <code>alert</code></h3>
+      <div class="demo"><div class="demo-row">
+        <div class="alert alert-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          這筆請款金額超過 NT$ 5,000，將額外進入財務覆核。
+        </div>
+      </div></div>
+      <p class="note">維持藍色系，不使用主色或危險色，避免跟按鈕/駁回動作混淆。</p>
+
+      <h3>Table</h3>
+      <div class="demo">
+        <div class="stack-table">
+          <div class="row head"><span>項目</span><span>金額</span></div>
+          <div class="row"><span>計程車資</span><span>NT$ 320</span></div>
+          <div class="row"><span>文具用品</span><span>NT$ 480</span></div>
+        </div>
+      </div>
+      <p class="note">列與列之間只用一條分隔線（border-bottom），不用列距 + 上下雙邊框疊出「兩條線」的效果。表頭維持淺灰底、深灰字，不用主色實心底；列表頁上方的工具列（分頁／搜尋／篩選）維持白底，與表頭之間加一條 1px <code>hairline</code>，讓表頭上下都有線、邊界清楚，不把工具列也鋪灰——主色收斂到按鈕/選中分頁這類「需要操作」的元件，表格是資訊呈現，不需要主色搶走注意力。</p>
+
+      <h3>Dialog / Drawer</h3>
+      <div class="demo"><div class="demo-row" style="align-items:flex-start;">
+        <div class="dialog-preview">
+          <div class="dh">新增人員</div>
+          <div class="db">填寫姓名、Email、角色權限後送出。</div>
+          <div class="df"><button class="btn btn-secondary" style="padding:8px 16px;">取消</button><button class="btn btn-primary" style="padding:8px 16px;">儲存</button></div>
+        </div>
+        <div class="drawer-preview">
+          <div class="dh">篩選條件<span class="close-btn" role="button" aria-label="關閉">✕</span></div>
+          <div class="db">
+            <div class="field"><label>日期範圍</label><input placeholder="選擇日期"></div>
+            <div class="field"><label>狀態</label><input placeholder="全部"></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Dialog 用於表單型彈窗（例如 UsersView 新增/編輯人員、重設密碼），footer 順序固定：取消在左、主要動作在右。Drawer 用於篩選條件、次要詳情等不需要打斷主要流程的內容，從右側滑入。</p>
+      <p class="note"><strong>視窗內的層級</strong>：視覺動線為「標題 → 要操作的欄位 → 按鈕」。粗體（600）只給標題、欄位標籤與按鈕；視窗內的摘要卡（<code>.dlg-summary</code>）是參考資訊，文字一律 16px／500、副行 14px <code>muted</code>，字重不得高於標題與欄位標籤，金額也不另外放大。</p>
+
+      <h3>Empty State</h3>
+      <div class="demo"><div class="demo-row">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="6" width="16" height="14" rx="2"/><path d="M4 10h16M9 6V4h6v2"/></svg>
+          <div class="e-title">目前沒有請款紀錄</div>
+          <div>點擊右上角「新增請款」開始第一筆紀錄</div>
+        </div>
+      </div></div>
+      <p class="note">各列表頁（Expenses / Payout / Categories / Records / Review / History / Home）在無資料時使用，插圖用大尺寸 icon + muted 灰色。</p>
+
+      <table style="margin-top:var(--space-xl);">
+        <tr><th>元件</th><th>圓角</th><th>Padding</th><th>說明</th></tr>
+        <tr><td>button-primary</td><td>full（pill）</td><td>12px 20px</td><td>primary-solid 底、shadow-primary</td></tr>
+        <tr><td>button-secondary</td><td>full（pill）</td><td>12px 20px</td><td>白底、1.5px solid primary-solid 邊框</td></tr>
+        <tr><td>button-danger</td><td>full（pill）</td><td>12px 20px</td><td>外框樣式，不用實心紅底</td></tr>
+        <tr><td>button-text</td><td>—</td><td>10px 12px</td><td>透明底、primary-text 文字，次要低強調動作</td></tr>
+        <tr><td>card / card-lg</td><td>18px / 20px</td><td>16px / 20px</td><td>白底、1px solid hairline、無陰影</td></tr>
+        <tr><td>status-badge</td><td>full</td><td>3px 10px</td><td>caption 樣式，fontWeight 600，六色固定</td></tr>
+        <tr><td>tag</td><td>full</td><td>4px 12px</td><td>default（灰階）/ danger（警示）兩種變體</td></tr>
+        <tr><td>category-chip</td><td>tag 8px</td><td>2px 9px</td><td>底色 surface、文字 ink，統一灰底不做變體</td></tr>
+        <tr><td>tab</td><td>—</td><td>—</td><td>2px 底部指示條 + 選中時數量徽章換色</td></tr>
+        <tr><td>input</td><td>control 16px</td><td>12px 14px</td><td>focus 邊框變 primary-solid + 光暈</td></tr>
+        <tr><td>select / date-picker / icon-field</td><td>control 16px</td><td>12px 14px</td><td>延伸 input，點擊展開面板，圖示統一 muted 灰</td></tr>
+        <tr><td>multi-select</td><td>control 16px</td><td>—</td><td>min-height 44px，選中項目走 chip</td></tr>
+        <tr><td>upload-dropzone</td><td>card 18px</td><td>32px 20px</td><td>虛線邊框，hover 轉主色</td></tr>
+        <tr><td>dialog / drawer</td><td>card-lg 20px</td><td>16-20px</td><td>shadow-float，dialog 置中、drawer 右側滑入</td></tr>
+        <tr><td>table-header</td><td>—</td><td>10px 14px</td><td>底色 surface、文字 slate</td></tr>
+        <tr><td>table-row</td><td>—</td><td>12px 14px</td><td>hover 底 surface-soft，單一分隔線</td></tr>
+      </table>
+    </section>
+
+    <section id="dashboard">
+      <h2>Dashboard 版型元件</h2>
+      <p class="lede">這組是拼「像 Freya 那種後台首頁」所缺的版型積木：側邊導覽、頂欄、實色 KPI 卡、圖表色票、待處理清單、圖例。全部沿用既有 tokens（色彩、圓角、陰影、間距），不新增品牌色。</p>
+
+      <h3>側邊導覽 — <code>side-nav</code></h3>
+      <div class="demo" style="padding:0;">
+        <nav class="side-nav-demo">
+          <div class="sn-brand"><span class="sn-logo">Q</span>Quickey</div>
+          <div class="sn-group">總覽</div>
+          <a class="sn-item active" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>首頁</a>
+          <a class="sn-item" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>請款項目</a>
+          <a class="sn-item" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>審核<span class="sn-badge">6</span></a>
+          <div class="sn-group">系統</div>
+          <a class="sn-item" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h5"/></svg>類別設定</a>
+          <a class="sn-item" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path d="M5 21c1.5-4 5-6 7-6s5.5 2 7 6"/></svg>人員管理</a>
+        </nav>
+      </div>
+      <p class="note">分區用 <code>sn-group</code>（大寫小字、與 PrimeVue 後台常見的區塊標題一致）；選中項目走 <code>primary-50</code> 底、<code>primary-text</code> 文字，跟 Tab / MultiSelect chip 選中色一致，維持同一套「選中態」語言。數字徽章（例如待審核件數）用實色 pill，跟 <code>status-badge</code> 的淺底不同，因為這是「需要注意」而非狀態說明。</p>
+
+      <h3>頂欄 — <code>topbar</code></h3>
+      <div class="demo" style="padding:0;">
+        <div class="topbar-demo">
+          <div class="tb-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input placeholder="搜尋"></div>
+          <div class="tb-actions">
+            <button class="btn btn-secondary btn-icon-only" aria-label="通知"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 004 0"/></svg></button>
+            <span class="avatar">MK</span>
+            <button class="btn btn-primary btn-icon-only" aria-label="設定"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1-1.6 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <p class="note">搜尋框走膠囊 <code>surface</code> 底、無邊框，跟卡片區分出「這是輸入」但不搶主體內容的注意力。Avatar 用 <code>primary-100</code> 底、<code>primary-700</code> 字（首字母），沒有真人頭像時的預設樣式。右側主要動作（設定/新增）維持實色主按鈕，其餘 icon 按鈕走 secondary 外框。</p>
+
+      <h3>KPI 卡（實色） — <code>stat-card</code></h3>
+      <div class="demo"><div class="demo-row">
+        <div class="stat-card stat-primary">
+          <div class="stat-top"><span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span></div>
+          <div class="stat-label">本月已核銷</div><div class="stat-value">NT$ 12,340</div>
+        </div>
+        <div class="stat-card stat-neutral">
+          <div class="stat-top"><span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span></div>
+          <div class="stat-label">待簽核</div><div class="stat-value">2</div>
+        </div>
+        <div class="stat-card stat-dark">
+          <div class="stat-top"><span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 4-8"/></svg></span></div>
+          <div class="stat-label">核銷率</div><div class="stat-value">82%</div>
+        </div>
+        <div class="stat-card stat-warning">
+          <div class="stat-top"><span class="stat-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg></span></div>
+          <div class="stat-label">逾期未核銷</div><div class="stat-value">4</div>
+        </div>
+      </div></div>
+      <p class="note">四色固定順序：<code>primary</code>（本月核心指標）→ <code>neutral</code>（待處理/中性計數）→ <code>dark</code>（比率/彙總類）→ <code>warning</code>（需要留意）。不新增額外色相——都是既有 <code>primary-solid / slate / ink / warning</code>，只是換成實色底、白字。這組卡片「用起來搶眼」是刻意的，跟本體 <code>card / card-lg</code> 的克制白底做出主從區分：整頁只在最上方 KPI 列用一次，其餘卡片一律回到白底。</p>
+
+      <h3>圖表色票 — <code>chart-series / chart-cat-*</code></h3>
+      <div class="demo">
+        <div class="demo-row">
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-series)"></div><div class="meta"><span class="name">chart-series</span><span class="val">主數列</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-series-soft)"></div><div class="meta"><span class="name">chart-series-soft</span><span class="val">對照數列</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-cat-1)"></div><div class="meta"><span class="name">chart-cat-1</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-cat-2)"></div><div class="meta"><span class="name">chart-cat-2</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-cat-3)"></div><div class="meta"><span class="name">chart-cat-3</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-cat-4)"></div><div class="meta"><span class="name">chart-cat-4</span></div></div>
+          <div class="swatch" style="width:140px;"><div class="swatch-color" style="background:var(--chart-cat-5)"></div><div class="meta"><span class="name">chart-cat-5</span></div></div>
+        </div>
+      </div>
+      <p class="note">長條圖 / 折線圖等單一指標＋對照組的圖表，用 <code>chart-series</code>（primary-500）+ <code>chart-series-soft</code>（primary-200）兩色，不要混用語意色。圓餅/甜甜圈圖等多分類圖表，依序取 <code>chart-cat-1 → 5</code>，色相刻意跟 6 種請款狀態色錯開，避免使用者把圖表顏色誤讀成狀態。網格線固定用 <code>chart-grid</code>（=<code>hairline</code>）。</p>
+
+      <h3>待處理清單 — <code>action-list</code>（含 Tab/數量徽章）</h3>
+      <div class="demo">
+        <div class="tabbar" style="margin-bottom:var(--space-sm);">
+          <button class="tab active">待簽核<span class="tab-count">6</span></button>
+          <button class="tab">通知<span class="tab-count">3</span></button>
+        </div>
+        <div class="action-list">
+          <div class="ar-row"><div class="row-top"><span>請款單 <span class="ar-id">#05895</span></span><span class="ar-time">4 小時前</span></div><div class="ar-sub">計程車資、材料費，共 2 筆項目</div></div>
+          <div class="ar-row"><div class="row-top"><span>請款單 <span class="ar-id">#05852</span></span><span class="ar-time">6 小時前</span></div><div class="ar-sub">交通費，共 1 筆項目</div></div>
+          <div class="ar-row"><div class="row-top"><span>請款單 <span class="ar-id">#05605</span></span><span class="ar-time">1 天前</span></div><div class="ar-sub">材料費，共 3 筆項目</div></div>
+        </div>
+      </div>
+      <p class="note">跟現有 <code>stack-table</code> 不同：<code>action-list</code> 每列是「兩行資訊＋右側時間戳」的訊息型清單，用在側欄的待辦/通知，不是表格資料。沿用同一條 <code>hairline</code> 分隔線與 tab/數量徽章樣式，維持跟其他清單元件一致的節奏。</p>
+
+      <h3>圖例 — <code>legend</code></h3>
+      <div class="demo"><div class="legend" style="width:160px;">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--chart-cat-1)"></span>交通</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--chart-cat-2)"></span>材料</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--chart-cat-3)"></span>服務費</div>
+      </div></div>
+
+      <h3>版型骨架 — <code>dash-shell / kpi-grid / content-grid</code></h3>
+      <p class="lede">頁面組裝順序固定：<code>side-nav</code>（固定寬 240px）＋ 右側 <code>dash-main</code>；<code>dash-main</code> 內先是 <code>topbar</code>，接著歡迎/提示用 <code>banner-soft</code>（不是 <code>alert-info</code>，語氣更輕、不代表警示），再來 <code>kpi-grid</code>（4 張 stat-card 自動換行），最後 <code>content-grid</code> 把「主圖表卡」跟「側欄清單卡」排成 2:1。</p>
+      <div class="demo">
+        <div class="banner-soft">👋 歡迎回來！記得先完成本月的請款憑證上傳。</div>
+      </div>
+      <table style="margin-top:var(--space-md);">
+        <tr><th>元件</th><th>寬度 / 欄數</th><th>說明</th></tr>
+        <tr><td>side-nav</td><td>固定 240px</td><td>不隨內容縮放，小螢幕收合（沿用 <code>nav.toc</code> 同一斷點邏輯）</td></tr>
+        <tr><td>topbar</td><td>height 64px</td><td>橫跨主內容區寬度，不含側邊導覽</td></tr>
+        <tr><td>kpi-grid</td><td>auto-fit, minmax(200px,1fr)</td><td>4 張卡，視窗變窄自動換行，不建議超過 4 張</td></tr>
+        <tr><td>content-grid</td><td>2fr / 1fr</td><td>≤720px 收成單欄，側欄清單移到主圖表下方</td></tr>
+      </table>
+    </section>
+
+    <section id="architecture">
+      <h2>樣式三層架構</h2>
+      <p class="lede">由下往上選擇，第一個 yes 就用該層：</p>
+      <ul class="rules">
+        <li>① 需要 props / slot / v-model / 條件邏輯？→ <strong>Vue 元件</strong>（<code>StatusBadge</code>、<code>AmountText</code>、<code>PageHeader</code>、<code>EmptyState</code>）</li>
+        <li>② 視覺組合在 3 個以上地方重複、且有明確語意？→ <strong>Utility class</strong>（<code>styles/index.css</code> 的 <code>@utility</code>，如 <code>.card</code>、<code>.card-lg</code>、<code>.category-chip</code>、<code>.field-label</code>、<code>.upload-dropzone</code>）</li>
+        <li>③ 只是一次性排版？→ <strong>Tailwind 原生 utility</strong> 直接寫在 template</li>
+      </ul>
+      <p class="lede">Design tokens 定義在 <code>frontend/src/styles/index.css</code> 的 <code>@theme</code> 區塊，PrimeVue 主色透過 <code>frontend/src/presets/trust-blue.ts</code> 對齊。全域樣式集中在 <code>styles/index.css</code> 用 <code>.p-button</code> / <code>.p-inputtext</code> 等原生 class 覆寫，不做每個元件個別 <code>:pt</code> pass-through。</p>
+      <h3>新增 UI 前檢查清單</h3>
+      <ul class="rules">
+        <li>需要的顏色 / 圓角 / 陰影是否已在 <code>@theme</code>？沒有 → 先加 token</li>
+        <li>有沒有現成的 utility class 可以用？</li>
+        <li>這段 pattern 之後會重複 3 次以上嗎？→ 抽 utility</li>
+        <li>有邏輯或狀態嗎？→ 抽 Vue 元件</li>
+        <li>手機版字級都 ≤ 14px？</li>
+        <li>按鈕/分頁/徽章/Tag 的圓角是否用 <code>rounded-full</code>（不是 <code>rounded-control</code>）？</li>
+      </ul>
+    </section>
+
+    <section id="a11y">
+      <h2>無障礙</h2>
+      <ul class="rules">
+        <li>Icon-only 互動元素必加 <code>aria-label</code>；裝飾性 icon 加 <code>aria-hidden="true"</code></li>
+        <li>表單欄位：<code>&lt;label&gt;</code> 綁定 <code>for</code>；必填 <code>aria-required</code>；驗證錯誤 <code>aria-invalid</code> + <code>aria-describedby</code></li>
+        <li>Modal / Dialog：可用 Esc 關閉、focus 移入並鎖定、關閉按鈕有 <code>aria-label</code></li>
+        <li>互動一律用 <code>&lt;button&gt;</code> / <code>&lt;a&gt;</code> / <code>&lt;RouterLink&gt;</code>，不用 <code>&lt;div @click&gt;</code></li>
+        <li>狀態、錯誤、必填不能只靠顏色分辨，要搭配文字或 icon</li>
+        <li>Focus outline 不可被 CSS 移除，自訂用 <code>:focus-visible</code></li>
+        <li>動態訊息：一般 <code>aria-live="polite"</code>，緊急錯誤 <code>aria-live="assertive"</code></li>
+        <li>手機可點區域 ≥ 44 × 44 px</li>
+      </ul>
+    </section>
+
+    <section id="notes">
+      <h2>待整理 / 相關文件</h2>
+      <ul class="rules">
+        <li>Toast 位置與長度規範尚未整理視覺規範（跟 Dialog/Drawer 不同，Toast 已有大量實際用例）。</li>
+        <li>具體元件 API（<code>&lt;StatusBadge :status="..."&gt;</code> 等）尚未補上。</li>
+      </ul>
+      <p class="lede">
+        原始規格：<a href="../docs/dev/design.md">docs/dev/design.md</a>（YAML tokens spec，含完整 components / status-badge-mapping）、
+        <a href="../docs/dev/dev-style.md">docs/dev/dev-style.md</a>（開發風格指南，含無障礙與純函數更完整規則）。
+        Token 實際定義：<code>frontend/src/styles/index.css</code>（<code>@theme</code>）、<code>frontend/src/presets/trust-blue.ts</code>（PrimeVue preset）。
+      </p>
+    </section>
+
+    <footer>Quickey Design System v1.3 · 彙整自 docs/dev/design.md + 視覺優化提案 + Dashboard 版型補件，任何 token / 規範變動請同步更新這三份文件。</footer>
+  </main>
+</div>
+</body>
+</html>

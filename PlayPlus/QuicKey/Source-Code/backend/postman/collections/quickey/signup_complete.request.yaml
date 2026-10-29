@@ -1,0 +1,16 @@
+$kind: http-request
+description: "Step 3: 用 token + 公司資料 + 密碼建立 Company + admin User，回 JWT"
+url: "{{base_url}}/api/auth/signup/complete"
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "token":"{{signup_token}}",
+        "name":"王管理",
+        "password":"password123",
+        "company_name":"我的新公司",
+        "company_type":"limited",
+        "tax_id":"12345675"
+    }
+order: 1002

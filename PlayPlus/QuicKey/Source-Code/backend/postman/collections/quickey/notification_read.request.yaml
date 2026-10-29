@@ -1,0 +1,8 @@
+$kind: http-request
+description: "標記單筆通知為已讀。重複呼叫為 no-op（保留第一次已讀時間）。非本人通知回 404"
+url: "{{base_url}}/api/notifications/{{notification_id}}/read"
+method: PATCH
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3701

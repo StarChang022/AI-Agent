@@ -1,0 +1,75 @@
+# Quickey production compose
+#
+# 架構：
+#   web (nginx)      ← 外網進來，服務前端靜態檔 + 反代 /api/* 到 backend
+#   backend (rails)  ← /api 處理，Thruster + Rails + Solid Queue
+#   db (postgres)    ← 僅內網
+# HTTPS：由 Cloudflare 代理層處理（本機內部走 HTTP）
+#
+# 部署：由 .github/workflows/deploy.yml 在 GitHub Actions build image 推到 GHCR，
+#   再 ssh 到主機寫 .env（來自 GitHub Secrets）並 pull + up。
+#   Rails Dockerfile 的 docker-entrypoint 會自動跑 db:prepare
+# 回滾：主機上把 .env 的 IMAGE_TAG 改成舊的 commit sha，再 docker compose -f compose.prod.yml up -d
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: quickey-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: postgres
+      # 給 init-db.prod.sh 建立應用層 backend user 時使用
+      BACKEND_DATABASE_PASSWORD: ${BACKEND_DATABASE_PASSWORD}
+    volumes:
+      - quickey_pgdata_prod:/var/lib/postgresql/data
+      - ./backend/script/init-db.prod.sh:/docker-entrypoint-initdb.d/init-db.prod.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ghcr.io/playplustw/quickey-backend:${IMAGE_TAG:-latest}
+    container_name: quickey-backend-prod
+    restart: unless-stopped
+    environment:
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "1"
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      BACKEND_DATABASE_PASSWORD: ${BACKEND_DATABASE_PASSWORD}
+      DB_HOST: db
+      # 讓 Solid Queue 在 Puma 內跑（單機部署）
+      SOLID_QUEUE_IN_PUMA: "1"
+      # 驗證信 / 重設密碼 / 邀請信裡的連結網址
+      FRONTEND_BASE_URL: https://quickey.playplus.dev
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      # OCR（Google Document AI）。任一缺值時 /api/ocr/recognize 回 503，不影響其他功能。
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_LOCATION: ${GCP_LOCATION}
+      GCP_OCR_PROCESSOR_ID: ${GCP_OCR_PROCESSOR_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/gcp-ocr.json
+    volumes:
+      - quickey_backend_storage:/rails/storage
+      # service account 金鑰檔：主機路徑由 .env 的 GCP_CREDENTIALS_FILE 指定，唯讀掛進容器
+      - ${GCP_CREDENTIALS_FILE:-./secrets/gcp-ocr.json}:/run/secrets/gcp-ocr.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/playplustw/quickey-web:${IMAGE_TAG:-latest}
+    container_name: quickey-web-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  quickey_pgdata_prod:
+  quickey_backend_storage:

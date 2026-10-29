@@ -1,0 +1,8 @@
+$kind: http-request
+description: "收件人的站內通知清單，新到舊。unread=true 僅回未讀；limit 預設 50、上限 200。另回未讀總數 unread_count"
+url: "{{base_url}}/api/notifications?unread=true&limit=50"
+method: GET
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3700

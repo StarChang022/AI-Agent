@@ -1,0 +1,8 @@
+$kind: http-request
+description: "停用類別。同步清除該類別所有 template 與當期/未來 Budget（period_end >= today），過往期間保留。已停用回 409 ALREADY_ARCHIVED"
+url: "{{base_url}}/api/categories/{{category_id}}/archive"
+method: PATCH
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+order: 3003

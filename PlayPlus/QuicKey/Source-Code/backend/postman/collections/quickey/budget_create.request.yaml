@@ -1,0 +1,18 @@
+$kind: http-request
+description: "新增預算。amount=0 → 400 提示改走 DELETE；period_start 不對齊 cycle → 422"
+url: "{{base_url}}/api/budgets"
+method: POST
+header:
+  - key: Authorization
+    value: "Bearer {{token}}"
+body:
+  type: json
+  content: |-
+    {
+        "category_id":"{{category_id}}",
+        "cycle":"month",
+        "amount":3000,
+        "period_start":"2026-09-01",
+        "period_end":"2026-09-30"
+    }
+order: 3101
