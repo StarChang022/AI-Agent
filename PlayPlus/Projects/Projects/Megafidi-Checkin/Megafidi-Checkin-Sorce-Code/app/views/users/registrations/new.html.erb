@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+  <div class="col-4">
+    <div class="card mt-3">
+      <div class="card-header">
+        <h1><%= t('devise.registrations.new.sign_up') %></h1>
+      </div>
+      <div class="card-body">
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), builder: BootstrapVerticalFormBuilder) do |f| %>
+
+        <%= f.text_field :name, autofocus: true, required: true %>
+
+        <%= f.select(:gender, User.genders.keys.collect{|k| [User.human_attribute_name(k), k]}, {selected: resource.gender}, {class: ""}) %>
+        
+        <%= f.email_field :email, autofocus: true, autocomplete: 'email', required: true  %>
+
+        <%= f.password_field :password, autocomplete: 'current-password', required: true, help: t('devise.shared.minimum_password_length', count: @minimum_password_length)  %>
+
+        <%= f.password_field :password_confirmation, autocomplete: 'current-password', required: true  %>
+
+        <%= f.label :address, class: "mb-2" %>
+        <div class="TWzipcode row mb-3">
+          <% %w[county district zipcode].each do |current| %>
+          <div class="col-4" data-role="<%= current %>" data-style="form-control form-control-sm" data-name="<%= f.object.class.model_name.param_key %>[<%= current %>]" data-required="true" data-value="<%= f.object.send(current) %>"></div>
+          <% end %>
+        </div>
+        <%= f.text_field_without_bootstrap :address, autocomplete: "address", class: "form-control form-control-sm" %>        
+
+
+        <div class="form-group my-3">
+          <%= f.submit_without_bootstrap t('devise.registrations.new.sign_up'), class: 'btn w-100 btn-primary' %>
+        </div>
+        <% end %>
+
+        <%= render '/users/shared/links' %>
+
+      </div>
+    </div>    
+  </div>
+</div>

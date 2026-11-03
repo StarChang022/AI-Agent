@@ -1,0 +1,60 @@
+<% content_for :navigation do %>
+
+<%= link_to(url_for(action: :index), class: "btn btn-sm btn-light px-3 text-light") do %>
+<i class="bx bx-arrow-back"></i> <%= t('backends.back') %>
+<% end %>
+
+<%= link_to(url_for(action: :edit), class: "btn btn-sm btn-light px-3 text-light") do %>
+<i class="bx bx-pencil"></i> <%= t('backends.edit') %>
+<% end %>
+
+<% end %>
+
+<link href="/contentbuilder/assets/minimalist-blocks/content.css" rel="stylesheet" type="text/css"/>
+<link href="/contentbuilder/contentbuilder.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+  .contentbuilder img{
+    max-width: 100% !important;
+    height:  auto !important;
+  }
+</style>
+
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+<%= f.hidden_field :builder_content, class: "contentbuilder-input" %>
+
+<%= f.submit_without_bootstrap t("backends.submit"), class: "btn btn-danger btn-square", data: {"disable-with": t("backends.submiting")} %>
+<% end %>
+
+<div class="contentbuilder mt-5 mb-5" id="<%= dom_id(current_object) %>">
+</div>
+
+<script src="/contentbuilder/contentbuilder.js" type="text/javascript"></script>
+<script src="/contentbuilder/assets/minimalist-blocks/content.v2.js" type="text/javascript"></script>
+<script src="/contentbuilder/lang/en.js" type="text/javascript"></script>
+
+<script>
+  var builder = new ContentBuilder({
+    assetPath: "/contentbuilder/assets/",
+    fontAssetPath: "/contentbuilder/assets/fonts/",
+    scriptPath: "/contentbuilder/",
+    pluginPath: "/contentbuilder/",
+    snippetPath: "/contentbuilder/assets/minimalist-blocks/",
+    container: '#<%= dom_id(current_object) %>',
+    snippetOpen: true,
+    row: 'row',
+    cols: ['col-1', 'col-2', 'col-3', 'col-4', 'col-5', 'col-6', 'col-7', 'col-8', 'col-9', 'col-10', 'col-11', 'col-12'],
+    clearPreferences: true,
+    snippetCategories: [
+      [120,"Basic"],
+    ],
+    onChange: function(){
+      $("input.contentbuilder-input, textarea.contentbuilder-input").val(builder.html());     
+    }
+  });
+
+  $( document ).ready(function() {
+    builder.loadHtml($("input.contentbuilder-input, textarea.contentbuilder-input").val())
+  });  
+
+
+</script>

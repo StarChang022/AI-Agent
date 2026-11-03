@@ -1,0 +1,16 @@
+<% klass = pagy_current_collection.class.to_s.deconstantize.constantize %>
+<div class="table-responsive">
+  <table class="table table-sm text-center">
+    <thead class="">
+      <tr>
+        <% %w[email name phone].each do |current| %>
+        <th class="w-8"><%= klass.human_attribute_name(current) %></th>
+        <% end %>
+        <th class="w-16"></th>
+      </tr>
+    </thead>
+    <tbody class="<%= pagy_current_collection.class.to_s.deconstantize.tableize %>">
+      <%= render partial: "show", collection: pagy_current_collection, as: :current_object %>
+    </tbody>
+  </table>
+</div>

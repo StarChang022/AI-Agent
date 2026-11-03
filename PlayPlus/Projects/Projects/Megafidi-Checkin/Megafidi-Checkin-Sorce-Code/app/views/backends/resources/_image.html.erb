@@ -1,0 +1,44 @@
+<% current_object = f.object %>
+
+<div class="col-4 <%= dom_class(current_object) %>">
+	<% ["id", "priority", "_destroy"].each do |current| %>
+	<%= f.hidden_field current, class: "form-control _#{current}", data: {name: current} %>
+	<% end %>
+
+	<% ["file"].each do |current| %>
+	<% if f.object.new_record? %>
+
+	<%= f.hidden_field current, class: "form-control _#{current}", data: {name: current} %>
+
+	<img src="" class="img-fluid img-thumbnail preview mb-3">
+
+	<% else %>
+
+	<%= f.file_field current, class: "js-dropify", accept: "image/*", data: {"max-file-size": "3M", "default-file": (url_for(current_object.send(current)) if f.object.send(current).present?), "show-errors": true, "errors-position": "outside", "show-remove": false} %>
+	<% if current_object.send(current).present? %>
+	<div class="checkbox">
+		<%= f.check_box("remove_#{current}") %>
+		<%= f.label("remove_#{current}", "移除圖片") %>
+	</div>
+	<% end %>
+
+	<% end %>
+	<% end %>
+
+	<% ["name"].each do |current| %>
+	<%= f.text_field current, class: "form-control-sm _#{current}" %>
+	<% end %>
+	<hr>
+	<div class="row mb-3">
+		<div class="col">
+			<a class="btn btn-sm btn-outline-dark btn-square btn-block mr-2 handle" href="#!">
+				<i class="fa fa-arrows" aria-hidden="true"></i>
+			</a>
+		</div>
+		<div class="col">
+			<button class="btn btn-sm btn-outline-danger btn-square btn-block mr-2 remove-object-btn" type="button" data-target=".<%= dom_class(current_object) %>">
+				<i aria-hidden="true" class="fa fa-trash-o"></i>
+			</button>
+		</div>
+	</div>
+</div>

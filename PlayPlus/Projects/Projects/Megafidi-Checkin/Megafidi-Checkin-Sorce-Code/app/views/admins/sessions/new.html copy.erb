@@ -1,0 +1,37 @@
+<div class="container-fluid">
+  <div class="row row-cols-1 row-cols-lg-3 row-cols-xl-4">
+    <div class="col mx-auto">
+      <div class="mb-4 text-center">
+        <img src="/images/LOGO.png" width="180" alt="" />
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="border p-4 rounded">
+            <div class="text-center">
+              <h3 class="">後台登入</h3>
+            </div>
+            <div class="form-body">
+              <%= form_for(resource, as: resource_name, url: session_path(resource_name), class: "row g-3") do |f| %>
+                <div class="col-12 mb-3">
+                  <%= f.label :login, class: "form-label" %>
+                  <%= f.email_field :login, autofocus: true, autocomplete: "email", class: "form-control form-control-sm" %>
+                </div>
+                <div class="col-12 mb-3">
+                  <%= f.label :password, class: "form-label" %>
+                  <%= f.password_field :password, autofocus: true, autocomplete: "current-password", class: "form-control form-control-sm" %>
+                </div>
+                
+                <div class="col-12">
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-light"><i class="bx bxs-lock-open"></i>Sign in</button>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--end row-->
+</div>

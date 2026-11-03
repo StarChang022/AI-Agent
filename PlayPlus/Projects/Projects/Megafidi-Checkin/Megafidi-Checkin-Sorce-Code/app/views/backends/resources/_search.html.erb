@@ -1,0 +1,28 @@
+<%= form_with url: url_for(action: :index), builder: BootstrapHorizontalFormBuilder, method: :get, multipart: true, local: true do |f| %>
+<div class="row">
+  
+	<% %w[k].each do |current| %>
+	<div class="col-6">
+		<%= f.text_field current, label: t("backends.#{current}"), class: "#{current}", value: params.dig(current) %>
+	</div>
+	<% end %>
+
+  <% %w[daterange].each do |current| %>
+  <div class="col-6">
+    <%= f.text_field current, label: t("backends.#{current}"), class: "#{current}", value: params.dig(current) %>
+  </div>
+  <% end %>
+
+  <% %w[per_page].each do |current| %>
+  <div class="col-6">
+    <%= f.number_field current, label: t("backends.#{current}"), class: "#{current}", value: per_page, min: 1 %>
+  </div>
+  <% end %>  
+
+</div>
+<div class="row">
+	<div class="col-6">
+		<%= f.submit t("backends.submit") %>
+	</div>
+</div>
+<% end %>

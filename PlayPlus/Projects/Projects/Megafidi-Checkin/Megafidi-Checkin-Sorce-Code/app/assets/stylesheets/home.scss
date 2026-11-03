@@ -1,0 +1,27 @@
+@import 'actiontext.css';
+@import './javascript/noty';
+@import './javascript/flatpickr';
+@import './javascript/select2';
+@import './all.css';
+@import './javascript/bootstrap';
+//@import "./theme/dashtreme/assets/css/bootstrap.min.css";
+
+[modal-backdrop]:nth-child(2) {
+	background: red !important;
+}
+
+.dropdown-menu {
+	-webkit-box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+	box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+	border: 0 solid #e9ecef;
+	font-size: 14px;
+	border-radius: 10px;
+}
+
+.dropdown-menu {
+	color: #1e1e1e;
+	background-color: #ffffff;
+	border: 1px solid rgba(0, 0, 0, 0.15);
+	top: 100%;
+	right: 0;
+}

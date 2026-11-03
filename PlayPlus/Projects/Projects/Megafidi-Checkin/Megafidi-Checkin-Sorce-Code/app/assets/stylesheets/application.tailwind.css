@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	html, body {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+		font-variant-numeric: tabular-nums;
+
+		@apply text-gray-theme;
+	}
+
+	body::-webkit-scrollbar {
+		display: none;
+	}
+
+	h1, h2, h3, h4, h5 ,h6 {
+		@apply font-bold;
+	}
+
+	input[type='checkbox'] {
+		-webkit-appearance: none !important;
+		outline: none !important;
+		appearance: none !important;
+		accent-color: red !important;
+		ring-width: none !important;
+
+		@apply appearance-none !ring-0 outline-none shadow-none cursor-pointer border-[1.5px] border-orange-theme checked:!bg-orange-theme rounded;
+	}
+}
+
+@layer components {
+	.navbar__link {
+		@apply flex items-center gap-3 hover:text-orange-theme duration-200 p-4 w-full;
+	}
+
+	.card {
+		@apply p-3 flex flex-col gap-3 bg-white border-2 border-transparent rounded-lg shadow;
+	}
+
+	.button {
+		@apply px-4 py-2 flex items-center justify-center text-center border border-transparent gap-1.5 bg-orange-theme hover:bg-orange-theme-light text-white rounded duration-200 whitespace-nowrap;
+	}
+
+	.input, .select {
+		@apply w-full;
+	}
+
+	.select > select {
+		@apply cursor-pointer;
+	}
+
+	.input > label, .select > label {
+		@apply block text-sm;
+	}
+
+	.input > input, .select > select, .input > textarea {
+		@apply block w-full bg-white border border-gray-theme-light text-gray-theme rounded placeholder:text-gray-theme-lighter !ring-0 focus:border-orange-theme p-2;
+	}
+
+	.input > textarea {
+		@apply min-h-[80px];
+	}
+
+	.checkbox {
+		@apply flex items-start gap-1.5;
+	}
+
+	.checkbox > input {
+		@apply translate-y-1;
+	}
+
+	.checkin .checkbox > input {
+		@apply !border-red-theme checked:!bg-red-theme;
+	}
+
+	.card-event {
+		@apply min-w-[300px];
+	}
+
+	.card-guest {
+		@apply min-w-[300px] gap-6 items-start;
+	}
+
+	.home .card-event {
+		@apply cursor-pointer select-none;
+	}
+
+	.return-button {
+		@apply w-6 h-6 flex items-center justify-center text-orange-theme hover:text-white hover:bg-orange-theme border border-orange-theme rounded duration-200;
+	}
+
+	.tag {
+		@apply inline-block px-3 py-1.5 text-sm font-bold text-gray-theme-light bg-gray-theme-lighter rounded;
+	}
+
+	.table {
+		@apply !block max-w-full p-6 rounded-lg bg-white shadow overflow-x-auto;
+	}
+
+	.table > div {
+		@apply min-w-[100%] w-max xl:w-auto;
+	}
+
+	.tr {
+		@apply grid items-center gap-3;
+	}
+
+	.guests .tr {
+		@apply grid-cols-[0.5fr_2fr_2.5fr_1fr_0.75fr_0.75fr_0.5fr_1fr];
+	}
+
+	.settings .tr {
+		@apply grid-cols-[4fr_1fr_1fr_1fr];
+	}
+
+	.users .tr {
+		@apply grid-cols-[0.5fr_0.75fr_1fr_2fr_1fr_1fr_1fr];
+	}
+
+	.thead.tr {
+		@apply text-sm p-3 border-b-[1.5px] border-gray-theme-lighter;
+	}
+
+	.tbody.tr {
+		@apply p-3 border-b-[1.5px] border-gray-theme-lighter;
+	}
+
+	/* .dropdown {
+		@apply absolute flex flex-col gap-px left-0 -bottom-1.5 translate-y-full rounded bg-[#FF9E43] text-white overflow-hidden;
+	}
+
+	.dropdown .option {
+		@apply px-3 py-1 text-center cursor-pointer text-sm;
+	} */
+
+	.pagy {
+		@apply w-8 h-8 text-sm flex items-center justify-center bg-gray-theme-lightest hover:bg-gray-theme-lighter rounded duration-200;
+	}
+}
+
+@layer utilities {
+	.navbar__link.active {
+		@apply text-orange-theme;
+	}
+
+	.card-event.active {
+		@apply border-orange-theme;
+	}
+
+	.tag.active {
+		@apply px-3 py-1.5 font-normal bg-green-theme-light text-sm text-green-theme rounded;
+	}
+
+	.tag.active > span {
+		@apply font-bold;
+	}
+
+	.button--capsule {
+		@apply px-12 rounded-full;
+	}
+
+	.button--outline {
+		@apply text-orange-theme bg-transparent border-orange-theme hover:bg-orange-theme hover:text-white;
+	}
+
+	.button--destructive {
+		@apply bg-red-theme hover:!bg-red-theme-light;
+	}
+
+	.button--destructive-outline {
+		@apply text-red-theme bg-transparent border-red-theme hover:bg-red-theme hover:text-white;
+	}
+
+	.button--sm {
+		@apply text-sm px-2 py-1;
+	}
+
+	.pagy.active {
+		@apply bg-orange-theme text-white;
+	}
+}

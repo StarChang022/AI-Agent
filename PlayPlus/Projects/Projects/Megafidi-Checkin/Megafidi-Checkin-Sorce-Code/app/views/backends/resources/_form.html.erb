@@ -1,0 +1,120 @@
+<% current_class = current_object.class %>
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+<% current_class.form_columns_hash.each do |current, type| %>
+
+<% case type %>
+<% when :string %>
+
+<% if current.to_s == "email" %>
+<%= f.email_field current %>
+<% else %>
+<%= f.text_field current %>
+<% end %>
+
+<% when :datetime %>
+<%= f.datetime_local_field current, class: "datetimepicker" %>
+<% when :date_field %>
+<%= f.datetime_local_field current, class: "datepicker" %>
+<% when :integer %>
+<%= f.number_field current %>
+<% when :text %>
+<%= f.text_area current %>
+<% end %>
+
+<% end %>
+
+<% current_class.try(:acts_as_taggable_on).each do |current| %>
+<% tag = "#{current.singularize}_list" %>
+<%= f.select tag, options_for_select(current_object.send(tag), current_object.send(tag)), {}, {multiple: true, class: "form-control js-select2-tag"} %>
+<% end if current_class.try(:acts_as_taggable_on) %>
+
+<%= render partial: "/backends/resources/components/dropify", collection: current_class.attachment_reflections.keys, as: :current, locals: {f: f} %>
+
+<% [:content].each do |current| %>
+<div class="row mb-3">
+	<%= f.label current, current_class.human_attribute_name(current), class: "col-sm-2 col-form-label" %>
+	<div class="col-sm-10">
+		<%= f.rich_text_area current %>
+	</div>
+</div>
+<% end if current_object.try(:content) %>
+
+<!-- Nested Object -->
+<% current_class.nested_attributes_options.keys.map(&:to_s).each do |current| %>
+<% next if ["images", "seo_meta_tag"].include?(current) %>
+<div class="row mb-3">
+	<div class="col-sm-2">
+		<%= f.label current, current_class.human_attribute_name(current), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<div id="<%= current %>" class="row sortable_items">
+			<%= f.fields_for(current, include_id: false) do |builder| %>
+			<%= render partial: current.singularize, locals: {f: builder} %>
+			<!-- can copy app/views/backends/resources/_nested_form.html.erb -->
+			<% end %>
+		</div>
+	</div>
+</div>
+<div class="row" data-uppy="">
+	<div class="col-sm-2">
+	</div>
+	<div class="col-sm-10">
+		<%= link_to_build_object "Build", f, current, class: "btn btn-outline-success btn-square" %>
+	</div>
+</div>
+<% end %>
+
+<!-- Seo Meta Tag -->
+<% ["seo_meta_tag"].each do |current| %>
+<div class="row mb-3">
+	<div class="col-sm-2">
+		<%= f.label current, current_object.class.human_attribute_name(current), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<%= f.fields_for(current) do |builder| %>
+		<%= render partial: "/backends/resources/#{current.singularize}", locals: {f: builder} %>
+		<% end %>
+	</div>
+</div>
+<% end if current_object.try(:seo_meta_tag) %>
+
+<!-- 多圖 -->
+<% ["images"].each do |current| %>
+<div class="row mb-3">
+	<div class="col-sm-2">
+		<%= f.label current, current_object.class.human_attribute_name(current), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<div id="<%= current %>" class="row sortable_items">
+			<%= f.fields_for(current, include_id: false) do |builder| %>
+			<%= render partial: "/backends/resources/#{current.singularize}", locals: {f: builder} %>
+			<% end %>
+		</div>
+	</div>
+</div>
+<div class="row" data-uppy="">
+	<div class="col-sm-2">
+	</div>
+	<div class="col-sm-10">
+		<%= link_to_uppy_trigger t("backends.new"), f, current, partial: "/backends/resources/#{current.singularize}", class: "btn btn-outline-success btn-square" %>
+	</div>
+</div>
+<% end if current_object.try(:images) %>
+
+<% if current_object.new_record? %>
+<div class="row mb-3">
+  <div class="col-sm-2">
+  </div>
+  <div class="col-sm-10">
+    <div class="form-check form-check-inline float-start">
+      <input class="form-check-input" type="checkbox" id="_next" name="create_next" value="true" <%= "checked" if params[:create_next].present? %>>
+      <label for="_next"><%= t("backends.create_next") %></label>
+    </div>    
+  </div>
+</div>
+<% end %>
+
+<%= f.submit t("backends.submit") %>
+
+<% end %>

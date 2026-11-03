@@ -1,0 +1,45 @@
+<% content_for :navigation do %>
+
+<%= link_to(url_for(action: :new), class: "btn btn-light btn-round waves-effect waves-light m-1") do %>
+<i class="fa fa-plus"></i> <%= t("backends.new") %>
+<% end if @new %>
+
+<%= link_to(url_for(params.permit!.to_h.merge(format: :xlsx)), data: {"disable-with": t("backends.exporting")}, class: "btn btn-light btn-round waves-effect waves-light m-1") do %>
+<i class="fa fa-file-excel-o"></i> <%= t("backends.export") %>
+<% end if @xlsx %>
+
+<% end %>
+
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <div class="card-body">
+        <%= render partial: "search" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <%= raw pagy_bootstrap_nav(current_pagy) %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card">
+      <div class="card-body">
+        <%= render partial: "table" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-12">
+    <%= raw pagy_bootstrap_nav(current_pagy) %>
+  </div>
+</div>
+
+

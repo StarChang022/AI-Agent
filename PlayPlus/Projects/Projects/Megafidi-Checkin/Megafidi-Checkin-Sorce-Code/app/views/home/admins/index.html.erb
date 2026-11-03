@@ -1,0 +1,30 @@
+<div class="users flex flex-col gap-6">
+  <span class="text-sm">工作人員</span>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <%= link_to :back do %>
+        <div class="return-button">
+          <i class="scale-75 fa-solid fa-chevron-left"></i>
+        </div>
+      <% end %>
+
+      <h2 class="text-2xl">工作人員</h2>
+    </div>
+
+    <a href="<%= url_for(action: :new) %>" class="button">
+      <i class="fa-solid fa-plus"></i>
+      新增
+    </a>
+  </div>
+
+  <!-- 操作列 -->
+  <%= render partial: "/home/partials/actions" %>
+
+  <!-- 搜尋列 -->
+  <%= render partial: "/home/admins/partials/search" %>
+
+  <!-- 表格 -->
+  <%= render partial: "/home/admins/partials/table" %>
+  <%= render partial: "/home/partials/pagy", locals: {pagy: current_pagy} %>
+</div>

@@ -1,0 +1,23 @@
+<tr id="<%= dom_id(current_object) %>" data-obj="<%= current_object.to_json %>" data-acts_as_list_url=<%= url_for(action: :acts_as_list, id: current_object, event: :insert_at, format: :json) %>>
+
+  <% %w[email name phone].each do |current| %>
+  <td>
+    <%= current_object.send(current) %>
+  </td>
+  <% end %>
+
+  <td>
+    <% prepend_buttons = [] %>
+
+    <% prepend_buttons << link_to(url_for(controller: 'backends/users', action: "sign_in", id: current_object.id), class: "btn btn-info", method: :post, target: "_blank") do %>
+    <i class="bx bx-log-in"></i> 登入
+    <% end %>
+
+    <% prepend_buttons << link_to(url_for(controller: 'backends/users', action: "skip_confirmation", id: current_object.id), class: "btn btn-danger", method: :patch) do %>
+    <i class="bx bx-check-double"></i> 驗證
+    <% end unless current_object.confirmed? %>
+
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, destroy: true, prepend_buttons: prepend_buttons.join()} %>
+
+  </td>
+</tr>

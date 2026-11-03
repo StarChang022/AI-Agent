@@ -1,0 +1,9 @@
+$(document).ready(function(){
+  $("#<%= dom_id(current_object) %>").replaceWith('<%= escape_javascript(render(partial: "/home/guests/partials/guest",locals:{current_object: current_object})) %>');
+  <% if @message %>
+  new Noty({
+    type: 'success',
+    text: '<%= @message %>'
+  }).show();
+  <% end %>
+});

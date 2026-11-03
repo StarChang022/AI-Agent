@@ -1,0 +1,45 @@
+<div class="sidebar-wrapper" data-simplebar="true">
+  <div class="sidebar-header">
+    <div>
+      <img src="/images/LOGO.png" class="logo-icon" alt="logo icon" style="width: 60px">
+    </div>
+    <div>
+      <h4 class="logo-text"><%= current_system_setting.name %></h4>
+    </div>
+    <div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i>
+    </div>
+  </div>
+  <!--navigation-->
+  <ul class="metismenu" id="menu">
+
+    <% %w[categories blogs posts].each do |current| %>
+    <li>
+      <a href="<%= url_for([:backends, current.to_sym]) %>">
+        <div class="parent-icon"> 
+          <i class="bx bx-grid-alt"></i>
+        </div>
+        <div class="menu-title"><%= current.classify.constantize.model_name.human %></div>
+      </a>
+    </li>
+    <% end %>
+
+    <li class="">
+      <a href="javascript:;" class="has-arrow">
+        <div class="parent-icon"><i class='bx bx-home-circle'></i>
+        </div>
+        <div class="menu-title">使用者管理</div>
+      </a>
+      <ul>
+        <% %w[users admins].each do |current| %>
+        <li>
+          <a href="<%= url_for([:backends, current.to_sym]) %>">
+            <%= current.classify.constantize.model_name.human %>
+          </a>
+        </li>
+        <% end %>
+      </ul>
+    </li>
+
+  </ul>
+  <!--end navigation-->
+</div>

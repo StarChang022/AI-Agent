@@ -1,0 +1,25 @@
+<% klass = current_object.class %>
+<tr id="<%= dom_id(current_object) %>" data-obj="<%= current_object.to_json %>" data-acts_as_list_url=<%= url_for(action: :acts_as_list, id: current_object, event: :insert_at, format: :json) %>>
+
+  <% if klass.column_names.include?("priority") %>
+  <td>
+    <%= render partial: "/backends/resources/components/handle_v2", locals: {current_object: current_object} %>
+  </td>
+  <% end %>
+
+  <% if klass.column_names.include?("status") %>
+  <td>
+    <%= render partial: "/backends/resources/components/events", locals: {current_object: current_object} %>
+  </td>
+  <% end %>
+
+  <% %w[parent_name name].each do |current| %>
+  <td>
+    <%= current_object.send(current) %>
+  </td>
+  <% end %>
+
+  <td>
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, show: current_object.root?} %>
+  </td>
+</tr>

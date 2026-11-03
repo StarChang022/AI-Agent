@@ -1,0 +1,6 @@
+<div class="form-group">
+  <label class="col-lg-3 col-sm-3 control-label"><%= current_object.class.human_attribute_name(key) %></label>
+  <div class="col-lg-9">
+    <textarea id="<%=key %>" class="form-control ckeditor" data-height="300px" name="<%= current_object.params_key %>[<%= key %>]"><%= current_object.send(key) %></textarea>
+  </div>
+</div>

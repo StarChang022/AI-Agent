@@ -1,0 +1,14 @@
+<% current_class = current_object.class %>
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+<% ["parent_id"].each do |current| %>
+<%= f.select current, options_for_select(current_parent_options, current_object.send(current)), {}, {class: ""} %>
+<% end unless current_object.root? %>
+
+<% ["name"].each do |current| %>
+<%= f.text_field current %>
+<% end %>
+
+<%= f.submit t("backends.submit") %>
+
+<% end %>

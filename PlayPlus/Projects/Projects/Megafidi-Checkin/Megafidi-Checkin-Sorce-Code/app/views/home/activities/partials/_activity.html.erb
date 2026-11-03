@@ -1,0 +1,21 @@
+<div class="tbody tr">
+  <div class="flex justify-center hidden">
+    <input type="checkbox" class="tbody__checkbox">
+  </div>
+
+  <p><%= current_object.name %></p>
+
+  <p class="text-center"><%= current_object.date %></p>
+
+  <p class="text-center"><%= current_object.guests_count %></p>
+
+  <div class="flex items-center justify-center gap-3 duration-200">
+    <a href="<%= url_for(action: :edit, id: current_object.id) %>" class=" hover:text-gray-theme-light duration-200">
+      <i class="fa-solid fa-pen-to-square"></i>
+    </a>
+
+    <%= link_to(url_for(action: :destroy, id: current_object.id, format: :js),class: "hover:text-red-theme duration-200", remote: true, method: :delete, data: {confirm: t("backends.confirm", action:  t("backends.destroy")) }) do %>
+      <i class="fa-solid fa-trash-can"></i>
+    <% end %>
+  </div>
+</div>

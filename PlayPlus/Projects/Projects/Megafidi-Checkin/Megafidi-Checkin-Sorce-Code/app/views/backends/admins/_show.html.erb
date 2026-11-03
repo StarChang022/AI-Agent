@@ -1,0 +1,11 @@
+<% current_class = current_object.class %>
+<tr id="<%= dom_id(current_object) %>" data-item="<%= current_object.id %>">
+  <% ["name", "email", "sign_in_count", "last_sign_in_at"].each do |current, type| %>
+  <td>
+    <%= current_object.send(current) %>
+  </td>
+  <% end %>
+  <td>
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, show: false} %>
+  </td>
+</tr>

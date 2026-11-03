@@ -1,0 +1,27 @@
+<% current_class = current_object.class %>
+<tr id="<%= dom_id(current_object) %>" data-obj="<%= current_object.to_json %>" data-acts_as_list_url=<%= url_for(action: :acts_as_list, id: current_object, event: :insert_at, format: :json) %>>
+  <td>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input"  type="checkbox" id="_<%= dom_id(current_object) %>" name="bulk_ids[]" value="<%= current_object.id %>">
+      <label class="form-check-label" for="_<%= dom_id(current_object) %>"> </label>
+    </div>
+  </td> 
+  <% if current_class.column_names.include?("priority") %>
+  <td>
+    <%= render partial: "/backends/resources/components/handle_v2", locals: {current_object: current_object} %>
+  </td>
+  <% end %>
+  <% if current_class.column_names.include?("status") %>
+  <td>
+    <%= render partial: "/backends/resources/components/events", locals: {current_object: current_object} %>
+  </td>
+  <% end %>
+  <% current_class.form_columns_hash.each do |current, type| %>
+  <td>
+    <%= current_object.send(current) %>
+  </td>
+  <% end %>
+  <td>
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, show: false} %>
+  </td>
+</tr>

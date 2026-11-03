@@ -1,0 +1,38 @@
+<% current_class = current_object.class %>
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+<%= f.text_field :name %>
+<%= f.text_field :phone %>
+<%= f.email_field :email %>
+<%= f.text_field :address %>
+<%= f.text_field :line_notify_token %>
+
+<% if current_class.stored_attributes[:socials].present? %>
+<div class="form-group row">
+	<div class="col-sm-2">
+		<%= f.label :socials, current_object.class.human_attribute_name("socials"), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<% current_class.stored_attributes[:socials].each do |current| %>
+		<%= f.text_field current %>
+		<% end %>
+	</div>
+</div>
+<% end %>
+
+<!-- Seo Meta Tag -->
+<% ["seo_meta_tag"].each do |current| %>
+<div class="form-group row">
+	<div class="col-sm-2">
+		<%= f.label current, current_object.class.human_attribute_name(current), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<%= f.fields_for(current) do |builder| %>
+		<%= render partial: "/backends/resources/#{current.singularize}", locals: {f: builder} %>
+		<% end %>
+	</div>
+</div>
+<% end if current_object.try(:seo_meta_tag) %>
+
+<%= f.submit t("backends.submit"), class: "btn btn-danger btn-square", data: {"disable-with": t("backends.submiting")} %>
+<% end %>

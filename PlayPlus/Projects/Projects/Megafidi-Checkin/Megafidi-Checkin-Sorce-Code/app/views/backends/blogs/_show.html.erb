@@ -1,0 +1,38 @@
+<tr id="<%= dom_id(current_object) %>" data-item="<%= current_object.id %>">
+  <td>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input"  type="checkbox" id="_<%= dom_id(current_object) %>" name="bulk_ids[]" value="<%= current_object.id %>">
+      <label class="form-check-label" for="_<%= dom_id(current_object) %>"> </label>
+    </div>
+  </td> 
+  <td>
+    <%= render partial: "/backends/resources/components/events", locals: {current_object: current_object} %>
+  </td>
+
+  <td>
+    <%= current_object.name %>
+  </td>
+
+  <td>
+    <%= datetime_format current_object.posted_at %>
+  </td>
+
+  <% ["image"].each do |current| %>
+  <td>
+    <%= link_to(rails_blob_path(current_object.send(current), only_path: true), class: "fancybox") do %>
+    <%= image_tag current_object.image.variant(resize_to_limit: [100, 100]).processed.url  %>
+    <% end if current_object.send(current).attached? %>
+  </td>
+  <% end %>
+
+  <td>
+
+    <% prepend_buttons = [] %>
+
+    <% prepend_buttons << link_to(url_for(controller: 'backends/blogs', action: "contentbuilder", id: current_object.id), class: "btn btn-info") do %>
+    contentbuilder
+    <% end %>
+
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, show: false, prepend_buttons: prepend_buttons.join()} %>
+  </td>
+</tr>

@@ -1,0 +1,27 @@
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+  <%= f.text_field :email, required: true %>
+  <%= f.password_field :password %>
+  <%= f.text_field :name, required: true %>
+  <%= f.text_field :phone %>
+
+  <%= render partial: "/backends/resources/components/enum", collection: %w[gender], as: :current, locals: {f: f} %>
+
+  <% %w[address].each do |current| %>
+    <div class="row mb-3">
+      <div class="col-sm-2">
+        <%= f.label current, class: "col-form-label" %>
+      </div>
+      <div class="col-sm-10">
+        <div class="TWzipcode row mb-2">
+          <% %w[county district zipcode].each do |current| %>
+            <div class="col-lg-4" data-role="<%= current %>" data-style="form-control form-control-sm" data-name="<%= f.object.class.model_name.param_key %>[<%= current %>]" data-required="false" data-value="<%= current_object.send(current) %>"></div>
+          <% end %>
+        </div>
+        <%= f.text_field_without_bootstrap current, class: "form-control form-control-sm" %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= f.submit t("backends.submit") %>
+<% end %>

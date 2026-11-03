@@ -1,0 +1,7 @@
+wb = xlsx_package.workbook
+wb.add_worksheet(name: model_class.model_name.human) do |sheet|
+  sheet.add_row model_class.column_names.map{|i| model_class.human_attribute_name(i)}
+  @current_collection.each do |current_object|
+    sheet.add_row model_class.column_names.map{|i| current_object.send(i)}
+  end
+end

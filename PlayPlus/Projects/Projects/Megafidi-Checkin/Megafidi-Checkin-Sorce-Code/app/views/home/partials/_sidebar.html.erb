@@ -1,0 +1,65 @@
+<aside class="sidebar w-0 lg:w-[260px] xl:w-[260px] h-full fixed lg:relative z-50 bg-[url('/images/bg-base.png')] duration-500 overflow-hidden whitespace-nowrap">
+	<div class="absolute w-[260px] h-full px-3 py-6 top-0 left-0">
+		<div class="flex items-center mb-6 relative">
+			<h1 class="w-full text-xl lg:text-2xl text-center">邁佳數位報到系統</h1>
+
+			<button type="button" class="lg:hidden menu__close absolute -right-0">
+				<i class="text-lg fa-solid fa-times fa-fw"></i>
+			</button>
+		</div>
+	
+		<nav class="p-3 flex flex-col items-start gap-3 rounded-xl bg-white/70">
+			<a href="<%= checkin_activities_path %>" class="navbar__link">
+				<i class="fa-solid fa-house fa-fw"></i>
+				數位報到
+			</a>
+	
+			<% if current_admin.admin? %>
+				<span class="text-xs text-gray-theme-light select-none">賓客</span>
+	
+				<a href="<%= home_guests_path %>" class="navbar__link">
+					<i class="rotate-[135deg] fa-solid fa-tag fa-fw"></i>
+					賓客資料
+				</a>
+	
+				<span class="text-xs text-gray-theme-light select-none">設定</span>
+	
+				<a href="<%= home_activities_path %>" class="navbar__link">
+					<i class="rotate-[135deg] fa-solid fa-tag fa-fw"></i>
+					活動場次
+				</a>
+	
+				<a href="<%= home_admins_path %>" class="navbar__link">
+					<i class="rotate-[135deg] fa-solid fa-tag fa-fw"></i>
+					工作人員
+				</a>
+			<% end %>
+		</nav>
+	
+		<img src="/images/img-star.png" alt="img" class="scale-75 absolute -bottom-6 -left-6 z-[-1]">
+	</div>
+</aside>
+
+<div class="backdrop opacity-0 lg:!hidden fixed top-0 left-0 w-full h-full bg-black/70 z-40 pointer-events-none duration-300"></div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const sidebar = document.querySelector('.sidebar');
+		const menuClose = document.querySelector('.menu__close');
+		const backdrop = document.querySelector('.backdrop');
+
+		menuClose.addEventListener('click', () => {
+			const screen = document.documentElement.clientWidth;
+
+			if (screen < 1024) {
+				sidebar.classList.toggle('w-0');
+				sidebar.classList.toggle('w-[260px]');
+				backdrop.classList.toggle('opacity-0');
+				backdrop.classList.toggle('pointer-events-none');
+			} else if (screen >= 1024 && screen < 1280) {
+				sidebar.classList.toggle('lg:w-0');
+				sidebar.classList.toggle('lg:w-[260px]');
+			}
+		});
+	});
+</script>

@@ -1,0 +1,22 @@
+<%= form_with url: url_for(action: action_name), method: :get, multipart: true, local: true, class: "search hidden xl:w-3/4 flex flex-col lg:flex-row lg:items-end gap-3" do |f| %>
+  <div class="select">
+    <%= f.label :status, Admin.human_attribute_name(:status) %>
+    <%= f.select(:status, Admin.statuses.keys.collect{|i| [Admin.human_attribute_name(i), i]}, {include_blank: '全部', selected: params[:status]}, {class: ""}) %>
+  </div>
+
+  <div class="select">
+    <%= f.label :role, Admin.human_attribute_name(:status) %>
+    <%= f.select(:role, Admin.roles.keys.collect{|i| [Admin.human_attribute_name(i), i]}, {include_blank: '全部', selected: params[:role]}, {class: ""}) %>
+  </div>
+
+  <div class="input">
+    <%= f.label :k, t("backends.k") %>
+    <%= f.text_field :k, value: params[:k] %>
+  </div>
+
+  <button type="button" class="button">
+    <i class="text-sm fa-solid fa-magnifying-glass"></i>
+
+    搜尋
+  </button>
+<% end %>

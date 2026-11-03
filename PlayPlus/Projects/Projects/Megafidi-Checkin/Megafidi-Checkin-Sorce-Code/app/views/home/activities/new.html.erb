@@ -1,0 +1,62 @@
+<%= form_with model: [:home, current_object], multipart: true, local: true, class: "" do |f| %>
+  <div class="users flex flex-col gap-6">
+    <span class="text-sm">
+      <%= link_to('活動場次', home_activities_path) %>
+      / 
+      <%= current_object.new_record? ? "新增" : current_object.name %>
+    </span>
+
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <%= link_to :back do %>
+          <div class="return-button">
+            <i class="scale-75 fa-solid fa-chevron-left"></i>
+          </div>
+        <% end %>
+
+        <h2 class="text-2xl"><%= current_object.new_record? ? "新增" : current_object.name %></h2>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <% unless current_object.new_record? %>
+          <%= link_to(url_for(action: :destroy),class: "button button--destructive-outline", method: :delete, data: {confirm: t("backends.confirm", action:  t("backends.destroy")) }) do %>
+            <i class="fa-solid fa-trash-can"></i>
+            刪除
+          <% end %>
+        <% end %>
+
+        <a href="<%= url_for(action: :index) %>" class="button button--outline">
+          <i class="fa-solid fa-times"></i>
+          取消
+        </a>
+
+        <button type="submit" class="button">
+          <i class="fa-solid fa-check"></i>
+          儲存
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row lg:items-start gap-6">
+      <div class="lg:basis-2/3 flex flex-col gap-6">
+        <div class="card">
+          <h3 class="text-lg">基本資料</h3>
+
+          <div class="grid grid-cols-2 gap-6">
+            <div class="input">
+              <%= f.label :name %>
+              <%= f.text_field :name, placeholder: "請輸入姓名" %>
+            </div>
+
+            <div class="input">
+              <%= f.label :date %>
+              <%= f.text_field :date, class: "datepicker" %>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+<% end %>

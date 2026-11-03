@@ -1,0 +1,15 @@
+<% current_class = current_object.class %>
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+<%= f.text_field :name %>
+<%= f.text_field :phone %>
+<%= f.email_field :email %>
+<%= f.text_area :content %>
+
+<hr>
+
+<%= f.text_area :note %>
+
+<%= f.submit t("backends.submit") %>
+
+<% end %>

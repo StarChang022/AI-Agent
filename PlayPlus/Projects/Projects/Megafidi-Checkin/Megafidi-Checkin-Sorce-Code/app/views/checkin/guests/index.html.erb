@@ -1,0 +1,53 @@
+<div class="home flex flex-col gap-6">
+  <span class="text-sm">數位報到</span>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <%= link_to checkin_activities_path do %>
+        <div class="return-button">
+          <i class="scale-75 fa-solid fa-chevron-left"></i>
+        </div>
+      <% end %>
+
+      <h2 class="text-2xl">數位報到</h2>
+    </div>
+  </div>
+
+  <!-- 活動場次 -->
+  <div class="grid lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+    <%= render partial: "/checkin/activities/activity", collection: [activity], as: :current_object %>
+  </div>
+
+
+  <!-- 關鍵字搜尋 -->
+  <%= render partial: "/checkin/guests/search" %>
+
+  <!-- 賓客資料 -->
+  <div id="guests" class="grid lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+    <%= render partial: "/checkin/guests/guest", collection: pagy_current_collection, as: :current_object %>
+  </div>
+
+  <!-- 尚未查詢/查無結果的提示文字 -->
+  <% if pagy_current_collection.blank? %>
+    <p class="text-center py-20">請輸入手機號碼末五碼開始查詢</p>
+  <% end %>
+</div>
+
+<script>
+  // 選擇活動場次卡片
+  document.addEventListener('DOMContentLoaded', function() {
+  	const cards = document.querySelectorAll('.card-event');
+
+  	cards.forEach((card, mainIndex) => {
+  		card.addEventListener('click', () => {
+  			cards.forEach((card, index) => {
+  				if (mainIndex !== index) {
+  					card.classList.remove('active')
+  				}
+  			});
+
+  			card.classList.toggle('active');
+  		});
+  	});
+  });
+</script>

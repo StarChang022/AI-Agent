@@ -1,0 +1,53 @@
+<div class="table">
+  <div>
+    <!-- 表頭 -->
+    <div class="thead tr">
+      <div class="flex items-center justify-center">
+        <input class="form-check-input toggle" type="checkbox" value="" id="toggle_bulk_ids">
+        <label class="form-check-label" for="toggle_bulk_ids"></label>
+      </div>
+
+      <p>活動場次</p>
+
+      <p>賓客</p>
+
+      <p class="text-center">手機號碼</p>
+
+      <p class="text-center">獎盃編號</p>
+
+      <p class="text-center">代領獎人</p>
+
+      <p class="text-center">備註</p>
+
+      <p class="text-center">操作</p>
+    </div>
+
+    <!-- 內容 -->
+    <%= render partial: "/home/guests/partials/guest", collection: pagy_current_collection, as: :current_object %>
+
+  </div>
+</div>
+
+<%= render partial: '/home/partials/remark_modal' %>
+<%= render partial: '/home/partials/delete_modal' %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  	const theadCheckbox = document.querySelector('.thead__checkbox');
+  	const tbodyCheckboxes = document.querySelectorAll('.tbody__checkbox');
+
+  	theadCheckbox.addEventListener('change', () => {
+  		tbodyCheckboxes.forEach(checkbox => {
+  			checkbox.checked = theadCheckbox.checked;
+  		});
+  	});
+
+  	tbodyCheckboxes.forEach(checkbox => {
+  		checkbox.addEventListener('change', () => {
+  			const allChecked = Array.from(tbodyCheckboxes).every(checkbox => checkbox.checked);
+
+  			theadCheckbox.checked = allChecked;
+  		});
+  	});
+  });
+</script>

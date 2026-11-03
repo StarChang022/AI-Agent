@@ -1,0 +1,88 @@
+<div class="table">
+	<div class="!w-full">
+		<!-- 表頭 -->
+		<div class="thead tr">
+			<div class="flex justify-center">
+				<input type="checkbox" class="thead__checkbox">
+			</div>
+
+			<p class="text-center min-w-[67.5px]">狀態</p>
+
+			<p>權限</p>
+
+			<p>名稱</p>
+
+			<p>電話</p>
+
+			<p class="text-center">備註</p>
+
+			<p class="text-center">操作</p>
+		</div>
+
+		<!-- 內容 -->
+		<div class="tbody tr">
+			<div class="flex justify-center">
+				<input type="checkbox" class="tbody__checkbox">
+			</div>
+
+			<!-- 判斷使用者狀態 -->
+			<div class="flex items-center justify-center">
+				<% if true %>
+					<div class="tag active"><span>正常</span></div>
+
+				<% else %>
+					<div class="tag">停權</div>
+
+				<% end %>
+
+			</div>
+
+			<p>一般人員</p>
+
+			<p>姓名姓名</p>
+
+			<p>0912345678</p>
+
+			<div class="flex items-center justify-center">
+				<button data-modal-target="remark-modal" data-modal-toggle="remark-modal" class="text-purple-theme hover:text-purple-theme-light duration-200" type="button">
+					<i class="fa-solid fa-circle-info"></i>
+				</button>
+			</div>
+
+			<div class="flex items-center justify-center gap-3 duration-200">
+				<a href="/users_edit" class=" hover:text-gray-theme-light duration-200">
+					<i class="fa-solid fa-pen-to-square"></i>
+				</a>
+
+				<button type="button" data-modal-target="delete-modal" data-modal-toggle="delete-modal" class="hover:text-red-theme duration-200">
+					<i class="fa-solid fa-trash-can"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<%= render partial: '/home/partials/remark_modal' %>
+
+<%= render partial: "/home/partials/delete_modal" %>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const theadCheckbox = document.querySelector('.thead__checkbox');
+		const tbodyCheckboxes = document.querySelectorAll('.tbody__checkbox');
+	
+		theadCheckbox.addEventListener('change', () => {
+			tbodyCheckboxes.forEach(checkbox => {
+				checkbox.checked = theadCheckbox.checked;
+			});
+		});
+	
+		tbodyCheckboxes.forEach(checkbox => {
+			checkbox.addEventListener('change', () => {
+				const allChecked = Array.from(tbodyCheckboxes).every(checkbox => checkbox.checked);
+	
+				theadCheckbox.checked = allChecked;
+			});
+		});
+	});
+	</script>

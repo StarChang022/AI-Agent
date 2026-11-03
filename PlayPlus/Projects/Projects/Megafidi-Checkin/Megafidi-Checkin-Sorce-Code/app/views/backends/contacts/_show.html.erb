@@ -1,0 +1,22 @@
+<tr id="<%= dom_id(current_object) %>" data-item="<%= current_object.id %>">
+  <td>
+    <%= render partial: "/backends/resources/components/events", locals: {current_object: current_object} %>
+  </td>
+  <td>
+    # <%= current_object.id %>
+  </td>
+  <td>
+    <%= datetime_format current_object.created_at %>
+  </td>
+  <td>
+    <% ["name", "phone", "email"].each do |current| %>
+    <p class="mb-1"><%= current_object.send(current) %></p>
+    <% end %>
+  </td>
+  <% ["content", "note"].each do |current| %>
+  <td><pre class="text-left"><%= current_object.send(current) %></pre></td>
+  <% end %>
+  <td>
+    <%= render partial: "/backends/resources/components/actions", locals: {current_object: current_object, show: false} %>
+  </td>
+</tr>

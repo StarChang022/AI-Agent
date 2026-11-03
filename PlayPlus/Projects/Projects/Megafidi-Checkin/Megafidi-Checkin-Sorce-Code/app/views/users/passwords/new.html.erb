@@ -1,0 +1,22 @@
+<div class="row justify-content-center">
+  <div class="col-4">
+    <div class="card mt-3">
+      <div class="card-header">
+        <h1><%= t('devise.passwords.new.forgot_your_password') %></h1>
+      </div>
+      <div class="card-body">
+        <%= form_for(resource, as: resource_name, url: password_path(resource_name), builder: BootstrapVerticalFormBuilder, html: { method: :post }) do |f| %>
+
+        <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'form-control' %>
+
+        <div class="form-group my-3">
+          <%= f.submit_without_bootstrap t('devise.passwords.new.send_me_reset_password_instructions'), class: 'btn w-100 btn-primary' %>
+        </div>
+        <% end %>
+
+        <%= render '/users/shared/links' %>
+
+      </div>
+    </div>    
+  </div>
+</div>

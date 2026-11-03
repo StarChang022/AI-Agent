@@ -1,0 +1,18 @@
+
+<% aasm_column = :status if local_assigns[:aasm_column].nil? %>
+<% remote = true if local_assigns[:remote].nil? %>
+<% format = :js if local_assigns[:format].nil? %>
+<% controller = "backends/#{current_object.class.name.tableize}" if local_assigns[:controller].nil? %>
+
+<div class="dropdown m-2">
+  <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <%= current_object.class.human_attribute_name(current_object.send(aasm_column)) %>
+  </button>
+  <ul class="dropdown-menu" style="">
+    <% current_object.aasm(aasm_column).events(:permitted => true).map(&:name).each do |event| %>
+    <%= link_to(url_for([:backends, current_object, aasm_column: aasm_column, event: event, format: format]),remote: remote, method: :put, class: "dropdown-item") do %>
+    <%= current_object.class.human_attribute_name(event) %>
+    <% end %>
+    <% end %>
+  </ul>
+</div>

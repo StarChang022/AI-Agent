@@ -1,0 +1,26 @@
+<% current_class = pagy_current_collection.class.to_s.deconstantize.constantize %>
+<div class="table-responsive">
+  <table class="table table-sm table-bordered text-center">
+    <thead class="">
+      <tr>
+        <th class="w-4">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input toggle" type="checkbox" value="" id="toggle_bulk_ids">
+            <label class="form-check-label" for="toggle_bulk_ids"></label>
+          </div>       
+        </th>
+
+        <th class="w-8"><%= current_class.human_attribute_name(:status) %></th>
+
+        <% %w[name posted_at image].each do |current| %>
+        <th class="w-8"><%= current_class.human_attribute_name(current) %></th>
+        <% end %>
+
+        <th class="w-8"></th>
+      </tr>
+    </thead>
+    <tbody class="<%= pagy_current_collection.class.to_s.deconstantize.tableize %> sortable_items" data-url="<%= url_for(action: :sort) %>">
+      <%= render partial: "show", collection: pagy_current_collection, as: :current_object %>
+    </tbody>
+  </table>
+</div>

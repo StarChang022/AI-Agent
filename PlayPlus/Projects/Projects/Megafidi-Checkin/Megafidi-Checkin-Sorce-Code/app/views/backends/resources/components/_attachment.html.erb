@@ -1,0 +1,16 @@
+<div class="form-group">
+	<label class="col-lg-3 col-sm-3 control-label"><%= current_object.class.human_attribute_name(key) %></label>
+	<div class="col-lg-9">
+		<input type="file" class="form-control" name="<%= current_object.params_key %>[<%= key %>]">
+		<% if current_object.send(key).present? %>
+		<a class="btn btn-xs btn-default" target="_blank" href="<%= current_object.send(key) %>">
+			<%= current_object.send(key).file.filename %>
+		</a>
+		<div class="checkbox-inline">
+			<label>
+				<input type="checkbox" name="<%= current_object.params_key %>[remove_<%= key %>]" value="true"> 移除檔案
+			</label>
+		</div>
+		<% end %>
+	</div>
+</div>

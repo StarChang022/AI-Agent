@@ -1,0 +1,27 @@
+<% current_class = f.object.class %>
+<div class="col-12 <%= current_class.to_s.downcase.singularize %>">
+	<% ["id", "_destroy"].each do |current| %>
+	<%= f.hidden_field current, class: "_#{current}", data: {name: current} %>
+	<% end %>
+
+	<% current_class.form_columns_hash.each do |current, type| %>
+
+	<% case type %>
+	<% when :string %>
+	<%= f.text_field current %>
+	<% when :datetime %>
+	<%= f.datetime_local_field current, class: "datetimepicker" %>
+	<% when :date_field %>
+	<%= f.datetime_local_field current, class: "datepicker" %>
+	<% when :integer %>
+	<%= f.number_field current %>
+	<% when :text %>
+	<%= f.text_area current %>
+	<% end %>
+
+	<% end %>
+
+	<button type="button" class="btn btn-sm btn-outline-danger mr-2 remove-object-btn" data-target=".<%= current_class.to_s.downcase.singularize %>">
+		<i aria-hidden="true" class="bx bx-trash"></i>
+	</button>
+</div>

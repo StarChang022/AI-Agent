@@ -1,0 +1,40 @@
+default: &default
+  perform_caching: false
+  raise_delivery_errors: false
+  perform_deliveries: true
+  delivery_method: :smtp
+  deliver_later_queue_name: 'mailers'
+  default_url_options:
+    host: <%= ENV['domain'] %>
+    protocol: <%= ENV['protocol'] %>
+
+gmail: &gmail
+  smtp_settings:
+    address: "smtp.gmail.com"
+    port: 587
+    domain: "gmail.com"
+    user_name: <%= ENV["gmail_user_name"] %>
+    password: <%= ENV["gmail_password"] %>
+    authentication: "plain"
+    enable_starttls_auto: true  
+
+mailgun: &mailgun
+  smtp_settings:
+    address: "smtp.mailgun.org"
+    port: 587
+    domain: <%= ENV["mailgun_domain"] %>
+    user_name: <%= ENV["mailgun_user_name"] %>
+    password: <%= ENV["mailgun_password"] %>
+    authentication: plain
+    enable_starttls_auto: true
+
+development:
+  <<: *default
+  <<: *gmail
+test:
+  <<: *default
+  delivery_method: :test
+
+production:
+  <<: *default
+  <<: *gmail

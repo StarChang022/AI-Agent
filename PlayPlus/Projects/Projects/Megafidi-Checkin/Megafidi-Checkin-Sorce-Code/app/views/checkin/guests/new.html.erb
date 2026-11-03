@@ -1,0 +1,147 @@
+<%= form_with model: [:checkin, current_object.activity, current_object], multipart: true, local: true, class: "", id: "my-form" do |f| %>
+  <% if current_object.may_registrate? %>
+    <input type="hidden" name="event" value="registrate">
+  <% end %>
+  <div class="checkin w-full h-full flex items-center justify-center">
+    <div class="max-w-[540px] flex flex-col gap-3">
+      <div class="card">
+        <div class="grid grid-cols-2 gap-y-3">
+          <div>
+            <h3>手機號碼</h3>
+            <!-- <p><%= current_object.phone %></p> -->
+            <p><%= anonymize_phone(current_object.phone) %></p>
+          </div>
+
+          <div>
+            <h3>姓名</h3>
+            <div class="flex items-center gap-1.5">
+              <p><%= current_object.name %></p>
+
+              <!-- 是否為貴賓 -->
+              <% if current_object.special %>
+                <div class="px-2 py-0.5 text-orange-theme bg-orange-theme-lighter rounded">貴賓</div>
+              <% end %>
+            </div>
+          </div>
+
+          <div>
+            <h3>公司名稱</h3>
+
+            <p><%= current_object.company_name  %></p>
+          </div>
+
+          <div>
+            <h3>登錄證字號</h3>
+            <p><%= current_object.certificate_num %></p>
+          </div>
+
+          <div>
+            <h3>單位名稱</h3>
+
+            <p><%= current_object.department_name %></p>
+          </div>
+
+          <div>
+            <h3>獎盃編號</h3>
+            <p><%= current_object.trophy_num %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="input">
+          <%= f.label :behalf %>
+          <%= f.text_field :behalf, placeholder: "請輸入代領獎人姓名" %>
+        </div>
+
+        <div class="input">
+          <%= f.label :note %>
+          <%= f.text_area :note, placeholder: "請輸入備註" %>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="checkbox">
+          <% if current_object.registrated? %>
+            <input id="agreement-1" type="checkbox" required="required" checked disabled>
+          <% else %>
+            <input id="agreement-1" type="checkbox" required="required">
+          <% end %>
+
+          <label for="agreement-1" class="text-red-theme">本人已評估自身身體狀況良好且了解活動內容，並願承擔因參與活動而產生之相關風險。</label>
+        </div>
+
+        <div class="checkbox">
+          <% if current_object.registrated? %>
+            <input id="agreement-2" type="checkbox" required="required" checked disabled>
+          <% else %>
+            <input id="agreement-2" type="checkbox" required="required">
+          <% end %>
+
+          <label for="agreement-2" class="text-red-theme">本人同意報到及於活動現場接受保誠人壽進行照片及影片之拍攝，並同意無償授權保誠人壽使用涉及本人肖像之照片或影片於與「VIP業務人員」相關之各種宣傳與文件，且知悉照片、影本及其他衍生文件與著作之著作權均屬於保誠人壽所有。</label>
+        </div>
+
+        <div class="checkbox">
+          <% if current_object.registrated? %>
+            <input id="agreement-3" type="checkbox" required="required" checked disabled>
+          <% else %>
+            <input id="agreement-3" type="checkbox" required="required">
+          <% end %>
+
+          <label for="agreement-3" class="text-red-theme">上述資料皆正確，送出後即完成報到手續。</label>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <div class="flex justify-center gap-3">
+          <% if current_object.registrated? %>
+            <button type="submit" formaction="<%= cancel_checkin_activity_guest_path %>" class="button button--outline" data-confirm="請確認是否取消報到並儲存">
+              取消報到並儲存
+            </button>
+          <% end %>
+          <a href="<%= checkin_activity_guests_path(current_object.activity) %>" class="button button--outline">取消</a>
+          <% if current_object.waiting? %>
+            <button type="button" class="button button--destructive" id="validate-button">確認</button>
+            <button type="submit" class="button button--destructive hidden" data-confirm="請確認報到資料是否正確，送出後會將該賓客狀態改為已報到。">確認</button>
+          <% else %>
+            <button type="submit" class="button button--destructive" data-confirm="請確認是否修改資料">確認</button>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<script>
+  function tryCloseOtherwiseGoBack() {
+    try {
+      // 尝试关闭窗口
+      window.close();
+      // 使用定时器检查窗口是否关闭
+      setTimeout(function() {
+        // 如果窗口没有关闭，退回上一页
+        if (!window.closed) {
+          window.history.back();
+        }
+      }, 100);
+    } catch (e) {
+      // 如果出现异常，也退回上一页
+      window.history.back();
+    }
+  }
+
+  $(document).on("click", "#validate-button", function() {
+    var form = $('#my-form')[0];
+
+    if (form.checkValidity()) {
+      $(form).find(':submit').click();
+      // 表單驗證成功後的操作，如 AJAX 請求等
+    } else {
+      form.reportValidity();
+      console.log('表單驗證失敗！');
+      // 處理驗證失敗的邏輯，如顯示錯誤信息
+    }
+    // 防止實際提交表單
+    return false;
+  });
+</script>

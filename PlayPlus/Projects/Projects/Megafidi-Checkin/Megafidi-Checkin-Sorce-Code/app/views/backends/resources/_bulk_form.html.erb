@@ -1,0 +1,26 @@
+<div class="row">
+  <div class="col-12">
+    <div class="dropdown mb-2">
+      <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        執行動作
+      </button>
+      <ul class="dropdown-menu">
+        <% model_events.each do |current| %>
+        <a href="javaScript:void();" class="dropdown-item" data-bulk_action="bulk_event" data-bulk_event="<%= current %>" data-_confirm="<%= t("backends.confirm", action: model_class.human_attribute_name(current)) %>"><%= model_class.human_attribute_name(current) %></a>
+        <% end %>
+        <div class="dropdown-divider"></div>
+        <a href="javaScript:void();" class="dropdown-item" data-bulk_action="bulk_delete" data-_confirm="<%= t("backends.confirm", action: t("backends.destroy")) %>">批次刪除</a>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%= form_with url: url_for(action: :bulk_action), builder: BootstrapHorizontalFormBuilder, method: :post, multipart: true, local: true, id: "bulk_form" do |f| %>
+
+<%= f.hidden_field :bulk_action %>
+<%= f.hidden_field :bulk_event %>
+
+<div class="bulk_ids d-none">
+
+</div>
+<% end %>

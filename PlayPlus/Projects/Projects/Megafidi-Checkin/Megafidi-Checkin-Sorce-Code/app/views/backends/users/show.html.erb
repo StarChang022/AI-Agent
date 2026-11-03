@@ -1,0 +1,100 @@
+<% content_for :navigation do %>
+
+<%= link_to(url_for(action: :index), class: "btn btn-sm btn-light px-3") do %>
+<i class="bx bx-arrow-back"></i> <%= t('backends.back') %>
+<% end %>
+
+<%= link_to(url_for(action: :edit), class: "btn btn-sm btn-light px-3") do %>
+<i class="bx bx-pencil"></i> <%= t('backends.edit') %>
+<% end %>
+
+<% end %>
+
+<a class="nav-link <%= "active" if @children.blank? %>" data-toggle="tab" href="#<%= dom_id(current_object) %>">
+  <%= model_class.model_name.human %>
+</a>
+
+<div class="card">
+  <div class="card-body">
+    <ul class="nav nav-tabs" role="tablist">
+
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <%= "active" if @children.blank? %>" data-bs-toggle="tab" href="#<%= dom_id(current_object) %>" role="tab" aria-selected="true">
+          <div class="d-flex align-items-center">
+            <div class="tab-title"><%= model_class.model_name.human %></div>
+          </div>
+        </a>
+      </li>
+
+      <% @children.each_with_index do |current, index| %>
+      <li class="nav-item" role="presentation">
+        <a class="nav-link <%= active(index, 0) %>" data-bs-toggle="tab" href="#<%= current %>" role="tab" aria-selected="false" tabindex="-1">
+          <div class="d-flex align-items-center">
+            <div class="tab-title"><%= current.classify.constantize.model_name.human %></div>
+          </div>
+        </a>
+      </li>
+      <% end %>
+
+    </ul>
+    <div class="tab-content py-3">
+
+      <div class="tab-pane fade <%= "active show" if @children.blank? %>" id="<%= dom_id(current_object) %>" role="tabpanel">
+        <table class="table table table-sm table-bordered text-center">
+          <tr>
+            <td colspan="2">會員資料</td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('id') %></th>
+            <td>
+              <%= current_object.id %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('created_at') %></th>
+            <td>
+              <%= datetime_format current_object.created_at %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('email') %></th>
+            <td>
+              <%= current_object.email %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('name') %></th>
+            <td>
+              <%= current_object.name %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('gender') %></th>
+            <td>
+              <%= current_object.gender_human %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('phone') %></th>
+            <td>
+              <%= current_object.phone %>
+            </td>
+          </tr>
+          <tr>
+            <th><%= model_class.human_attribute_name('address') %></th>
+            <td>
+              <%= current_object.full_address %>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <% @children.each_with_index do |current, index| %>
+      <div class="tab-pane <%= index == 0 ? "active show" : "fade" %>" id="<%= current %>" role="tabpanel">
+        <%= render partial: "/backends/#{current}/table", locals: {pagy_current_collection: current_object.send(current)} %>
+      </div>
+      <% end %>
+
+    </div>
+  </div>
+</div>

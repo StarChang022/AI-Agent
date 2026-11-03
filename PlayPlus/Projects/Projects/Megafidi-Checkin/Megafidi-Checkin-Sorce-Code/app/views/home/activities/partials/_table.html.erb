@@ -1,0 +1,43 @@
+<div class="table p-0 shadow-none">
+  <div>
+    <!-- 表頭 -->
+    <div class="thead tr">
+      <div class="flex justify-center hidden">
+        <input type="checkbox" class="thead__checkbox">
+      </div>
+
+      <p>名稱</p>
+
+      <p class="text-center">日期</p>
+
+      <p class="text-center">人數</p>
+
+      <p class="text-center">操作</p>
+    </div>
+
+    <!-- 內容 -->
+    <%= render partial: "/home/activities/partials/activity", collection: current_collection, as: :current_object %>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  	const theadCheckbox = document.querySelector('.thead__checkbox');
+  	const tbodyCheckboxes = document.querySelectorAll('.tbody__checkbox');
+
+  	theadCheckbox.addEventListener('change', () => {
+  		tbodyCheckboxes.forEach(checkbox => {
+  			checkbox.checked = theadCheckbox.checked;
+  		});
+  	});
+
+  	tbodyCheckboxes.forEach(checkbox => {
+  		checkbox.addEventListener('change', () => {
+  			const allChecked = Array.from(tbodyCheckboxes).every(checkbox => checkbox.checked);
+
+  			theadCheckbox.checked = allChecked;
+  		});
+  	});
+  });
+</script>

@@ -1,0 +1,21 @@
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header"><%= resource.model_name.human %></div>
+      <div class="card-body">
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), builder: BootstrapHorizontalFormBuilder , html: { method: :put }) do |f| %>
+        <% ["email"].each do |current| %>
+        <%= f.email_field current, autocomplete: "email" %>
+        <% end %>
+        <% ["name"].each do |current| %>
+        <%= f.text_field current %>
+        <% end %>
+        <% ["password", "password_confirmation"].each do |current| %>
+        <%= f.password_field current, autocomplete: "new-password" %>
+        <% end %>
+        <%= f.submit t("backends.submit"), class: "btn btn-danger btn-square", data: {"disable-with": t("backends.submiting")} %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

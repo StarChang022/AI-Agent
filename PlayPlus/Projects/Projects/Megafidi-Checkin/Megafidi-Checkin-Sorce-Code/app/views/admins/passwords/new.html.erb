@@ -1,0 +1,24 @@
+<div class="card card-authentication1 mb-0">
+	<div class="card-body">
+		<div class="card-content p-2">
+			<div class="card-title text-uppercase pb-2">Reset Password</div>
+			<p class="pb-2">Please enter your email address. You will receive a link to create a new password via email.</p>
+			<%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+			<%= render "/admins/shared/error_messages", resource: resource %>
+			<div class="form-group">
+				<label for="exampleInputEmailAddress" class=""><%= f.label :email %></label>
+				<div class="position-relative has-icon-right">
+					<%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control input-shadow" %>
+					<div class="form-control-position">
+						<i class="icon-envelope-open"></i>
+					</div>
+				</div>
+			</div>
+			<button type="submit" class="btn btn-light btn-block mt-3">Reset Password</button>
+			<% end %>
+		</div>
+	</div>
+	<div class="card-footer text-center py-3">
+		<p class="text-warning mb-0">Return to the <a href="<%= new_admin_session_path %>"> Sign In</a></p>
+	</div>
+</div>

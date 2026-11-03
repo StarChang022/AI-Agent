@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= display_meta_tags %>
+
+    <%= Gon::Base.render_data %>
+
+    <%= stylesheet_link_tag "tailwind", "inter-font" %>
+
+    <%= stylesheet_link_tag "home", media: 'all' %>
+
+    <%= javascript_include_tag "application" %>
+
+    <%= tag.meta name: "direct-upload-url", content: rails_direct_uploads_path %>
+
+  </head>
+
+  <body>
+    <main class="flex min-h-screen h-screen bg-orange-theme-lightest">
+
+      <div class="flex-1 p-6 h-full bg-orange-theme-lightest overflow-y-auto">
+        <div class="flex flex-col gap-6">
+          <%= yield %>
+        </div>
+      </div>
+    </main>
+  </body>
+
+</html>

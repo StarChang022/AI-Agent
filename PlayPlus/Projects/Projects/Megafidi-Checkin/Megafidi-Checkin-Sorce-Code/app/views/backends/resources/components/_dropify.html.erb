@@ -1,0 +1,16 @@
+<% current_object = f.object %>
+<% required = local_assigns[:required].present? ? true : false %>
+<% required = false if current_object.send(current).attached? %>
+
+<div class="row mb-3">
+  <%= f.label current, f.object.class.human_attribute_name(current), class: "col-sm-2 col-form-label" %>
+  <div class="col-sm-10">
+    <%= f.file_field current, class: "form-control js-dropify", required: required, accept: "image/*", data: {"max-file-size": "3M", "default-file": (url_for(current_object.send(current)) if current_object.send(current).present?), "show-errors": true, "errors-position": "outside", "show-remove": false}, hide_label: true, input_class: "col-sm-12" %>
+    <% if current_object.send(current).present? %>
+    <div class="checkbox">
+      <%= f.check_box("remove_#{current}") %>
+      <%= f.label("remove_#{current}", "移除圖片") %>
+    </div>
+    <% end %>
+  </div>
+</div>

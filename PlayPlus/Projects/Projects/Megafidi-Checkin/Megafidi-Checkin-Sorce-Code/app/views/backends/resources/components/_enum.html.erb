@@ -1,0 +1,2 @@
+<!-- current_object current f -->
+<%= f.select(current, current_object.class.send(current.tableize).keys.collect{|k| [current_object.class.human_attribute_name(k), k]}, {selected: current_object.send(current)}, {class: "form-control js-select2"}) %>

@@ -1,0 +1,22 @@
+<% current_class = current_collection.class.to_s.deconstantize.constantize %>
+<div class="">
+  <table class="table table-sm table-bordered text-center">
+    <thead>
+      <tr class="">
+        <% if current_class.column_names.include?("priority") %>
+        <th class="text-center w-8"></th>
+        <% end %>
+        <% if current_class.column_names.include?("status") %>
+        <th class="text-center w-8"></th>
+        <% end %>
+        <% ["parent", "name"].each do |current| %>
+        <th class="text-center w-16"><%= current_class.human_attribute_name(current) %></th>
+        <% end %>
+        <th class="text-center w-16"></th>
+      </tr>
+    </thead>
+    <tbody class="<%= current_collection.class.to_s.deconstantize.tableize %> sortable_items" data-url="<%= url_for(action: :sort) %>">
+      <%= render partial: "show", collection: pagy_current_collection, as: :current_object %>
+    </tbody>
+  </table>
+</div>

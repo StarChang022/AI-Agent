@@ -1,0 +1,33 @@
+<% show = true if local_assigns[:show].nil? %>
+<% edit = true if local_assigns[:edit].nil? %>
+<% destroy = true if local_assigns[:destroy].nil? %>
+<% klone = false if local_assigns[:klone].nil? %>
+<% vertical = false if local_assigns[:vertical].nil? %>
+<% vertical_class = vertical ? "btn-group-vertical" : "btn-group" %>
+<% prepend_buttons = nil if local_assigns[:prepend_buttons].nil? %>
+<% append_buttons = nil if local_assigns[:append_buttons].nil? %>
+
+<% controller = "backends/#{current_object.class.name.tableize}" if local_assigns[:controller].nil? %>
+
+<div class="<%= vertical_class %> btn-group-sm" role="group">
+  <%= raw prepend_buttons if prepend_buttons %>
+
+  <%= link_to(url_for(controller: controller, action: "klone", id: current_object.id), class: "btn btn-info", method: :post) do %>
+  <i class="bx bx-copy"></i> <%= t("backends.clone") %>
+  <% end if klone %>
+
+  <%= link_to(url_for(controller: controller, action: "show", id: current_object.id),class: "btn btn-success") do %>
+  <i class="bx bx-search"></i> <%= t("backends.show") %>
+  <% end if show %>
+
+  <%= link_to(url_for(controller: controller, action: "edit", id: current_object.id),class: "btn btn-warning") do %>
+  <i class="bx bx-pencil"></i> <%= t("backends.edit") %>
+  <% end if edit %>
+
+  <%= link_to(url_for(controller: controller, action: "destroy", id: current_object.id, format: :js),class: "btn btn-danger", remote: true, method: :delete, data: {confirm: t("backends.confirm", action:  t("backends.destroy")) }) do %>
+  <i class="bx bx-trash"></i> <%= t("backends.destroy") %>
+  <% end if destroy %>
+
+  <%= raw append_buttons if append_buttons %>
+
+</div>

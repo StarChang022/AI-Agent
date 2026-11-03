@@ -1,0 +1,9 @@
+$(document).ready(function(){
+  $("#<%= dom_id(current_object) %>").remove()
+  <% if @message %>
+	new Noty({
+		type: 'success',
+		text: '<%= @message %>'
+	}).show();
+	<% end %>
+});

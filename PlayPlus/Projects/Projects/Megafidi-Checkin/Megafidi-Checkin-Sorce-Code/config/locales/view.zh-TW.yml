@@ -1,0 +1,84 @@
+---
+zh-TW:
+  errors:
+    back:
+      back_to_home: 回到首頁
+    forbidden:
+      code: "403"
+      title: "禁止執行存取"
+      content: "禁止執行存取"
+    not_found:
+      code: "404"
+      title: "未找到"
+      content: "未找到"
+    unauthorized:
+      code: "401"
+      title: "未授權"
+      content: "未授權"
+  recaptcha:
+    failed: "請驗證不是機器人"
+  backends:
+    create_next: 繼續建立
+    klone_next: 繼續建立，並複製該筆資料
+    index: 後台
+    submit: 送出
+    submiting: 送出中
+    add: 增加
+    adding: 增加中
+    navbar: 導覽列
+    new: 新增
+    back: 回上一頁
+    clone: 複製
+    keywords: 關鍵字
+    daterange: 時間區間
+    new: 新增
+    show: 查看
+    edit: 編輯
+    destroy: 刪除
+    search: 搜尋
+    k: 關鍵字
+    per_page: 每頁筆數
+    confirm: "確認%{action}嗎？"
+    logout: 登出
+    main_navigation: 功能選單
+    navigation: 工具列
+    export: 匯出
+    exporting: 匯出中
+    move_to_top: 置頂
+    move_to_bottom: 置底
+    insert_at: 移動到
+    _sort_column: 排序欄位
+    _sort: 排序
+    asc: 順序
+    desc: 倒序
+  views:
+    pagination:
+      first: "&laquo; 最前"
+      last: "最後 &raquo;"
+      previous: "&lsaquo; 上一頁"
+      next: "下一頁 &rsaquo;"
+      truncate: "..."
+  ecpay:
+    express:
+      logistics_sub_types:
+        FAMIC2C: "全家"
+        UNIMARTC2C: "7-11"
+        HILIFEC2C: "萊爾富"
+      logistics_sub_type: 物流子類型
+      cvs_store_id: "超商店舖編號"
+      cvs_store_name: "超商店舖名稱"
+      cvs_address: "超商店舖地址"
+      cvs_telephone: "超商店舖電話"
+      cvs_out_side: "是否離島"
+      all_pay_logistics_id: "綠界科技的物流交易編號"
+      booking_note: "托運單號(物流類型為 HOME 才會回傳)"
+      goods_amount: 商品金額
+      goods_name: 商品名稱
+      handling_charge: 物流費用
+      logistics_status: 物流狀態
+      logistics_type: 會員選擇的物流方式
+      merchant_id: 廠商編號
+      merchant_trade_no: 廠商交易編號
+      shipment_no: 配送編號(物流類型為 CVS 才會回傳)
+      trade_date: 訂單成立時間
+      check_mac_value: 檢查碼

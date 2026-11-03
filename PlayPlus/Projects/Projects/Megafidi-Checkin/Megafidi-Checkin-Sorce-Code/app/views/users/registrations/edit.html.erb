@@ -1,0 +1,39 @@
+<div class="row justify-content-center">
+  <div class="col-4">
+    <div class="card mt-3">
+      <div class="card-header">
+        <h1><%= t('devise.registrations.edit.title', resource: resource_name.to_s.humanize) %></h1>
+      </div>
+      <div class="card-body">
+        <%= form_for(resource, as: resource_name, url: registration_path(resource_name), builder: BootstrapVerticalFormBuilder, html: { method: :put }) do |f| %>
+
+        <%= f.text_field :name, autofocus: true, required: true %>
+
+        <%= f.select(:gender, User.genders.keys.collect{|k| [User.human_attribute_name(k), k]}, {selected: resource.gender}, {class: ""}) %>
+        
+        <%= f.email_field :email, autofocus: true, autocomplete: 'email', required: true  %>
+
+        <%= f.password_field :password, autocomplete: 'current-password', required: true, help: t('.leave_blank_if_you_don_t_want_to_change_it') %>
+
+        <%= f.label :address, class: "mb-2" %>
+        <div class="TWzipcode row mb-3">
+          <% %w[county district zipcode].each do |current| %>
+          <div class="col-4" data-role="<%= current %>" data-style="form-control form-control-sm" data-name="<%= f.object.class.model_name.param_key %>[<%= current %>]" data-required="true" data-value="<%= f.object.send(current) %>"></div>
+          <% end %>
+        </div>
+        <%= f.text_field_without_bootstrap :address, autocomplete: "address", class: "form-control form-control-sm" %>        
+
+
+        <div class="form-group my-3">
+          <%= f.submit_without_bootstrap t('devise.registrations.edit.update'), class: 'btn w-100 btn-primary' %>
+        </div>
+        <% end %>
+
+        <div class="form-group my-3">
+          <%= link_to t('devise.registrations.edit.cancel_my_account'), registration_path(resource_name), class: "btn btn-danger w-100", data: { confirm: t('devise.registrations.edit.are_you_sure') }, method: :delete %>
+        </div>
+
+      </div>
+    </div>    
+  </div>
+</div>

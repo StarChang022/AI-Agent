@@ -1,0 +1,84 @@
+<header>
+  <div class="topbar d-flex align-items-center">
+    <nav class="navbar navbar-expand">
+      <div class="mobile-toggle-menu"><i class='bx bx-menu'></i>
+      </div>
+      <div class="search-bar flex-grow-1">
+        <div class="position-relative search-bar-box d-none">
+          <input type="text" class="form-control search-control" placeholder="Type to search...">
+          <span class="position-absolute top-50 search-show translate-middle-y">
+            <i class='bx bx-search'></i>
+          </span>
+          <span class="position-absolute top-50 search-close translate-middle-y">
+            <i class='bx bx-x'></i>
+          </span>
+        </div>
+      </div>
+      <div class="top-menu ms-auto">
+        <ul class="navbar-nav align-items-center">
+          <li class="nav-item dropdown dropdown-large d-none">
+            <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span class="alert-count">8</span>
+              <i class='bx bx-comment'></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end">
+              <a href="javascript:;">
+                <div class="msg-header">
+                  <p class="msg-header-title">Messages</p>
+                  <p class="msg-header-clear ms-auto">Marks all as read</p>
+                </div>
+              </a>
+              <div class="header-message-list">
+                <a class="dropdown-item" href="javascript:;">
+                  <div class="d-flex align-items-center">
+                    <div class="user-online">
+                      <img src="https://via.placeholder.com/110X110" class="msg-avatar" alt="user avatar">
+                    </div>
+                    <div class="flex-grow-1">
+                      <h6 class="msg-name">Daisy Anderson <span class="msg-time float-end">5 sec
+                      ago</span></h6>
+                      <p class="msg-info">The standard chunk of lorem</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <a href="javascript:;">
+                <div class="text-center msg-footer">View All Messages</div>
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="user-box dropdown">
+        <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <img src="https://via.placeholder.com/110X110" class="user-img" alt="user avatar">
+          <div class="user-info ps-3">
+            <p class="user-name mb-0"><%= current_admin.name %></p>
+            <p class="designattion mb-0"><%= current_admin.email %></p>
+          </div>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li class="dropdown-item">
+            <%= link_to(edit_admin_registration_path) do %>
+            <i class="zmdi zmdi-balance-wallet mr-3"></i> 編輯帳號
+            <% end %>
+          </li>
+
+          <li class="dropdown-divider"></li>
+          <li class="dropdown-item">
+            <%= link_to(url_for([:edit, :backends, current_system_setting])) do %>
+            <i class="zmdi zmdi-settings mr-3"></i> <%= SystemSetting.model_name.human %>
+            <% end %>
+          </li>
+
+          <li class="dropdown-divider"></li>
+          <li class="dropdown-item">
+            <%= link_to(destroy_admin_session_path, method: :delete, data: {confirm: "確認登出嗎?"}) do %>
+            <i class='bx bx-log-out-circle'></i> 登出
+            <% end %>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>

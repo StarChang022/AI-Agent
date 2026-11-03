@@ -1,0 +1,41 @@
+<div class="row gy-3">
+	<%- if controller_name != 'sessions' %>
+	<div class="col-6">
+		<%= link_to "登入", new_session_path(resource_name), class: "btn btn-secondary w-100" %><br />
+	</div>
+	<% end %>
+
+	<%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+	<div class="col-6">
+		<%= link_to "註冊", new_registration_path(resource_name), class: "btn btn-secondary w-100" %><br />
+	</div>
+	<% end %>
+
+	<%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+	<div class="col-6">
+		<%= link_to "忘記密碼？", new_password_path(resource_name), class: "btn btn-secondary w-100" %><br />
+	</div>
+	<% end %>
+
+	<%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
+	<div class="col-6">
+		<%= link_to "沒收到確認信件？", new_user_confirmation_path(resource), class: "btn btn-secondary w-100" %>
+	</div>
+	<% end %>
+
+	<%- if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != 'unlocks' %>
+	<div class="col-6">
+		<%= link_to "沒有收到解鎖信件？", new_unlock_path(resource_name), class: "btn btn-secondary w-100" %>
+	</div>
+	<% end %>
+
+	<div class="line line-sm"></div>
+
+	<%- if devise_mapping.omniauthable? %>
+	<%- resource_class.omniauth_providers.each do |provider| %>
+	<div class="col-12">
+		<%= link_to "#{OmniAuth::Utils.camelize(provider)} 登入", omniauth_authorize_path(resource_name, provider), class: "btn btn-dark w-100 #{provider}" %>
+	</div>
+	<% end %>
+	<% end %>
+</div>

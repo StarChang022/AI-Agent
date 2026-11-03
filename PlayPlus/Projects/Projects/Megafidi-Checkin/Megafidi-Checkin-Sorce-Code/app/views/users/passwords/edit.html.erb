@@ -1,0 +1,28 @@
+<div class="row justify-content-center">
+  <div class="col-4">
+    <div class="card mt-3">
+      <div class="card-header">
+        <h1><%= t('devise.passwords.edit.change_your_password') %></h1>
+      </div>
+      <div class="card-body">
+        <%= form_for(resource, as: resource_name, url: password_path(resource_name), builder: BootstrapVerticalFormBuilder, html: { method: :put }) do |f| %>
+        <%= bootstrap_devise_error_messages! %>
+        <%= f.hidden_field :reset_password_token %>
+
+        <%= f.password_field :password, autocomplete: 'current-password', class: 'form-control', required: true, help: t('devise.shared.minimum_password_length', count: @minimum_password_length)  %>
+
+        <%= f.password_field :password_confirmation, autocomplete: 'current-password', class: 'form-control', required: true  %>
+
+        <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'form-control' %>
+
+        <div class="form-group my-3">
+          <%= f.submit_without_bootstrap t('devise.passwords.edit.change_my_password'), class: 'btn w-100 btn-primary' %>
+        </div>
+        <% end %>
+
+        <%= render '/users/shared/links' %>
+
+      </div>
+    </div>    
+  </div>
+</div>

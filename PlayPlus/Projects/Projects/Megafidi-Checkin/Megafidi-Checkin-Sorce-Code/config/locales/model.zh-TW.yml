@@ -1,0 +1,81 @@
+---
+zh-TW:
+  attributes:
+    id: 編號
+    created_at: 建立時間
+    updated_at: 更新時間
+    status: 狀態
+    displayed: 顯示
+    hidden: 隱藏
+    show: 顯示
+    hide: 隱藏
+    waiting: 等待
+    permitted: 通過
+    seo_meta_tag: "SEO 設定"
+    posted_at: 發佈時間
+    image: 圖片
+    name: 名稱
+    content: 內容
+    tag_list: 標籤
+    phone: 電話
+    address: 地址
+  activerecord:
+    models:
+      admin: "管理者"
+      system_setting: "系統設定"
+      seo_meta_tag: "SEO 設定"
+      blog: 部落格
+      category: 分類
+      contact: 聯絡我們
+      guest: 賓客
+      activity: 活動
+    attributes:
+      activity:
+        date: 活動日期
+      guest:
+        trophy_num: "獎盃編號"
+        name: "姓名"
+        phone: "手機號碼"
+        company_name: "公司名稱"
+        department_name: "單位名稱"
+        certificate_num: "登錄證字號"
+        behalf: "代領獎人"
+        special: "貴賓"
+        note: 備註
+        status: 報到狀態
+        waiting: 未報到
+        cancel: 取消報到
+        registrated: 已報到
+        registrate: 報到
+      user:
+        gender: 性別
+        male: 男性
+        female: 女性
+        private_gender: 不公開
+      admin:
+        name: 名稱
+        email: Email
+        password: 密碼
+        password_confirmation: 確認密碼
+      category:
+        parent: 母分類
+        parent_id: 母分類
+      contact:
+        note: 備註
+        waiting: 尚未處理
+        permit: 標記處理
+        permitted: 已處理
+        information: 聯絡資訊
+      system_setting:
+        name: "企業名稱"
+        phone: "電話"
+        email: "信箱"
+        address: "地址"
+      seo_meta_tag:
+        title: "標題"
+        keywords: "關鍵字"
+        description: "描述"
+  helpers:
+    help:
+      system_setting:
+        line_notify_token: "<a href='https://notify-bot.line.me/zh_TW/' target='_blank'>https://notify-bot.line.me/zh_TW/</a>"

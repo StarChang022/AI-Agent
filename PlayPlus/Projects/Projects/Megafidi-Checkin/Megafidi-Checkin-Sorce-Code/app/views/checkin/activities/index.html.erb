@@ -1,0 +1,14 @@
+<div class="home flex flex-col gap-6">
+  <span class="text-sm">數位報到</span>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h2 class="text-2xl">數位報到</h2>
+    </div>
+  </div>
+
+  <!-- 活動場次 -->
+  <div class="grid lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+    <%= render partial: "/checkin/activities/activity", collection: current_collection, as: :current_object %>
+  </div>
+</div>

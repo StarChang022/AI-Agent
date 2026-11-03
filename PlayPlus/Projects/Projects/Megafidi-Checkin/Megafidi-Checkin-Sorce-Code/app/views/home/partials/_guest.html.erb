@@ -1,0 +1,50 @@
+<article class="card card-guest">
+	<!-- 報到狀態判斷 -->
+	<% if true %>
+		<div class="tag">未報到</div>
+
+	<% else %>
+		<div class="tag active"><span>已報到</span> 2024/01/01 00:00</div>
+
+	<% end %>
+
+	<div class="w-full flex items-center justify-between gap-3">
+		<div>
+			<h3 class="text-2xl">姓名姓名</h3>
+			<p>單位單位單位單位</p>
+		</div>
+
+		<!-- 是否為貴賓身份 -->
+		<% if true %>
+			<div class="w-20 h-16 flex items-center justify-center font-bold text-orange-theme bg-orange-theme-lighter rounded">
+				貴賓
+			</div>
+		<% end %>
+	</div>
+
+	<div class="w-full grid grid-cols-2">
+		<h4>手機號碼</h4>
+		<p>0912345678</p>
+
+		<h4>登錄證字號</h4>
+		<p>12345678</p>
+
+		<h4>獎盃編號</h4>
+		<p>#123</p>
+
+		<h4>代領獎人</h4>
+		<p>姓名姓名</p>
+	</div>
+
+	<!-- 所屬活動場次 -->
+	<p class="text-orange-theme">2024/01/01 <span class="font-bold">高雄場活動</span></p>
+
+	<!-- 報到狀態判斷 -->
+	<% if true %>
+		<a href="#" class="button button--capsule self-center">報到</a>
+
+	<% else %>
+		<a href="#" class="button button--capsule button--outline self-center">已報到資料編輯</a>
+
+	<% end %>
+</article>

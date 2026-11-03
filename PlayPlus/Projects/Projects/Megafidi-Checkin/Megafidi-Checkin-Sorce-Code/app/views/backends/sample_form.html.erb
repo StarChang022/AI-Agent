@@ -1,0 +1,14 @@
+<%= form_with url: url_for(action: :index), builder: BootstrapFormBuilder, multipart: true, local: true do |f| %>
+
+<%= f.select :grouped_select, options_for_select([["Group1", "1"], ["Group2", "2"]]), {}, {class: "js-select2"} %>
+<%= f.collection_radio_buttons :radio, [["radio1", "1"], ["radio2", "2"], ["radio3", "3"]], :last, :first, {checked: 3} %>
+<%=f.collection_check_boxes :checkbox, [%w[checkbox1 1], %w[checkbox2 2], %w[checkbox3 3]], :last, :first, {checked: [1, 2]} %>
+<%= f.text_field :string, class: "form-control-sm" %>
+<%= f.text_field :string, class: "form-control-sm" %>
+<%= f.datetime_local_field :datetime, class: "form-control-sm datetimepicker" %>
+<%= f.datetime_local_field :date_field, class: "form-control-sm datetimepicker" %>
+<%= f.number_field :integer, class: "form-control-sm" %>
+<%= f.text_area :text, class: "form-control-sm" %>
+<%= f.submit t("backends.submit"), class: "btn btn-danger btn-square", data: {"disable-with": t("backends.submiting")} %>
+
+<% end %>

@@ -1,0 +1,30 @@
+<div class="settings flex flex-col gap-6">
+  <span class="text-sm">活動場次</span>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h2 class="text-2xl">活動場次</h2>
+    </div>
+    <a href="<%= url_for(action: :new) %>" class="button">
+      <i class="fa-solid fa-plus"></i>
+      新增
+    </a>
+  </div>
+
+  <!-- 操作列 -->
+  <div class="actions flex items-center gap-3">
+    <p class="text-sm"><%= raw pagy_info(current_pagy) %></p>
+  </div>
+
+  <!-- 搜尋列 -->
+  <% render partial: "/home/activities/partials/search" %>
+
+  <div class="card !p-6">
+    <div class="flex items-center gap-3">
+      <h3 class="text-lg">活動場次</h3>
+    </div>
+    <!-- 搜尋列 -->
+    <%= render partial: "/home/activities/partials/table" %>
+  </div>
+  <%= render partial: "/home/partials/pagy", locals: {pagy: current_pagy} %>
+</div>

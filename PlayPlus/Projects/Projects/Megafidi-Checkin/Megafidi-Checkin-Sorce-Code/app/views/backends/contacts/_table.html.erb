@@ -1,0 +1,20 @@
+<% current_class = pagy_current_collection.class.to_s.deconstantize.constantize %>
+<div class="table-responsive">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th class="text-center w-8"></th>
+        <% ["id", "created_at", "information"].each do |current| %>
+        <th class="text-center w-8"><%= current_class.human_attribute_name(current) %></th>
+        <% end %>
+        <% ["content", "note"].each do |current| %>
+        <th class="text-center w-16"><%= current_class.human_attribute_name(current) %></th>
+        <% end %>
+        <th class="text-center w-8"></th>
+      </tr>
+    </thead>
+    <tbody class="<%= current_collection.class.to_s.deconstantize.tableize %>">
+      <%= render partial: "show", collection: pagy_current_collection, as: :current_object %>
+    </tbody>
+  </table>
+</div>

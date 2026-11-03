@@ -1,0 +1,64 @@
+<div class="table p-0 shadow-none">
+	<div>
+		<!-- 表頭 -->
+		<div class="thead tr">
+			<div class="flex justify-center">
+				<input type="checkbox" class="thead__checkbox">
+			</div>
+
+			<p>名稱</p>
+
+			<p class="text-center">日期</p>
+
+			<p class="text-center">人數</p>
+
+			<p class="text-center">操作</p>
+		</div>
+
+		<!-- 內容 -->
+		<div class="tbody tr">
+			<div class="flex justify-center">
+				<input type="checkbox" class="tbody__checkbox">
+			</div>
+
+			<p>台北活動場台北活動場</p>
+
+			<p class="text-center">2024/01/01</p>
+
+			<p class="text-center">123</p>
+
+			<div class="flex items-center justify-center gap-3 duration-200">
+				<button data-modal-target="edit-modal" data-modal-toggle="edit-modal" class="hover:text-gray-theme-light duration-200" type="button">
+					<i class="fa-solid fa-pen-to-square"></i>
+				</button>
+
+				<button type="button" data-modal-target="delete-modal" data-modal-toggle="delete-modal" class="hover:text-red-theme duration-200">
+					<i class="fa-solid fa-trash-can"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<%= render partial: "/home/partials/delete_modal" %>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const theadCheckbox = document.querySelector('.thead__checkbox');
+	const tbodyCheckboxes = document.querySelectorAll('.tbody__checkbox');
+
+	theadCheckbox.addEventListener('change', () => {
+		tbodyCheckboxes.forEach(checkbox => {
+			checkbox.checked = theadCheckbox.checked;
+		});
+	});
+
+	tbodyCheckboxes.forEach(checkbox => {
+		checkbox.addEventListener('change', () => {
+			const allChecked = Array.from(tbodyCheckboxes).every(checkbox => checkbox.checked);
+
+			theadCheckbox.checked = allChecked;
+		});
+	});
+});
+</script>

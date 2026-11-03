@@ -1,0 +1,28 @@
+<% klass = pagy_current_collection.class.to_s.deconstantize.constantize %>
+<div class="table-responsive">
+  <table class="table table-sm table-bordered text-center">
+    <thead>
+      <tr class="">
+        <th class="w-4 ">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input toggle" type="checkbox" value="" id="toggle_bulk_ids">
+            <label class="form-check-label" for="toggle_bulk_ids"></label>
+          </div>       
+        </th>
+        <% if klass.column_names.include?("priority") %>
+        <th class="text-center w-1"><%= klass.human_attribute_name('priority') %></th>
+        <% end %>
+        <% if klass.column_names.include?("status") %>
+        <th class="klass-center w-1"><%= klass.human_attribute_name('status') %></th>
+        <% end %>
+        <% klass.form_columns_hash.each do |current, type| %>
+        <th class="text-center w-16"><%= klass.human_attribute_name(current) %></th>
+        <% end %>
+        <th class="text-center w-8"></th>
+      </tr>
+    </thead>
+    <tbody class="<%= pagy_current_collection.class.to_s.deconstantize.tableize %> <%= "sortable_items" if klass.column_names.include?("priority") %>" data-url="<%= url_for(action: :sort, format: :json) %>">
+      <%= render partial: "show", collection: pagy_current_collection, as: :current_object %>
+    </tbody>
+  </table>
+</div>

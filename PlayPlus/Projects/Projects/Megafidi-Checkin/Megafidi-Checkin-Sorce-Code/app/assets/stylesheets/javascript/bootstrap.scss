@@ -1,0 +1,9 @@
+// 引入 Bootstrap 的必要部分
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/bootstrap-utilities";
+
+// 確保引入了 Dropdown 需要的其他組件和依賴，比如 Popper for Dropdowns
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/modal";

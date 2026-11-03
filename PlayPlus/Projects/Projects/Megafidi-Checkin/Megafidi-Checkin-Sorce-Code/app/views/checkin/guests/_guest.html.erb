@@ -1,0 +1,52 @@
+<article class="card card-guest">
+  <!-- 報到狀態判斷 -->
+  <% if current_object.registrated? %>
+    <div class="tag active">
+      <span>已報到</span>
+      <%= datetime_format current_object.registration_time %>
+    </div>
+  <% else %>
+    <div class="tag">未報到</div>
+  <% end %>
+
+  <div class="w-full flex items-center justify-between gap-3">
+    <div>
+      <h3 class="text-2xl"><%= current_object.name %></h3>
+      <p><%= current_object.company_name %><%= current_object.department_name %></p>
+    </div>
+
+    <!-- 是否為貴賓身份 -->
+    <% if current_object.special %>
+      <div class="w-20 h-16 flex items-center justify-center font-bold text-orange-theme bg-orange-theme-lighter rounded">
+        貴賓
+      </div>
+    <% end %>
+  </div>
+
+  <div class="w-full grid grid-cols-2">
+    <h4>手機號碼</h4>
+    <p><%= anonymize_phone(current_object.phone) %></p>
+
+    <h4>登錄證字號</h4>
+    <p><%= current_object.certificate_num %></p>
+
+    <h4>獎盃編號</h4>
+    <p>#<%= current_object.trophy_num %></p>
+
+    <h4>代領獎人</h4>
+    <p><%= current_object.behalf %></p>
+  </div>
+
+  <!-- 所屬活動場次 -->
+  <p class="text-orange-theme">
+    <%= date_format current_object.activity_date %>
+    <span class="font-bold"><%= current_object.activity_name %></span>
+  </p>
+
+  <!-- 報到狀態判斷 -->
+  <% if current_object.registrated? %>
+    <a href="<%= url_for(action: :edit, id: current_object.id) %>" class="button button--capsule button--outline self-center">已報到資料編輯</a>
+  <% else %>
+    <a href="<%= url_for(action: :edit, id: current_object.id) %>" class="button button--capsule self-center">報到</a>
+  <% end %>
+</article>

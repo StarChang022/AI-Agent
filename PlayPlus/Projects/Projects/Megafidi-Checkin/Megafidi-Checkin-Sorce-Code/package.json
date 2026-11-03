@@ -1,0 +1,50 @@
+{
+  "name": "app",
+  "private": "true",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.1",
+    "@hotwired/stimulus": "^3.2.1",
+    "@hotwired/turbo-rails": "^7.2.4",
+    "@popperjs/core": "^2.11.6",
+    "@rails/actiontext": "^7.0.4",
+    "@rails/ujs": "^7.0.4",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.3",
+    "@tailwindcss/line-clamp": "^0.4.2",
+    "@tailwindcss/typography": "^0.5.9",
+    "@ttskch/select2-bootstrap4-theme": "^1.5.2",
+    "autoprefixer": "^10.4.13",
+    "axios": "^1.2.1",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.10.2",
+    "dropify": "^0.2.2",
+    "esbuild": "^0.16.17",
+    "fancybox": "^3.0.1",
+    "flatpickr": "^4.6.13",
+    "flowbite": "^2.3.0",
+    "fortawesome": "^0.0.1-security",
+    "jquery": "^3.6.1",
+    "lodash": "^4.17.21",
+    "noty": "^3.2.0-beta-deprecated",
+    "perfect-scrollbar": "^1.5.5",
+    "postcss": "^8.4.20",
+    "sass": "^1.56.1",
+    "select2": "^4.0.6-rc.0 ",
+    "slick": "^1.12.2",
+    "sweetalert2": "^11.10.8",
+    "tailwindcss": "^3.2.4",
+    "tinymce": "^6.3.1",
+    "trix": "^2.0.3",
+    "vanilla-lazyload": "^17.8.3",
+    "vue": "^3.2.45"
+  },
+  "scripts": {
+    "build": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds --public-path=assets",
+    "start": "node esbuild-dev.config.js",
+    "build:tailwindcss": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
+    "build:css": "sass ./app/assets/stylesheets/home.scss:./app/assets/builds/home.css ./app/assets/stylesheets/backends.scss:./app/assets/builds/backends.css --no-source-map --no-source-map --load-path=node_modules"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  }
+}

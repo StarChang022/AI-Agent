@@ -1,0 +1,269 @@
+source "https://rubygems.org"
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+ruby "3.1.3"
+
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem "rails", "~> 7.0.4"
+
+# The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
+gem "sprockets-rails"
+
+# Use sqlite3 as the database for Active Record
+gem "sqlite3", "~> 1.4"
+
+# Use the Puma web server [https://github.com/puma/puma]
+gem "puma", "~> 5.0"
+
+# Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
+gem "jsbundling-rails"
+
+# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
+# gem "turbo-rails"
+
+# Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
+# gem "stimulus-rails"
+
+# Bundle and process CSS [https://github.com/rails/cssbundling-rails]
+gem "cssbundling-rails"
+
+# Build JSON APIs with ease [https://github.com/rails/jbuilder]
+gem "jbuilder"
+
+# Use Redis adapter to run Action Cable in production
+gem "redis", "~> 4.0"
+gem 'redis-namespace'
+gem 'redis-rails'
+gem 'redis-rack-cache'
+
+# Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
+# gem "kredis"
+
+# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
+# gem "bcrypt", "~> 3.1.7"
+
+# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
+gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
+
+# Reduces boot times through caching; required in config/boot.rb
+gem "bootsnap", require: false
+
+# Use Sass to process CSS
+gem "sassc-rails"
+
+# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
+gem "image_processing", "~> 1.2"
+gem 'ruby-vips'
+
+gem 'carrierwave'
+gem "mini_magick"
+gem 'carrierwave-processing'
+
+# === 系統設定 ===
+# ENV in config/application.yml
+gem 'figaro'
+
+# 語言包
+gem "rails-i18n"
+# 打包進資料庫
+# gem 'i18n-active_record'
+# === 系統設定 ===
+
+# === Controller ===
+# 背景 post/get
+gem "rest-client"
+
+#excel 匯出
+gem 'rubyzip', '>= 1.2.1'
+gem 'axlsx', git: 'https://github.com/randym/axlsx.git', ref: '776037c0fc799bb09da8c9ea47980bd3bf296874'
+gem 'caxlsx_rails'
+gem 'roo'
+
+# Email 預覽
+gem 'premailer-rails'
+gem 'letter_opener', group: [:development]
+
+gem 'oj'
+# === Controller ===
+
+# user
+# https://medium.com/@tienshunlo_32785/rails-devise%E7%B3%BB%E5%88%97%E6%96%87-%E5%AF%A6%E4%BD%9C%E5%85%A9%E7%A8%AE%E7%94%A8%E6%88%B6-user-%E8%B7%9F-admin-e86018df4e88
+gem 'devise'
+gem 'devise-i18n'
+
+# omniauth 社群
+gem 'omniauth'
+gem 'omniauth-google-oauth2'
+gem 'omniauth-facebook'
+gem 'omniauth-line'#, github: "playplusTW/omniauth-line"
+gem 'koala' # 可以將錯誤的 session 刪掉避免註冊失敗
+
+gem 'json', '~> 2.6', '>= 2.6.3'
+# activerecord
+
+# 清除Database
+gem 'database_cleaner'
+
+# 關聯計數
+gem 'counter_culture'
+
+# bulk insert https://github.com/zdennis/activerecord-import
+gem 'activerecord-import'
+
+# https://github.com/MaxLap/activerecord_where_assoc
+gem 'activerecord_where_assoc', '~> 1.0'
+
+# 統計 https://github.com/ankane/groupdate
+gem 'groupdate', require: false
+
+# 網址路徑優化
+gem 'friendly_id', '~> 5.2', '>= 5.2.5'
+gem 'babosa'
+
+# 分頁
+gem 'pagy'
+# gem 'kaminari'
+
+# 標籤tags https://github.com/mbleigh/acts-as-taggable-on
+# rails acts_as_taggable_on_engine:install:migrations
+gem 'acts-as-taggable-on', '~> 9.0'
+
+# 多層分類使用 https://github.com/collectiveidea/awesome_nested_set https://ruby-china.org/topics/16020
+gem 'awesome_nested_set'
+
+# 紀錄瀏覽數 https://github.com/charlotte-ruby/impressionist
+# rails g impressionist; rails db:migrate
+gem 'impressionist'
+
+# 紀錄 activerecord 變化 https://github.com/airblade/paper_trail
+# rails generate paper_trail:install; rails db:migrate
+gem 'paper_trail'
+
+# 狀態管理 https://github.com/aasm/aasm
+gem 'aasm'
+
+# 日期搜尋
+gem 'by_star', github: "radar/by_star"
+
+# 排序
+gem 'acts_as_list'
+
+# 後端搜尋與 Sorting
+gem 'ransack'
+
+# soft destroy (保存刪除資料)
+gem "paranoia", "~> 2.2"
+
+gem 'active_hash'
+
+gem 'recaptcha', git: "https://github.com/ambethia/recaptcha.git"
+# === activerecord ===
+
+# === 優化前端 ===
+# 輔助ViewHelper https://ruby-china.org/topics/29142
+gem 'draper'
+
+# 偵測瀏覽器
+gem "browser"
+
+# 麵包路徑
+gem 'loaf'
+
+# 延遲讀取圖片
+gem "lazyload-rails", github: 'playplusTW/lazyload-rails'
+
+# meta-tags 管理 https://github.com/kpumuk/meta-tags
+gem 'meta-tags'
+
+# 讓javascrip呼叫rails的變數
+gem 'gon'
+#
+#gem 'simple_form'
+
+gem 'inline_svg'
+
+# jquery_ujs remote with upload files
+gem 'remotipart', '~> 1.3'
+# === 優化前端 ===
+
+# === production ===
+# 優化Timeout狀況
+#gem 'slowpoke'
+
+# 防止DDOS https://blog.niclin.tw/2019/08/16/mitigate-ddos-using-rack-attack/
+gem 'rack-attack'
+
+gem 'sitemap_generator', group: %i[development production]#, require: false
+gem 'whenever', require: false
+
+# 優化log https://ruby-china.org/topics/34663
+gem 'lograge'
+
+# 監聽錯誤
+# gem 'rollbar', group: [:production, :development]
+
+group :production do
+  # 錯誤通知 https://github.com/smartinez87/exception_notification
+  gem 'exception_notification'
+  gem 'exception_notification_line_notify'
+end
+
+# sidekiq 背景執行
+group :production, :development do
+  gem 'sidekiq', '<7'
+  gem 'sidekiq-statistic', git: 'https://github.com/davydovanton/sidekiq-statistic.git'
+  gem 'sidekiq-cron', '~> 1.1'
+  gem 'sidekiq-status'
+  gem 'activejob-traffic_control'
+end
+
+
+group :development, :test do
+  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
+  gem "debug", platforms: %i[ mri mingw x64_mingw ]
+end
+
+group :development do
+  # Use console on exceptions pages [https://github.com/rails/web-console]
+  gem "web-console"
+  gem 'listen'
+  # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]
+  # gem "rack-mini-profiler"
+
+  # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
+  gem "spring"
+  gem 'spring-watcher-listen', '~> 2.0.0'
+
+  gem 'better_errors'
+  gem 'binding_of_caller'
+  # model 註釋
+  gem 'annotate', git: 'https://github.com/ctran/annotate_models.git'
+end
+
+group :development, :test do
+  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+
+  # === 測試 ===
+  # Adds support for Capybara system testing and selenium driver
+  gem 'capybara'
+  gem 'selenium-webdriver'
+  # Easy installation and use of web drivers to run system tests with browsers
+  gem 'webdrivers'
+
+  gem 'rspec-rails'
+  gem 'i18n-spec'
+  gem 'factory_bot_rails'
+  gem 'faker', git: 'https://github.com/stympy/faker.git'
+  gem 'rails-controller-testing'
+  # === 測試 ===
+
+  # 產生model關聯檔案 https://ruby-china.org/topics/27212
+  gem 'rails-erd'
+  # 程式碼格式檢查 https://ruby-china.org/topics/24345
+  gem 'rubocop-rails', require: false
+  gem 'solargraph', require: false
+end
+
+gem "tailwindcss-rails", "~> 2.0"
+

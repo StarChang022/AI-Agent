@@ -1,0 +1,52 @@
+<div class="w-full h-full flex items-center justify-center mb-20">
+  <div class="min-w-[340px] max-w-[540px] flex flex-col gap-9">
+    <h2 class="text-center text-[28px] lg:text-[48px]">報到成功</h2>
+
+    <div class="flex flex-col gap-3">
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>手機號碼</h3>
+
+        <p><%= current_object.phone %></p>
+      </div>
+
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>姓名</h3>
+
+        <div class="flex items-center gap-1.5">
+          <p><%= current_object.name  %></p>
+
+          <!-- 是否為貴賓 -->
+          <% if current_object.special  %>
+            <div class="px-2 py-0.5 text-orange-theme bg-orange-theme-lighter rounded">貴賓</div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>公司名稱</h3>
+
+        <p><%= current_object.company_name %></p>
+      </div>
+
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>登錄證字號</h3>
+
+        <p><%= current_object.certificate_num %></p>
+      </div>
+
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>單位名稱</h3>
+
+        <p><%= current_object.department_name %></p>
+      </div>
+
+      <div class="w-full grid grid-cols-[1fr_2fr] gap-x-6 pb-1.5 border-b">
+        <h3>獎盃編號</h3>
+
+        <p><%= current_object.trophy_num  %></p>
+      </div>
+    </div>
+
+    <a href="<%= checkin_activity_guests_path(current_object.activity) %>" onclick="window.close();" class="button button--outline self-center">返回</a>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<% klass = current_object.class %>
+<%= form_with model: [:backends, current_object], builder: BootstrapHorizontalFormBuilder, multipart: true, local: true do |f| %>
+
+<%= f.text_field :name %>
+
+<%= f.datetime_local_field :posted_at, class: "datetimepicker" %>
+
+<% klass.try(:acts_as_taggable_on).each do |current| %>
+<% tag = "#{current.singularize}_list" %>
+<%= f.select tag, options_for_select(current_object.send(tag), current_object.send(tag)), {}, {multiple: true, class: "js-select2-tag"} %>
+<% end %>
+
+<%= render partial: "/backends/resources/components/dropify", collection: klass.attachment_reflections.keys, as: :current, locals: {f: f} %>
+
+<% [:content].each do |current| %>
+<div class="row mb-3">
+	<label class="col-sm-2 col-form-label">
+		<%= f.label current, current_object.class.human_attribute_name(current) %>
+	</label>
+	<div class="col-sm-10">
+		<%= f.rich_text_area current %>
+	</div>
+</div>
+<% end %>
+
+<%= f.text_area :tinymce_content, class: "p-tinymce" %>
+
+<!-- Seo Meta Tag -->
+<% ["seo_meta_tag"].each do |current| %>
+<div class="row mb-3">
+	<div class="col-sm-2">
+		<%= f.label current, current_object.class.human_attribute_name(current), class: "col-form-label" %>
+	</div>
+	<div class="col-sm-10">
+		<%= f.fields_for(current) do |builder| %>
+		<%= render partial: "/backends/resources/#{current.singularize}", locals: {f: builder} %>
+		<% end %>
+	</div>
+</div>
+<% end if current_object.try(:seo_meta_tag) %>
+
+<%= f.submit t("backends.submit") %>
+
+<% end %>

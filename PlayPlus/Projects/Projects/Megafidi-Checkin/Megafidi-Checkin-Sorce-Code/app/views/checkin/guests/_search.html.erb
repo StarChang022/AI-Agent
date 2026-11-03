@@ -1,0 +1,17 @@
+<%= form_with url: url_for(action: action_name), method: :get, multipart: true, local: true, class: "lg:w-3/4 xl:w-1/2 flex flex-col md:flex-row md:items-end gap-3" do |f| %>
+
+  <div class="input">
+    <%= f.label :phone_keyword, Guest.human_attribute_name(:phone) %>
+    <%= f.text_field :phone_keyword, value: params[:phone_keyword], placeholder: "請輸入末五碼" %>
+  </div>
+
+  <div class="input">
+    <%= f.label :certificate_num, Guest.human_attribute_name(:certificate_num) %>
+    <%= f.text_field :certificate_num, value: params[:certificate_num], placeholder: "請輸入完整字號" %>
+  </div>
+
+  <button type="submit" class="button">
+    <i class="text-sm fa-solid fa-magnifying-glass"></i>
+    搜尋
+  </button>
+<% end %>

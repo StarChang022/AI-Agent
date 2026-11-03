@@ -1,0 +1,9 @@
+$(document).ready(function(){
+  $("#<%= current_object.class.name.tableize %>").append('<%= escape_javascript(render(partial: "show",locals:{current_object: current_object})) %>');
+  <% if @message %>
+	new Noty({
+		type: 'success',
+		text: '<%= @message %>'
+	}).show();
+	<% end %>
+});

@@ -1,0 +1,30 @@
+<div class="guests flex flex-col gap-6">
+  <span class="text-sm">賓客資料</span>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <h2 class="text-2xl">賓客資料</h2>
+    </div>
+
+    <a href="<%= url_for(action: :new) %>" class="button">
+      <i class="fa-solid fa-plus"></i>
+      新增
+    </a>
+  </div>
+
+  <!-- 活動場次(單純顯示資訊) -->
+  <div class="grid lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+    <%= render partial: "/home/partials/activity", collection: activities, as: :current_object %>
+  </div>
+
+  <!-- 操作列 -->
+  <%= render partial: "/home/partials/actions" %>
+
+  <!-- 搜尋列 -->
+  <%= render partial: "/home/guests/partials/search" %>
+
+  <!-- 表格 -->
+  <%= render partial: "/home/guests/partials/table" %>
+
+  <%= render partial: "/home/partials/pagy", locals: {pagy: current_pagy} %>
+</div>

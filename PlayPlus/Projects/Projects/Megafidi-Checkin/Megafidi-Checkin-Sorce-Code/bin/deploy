@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require 'pathname'
+require 'fileutils'
+include FileUtils
+
+# path to your application root.
+APP_ROOT = Pathname.new File.expand_path('../../', __FILE__)
+
+def system!(*args)
+  system(*args) || abort("\n== Command #{args} failed ==")
+end
+
+chdir APP_ROOT do
+  # This script is a way to update your development environment automatically.
+  # Add necessary update steps to this file.
+
+  puts "\n== Copying sample files =="
+  unless File.exist?('config/database.yml')
+    cp 'config/database.yml.sample', 'config/database.yml'
+  end
+
+  unless File.exist?('config/application.yml')
+    cp 'config/application.yml.sample', 'config/application.yml'
+  end
+
+  unless File.exist?('config/mailer.yml')
+    cp 'config/mailer.yml.sample', 'config/mailer.yml'
+  end
+
+  unless File.exist?('config/storage.yml')
+    cp 'config/storage.yml.sample', 'config/storage.yml'
+  end
+
+  puts '== Installing dependencies =='
+  system! 'gem install bundler --conservative'
+  # system('bundle check') || system!('bundle install')
+  # system! 'yarn install --check-files'
+
+  puts "\n== Updating database =="
+  system! 'bin/rails db:migrate'
+
+  puts "\n== Removing tempfiles =="
+  system! 'bin/rails tmp:clear'
+
+  puts "\n== Assets precompile =="
+  system! 'bin/rails assets:precompile'
+
+  # puts "\n== Update Crontab =="
+  # system! 'whenever --update-crontab'
+
+  # puts "\n== Sidekiq restart =="
+  # system! 'bundle exec sidekiqctl stop tmp/sidekiq.pid 0'
+  # system! 'bundle exec sidekiq -d -P tmp/sidekiq.pid -L log/sidekiq.log'
+
+  puts "\n== Restarting application server =="
+  system! 'bin/rails restart'
+end

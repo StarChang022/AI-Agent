@@ -1,0 +1,21 @@
+<%= form_with url: url_for(action: action_name), method: :get, multipart: true, local: true, class: "search hidden xl:w-3/4 flex flex-col lg:flex-row lg:items-end gap-3" do |f| %>
+  <div class="select">
+    <%= f.label :activity, Activity.model_name.human %>
+    <%= f.select(:activity_id, Activity.all.collect{|i| [i.name, i.id]}, {include_blank: '全部', selected: params[:activity_id]}, {class: ""}) %>
+  </div>
+
+  <div class="select">
+    <%= f.label :status, Guest.human_attribute_name(:status) %>
+    <%= f.select(:status, Guest.statuses.keys.collect{|i| [Guest.human_attribute_name(i), i]}, {include_blank: '全部', selected: params[:status]}, {class: ""}) %>
+  </div>
+
+  <div class="input">
+    <%= f.label :k, t("backends.k") %>
+    <%= f.text_field :k, value: params[:k] %>
+  </div>
+
+  <button type="submit" class="button">
+    <i class="text-sm fa-solid fa-magnifying-glass"></i>
+    搜尋
+  </button>
+<% end %>

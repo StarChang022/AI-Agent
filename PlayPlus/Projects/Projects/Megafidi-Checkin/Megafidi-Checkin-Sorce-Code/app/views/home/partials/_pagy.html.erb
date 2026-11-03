@@ -1,0 +1,30 @@
+<% link = pagy_link_proc(pagy) -%>
+<div class="mt-6 w-full flex items-center justify-end gap-1.5">
+
+  <% if pagy.prev %>
+    <%= raw link.call(pagy.prev, '<i class="text-xs fa-solid fa-chevron-left"></i>', 'class="pagy"') %>
+  <% else %>
+    <button type="button" class="pagy">
+      <i class="text-xs fa-solid fa-chevron-left"></i>
+    </button>
+  <% end %>
+
+  <% pagy.series.each do |page| %>
+    <% if page.is_a?(Integer) -%>
+      <%= raw link.call(page, page, 'class="pagy"') %>
+    <% elsif page.is_a?(String) %>
+      <a href="#" class="pagy active"><%= page %></a>
+    <% elsif page == :gap %>
+      <a href="#" class="pagy">...</a>
+    <% end %>
+  <% end %>
+
+  <% if pagy.next %>
+    <%= raw link.call(pagy.next, '<i class="text-xs fa-solid fa-chevron-right"></i>', 'class="pagy"') %>
+  <% else %>
+    <button type="button" class="pagy">
+      <i class="text-xs fa-solid fa-chevron-right"></i>
+    </button>
+  <% end %>
+
+</div>
