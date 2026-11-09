@@ -37,7 +37,8 @@ From this response, extract the full site structure:
 
 Also fetch in parallel:
 - `{domain}/robots.txt` — crawl directives and sitemap pointer
-- `{domain}/sitemap.xml` — confirms pages that exist even if not in nav
+- `{domain}/sitemap.xml` — confirms pages that exist even if not in nav; inspect raw XML headers (e.g., check for cross-domain `<?xml-stylesheet>` blocked by CORS/CSP), non-HTML files (`llms.txt`, `.pdf`), `<lastmod>` authenticity, and orphaned pages (published HTML files missing from `sitemap.xml` or homepage links)
+- `{domain}/llms.txt` (if present) — checks AI crawler guidance and content inventory consistency with `sitemap.xml`
 
 ### Phase 2b: Crawl key pages
 
@@ -79,52 +80,81 @@ Work through each category systematically. Your analysis covers the **whole site
 
 ### SEO Signals (Traditional Search Engine Optimization)
 
-**Technical On-Page:**
-- **Title tag**: Present? Length (optimal: 50-60 chars)? Contains primary keyword? Compelling? Duplicate across site?
-- **Meta description**: Present? Length (optimal: 150-160 chars)? Contains CTA? Engaging?
-- **Heading hierarchy**: H1 present and singular? H2/H3 logical and keyword-relevant? Heading stuffing?
+**Technical On-Page & Tracking Integrity:**
+- **Analytics & Tag Manager (GA4 / GTM) Integrity**:
+  - Are GA4 (`gtag.js`, e.g., `G-5PTYPV0S9P`) and Google Tag Manager (`GTM-M6FP6CGL`) installed directly in `<head>`?
+  - **Delayed Loading Anti-Pattern Check**: Flag any `setTimeout` (e.g., 3500ms delay) or user-interaction-gated (`scroll`, `mousemove`, `touchstart`) script loaders wrapping GTM/GA4. Delayed tracking drops fast-bouncing organic readers (resulting in near-zero reported traffic) and breaks Google Search Console (GSC) ownership verification via GTM/GA4.
+- **Title tag (`<title>`)**: Present? Length (optimal: 50-60 chars)? Front-loads primary keyword + specific case study or stock ticker? Compelling? Duplicate across site?
+- **Meta description**: Present? Length (optimal: 150-160 chars)? Contains CTA and concrete value proposition? Ensure single quotes (`'`) inside descriptions do not prematurely truncate HTML attributes.
+- **Heading hierarchy (`<h1>`–`<h3>`)**:
+  - Is `<h1>` present and singular?
+  - **Front-Loaded Keyword Check**: Does `<h1>` front-load the core search entity, or is it written as a conversational sentence (`"The 1st step in learning value investing is..."`) or an overly broad single word (`"Balance Sheet"`, `"Margin of Safety"`)? Recommend pairing the core concept with a concrete qualifier (`"Margin of Safety in Value Investing: Definition, Formula & Buffett's Rules"`).
+  - Are H2/H3 logical and keyword-relevant without keyword stuffing?
 - **URL structure**: Clean and readable? Contains keywords? Avoids stop words and excessive parameters?
-- **Canonical tag**: Present? Self-referencing appropriately?
-- **Robots meta**: Indexable? Any accidental noindex?
+- **Canonical tag**: Present (`<link rel="canonical" href="https://...">`)? Self-referencing with exact protocol and trailing-slash consistency?
+- **Robots meta**: Indexable? Any accidental `noindex`?
 - **Viewport/Mobile meta**: Present for mobile friendliness?
 - **Image alt text**: Images present? Alt text descriptive and keyword-relevant?
-- **Internal links**: Present? Descriptive anchor text?
-- **Open Graph / Twitter Card**: og:title, og:description, og:image present? Appropriate for social sharing?
+- **Internal links & Orphan Page Check**:
+  - Are all articles stored in subdirectories linked from both the homepage (`index.html`), category hub pages (`/philosophy/`, `/financial/`, `/valuation/`, `/investing/`, `/news/`), and `sitemap.xml`?
+  - Flag any "Orphaned" or "Semi-Orphaned" pages that exist in the repository or `llms.txt` but are missing from homepage sections or `sitemap.xml`.
+  - Check whether breadcrumb links (`Home > Category > Post`) resolve to real HTML index pages rather than returning 404.
+- **Open Graph / Twitter Card (`og:image` Absolute Path Check)**:
+  - Are `og:title`, `og:description`, and `og:image` present?
+  - **Absolute URL Rule**: `og:image` and `twitter:image` MUST use full absolute URLs (`https://valuecafe.cc/images/...`) pointing to an existing image file (`200 OK`). Flag relative paths (`../images/...` or `images/...`) and non-existent placeholder filenames (`og-image.jpg`), which break social previews and disqualify pages from **Google Discover**.
+- **`sitemap.xml` Hygiene Check**:
+  - **No External XSL/CSS**: Flag any cross-domain `<?xml-stylesheet type="text/xsl" href="..."?>` declaration that triggers browser CORS/CSP blocks or parser errors.
+  - **Canonical HTML Only**: Flag non-HTML resources inside `<urlset>` (such as `llms.txt`, `.pdf`, or assets).
+  - **Authentic `<lastmod>`**: Verify `<lastmod>` uses real file/Git modification timestamps in ISO 8601 format rather than identical hardcoded dates across all URLs.
 
-**Content Quality:**
+**Content Quality & Keyword Intent Strategy:**
 - **Word count**: Substantial content (500+ words for most pages, 1500+ for pillar content)?
-- **Keyword signals**: Primary topic clearly established? Semantic related terms present?
-- **Content freshness signals**: Publication or update dates visible?
-- **Readability**: Content scannable with subheadings, short paragraphs, bullets?
+- **Evergreen vs. News Keyword Alignment (Crucial for Niche / YMYL Sites)**:
+  - **Evergreen Educational Pages**: Flag pages targeting ultra-high-difficulty head terms alone (`"What is Free Cash Flow?"`, `"How to Read Financial Statements"`). Recommend the **Concept + Real-World Case Study** formula that leverages examples already in the text (e.g., `"How to Read a 10-K & Financial Statements: Alphabet (GOOGL) Case Study"`, `"Debt-to-Equity Ratio Explained: TSMC vs. Evergreen Marine Case Study"`).
+  - **News & Views / Market Commentary Pages**: Flag newspaper-editorial headlines that omit stock tickers or search questions (`"AI Panic Hits Tech Stocks"`, `"Amazon's $200B Bet"`). Recommend the **Ticker + Event + Moat/Valuation Impact** formula (`"Micron (MU), ServiceNow (NOW) & Microsoft (MSFT) Stock Analysis: Why the AI Panic Is Overblown"`, `"Amazon (AMZN) $200B AI CapEx Analysis: Impact on Free Cash Flow & Moat"`).
+- **Content freshness signals**: Visible publication (`datePublished`) and update (`dateModified`) dates?
+- **Readability**: Content scannable with subheadings, short paragraphs, bullets, and comparison tables?
 
-**Structured Data:**
-- **Schema markup**: Any JSON-LD or microdata present? Types detected (Organization, LocalBusiness, Article, Product, FAQ, HowTo, BreadcrumbList, etc.)?
-- **Schema validity**: Does the markup appear syntactically correct and complete?
+**Structured Data (JSON-LD Compliance):**
+- **Schema type accuracy**:
+  - Homepage (`/`): `WebSite` + `Organization`
+  - About page (`/about.html`): `AboutPage` + `Person` / `Organization`
+  - Contact page (`/contact.html`): `ContactPage` (do NOT mislabel as `Article`)
+  - Category hub pages: `CollectionPage` (do NOT mislabel as `Article`)
+  - Individual articles & news posts: `Article` or `BlogPosting`
+- **Google Rich Results `Article` Required & Recommended Fields**:
+  - Verify every `Article` schema includes: `headline`, complete untruncated `description`, `image` (array of absolute URLs), `datePublished` (ISO 8601), `dateModified` (ISO 8601), `author` (`Person` with `name` and `url`), `publisher` (`Organization` with `name`, `url`, and `logo` `ImageObject`), and `mainEntityOfPage`.
+  - Flag invalid properties pasted onto `Article` (such as `serviceType` or `areaServed`, which belong only to `Service`).
 
 ### GEO Signals (Generative Engine Optimization)
 
 GEO optimizes for AI-powered search engines (Perplexity, ChatGPT Search, Google AI Overviews, Gemini) that synthesize answers from multiple sources and cite pages. These engines reward clarity, authority, and factual richness.
 
-**E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness):**
-- **Author information**: Named authors with credentials visible?
-- **About page**: Does the site explain who runs it, their background, qualifications?
-- **Contact information**: Phone, address, email accessible?
-- **Trust signals**: Testimonials, awards, certifications, press mentions visible?
-- **Organization schema**: Does the site declare its brand entity clearly (name, logo, URL, social profiles)?
+**E-E-A-T & YMYL (Your Money or Your Life) Compliance:**
+- **Independent Creator E-E-A-T Positioning**:
+  - For finance/investing sites (YMYL), Google and AI engines suppress anonymous sites or sites without clear accountability.
+  - If the author is not a licensed Wall Street institutional analyst, verify whether the site establishes **First-Hand Experience (E)** and **Methodological Transparency (T)** — e.g., positioning as a real-world business owner (running a physical coffee shop + digital tech career) and independent practitioner who translates SEC 10-K filings through a business-owner lens.
+- **3 Editorial & Research Standards**:
+  - Does the About page explicitly state its research standards? (1. **Primary Sources First**: SEC 10-K/10-Q filings, earnings transcripts, shareholder letters; 2. **Business-Owner Mindset**: unit economics, ROIC, FCF, economic moats; 3. **100% Independent & Hype-Free**: no paid stock promotions or price-target clickbait).
+- **YMYL Mandatory Trust Elements**:
+  - **Author Bio Box**: Present at the bottom of articles, linking to `/about.html`?
+  - **Financial Disclaimer (`投資免責聲明`)**: Explicitly states content is for educational/informational purposes only, not personalized investment advice, and author is not a licensed financial advisor?
+  - **Author Disclosure (`利益揭露`)**: Explicitly discloses whether the author holds or may trade positions in discussed equities?
+- **Contact & Brand Entity**: Accessible contact channel (`mailto:` or contact form) and clean `Organization` / `Person` schema with `sameAs` social links?
 
 **Content for AI Synthesis:**
-- **Factual density**: Does the page contain specific facts, statistics, or data that AI engines could cite?
-- **Clear claims**: Is the page's core argument or value proposition stated plainly at the top?
-- **Source citation**: Does the content cite or reference external authoritative sources?
-- **Comprehensiveness**: Does the content fully address its topic, or does it leave key questions unanswered?
-- **Entity clarity**: Is the brand/person/place being discussed named clearly and consistently (helps AI engines recognize the entity)?
-- **Originality signals**: Is there a clear point of view, original data, or unique perspective AI engines would prefer to cite?
+- **Factual density & Primary Source Citations**: Does the page cite specific numbers from SEC 10-K filings, fiscal years, revenue segments, Debt-to-Equity ratios, or valuation multiples that AI engines can quote verbatim?
+- **Clear claims (BLUF — Bottom Line Up Front)**: Is the page's core thesis or definition stated plainly in the first 40-60 words?
+- **Source citation**: Does the content reference authoritative primary sources (SEC Edgar, Berkshire Hathaway Shareholder Letters, company annual reports)?
+- **Comprehensiveness**: Does the content fully address its topic, including practical application and edge cases (e.g., when P/E or P/B ratios fail)?
+- **Entity clarity**: Are company names paired consistently with their stock tickers (`Alphabet (GOOGL)`, `TSMC (TSM / 2330.TW)`, `Apple (AAPL)`) so AI knowledge graphs map entities unambiguously?
+- **Originality signals**: Does the content feature original frameworks or real-world analogies (such as the Coffee Shop DCF & unit-economics analogy) that AI engines prefer to cite over generic dictionary definitions?
 
 **Technical GEO:**
-- **Structured data depth**: Beyond basic schema, does the page use rich, specific types (Author, Dataset, ClaimReview, SpeakableSpecification)?
+- **Structured data depth**: Beyond basic schema, does the page use rich, valid types (`Article`, `FAQPage`, `BreadcrumbList`, `Person`, `Organization`)?
+- **`llms.txt` readiness**: Is `{domain}/llms.txt` present, properly formatted in Markdown, and synchronized with all latest published articles?
 - **HTTPS / security**: Secure site (trust signal for AI engines)?
-- **Clean crawlability**: No robots.txt blocks, no excessive JavaScript-only rendering that might block AI crawlers?
-- **Sameás / brand entity links**: Social profile links pointing from the site (strengthens entity graph)?
+- **Clean crawlability**: No `robots.txt` blocks on content or assets, and full static HTML availability so LLM crawlers (`GPTBot`, `OAI-SearchBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`) can read articles without executing JavaScript?
 
 ### AEO Signals (Answer Engine Optimization)
 
