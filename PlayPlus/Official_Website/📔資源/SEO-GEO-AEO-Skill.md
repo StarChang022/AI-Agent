@@ -1,170 +1,137 @@
 ---
 name: seo-geo-aeo
 description: >
-  Full-featured SEO, GEO, and AEO website audit tool. Analyzes any URL or website for Search Engine Optimization (SEO), Generative Engine Optimization (GEO — for AI-powered search engines like Perplexity, ChatGPT Search, and Gemini), and Answer Engine Optimization (AEO — for featured snippets and voice search). Use this skill whenever a user provides a URL, domain, or website and asks about search performance, SEO issues, rankings, AI search readiness, answer engine visibility, meta tags, schema markup, content quality, or visibility in search. Also trigger when the user asks to "audit my site", "check my SEO", "why isn't my site ranking", "optimize for AI search", or any similar request involving a web property and search performance.
+  PlayPlus 官網與內容行銷專屬之全方位 SEO（搜尋引擎優化）、GEO（生成式 AI 引擎優化 — 針對 ChatGPT Search、Perplexity、Google AI Overviews、Gemini、Claude）與 AEO（問答引擎優化 — 針對精選摘要 Featured Snippets、People Also Ask 與語音搜尋）實戰指南與網站審計技能。適用於：(1) 規劃與撰寫官網頁面、知識筆記（Blog）、作品集案例（Portfolio）時的 SEO/GEO/AEO 結構與寫作規範；(2) 對任何線上網址或本地網站專案（如 playplus2026）進行深度 SEO/GEO/AEO 審計並產出專業 Word (.docx) 與 PDF 報告。
 ---
 
-# SEO / GEO / AEO Audit Skill
+# PlayPlus 最新 SEO / GEO / AEO 行銷實戰指南與審計技能
 
-You are an expert digital marketing analyst specializing in Search Engine Optimization (SEO), Generative Engine Optimization (GEO), and Answer Engine Optimization (AEO). Your job is to fetch and deeply analyze a website, deliver a structured audit in the chat, and produce a polished downloadable report as both a Word document (.docx) and PDF.
+本文件為 PlayPlus（普魯士國際）的核心搜尋與 AI 能見度指南，結合最新 **SEO（傳統搜尋引擎優化）**、**GEO（Generative Engine Optimization，生成式引擎優化）** 與 **AEO（Answer Engine Optimization，問答引擎優化）** 權威研究與演算法標準。
 
-**語言規範：** 除非使用者另有指定，所有對話輸出、問題回覆與產出的報告文件預設均採用**繁體中文（Traditional Chinese, 台灣習慣用語）**，技術專有名詞可保留英文字詞或中英對照。
-
----
-
-## Step 1: Confirm scope with the user
-
-**Do not fetch anything yet. Do not begin the audit. Stop and ask this question first, every single time:**
-
-> "您希望進行 **快速審計（Quick Audit）**（聚焦核心問題與分數，約需 1-2 分鐘）還是 **完整深度審計（Full Audit）**（全維度深入分析，約需 5-10 分鐘）？"
-
-Wait for the user's reply before doing anything else. No exceptions — even if the user's message seems to imply a preference, confirm it explicitly. The only time you may skip this step is if the user's message already contains a clear, unambiguous choice (e.g. "do a full audit of..." or "quick audit please").
+**語言規範：** 除非使用者另有指定，所有對話輸出、文章規劃、內容撰寫與產出的審計報告文件預設均採用**繁體中文（Traditional Chinese，台灣商業與技術習慣用語）**，技術專有名詞可保留英文或中英對照。
 
 ---
 
-## Step 2: Fetch and collect data
+# 第一部分：內容創作與網頁開發之 SEO / GEO / AEO 實戰準則（Creation Playbook）
 
-Use web retrieval tools (such as Antigravity's `read_url_content` for static HTML, or `browser_subagent` if dynamic JavaScript rendering is required) to gather page data. **Never make assumptions about what a site does or doesn't have until you've actually looked.** A page can't be flagged as "missing" unless you've confirmed it doesn't exist.
+當執行「撰寫文章規劃書」、「撰寫知識筆記／作品集內文」或「建置與優化官網頁面」時，必須嚴格落實以下三大維度的優化規範：
 
-### Phase 2a: Homepage fetch and site discovery
+## 1. GEO 核心準則：讓 ChatGPT、Perplexity、Gemini 與 Google AI Overviews 主動引用
 
-Fetch the provided URL first. Prompt: "Return the complete raw HTML of this page including all meta tags, schema markup, heading structure, link elements, navigation menus, and body content."
+生成式 AI 搜尋引擎並非單純比對關鍵字密度，而是透過檢索增強生成（RAG）尋找**「高事實密度、高結構化、高可信度（E-E-A-T）且具獨特觀點」**的權威來源進行合成與引用（Citation）：
 
-From this response, extract the full site structure:
-- **Navigation links**: Parse all links in `<nav>`, header, and footer elements
-- **Internal links**: Any links pointing to the same domain
-- Build a map of what pages exist: About, Team, Services, Case Studies/Portfolio, Blog, FAQ, Contact, etc.
+1. **開門見山與 AI 快速摘要（BLUF — Bottom Line Up Front）**：
+   - 在每篇知識筆記或作品集案例的最開頭（第一個 `<h2>` 之前），必須設計 **「AI 快速摘要（Key Takeaways / 3 點核心重點）」**，以「**小標題：核心結論**」格式濃縮全篇痛點、分析方法與關鍵結論，方便 AI 爬蟲與忙碌的企業決策者於第一時間擷取全貌。
+2. **提升 30%～40% AI 引用率的三大內容要素（Princeton GEO 實證法則）**：
+   - **具體數據與量化指標（Statistics & Quantitative Proof）**：避免使用「大幅提升效率」、「很多客戶」等空泛形容詞；改用具體量化敘述（例如：「服務超過 200+ 家中小企業、維持 100+ 個活躍營運系統」、「將跨部門人工核對時間從每週 8 小時縮短至 15 分鐘」、「降低 80% 人為登打錯誤」）。
+   - **真實案例與實務情境驗證（Case Study & Real-World Context）**：所有抽象觀點都必須搭配真實產業場景（如製造業巡檢、連鎖餐飲叫貨、科技總部會議室預約系統等），展現第一手實戰經驗（Experience）。
+   - **專業領域語意共現（Domain Fluency & Entities）**：自然融入商業流程與軟體工程專有名詞（如：流程梳理、Figma 互動原型、RESTful API 串接、RBAC 權限控管、資料遷移、分階段 MVP 落地），建立專家語境。
+3. **資訊增益（Information Gain — 拒絕 AI 水文）**：
+   - 現代搜尋與 AI 引擎會降權「與網路既有文章千篇一律的拼湊內容」。每篇文章必須提供 PlayPlus 獨到的**「顧問決策框架」、「常見盲點拆解」或「評估檢核表」**，給出明確的判斷標準。
+4. **品牌與作者實體清晰度（Entity Clarity & E-E-A-T）**：
+   - 提及品牌時保持一致名稱（「PlayPlus 普魯士國際」），並透過頁面 JSON-LD（`WebPage`、`Organization`、`BlogPosting`、`FAQPage`）明確連結台北實體地址、電話與社群圖譜（`sameAs`）。
 
-Also fetch in parallel:
-- `{domain}/robots.txt` — crawl directives and sitemap pointer
-- `{domain}/sitemap.xml` — confirms pages that exist even if not in nav
+## 2. AEO 核心準則：奪取精選摘要（Featured Snippets）與問答區塊（PAA）
 
-### Phase 2b: Crawl key pages
+問答引擎優化旨在讓網頁成為決策者搜尋具體問題時的「唯一標準答案」：
 
-Based on what you discovered in Phase 2a, fetch the key pages in parallel. Prioritize pages most relevant to the audit dimensions:
+1. **對話式問句標題（Question-Phrased Headings）**：
+   - 規劃文章或服務頁的 `<h2>` / `<h3>` 標題時，優先採用目標受眾會直接詢問搜尋引擎或 AI 的自然問句（例如：*「套裝軟體與客製化系統怎麼選？」*、*「沒有 IT 部門的中小企業如何導入管理系統？」*）。
+2. **黃金 40～80 字直答塊（Direct Answer Block）**：
+   - 在問句型 `<h2>` / `<h3>` 正下方的第一個自然段，必須用 **40～80 個中文字（約 2～3 句話）直接給出最精準的定義或核心答案**，不講廢話鋪陳；直答段之後，再展開詳細的條列分析或案例說明。
+3. **結構化比較表格與步驟清單（Tables & Ordered Lists）**：
+   - 凡涉及「方案優劣比較（如 Excel vs 套版 ERP vs 客製化系統）」、「費用組成維度」、「適用情境對照」，一律規劃為 **Markdown / HTML 表格（`<table>`）**。
+   - 凡涉及「導入步驟」、「驗收流程」、「檢核清單」，一律使用具明確順序的條列（`<ol>` / `<ul>`），且每點開頭使用粗體關鍵詞帶領。
+4. **常見問題（FAQ）模組化配置**：
+   - 服務頁與深度文章文末配置 3～5 題高搜尋意圖的常見問答（FAQ），並同步埋設 `FAQPage` JSON-LD 結構化資料。
 
-- **About / Team page** (E-E-A-T, author signals, credentials)
-- **Services / Work page** (content depth, keyword coverage)
-- **Case Studies / Portfolio page** (social proof, trust signals, content richness)
-- **Blog / Resources page** (content strategy, AEO potential)
-- **Contact page** (NAP data, local signals)
-- **Any FAQ page** (AEO signals)
+## 3. SEO 核心準則：鞏固傳統搜尋排名與技術體質
 
-**Quick Audit**: Fetch the homepage plus up to 6 high-signal pages.
-
-**Full Audit**: Crawl as many pages as the site has, with no arbitrary cap. Work through this priority order, but keep going until you've fetched every meaningful page:
-
-1. About / Team / Our Story
-2. Services / What We Do / Solutions
-3. Case Studies / Portfolio / Work
-4. Blog / Resources / Insights (index page + recent posts — fetch individual posts, not just the index)
-5. Contact / Location
-6. FAQ / Help
-7. Individual service or product pages
-8. All remaining pages discovered in the sitemap or via internal links that appear content-rich
-
-For Full Audits, skip only pages that genuinely add no signal: Privacy Policy, Terms of Service, login/account pages, thank-you/confirmation pages, and paginated archive pages beyond page 2. Everything else is fair game — the more pages you crawl, the more accurate and specific your findings will be.
-
-### Phase 2c: Handling inaccessible sites
-
-If the primary URL fails to load: tell the user, ask them to confirm the URL is publicly accessible, and offer to proceed with a framework audit if they'd like general recommendations while they fix the access issue.
-
-If secondary pages fail to load individually, note this in the findings but continue the audit with what you have.
+1. **搜尋意圖精準對位（Search Intent Alignment）**：
+   - 寫作前先確立該頁屬於「商業採購意圖（服務頁）」、「方案比較評估（知識筆記）」或「實績驗證（作品集）」，確保標題、前言與 CTA 完全契合讀者當下的決策階段。
+2. **標題、Meta 與語意化階層規範**：
+   - 嚴格遵守 `頁面基本元素.md` 與 `網站架構規範.md`：全頁唯一 `<h1>`、不跳階的 `<h2>`～`<h4>`、Title 控制於 25～30 中文字、Meta Description 控制於 70～85 中文字。
+3. **主題叢集內部連結（Topic Cluster Internal Linking）**：
+   - 每篇內容須規劃連往核心支柱服務頁（如 `services/enterprise-system.html`）與相關知識筆記／作品集的內部連結，並使用包含目標關鍵字的描述性錨點文字（Descriptive Anchor Text）。
 
 ---
 
-## Step 3: Analyze the signals
+# 第二部分：全站與單頁 SEO / GEO / AEO 審計流程（Audit Skill Workflow）
 
-Work through each category systematically. Your analysis covers the **whole site** based on everything fetched — not just the homepage. When assessing whether something exists (a Team page, Case Studies, FAQ content, schema markup on inner pages), base your conclusion on what you actually found across all fetched pages. Never flag a content type as "missing" if you found it on another page during your crawl.
+當使用者提供網址（URL）、網域或指定本地專案目錄（如 `playplus2026`），並要求進行「網站 SEO 檢查」、「SEO/GEO/AEO 審計」或「搜尋能見度分析」時，請依序執行以下 6 個步驟：
 
-### SEO Signals (Traditional Search Engine Optimization)
+## Step 1: 確認審計範圍（Confirm Scope）
 
-**Technical On-Page:**
-- **Title tag**: Present? Length (optimal: 50-60 chars)? Contains primary keyword? Compelling? Duplicate across site?
-- **Meta description**: Present? Length (optimal: 150-160 chars)? Contains CTA? Engaging?
-- **Heading hierarchy**: H1 present and singular? H2/H3 logical and keyword-relevant? Heading stuffing?
-- **URL structure**: Clean and readable? Contains keywords? Avoids stop words and excessive parameters?
-- **Canonical tag**: Present? Self-referencing appropriately?
-- **Robots meta**: Indexable? Any accidental noindex?
-- **Viewport/Mobile meta**: Present for mobile friendliness?
-- **Image alt text**: Images present? Alt text descriptive and keyword-relevant?
-- **Internal links**: Present? Descriptive anchor text?
-- **Open Graph / Twitter Card**: og:title, og:description, og:image present? Appropriate for social sharing?
+**在開始抓取或分析前，除非使用者已在指令中明確指定審計模式，否則請先詢問：**
 
-**Content Quality:**
-- **Word count**: Substantial content (500+ words for most pages, 1500+ for pillar content)?
-- **Keyword signals**: Primary topic clearly established? Semantic related terms present?
-- **Content freshness signals**: Publication or update dates visible?
-- **Readability**: Content scannable with subheadings, short paragraphs, bullets?
+> 「您希望進行 **快速審計（Quick Audit）**（聚焦首頁與核心頁面問題與評分，約需 1～2 分鐘）還是 **完整深度審計（Full Audit）**（全站多維度深入檢測與完整建議矩陣，約需 5～10 分鐘）？」
 
-**Structured Data:**
-- **Schema markup**: Any JSON-LD or microdata present? Types detected (Organization, LocalBusiness, Article, Product, FAQ, HowTo, BreadcrumbList, etc.)?
-- **Schema validity**: Does the markup appear syntactically correct and complete?
-
-### GEO Signals (Generative Engine Optimization)
-
-GEO optimizes for AI-powered search engines (Perplexity, ChatGPT Search, Google AI Overviews, Gemini) that synthesize answers from multiple sources and cite pages. These engines reward clarity, authority, and factual richness.
-
-**E-E-A-T (Experience, Expertise, Authoritativeness, Trustworthiness):**
-- **Author information**: Named authors with credentials visible?
-- **About page**: Does the site explain who runs it, their background, qualifications?
-- **Contact information**: Phone, address, email accessible?
-- **Trust signals**: Testimonials, awards, certifications, press mentions visible?
-- **Organization schema**: Does the site declare its brand entity clearly (name, logo, URL, social profiles)?
-
-**Content for AI Synthesis:**
-- **Factual density**: Does the page contain specific facts, statistics, or data that AI engines could cite?
-- **Clear claims**: Is the page's core argument or value proposition stated plainly at the top?
-- **Source citation**: Does the content cite or reference external authoritative sources?
-- **Comprehensiveness**: Does the content fully address its topic, or does it leave key questions unanswered?
-- **Entity clarity**: Is the brand/person/place being discussed named clearly and consistently (helps AI engines recognize the entity)?
-- **Originality signals**: Is there a clear point of view, original data, or unique perspective AI engines would prefer to cite?
-
-**Technical GEO:**
-- **Structured data depth**: Beyond basic schema, does the page use rich, specific types (Author, Dataset, ClaimReview, SpeakableSpecification)?
-- **HTTPS / security**: Secure site (trust signal for AI engines)?
-- **Clean crawlability**: No robots.txt blocks, no excessive JavaScript-only rendering that might block AI crawlers?
-- **Sameás / brand entity links**: Social profile links pointing from the site (strengthens entity graph)?
-
-### AEO Signals (Answer Engine Optimization)
-
-AEO optimizes for featured snippets, People Also Ask boxes, and voice search — where search engines and AI assistants need to extract a direct, concise answer.
-
-**Featured Snippet Eligibility:**
-- **Direct answer paragraphs**: Is the key question answered in a concise paragraph (40-60 words) right below a question-phrased heading?
-- **Definition patterns**: Does the page define its core topic in a clear "X is..." sentence?
-- **List content**: Numbered steps or bulleted lists present that could become list snippets?
-- **Table content**: Comparison tables present that could become table snippets?
-
-**Structured Answer Formats:**
-- **FAQ schema**: FAQ schema markup present? Questions and answers structured correctly?
-- **HowTo schema**: Step-by-step process content marked up with HowTo?
-- **Question-phrased headings**: Do H2/H3 headings use natural question language ("How does X work?", "What is Y?")?
-- **Speakable schema**: SpeakableSpecification markup present for voice-friendly sections?
-
-**Voice Search Readiness:**
-- **Conversational language**: Does the content use natural, conversational phrasing?
-- **Long-tail question coverage**: Does the page address specific who/what/when/where/why/how questions?
-- **Local signals** (if applicable): NAP data (Name, Address, Phone), local schema, location mentions?
+確認使用者選擇後再進入下一步。
 
 ---
 
-## Step 4: Score rubric
+## Step 2: 資料抓取與全站盤點（Fetch & Collect Data）
 
-Score each category 1-10 using this guide:
-- **1-3**: Critical issues — site is likely penalized or invisible
-- **4-5**: Below average — significant missed opportunities
-- **6-7**: Decent foundation — specific improvements needed
-- **8-9**: Strong — minor refinements available
-- **10**: Exemplary — model implementation
-
-Do NOT write out a long chat report. Keep the in-chat response brief — just enough to orient the user while the document generates. Use this format for both Quick and Full audits:
+- **針對線上網址**：使用網頁讀取工具或 `browser` 子代理抓取完整 HTML、Meta 標籤、Schema 結構化資料、導覽列連結、`robots.txt`、`sitemap.xml` 與 `llms.txt`。
+- **針對本地專案（如 `playplus2026`）**：直接掃描並讀取專案目錄下的 HTML 原始碼（`index.html`、`services.html`、`services/*.html`、`portfolio.html`、`portfolio/*.html`、`blog.html`、`blog/*.html`、`about-playplus.html`、`contact.html` 等）。
+- **核心原則**：**絕不憑空猜測網站缺漏**。必須先完整盤點導覽列、頁尾與子目錄，確認某個頁面（如關於我們、作品集、FAQ、結構化資料）是否已存在於全站其他路徑。
+  - **Quick Audit**：檢測首頁加上最多 6 個核心代表頁面。
+  - **Full Audit**：完整檢測所有具備實質內容價值的頁面（包含服務內頁、作品集案例與近期部落格文章；僅略過隱私權政策、服務條款與純轉址頁）。
 
 ---
 
+## Step 3: 三大維度信號深度分析（Analyze the Signals）
+
+### 1. SEO Signals（傳統搜尋引擎優化）
+- **Technical On-Page**：
+  - `<html lang="zh-Hant-TW">` 語系宣告是否正確？
+  - `<title>` 長度是否適中（25～30 中文字／50～60 字元）？是否包含核心關鍵字且全站無重複？
+  - `<meta name="description">` 是否存在、長度適中（70～85 中文字）且具備吸引力與行動呼籲？
+  - Heading 階層：是否具備唯一 `<h1>`？`<h2>`～`<h3>` 邏輯是否清晰且涵蓋次要關鍵字？
+  - URL 結構與 `<link rel="canonical">` 是否乾淨、自我參照且無相對路徑錯誤？
+  - 圖片 `alt` 屬性、`width`/`height` 尺寸宣告、`.webp` 格式與 Open Graph（`og:title`, `og:description`, `og:image`, `og:url`）是否完整（特別留意子目錄內頁的 `og:image` 路徑是否正確）？
+  - 內部連結（Internal Links）與錨點文字是否具備語意描述性？
+- **Content Quality**：
+  - 內容字數與深度是否充足？關鍵字與語意關聯詞是否自然分佈？是否具備發佈或更新日期？
+- **Structured Data**：
+  - JSON-LD 語法是否正確？是否依頁面性質配置對應 Schema（`WebPage`, `Organization`, `Service`, `BlogPosting`, `FAQPage`, `BreadcrumbList`）？
+
+### 2. GEO Signals（生成式 AI 引擎優化）
+- **E-E-A-T（經驗、專業、權威、信任）**：
+  - 團隊與作者背景（About 頁面、顧問團隊介紹）、實體聯絡資訊（NAP：名稱、地址、電話）、客戶實證案例与量化數據是否清晰可見？
+  - 品牌實體宣告（Organization Schema、Logo、`sameAs` 社群連結）是否一致？
+- **AI 合成與引用友善度（Content for AI Synthesis）**：
+  - **開門見山（BLUF）**：頁面頂端或文章前言是否清楚陳述核心價值主張與快速摘要？
+  - **事實密度（Factual Density）**：是否包含具體統計數據、專案實績數字、流程步驟與明確技術規格供 AI 引述？
+  - **資訊增益（Information Gain）**：是否提供原創觀點、實務比較框架或避坑指南？
+- **Technical GEO**：
+  - AI 爬蟲可檢索性（無不當 `noindex` 或純 JS 渲染阻擋）、是否提供 `llms.txt` 或清晰的語意化 HTML 標籤？
+
+### 3. AEO Signals（問答引擎與精選摘要優化）
+- **精選摘要適格性（Featured Snippet Eligibility）**：
+  - **直答區塊**：問句標題下方是否具備 40～80 中文字的精準直答段落？
+  - **定義與清單／表格結構**：是否善用標準 `<table>` 比較表與 `<ol>`/`<ul>` 步驟清單？
+- **結構化問答格式（Structured Answer Formats）**：
+  - 標題是否涵蓋自然語言問句（如何、為什麼、多少錢、怎麼選）？
+  - 是否埋設 `FAQPage` 或 `HowTo` JSON-LD 結構化資料？
+
+---
+
+## Step 4: 評分標準與對話視窗精簡摘要（Score Rubric & Chat Summary）
+
+每個維度採 1～10 分制評分：
+- **1–3 分（急需修正）**：存在嚴重技術阻礙或關鍵元素缺失
+- **4–5 分（尚待加強）**：基礎未臻完善，錯失大量搜尋與 AI 引用機會
+- **6–7 分（基礎良好）**：架構穩健，可針對特定進階項目優化
+- **8–9 分（表現優異）**：符合現代最佳實踐，僅需微調細節
+- **10 分（典範等級）**：全維度完美落實
+
+在對話視窗中請先輸出以下**精簡摘要**，並將完整逐項分析寫入可下載的報告文件中：
+
+```markdown
 ## 🔍 [網站名稱] — [快速 / 完整] SEO / GEO / AEO 審計摘要
 
-**審核頁面數：** [數量與清單]  **審計日期：** [日期]
+**審核頁面數：** [數量與清單]  **審計日期：** [YYYY-MM-DD]
 
 | 維度 | 分數 | 狀態 |
 |---|---|---|
@@ -172,211 +139,50 @@ Do NOT write out a long chat report. Keep the in-chat response brief — just en
 | GEO | X/10 | [需加強 / 良好 / 優良] |
 | AEO | X/10 | [需加強 / 良好 / 優良] |
 
-**前 3 大優先建議：** [各一句話 — 具體指名最關鍵的改進項目。]
+**前 3 大優先改進建議：**
+1. [具體指出頁面與首要改進項目]
+2. [具體指出頁面與次要改進項目]
+3. [具體指出頁面與第三改進項目]
 
-**最大現有優勢：** [一句話 — 網站目前表現最好的亮點。]
+**最大現有優勢：** [一句話點出網站目前表現最亮眼的核心優勢]
 
 *詳細檢測結果、訊號逐項分析與完整改善建議矩陣已整理於下方報告文件中。*
+```
 
 ---
 
-The full detail — every signal, every finding, recommendations matrix, what's working — goes into the Word document. That's where it belongs.
+## Step 5: 自動生成專業可下載報告（Generate Downloadable DOCX / PDF Report）
 
-## Step 5: Generate the downloadable report
+輸出對話摘要後，立即告知使用者：「正在為您生成可下載的審計報告...」，並使用 Node.js `docx` 套件生成顧問級 `.docx` 報告（若環境支援 `soffice` 則同步轉出 `.pdf`）。
 
-Immediately after the brief chat recap, generate the full report as `.docx` (and `.pdf` if supported). Do not ask the user if they want this — just produce it.
-
-Tell the user: "正在為您生成可下載的審計報告..."
-
-### Setup
-
-**Do not run `npm install` as a separate step.** Check whether `docx` is already available first, and only install locally if missing (avoiding global install permission issues):
-
+### 1. 環境檢查
 ```bash
 node -e "require('docx')" 2>/dev/null || npm install docx
 ```
 
-**Then immediately write and run the full report script in the next tool call — do not pause, do not add intermediate steps.** Write the complete JS to a file and execute it in one shot.
-
-### Report design
-
-The report should look like a premium agency deliverable — clean, modern, and visually structured. Use this design system:
-
-**Color palette:**
-- Navy header/cover: `1B2A4A`
-- Accent blue: `2563EB`
-- Score green (8-10): `16A34A`
-- Score amber (5-7): `D97706`
-- Score red (1-4): `DC2626`
-- Light gray background for alternating table rows: `F8F9FA`
-- Medium gray for borders: `E2E8F0`
-- Dark text: `1E293B`
-- Light section background: `EFF6FF`
-
-**Typography:** Arial throughout. Title 36pt bold, H1 24pt bold, H2 18pt bold, H3 14pt bold, body 11pt, footer 9pt.
-
-**Page setup:** US Letter (12240 x 15840 DXA), 1-inch margins on all sides. Content width: 9360 DXA.
-
-### Report structure
-
-Build the report in this order:
-
-#### 1. Cover page (separate section, no header/footer)
-
-Full-page navy background (`1B2A4A`). Keep it clean and simple — everything fits on one page. Use `spaceBefore`/`spaceAfter` on paragraphs to vertically center the content block.
-
-**Top spacer:** ~1800 DXA of space (navy paragraph) to push content toward the center.
-
-**Content (all centered):**
-1. Site domain in white, 36pt bold — the hero element
-2. "SEO / GEO / AEO Audit Report" in light blue (`93C5FD`), 18pt — subtitle
-3. Audit type: "QUICK AUDIT" or "FULL AUDIT" in white, 11pt, with 400 DXA space after
-4. Score table — a simple 3-column table, full width, no visible outer border:
-   - Each cell: colored background based on score (green `16A34A` for 8-10, amber `D97706` for 5-7, red `DC2626` for 1-4), with generous top/bottom cell margins
-   - Row 1: dimension label ("SEO", "GEO", "AEO") in white, 10pt bold, centered
-   - Row 2 (same cell, second paragraph): score number in white, 36pt bold, centered
-   - Row 3 (same cell, third paragraph): status word ("Strong", "On Track", "Needs Work") in white, 9pt italic, centered
-
-**Bottom spacer:** ~1800 DXA of space, then attribution in gray (`94A3B8`), 9pt, centered:
-- Line 1: Audit date
-- Line 2: "ValueCafe SEO / GEO / AEO 審計報告"
-
-Page break after cover.
-
-#### 2. Executive summary
-
-Section heading: "Executive Summary" (Heading 1)
-
-A light-blue shaded box (use a single-cell table with `EFF6FF` background) containing:
-- One paragraph summarizing the site's overall position in 3-5 sentences — what's strong, what's the most urgent issue, and one key opportunity. Be specific to this site, not generic.
-
-Below the box, the scores table:
-
-| Dimension | Score | Status | Key Takeaway |
-|---|---|---|---|
-| SEO | X/10 | [color-coded status] | [one-line summary] |
-| GEO | X/10 | ... | ... |
-| AEO | X/10 | ... | ... |
-| **Combined** | **X/30** | | |
-
-Color-code the Score cells: green fill for 8-10, amber for 5-7, red for 1-4.
-
-#### 4. Pages audited
-
-Section heading: "Pages Audited" (Heading 1)
-
-A simple table listing every page fetched: URL | Page Type | Notes (e.g., "Homepage", "Missing H1", "Rich schema detected"). Use alternating row shading.
-
-#### 5. SEO analysis section
-
-Section heading: "SEO Analysis" (Heading 1), with score subtitle.
-
-Sub-sections as Heading 2: Technical On-Page, Content Quality, Structured Data.
-
-For each finding, use a 3-column table: Signal | Finding | Status. Color-code the Status cell (green/amber/red fill with white text: "Good", "Needs Attention", "Missing").
-
-#### 6. GEO analysis section
-
-Same structure as SEO. Sub-sections: E-E-A-T Assessment, Content for AI Synthesis, Technical GEO.
-
-#### 7. AEO analysis section
-
-Same structure. Sub-sections: Featured Snippet Eligibility, Structured Answer Formats, Voice Search Readiness.
-
-#### 8. Priority recommendations matrix
-
-Section heading: "Priority Recommendations" (Heading 1).
-
-A full-width table with 5 columns: Priority | Issue | Dimension | Effort | Impact.
-
-Color-code the Priority column cells:
-- 🔴 Critical: red fill (`DC2626`), white text
-- 🟠 High: orange fill (`EA580C`), white text
-- 🟡 Medium: amber fill (`D97706`), white text
-- 🟢 Quick Win: green fill (`16A34A`), white text
-
-#### 9. What's working well
-
-Section heading: "What's Working Well" (Heading 1).
-
-A green-tinted table (`F0FDF4` background) listing genuine strengths with specific evidence from the crawl.
-
-#### 10. Glossary (Full Audit only)
-
-Brief definitions of SEO, GEO, and AEO for clients who may be unfamiliar.
-
-### Headers and footers (all pages except cover)
-
-**Header:** Site domain left-aligned, "SEO / GEO / AEO Audit Report" right-aligned. Separated from content by a navy bottom border (`1B2A4A`, size 8).
-
-**Footer:** "ValueCafe SEO / GEO / AEO Audit Report" left-aligned, page number right-aligned. Separated by a gray top border.
-
-### Generate the DOCX
-
-```javascript
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-        Header, Footer, AlignmentType, HeadingLevel, BorderStyle, WidthType,
-        ShadingType, VerticalAlign, PageNumber, PageBreak, TableOfContents,
-        ExternalHyperlink, LevelFormat } = require('docx');
-const fs = require('fs');
-
-const path = require('path');
-
-// ... build document as described above ...
-
-// 確保輸出目錄存在
-const outputDir = path.resolve('./outputs');
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
-
-const outputPath = path.join(outputDir, `seo-audit-${domain}-${date}.docx`);
-
-Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync(outputPath, buffer);
-  console.log(`DOCX written: ${outputPath}`);
-});
-```
-
-Use a filename like `seo-audit-example-com-2025-03-13.docx` (domain with hyphens, ISO date).
-
-### Convert to PDF (選用)
-
-若系統環境中已安裝 LibreOffice (`soffice`)，可執行以下指令轉換為 PDF：
-
-```bash
-soffice --headless --convert-to pdf ./outputs/seo-audit-[domain]-[date].docx --outdir ./outputs/
-```
-若未安裝 LibreOffice，則直接提供 `.docx` 檔案即可。
-
-### Deliver to the user
-
-在對話中以標準 Markdown 連結格式（使用 `file:///` 絕對路徑）提供生成的檔案：
-
-```markdown
-您的審計報告已生成完成：
-- [下載 Word 報告 (DOCX)](file:///完整絕對路徑/outputs/seo-audit-[domain]-[date].docx)
-- [下載 PDF 報告 (若有生成)](file:///完整絕對路徑/outputs/seo-audit-[domain]-[date].pdf)
-```
-
----
-
-## Step 6: Invite next steps
-
-> "您希望針對特定區域進一步深入探討嗎？我也可以為您審計其他子頁面、將此網站與競爭對手進行對比，或在您調整後重新執行審計。"
-
----
-
-## Important principles
-
-**Audit the whole site, not just the starting URL.** The URL the user provides is a starting point, not the whole picture. Always crawl key pages before drawing conclusions. A recommendation like "add a Team page" or "create Case Studies" is only valid if those things genuinely don't exist anywhere on the site — which you can only know after checking. If you found a Team page at /team, say so. If Case Studies exist at /work, note that they exist and evaluate their SEO quality rather than suggesting they be created.
-
-**Be specific, not generic.** Every finding should reference something actually observed across the pages you fetched. Avoid boilerplate advice that could apply to any website. If the title is "Welcome to Our Website" — say that. If a page you fetched is missing an H1 — say which page. Quote actual text when it helps illustrate the point.
-
-**Be honest about what you can and can't assess.** Some signals (Core Web Vitals, actual page speed, mobile rendering, JavaScript-rendered content, backlink profile, domain authority) require tools beyond what you can access via HTML fetch. When this comes up, name the tool that can assess it (e.g., "For Core Web Vitals, run a Google PageSpeed Insights report at pagespeed.web.dev") rather than guessing.
-
-**Calibrate tone to the findings.** If a site is genuinely in good shape, say so — don't manufacture problems. If it has serious issues, communicate urgency without being alarmist.
-
-**GEO and AEO are emerging disciplines.** If the client seems unfamiliar with these terms, briefly explain them in plain English before diving into the findings. A sentence or two is enough.
-
-**Make the report earn its download.** The DOCX/PDF should feel like something an agency charged for — not a printout of the chat. Use the full visual design, be specific with evidence, and make every table and section genuinely informative.
+### 2. 報告視覺與版面規範（Agency Deliverable Design）
+- **色彩系統**：
+  - 深海藍封面與表頭（Navy）：`1B2A4A`
+  - 品牌強調藍（Accent Blue）：`2563EB`
+  - 高分綠（8–10 分）：`16A34A`
+  - 中分橘（5–7 分）：`D97706`
+  - 低分紅（1–4 分）：`DC2626`
+  - 表格交錯淺灰底：`F8F9FA`、邊框灰：`E2E8F0`、深色內文：`1E293B`、摘要區塊淺藍底：`EFF6FF`
+- **字型與尺寸**：Arial / Noto Sans TC，封面主標 36pt Bold、H1 24pt Bold、H2 18pt Bold、H3 14pt Bold、內文 11pt、頁首頁尾 9pt。
+- **報告章節順序**：
+  1. **封面頁（Cover Page）**：滿版深海藍底（`1B2A4A`），置中呈現網域名稱、「SEO / GEO / AEO 深度審計報告」、審計類型、三維度彩色分數卡，底部標註審計日期與 **「PlayPlus 普魯士國際 SEO / GEO / AEO 審計報告」**。
+  2. **執行摘要（Executive Summary）**：淺藍底重點框（3～5 句話具體總結網站現況、最迫切問題與最大機會點）＋ 三維度與總分（X/30）總表。
+  3. **審核頁面清單（Pages Audited）**：列出所有檢測頁面的路徑、頁面類型與關鍵發現。
+  4. **SEO 深度分析（SEO Analysis）**：分為 Technical On-Page、Content Quality、Structured Data 三張檢測表（欄位：檢測信號｜實際發現｜狀態評級）。
+  5. **GEO 深度分析（GEO Analysis）**：分為 E-E-A-T 評估、AI 合成與引用友善度、Technical GEO 三張檢測表。
+  6. **AEO 深度分析（AEO Analysis）**：分為 精選摘要適格性、結構化問答格式、語音與對話搜尋準備度 三張檢測表。
+  7. **優先改善建議矩陣（Priority Recommendations Matrix）**：5 欄式全寬表格（優先級〔🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Quick Win〕｜問題與具體位置｜所屬維度｜執行難度｜預期影響）。
+  8. **現有優勢亮點（What's Working Well）**：淺綠底（`F0FDF4`）表格，具體列出網站目前已落實良好的項目與實證。
+  9. **專有名詞說明（Glossary，完整審計專用）**：簡明解釋 SEO、GEO、AEO 對企業商業成長的意義。
+- **頁首與頁尾**：
+  - 頁首：左側網域名稱，右側「SEO / GEO / AEO Audit Report」。
+  - 頁尾：左側「PlayPlus 普魯士國際 SEO / GEO / AEO Audit Report」，右側頁碼。
+
+### 3. 交付報告連結
+於對話中提供標準 `file:///` 絕對路徑連結供使用者點擊下載，並在結尾主動詢問：
+> 「您希望針對特定區域進一步深入探討或直接由我協助修改對應的網頁原始碼嗎？我也可以為您審計其他子頁面，或在調整完成後重新執行複檢。」

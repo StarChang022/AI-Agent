@@ -1,7 +1,7 @@
 ---
 name: seo-geo-aeo
 description: >
-  Full-featured SEO, GEO, and AEO website audit tool. Analyzes any URL or website for Search Engine Optimization (SEO), Generative Engine Optimization (GEO — for AI-powered search engines like Perplexity, ChatGPT Search, and Gemini), and Answer Engine Optimization (AEO — for featured snippets and voice search). Use this skill whenever a user provides a URL, domain, or website and asks about search performance, SEO issues, rankings, AI search readiness, answer engine visibility, meta tags, schema markup, content quality, or visibility in search. Also trigger when the user asks to "audit my site", "check my SEO", "why isn't my site ranking", "optimize for AI search", or any similar request involving a web property and search performance.
+    Full-featured SEO, GEO, and AEO website audit tool. Analyzes any URL or website for Search Engine Optimization (SEO), Generative Engine Optimization (GEO — for AI-powered search engines like Perplexity, ChatGPT Search, and Gemini), and Answer Engine Optimization (AEO — for featured snippets and voice search). Use this skill whenever a user provides a URL, domain, or website and asks about search performance, SEO issues, rankings, AI search readiness, answer engine visibility, meta tags, schema markup, content quality, or visibility in search. Also trigger when the user asks to "audit my site", "check my SEO", "why isn't my site ranking", "optimize for AI search", or any similar request involving a web property and search performance.
 ---
 
 # SEO / GEO / AEO Audit Skill
@@ -82,49 +82,49 @@ Work through each category systematically. Your analysis covers the **whole site
 
 **Technical On-Page & Tracking Integrity:**
 - **Analytics & Tag Manager (GA4 / GTM) Integrity**:
-  - Are GA4 (`gtag.js`, e.g., `G-5PTYPV0S9P`) and Google Tag Manager (`GTM-M6FP6CGL`) installed directly in `<head>`?
-  - **Delayed Loading Anti-Pattern Check**: Flag any `setTimeout` (e.g., 3500ms delay) or user-interaction-gated (`scroll`, `mousemove`, `touchstart`) script loaders wrapping GTM/GA4. Delayed tracking drops fast-bouncing organic readers (resulting in near-zero reported traffic) and breaks Google Search Console (GSC) ownership verification via GTM/GA4.
+    - Are GA4 (`gtag.js`, e.g., `G-5PTYPV0S9P`) and Google Tag Manager (`GTM-M6FP6CGL`) installed directly in `<head>`?
+    - **Delayed Loading Anti-Pattern Check**: Flag any `setTimeout` (e.g., 3500ms delay) or user-interaction-gated (`scroll`, `mousemove`, `touchstart`) script loaders wrapping GTM/GA4. Delayed tracking drops fast-bouncing organic readers (resulting in near-zero reported traffic) and breaks Google Search Console (GSC) ownership verification via GTM/GA4.
 - **Title tag (`<title>`)**: Present? Length (optimal: 50-60 chars)? Front-loads primary keyword + specific case study or stock ticker? Compelling? Duplicate across site?
 - **Meta description**: Present? Length (optimal: 150-160 chars)? Contains CTA and concrete value proposition? Ensure single quotes (`'`) inside descriptions do not prematurely truncate HTML attributes.
 - **Heading hierarchy (`<h1>`–`<h3>`)**:
-  - Is `<h1>` present and singular?
-  - **Front-Loaded Keyword Check**: Does `<h1>` front-load the core search entity, or is it written as a conversational sentence (`"The 1st step in learning value investing is..."`) or an overly broad single word (`"Balance Sheet"`, `"Margin of Safety"`)? Recommend pairing the core concept with a concrete qualifier (`"Margin of Safety in Value Investing: Definition, Formula & Buffett's Rules"`).
-  - Are H2/H3 logical and keyword-relevant without keyword stuffing?
+    - Is `<h1>` present and singular?
+    - **Front-Loaded Keyword Check**: Does `<h1>` front-load the core search entity, or is it written as a conversational sentence (`"The 1st step in learning value investing is..."`) or an overly broad single word (`"Balance Sheet"`, `"Margin of Safety"`)? Recommend pairing the core concept with a concrete qualifier (`"Margin of Safety in Value Investing: Definition, Formula & Buffett's Rules"`).
+    - Are H2/H3 logical and keyword-relevant without keyword stuffing?
 - **URL structure**: Clean and readable? Contains keywords? Avoids stop words and excessive parameters?
 - **Canonical tag**: Present (`<link rel="canonical" href="https://...">`)? Self-referencing with exact protocol and trailing-slash consistency?
 - **Robots meta**: Indexable? Any accidental `noindex`?
 - **Viewport/Mobile meta**: Present for mobile friendliness?
 - **Image alt text**: Images present? Alt text descriptive and keyword-relevant?
 - **Internal links & Orphan Page Check**:
-  - Are all articles stored in subdirectories linked from both the homepage (`index.html`), category hub pages (`/philosophy/`, `/financial/`, `/valuation/`, `/investing/`, `/news/`), and `sitemap.xml`?
-  - Flag any "Orphaned" or "Semi-Orphaned" pages that exist in the repository or `llms.txt` but are missing from homepage sections or `sitemap.xml`.
-  - Check whether breadcrumb links (`Home > Category > Post`) resolve to real HTML index pages rather than returning 404.
+    - Are all articles stored in subdirectories linked from both the homepage (`index.html`), category hub pages (`/philosophy/`, `/financial/`, `/valuation/`, `/investing/`, `/news/`), and `sitemap.xml`?
+    - Flag any "Orphaned" or "Semi-Orphaned" pages that exist in the repository or `llms.txt` but are missing from homepage sections or `sitemap.xml`.
+    - Check whether breadcrumb links (`Home > Category > Post`) resolve to real HTML index pages rather than returning 404.
 - **Open Graph / Twitter Card (`og:image` Absolute Path Check)**:
-  - Are `og:title`, `og:description`, and `og:image` present?
-  - **Absolute URL Rule**: `og:image` and `twitter:image` MUST use full absolute URLs (`https://valuecafe.cc/images/...`) pointing to an existing image file (`200 OK`). Flag relative paths (`../images/...` or `images/...`) and non-existent placeholder filenames (`og-image.jpg`), which break social previews and disqualify pages from **Google Discover**.
+    - Are `og:title`, `og:description`, and `og:image` present?
+    - **Absolute URL Rule**: `og:image` and `twitter:image` MUST use full absolute URLs (`https://valuecafe.cc/images/...`) pointing to an existing image file (`200 OK`). Flag relative paths (`../images/...` or `images/...`) and non-existent placeholder filenames (`og-image.jpg`), which break social previews and disqualify pages from **Google Discover**.
 - **`sitemap.xml` Hygiene Check**:
-  - **No External XSL/CSS**: Flag any cross-domain `<?xml-stylesheet type="text/xsl" href="..."?>` declaration that triggers browser CORS/CSP blocks or parser errors.
-  - **Canonical HTML Only**: Flag non-HTML resources inside `<urlset>` (such as `llms.txt`, `.pdf`, or assets).
-  - **Authentic `<lastmod>`**: Verify `<lastmod>` uses real file/Git modification timestamps in ISO 8601 format rather than identical hardcoded dates across all URLs.
+    - **No External XSL/CSS**: Flag any cross-domain `<?xml-stylesheet type="text/xsl" href="..."?>` declaration that triggers browser CORS/CSP blocks or parser errors.
+    - **Canonical HTML Only**: Flag non-HTML resources inside `<urlset>` (such as `llms.txt`, `.pdf`, or assets).
+    - **Authentic `<lastmod>`**: Verify `<lastmod>` uses real file/Git modification timestamps in ISO 8601 format rather than identical hardcoded dates across all URLs.
 
 **Content Quality & Keyword Intent Strategy:**
 - **Word count**: Substantial content (500+ words for most pages, 1500+ for pillar content)?
 - **Evergreen vs. News Keyword Alignment (Crucial for Niche / YMYL Sites)**:
-  - **Evergreen Educational Pages**: Flag pages targeting ultra-high-difficulty head terms alone (`"What is Free Cash Flow?"`, `"How to Read Financial Statements"`). Recommend the **Concept + Real-World Case Study** formula that leverages examples already in the text (e.g., `"How to Read a 10-K & Financial Statements: Alphabet (GOOGL) Case Study"`, `"Debt-to-Equity Ratio Explained: TSMC vs. Evergreen Marine Case Study"`).
-  - **News & Views / Market Commentary Pages**: Flag newspaper-editorial headlines that omit stock tickers or search questions (`"AI Panic Hits Tech Stocks"`, `"Amazon's $200B Bet"`). Recommend the **Ticker + Event + Moat/Valuation Impact** formula (`"Micron (MU), ServiceNow (NOW) & Microsoft (MSFT) Stock Analysis: Why the AI Panic Is Overblown"`, `"Amazon (AMZN) $200B AI CapEx Analysis: Impact on Free Cash Flow & Moat"`).
+    - **Evergreen Educational Pages**: Flag pages targeting ultra-high-difficulty head terms alone (`"What is Free Cash Flow?"`, `"How to Read Financial Statements"`). Recommend the **Concept + Real-World Case Study** formula that leverages examples already in the text (e.g., `"How to Read a 10-K & Financial Statements: Alphabet (GOOGL) Case Study"`, `"Debt-to-Equity Ratio Explained: TSMC vs. Evergreen Marine Case Study"`).
+    - **News & Views / Market Commentary Pages**: Flag newspaper-editorial headlines that omit stock tickers or search questions (`"AI Panic Hits Tech Stocks"`, `"Amazon's $200B Bet"`). Recommend the **Ticker + Event + Moat/Valuation Impact** formula (`"Micron (MU), ServiceNow (NOW) & Microsoft (MSFT) Stock Analysis: Why the AI Panic Is Overblown"`, `"Amazon (AMZN) $200B AI CapEx Analysis: Impact on Free Cash Flow & Moat"`).
 - **Content freshness signals**: Visible publication (`datePublished`) and update (`dateModified`) dates?
 - **Readability**: Content scannable with subheadings, short paragraphs, bullets, and comparison tables?
 
 **Structured Data (JSON-LD Compliance):**
 - **Schema type accuracy**:
-  - Homepage (`/`): `WebSite` + `Organization`
-  - About page (`/about.html`): `AboutPage` + `Person` / `Organization`
-  - Contact page (`/contact.html`): `ContactPage` (do NOT mislabel as `Article`)
-  - Category hub pages: `CollectionPage` (do NOT mislabel as `Article`)
-  - Individual articles & news posts: `Article` or `BlogPosting`
+    - Homepage (`/`): `WebSite` + `Organization`
+    - About page (`/about.html`): `AboutPage` + `Person` / `Organization`
+    - Contact page (`/contact.html`): `ContactPage` (do NOT mislabel as `Article`)
+    - Category hub pages: `CollectionPage` (do NOT mislabel as `Article`)
+    - Individual articles & news posts: `Article` or `BlogPosting`
 - **Google Rich Results `Article` Required & Recommended Fields**:
-  - Verify every `Article` schema includes: `headline`, complete untruncated `description`, `image` (array of absolute URLs), `datePublished` (ISO 8601), `dateModified` (ISO 8601), `author` (`Person` with `name` and `url`), `publisher` (`Organization` with `name`, `url`, and `logo` `ImageObject`), and `mainEntityOfPage`.
-  - Flag invalid properties pasted onto `Article` (such as `serviceType` or `areaServed`, which belong only to `Service`).
+    - Verify every `Article` schema includes: `headline`, complete untruncated `description`, `image` (array of absolute URLs), `datePublished` (ISO 8601), `dateModified` (ISO 8601), `author` (`Person` with `name` and `url`), `publisher` (`Organization` with `name`, `url`, and `logo` `ImageObject`), and `mainEntityOfPage`.
+    - Flag invalid properties pasted onto `Article` (such as `serviceType` or `areaServed`, which belong only to `Service`).
 
 ### GEO Signals (Generative Engine Optimization)
 
@@ -132,14 +132,14 @@ GEO optimizes for AI-powered search engines (Perplexity, ChatGPT Search, Google 
 
 **E-E-A-T & YMYL (Your Money or Your Life) Compliance:**
 - **Independent Creator E-E-A-T Positioning**:
-  - For finance/investing sites (YMYL), Google and AI engines suppress anonymous sites or sites without clear accountability.
-  - If the author is not a licensed Wall Street institutional analyst, verify whether the site establishes **First-Hand Experience (E)** and **Methodological Transparency (T)** — e.g., positioning as a real-world business owner (running a physical coffee shop + digital tech career) and independent practitioner who translates SEC 10-K filings through a business-owner lens.
+    - For finance/investing sites (YMYL), Google and AI engines suppress anonymous sites or sites without clear accountability.
+    - If the author is not a licensed Wall Street institutional analyst, verify whether the site establishes **First-Hand Experience (E)** and **Methodological Transparency (T)** — e.g., positioning as a real-world business owner (running a physical coffee shop + digital tech career) and independent practitioner who translates SEC 10-K filings through a business-owner lens.
 - **3 Editorial & Research Standards**:
-  - Does the About page explicitly state its research standards? (1. **Primary Sources First**: SEC 10-K/10-Q filings, earnings transcripts, shareholder letters; 2. **Business-Owner Mindset**: unit economics, ROIC, FCF, economic moats; 3. **100% Independent & Hype-Free**: no paid stock promotions or price-target clickbait).
+    - Does the About page explicitly state its research standards? (1. **Primary Sources First**: SEC 10-K/10-Q filings, earnings transcripts, shareholder letters; 2. **Business-Owner Mindset**: unit economics, ROIC, FCF, economic moats; 3. **100% Independent & Hype-Free**: no paid stock promotions or price-target clickbait).
 - **YMYL Mandatory Trust Elements**:
-  - **Author Bio Box**: Present at the bottom of articles, linking to `/about.html`?
-  - **Financial Disclaimer (`投資免責聲明`)**: Explicitly states content is for educational/informational purposes only, not personalized investment advice, and author is not a licensed financial advisor?
-  - **Author Disclosure (`利益揭露`)**: Explicitly discloses whether the author holds or may trade positions in discussed equities?
+    - **Author Bio Box**: Present at the bottom of articles, linking to `/about.html`?
+    - **Financial Disclaimer (`投資免責聲明`)**: Explicitly states content is for educational/informational purposes only, not personalized investment advice, and author is not a licensed financial advisor?
+    - **Author Disclosure (`利益揭露`)**: Explicitly discloses whether the author holds or may trade positions in discussed equities?
 - **Contact & Brand Entity**: Accessible contact channel (`mailto:` or contact form) and clean `Organization` / `Person` schema with `sameAs` social links?
 
 **Content for AI Synthesis:**
@@ -262,10 +262,10 @@ Full-page navy background (`1B2A4A`). Keep it clean and simple — everything fi
 2. "SEO / GEO / AEO Audit Report" in light blue (`93C5FD`), 18pt — subtitle
 3. Audit type: "QUICK AUDIT" or "FULL AUDIT" in white, 11pt, with 400 DXA space after
 4. Score table — a simple 3-column table, full width, no visible outer border:
-   - Each cell: colored background based on score (green `16A34A` for 8-10, amber `D97706` for 5-7, red `DC2626` for 1-4), with generous top/bottom cell margins
-   - Row 1: dimension label ("SEO", "GEO", "AEO") in white, 10pt bold, centered
-   - Row 2 (same cell, second paragraph): score number in white, 36pt bold, centered
-   - Row 3 (same cell, third paragraph): status word ("Strong", "On Track", "Needs Work") in white, 9pt italic, centered
+    - Each cell: colored background based on score (green `16A34A` for 8-10, amber `D97706` for 5-7, red `DC2626` for 1-4), with generous top/bottom cell margins
+    - Row 1: dimension label ("SEO", "GEO", "AEO") in white, 10pt bold, centered
+    - Row 2 (same cell, second paragraph): score number in white, 36pt bold, centered
+    - Row 3 (same cell, third paragraph): status word ("Strong", "On Track", "Needs Work") in white, 9pt italic, centered
 
 **Bottom spacer:** ~1800 DXA of space, then attribution in gray (`94A3B8`), 9pt, centered:
 - Line 1: Audit date
@@ -357,14 +357,14 @@ const path = require('path');
 // 確保輸出目錄存在
 const outputDir = path.resolve('./outputs');
 if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
+    fs.mkdirSync(outputDir, { recursive: true });
 }
 
 const outputPath = path.join(outputDir, `seo-audit-${domain}-${date}.docx`);
 
 Packer.toBuffer(doc).then(buffer => {
-  fs.writeFileSync(outputPath, buffer);
-  console.log(`DOCX written: ${outputPath}`);
+    fs.writeFileSync(outputPath, buffer);
+    console.log(`DOCX written: ${outputPath}`);
 });
 ```
 
