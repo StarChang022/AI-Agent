@@ -30,7 +30,7 @@ STOCK_ID = "TPEx"
 
 # 關注名單 Google Sheet（股票清單來源）
 WATCHLIST_URL   = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'
-CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json'
+CREDENTIAL_PATH = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/rosy-zoo-447904-j1-a600c9e990ca.json'
 TEMP_DIR        = '/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⌚️暫存/for_python'
 
 

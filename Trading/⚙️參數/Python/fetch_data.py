@@ -4,7 +4,7 @@ import json
 import os
 
 # Set up gspread client
-gc = gspread.service_account(filename='/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json')
+gc = gspread.service_account(filename='/Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/rosy-zoo-447904-j1-a600c9e990ca.json')
 
 links = {
     '大盤': 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1966091264#gid=1966091264',
