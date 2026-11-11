@@ -26,12 +26,12 @@
 
 # Step 5
 
-此步驟為「波段交易決策」的**分析**。
+此步驟為「交易決策_Mark-Minervini」的**分析**。
 
-請載入並完整執行 [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/Command/波段交易決策_1_分析.md]] 任務。
+請載入並完整執行 [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/Command/交易決策_Mark-Minervini_1_分析.md]] 任務。
 
 # Step 6
 
-此步驟為「波段交易決策」的**複審**。
+此步驟為「交易決策_Mark-Minervini」的**複審**。
 
-請載入並完整執行 [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/Command/波段交易決策_2_複審.md]] 任務。
+請載入並完整執行 [[Users/starchang/Documents/CloudFolder/GitHub/AI-Agent/Trading/⚙️參數/Command/交易決策_Mark-Minervini_2_複審.md]] 任務。
