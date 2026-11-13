@@ -1,0 +1,15 @@
+<%= @name %> 您好，
+
+您的請款簽核已駁回
+類別：<%= @reimbursement.category&.name %>
+金額：<%= money(@reimbursement.amount) %>
+<% if @reimbursement.description.present? -%>
+描述：<%= @reimbursement.description %>
+<% end -%>
+<% if @comment -%>
+駁回原因：<%= @comment %>
+<% end -%>
+
+重新提交：<%= @url %>
+
+—— Quickey Team

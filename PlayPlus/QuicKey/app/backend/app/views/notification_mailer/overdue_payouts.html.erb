@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @name %> 您好，</p>
+    <p>有待付款已逾期 <%= @max_days %> 天</p>
+    <p>待付款項：</p>
+    <ul>
+      <% @lines.each do |line| %>
+        <li><%= line %></li>
+      <% end %>
+    </ul>
+    <p><a href="<%= @url %>">立即發放</a></p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

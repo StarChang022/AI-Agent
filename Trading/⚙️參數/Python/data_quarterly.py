@@ -36,7 +36,7 @@ from google.oauth2.service_account import Credentials
 # ═══════════════════════════════════════════════════
 BASE_DIR   = Path(__file__).resolve().parents[2]          # Trading/
 CACHE_DIR  = BASE_DIR / "⌚️暫存" / "for_python"
-GCP_JSON   = BASE_DIR / "⚙️參數設定" / "rosy-zoo-447904-j1-a600c9e990ca.json"
+GCP_JSON   = BASE_DIR / "⚙️參數" / "rosy-zoo-447904-j1-a600c9e990ca.json"
 
 # 關注名單 Google Sheet（股票清單來源）
 WATCHLIST_URL = 'https://docs.google.com/spreadsheets/d/1MuJgPwiJpjyU8LXevCxUKsbsLPpMT7H9J2wnPcVqIpE/edit?gid=1951214900#gid=1951214900'

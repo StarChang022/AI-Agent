@@ -1,0 +1,13 @@
+<%= @name %> 您好，
+
+您有新的待簽核項目
+申請人：<%= @reimbursement.employee.name %>
+類別：<%= @reimbursement.category&.name %>
+金額：<%= money(@reimbursement.amount) %>
+<% if @reimbursement.description.present? -%>
+描述：<%= @reimbursement.description %>
+<% end -%>
+
+查看詳情：<%= @url %>
+
+—— Quickey Team

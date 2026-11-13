@@ -44,7 +44,7 @@ def get_gspread_client(credential_path: str) -> gspread.Client:
     resolved_path = credential_path
     if not os.path.exists(resolved_path):
         fallbacks = [
-            'Trading/⚙️參數設定/rosy-zoo-447904-j1-a600c9e990ca.json',
+            'Trading/⚙️參數/rosy-zoo-447904-j1-a600c9e990ca.json',
             '../rosy-zoo-447904-j1-a600c9e990ca.json',
             'rosy-zoo-447904-j1-a600c9e990ca.json',
         ]

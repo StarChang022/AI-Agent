@@ -1,0 +1,13 @@
+<%= @name %> 您好，
+
+您的請款簽核已通過
+類別：<%= @reimbursement.category&.name %>
+金額：<%= money(@reimbursement.amount) %>
+<% if @reimbursement.description.present? -%>
+描述：<%= @reimbursement.description %>
+<% end -%>
+預計發放日期：<%= @planned_payout_date %>
+
+查看請款進度：<%= @url %>
+
+—— Quickey Team

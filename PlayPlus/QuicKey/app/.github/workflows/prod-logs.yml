@@ -1,0 +1,101 @@
+name: Production logs
+
+# 用途：在 GitHub 上查看正式站容器的紀錄（docker compose logs），不用登入主機。
+#
+# 用法：GitHub → Actions → 「Production logs」→ Run workflow，填：
+#   - service：要看哪個容器（backend / web / db），預設 backend
+#   - tail：最後幾行，預設 500（上限 5000）
+#   - grep：關鍵字，選填；有填時只顯示含這個字的行，以及每處之後的 40 行
+#           （當一般文字比對，不是正規表示式；分大小寫）
+#   例：查通知 API 的錯誤 → service=backend、tail=3000、grep=/api/notifications
+#
+# ⚠️ 紀錄裡可能有使用者資料（Email、姓名、請求參數等），只在除錯時使用。
+#    執行結果會留在 Actions 頁面，有 repo 權限的人都看得到；查完可到該次執行頁面刪除紀錄。
+#
+# 安全：
+#   - 只讀紀錄，不執行任何會改變主機狀態的指令（不 up / restart / 寫檔）。
+#   - 輸入參數一律經環境變數傳入、在腳本裡驗證後才使用，不直接拼進指令（避免指令注入）。
+#     關鍵字先轉成 base64 再傳到主機，引號、分號等字元都不會被 shell 解讀。
+#   - 不讀取、不輸出 .env 或任何 secret。
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "容器"
+        type: choice
+        options: [backend, web, db]
+        default: backend
+      tail:
+        description: "最後幾行（1～5000）"
+        type: string
+        default: "500"
+      grep:
+        description: "關鍵字（選填）"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  logs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 檢查輸入
+        id: input
+        env:
+          IN_SERVICE: ${{ inputs.service }}
+          IN_TAIL: ${{ inputs.tail }}
+          IN_GREP: ${{ inputs.grep }}
+        run: |
+          set -eu
+          case "$IN_SERVICE" in
+            backend|web|db) ;;
+            *) echo "✗ service 只能是 backend / web / db"; exit 1 ;;
+          esac
+          if ! [[ "$IN_TAIL" =~ ^[0-9]{1,4}$ ]] || [ "$IN_TAIL" -lt 1 ] || [ "$IN_TAIL" -gt 5000 ]; then
+            echo "✗ tail 必須是 1～5000 的整數"
+            exit 1
+          fi
+          # base64 只含英數與 + / =，到主機再解回原字串
+          echo "grep_b64=$(printf '%s' "$IN_GREP" | base64 -w0)" >> "$GITHUB_OUTPUT"
+
+      - name: 讀取紀錄
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          LOG_SERVICE: ${{ inputs.service }}
+          LOG_TAIL: ${{ inputs.tail }}
+          LOG_GREP_B64: ${{ steps.input.outputs.grep_b64 }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: LOG_SERVICE,LOG_TAIL,LOG_GREP_B64
+          script: |
+            set -eu
+            # 主機端再驗一次，避免參數在傳遞過程被改動
+            LOG_SERVICE="${LOG_SERVICE:-}"; LOG_TAIL="${LOG_TAIL:-}"; LOG_GREP_B64="${LOG_GREP_B64:-}"
+            case "$LOG_SERVICE" in
+              backend|web|db) ;;
+              *) echo "✗ service 不正確"; exit 1 ;;
+            esac
+            case "$LOG_TAIL" in
+              ''|*[!0-9]*) echo "✗ tail 不正確"; exit 1 ;;
+            esac
+            case "$LOG_GREP_B64" in
+              *[!A-Za-z0-9+/=]*) echo "✗ grep 不正確"; exit 1 ;;
+            esac
+
+            cd ~/deploy/quickey
+
+            if [ -z "$LOG_GREP_B64" ]; then
+              docker compose -f compose.prod.yml logs --no-color --timestamps --tail="$LOG_TAIL" "$LOG_SERVICE"
+            else
+              PATTERN="$(printf '%s' "$LOG_GREP_B64" | base64 -d)"
+              # grep 找不到時回傳 1，不當成失敗
+              docker compose -f compose.prod.yml logs --no-color --timestamps --tail="$LOG_TAIL" "$LOG_SERVICE" \
+                | grep -F -A40 -e "$PATTERN" || echo "（最後 $LOG_TAIL 行裡沒有符合關鍵字的紀錄）"
+            fi

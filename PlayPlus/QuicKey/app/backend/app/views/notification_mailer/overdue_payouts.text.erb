@@ -1,0 +1,11 @@
+<%= @name %> 您好，
+
+有待付款已逾期 <%= @max_days %> 天
+待付款項：
+<% @lines.each do |line| -%>
+・<%= line %>
+<% end -%>
+
+立即發放：<%= @url %>
+
+—— Quickey Team

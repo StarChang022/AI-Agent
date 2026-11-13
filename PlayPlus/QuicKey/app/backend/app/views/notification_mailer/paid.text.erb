@@ -1,0 +1,14 @@
+<%= @name %> 您好，
+
+您的請款已發放
+類別：<%= @reimbursement.category&.name %>
+金額：<%= money(@reimbursement.amount) %>
+<% if @reimbursement.description.present? -%>
+描述：<%= @reimbursement.description %>
+<% end -%>
+發放方式：<%= @payment_method %>
+發放日期：<%= @paid_on %>
+
+查看詳情：<%= @url %>
+
+—— Quickey Team

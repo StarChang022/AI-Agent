@@ -1,0 +1,10 @@
+node_modules
+dist
+*.local
+
+# Cloudflare：本地 secret 與 wrangler 暫存
+.dev.vars
+.wrangler
+
+# vite-ssg 建置暫存
+.vite-ssg-temp

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @name %> 您好，</p>
+    <p>您有新的待簽核項目</p>
+    <p>
+      申請人：<%= @reimbursement.employee.name %><br>
+      類別：<%= @reimbursement.category&.name %><br>
+      金額：<%= money(@reimbursement.amount) %>
+      <% if @reimbursement.description.present? %><br>描述：<%= @reimbursement.description %><% end %>
+    </p>
+    <p><a href="<%= @url %>">查看詳情</a></p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

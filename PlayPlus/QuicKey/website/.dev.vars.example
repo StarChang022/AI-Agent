@@ -1,0 +1,13 @@
+# 複製成 .dev.vars 再填值（.dev.vars 不進 git）。給 wrangler pages dev 用的伺服器端變數。
+# Turnstile 官方測試金鑰：1x… 一律通過；2x0000000000000000000000000000000AA 一律失敗
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+RESEND_API_KEY=re_xxxxxxxx
+# 網域還沒在 Resend 驗證前，寄件人只能用 onboarding@resend.dev，收件人只能是 Resend 帳號本人的 Email
+MAIL_FROM=Quickey 官網 <onboarding@resend.dev>
+MAIL_TO=service@playplus.com.tw
+# 測試用試算表的 Apps Script 網址與密碼；留空就略過備份
+SHEET_WEBHOOK_URL=
+SHEET_TOKEN=
+# 試算表備份失敗時的通知收件人（可用逗號分隔多個）；留空就不寄通知
+# 網域還沒驗證前，這裡也只能填 Resend 帳號本人的 Email
+ALERT_TO=

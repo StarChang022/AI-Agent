@@ -1,0 +1,125 @@
+class Income < ApplicationRecord
+  include AccountLedgerEntry
+
+  # 已開立收入（docs/資料模型.md §2.6）。欄位與 Expense（§2.2）對應，差異：
+  # - customer 必填（對應 Expense.vendor）
+  # - 收款狀態：collection_status / collected_at（對應 Expense.payout_status / paid_at）
+  # - 類別必為 kind='income'（§3.4）
+  # items 以 jsonb 內嵌陣列儲存；圖檔為實體檔案（AttachmentFiles）。
+
+  DOCUMENT_TYPES       = %w[invoice receipt].freeze
+  TAX_RATES            = %w[business_5 exempt_0].freeze
+  COLLECTION_STATUSES  = %w[uncollected collected].freeze
+
+  belongs_to :company
+  belongs_to :category
+  belongs_to :created_by, class_name: "User"
+  # 固定收入範本產生時指回；範本永久刪除後為 nil，recurring_period 保留。
+  belongs_to :recurring_template, optional: true
+  # 圖檔（docs/資料模型.md §2.4）。永久刪除時拿掉，沒有其他紀錄使用的實體檔案才刪。
+  has_many_attached :attachments
+
+  validates :document_type,     inclusion: { in: DOCUMENT_TYPES }
+  validates :tax_rate,          inclusion: { in: TAX_RATES }
+  validates :collection_status, inclusion: { in: COLLECTION_STATUSES }
+  validates :customer, presence: true
+  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :date,   presence: true
+  validates :planned_collection_date, presence: true
+  validates :invoice_date, presence: { message: "發票須填發票日期" }, if: -> { document_type == "invoice" }
+
+  # 日期規則（PRD 第 23 條）：收據沒有發票日期；應收日期預設為發生日期。改發生日期但
+  # 沒有一起送應收日期時（匯入、只改發生日期），應收日期若等於原本的發生日期就一起改，
+  # 不同（使用者改過）就不動；有送應收日期就照存。收入不看公司付款日。
+  before_validation :clear_invoice_date_for_receipt
+  before_validation :follow_date_for_planned_collection
+
+  validate :category_belongs_to_same_company
+  validate :category_kind_is_income
+  validate :tax_id_format
+
+  scope :uncollected, -> { where(collection_status: "uncollected") }
+  scope :collected,   -> { where(collection_status: "collected") }
+  scope :settled,     -> { collected }
+  scope :recurring,   -> { where.not(recurring_period: nil) }
+  scope :non_recurring, -> { where(recurring_period: nil) }
+  scope :user_entered,  -> { non_recurring }
+  scope :missing_invoice_no, -> { where(document_type: "invoice", invoice_no: [ nil, "" ]) }
+
+  # 軟刪：kept 一般列表 / discarded 垃圾桶。不加 default_scope，由 controller 明確選擇。
+  scope :kept,      -> { where(deleted_at: nil) }
+  scope :discarded, -> { where.not(deleted_at: nil) }
+
+  def self.cash_date = :collected_at
+
+  # 使用者送出的應收日期：照存，不套用跟著發生日期的規則。
+  def assign_planned_collection_date(value)
+    self.planned_collection_date = value
+    @planned_collection_date_given = true
+  end
+
+  def discarded?
+    deleted_at.present?
+  end
+
+  def discard!
+    return self if discarded?
+    update!(deleted_at: Time.current)
+  end
+
+  def restore_from_trash!
+    return self unless discarded?
+    update!(deleted_at: nil)
+  end
+
+  # create / purge 寫入 AuditLog 的核心快照；一般新增與 Excel 匯入共用。
+  def audit_snapshot
+    snapshot = {
+      customer:          customer,
+      amount:            amount&.to_f,
+      date:              date&.iso8601,
+      invoice_date:      invoice_date&.iso8601,
+      planned_collection_date: planned_collection_date&.iso8601,
+      category_id:       category_id&.to_s,
+      category_name:     category&.name,
+      account_id:        account_id&.to_s,
+      account_name:      account&.name,
+      note:              note,
+      collection_status: collection_status,
+      collected_at:      collected_at&.iso8601
+    }
+    files = AttachmentFiles.audit_details(self)
+    files ? snapshot.merge(attachments: files) : snapshot
+  end
+
+  private
+
+  def clear_invoice_date_for_receipt
+    self.invoice_date = nil unless document_type == "invoice"
+  end
+
+  def follow_date_for_planned_collection
+    return if @planned_collection_date_given && planned_collection_date.present?
+    if planned_collection_date.nil? || (date_changed? && planned_collection_date == date_was)
+      self.planned_collection_date = date
+    end
+  end
+
+  # 跨公司引用是多租戶隔離漏洞——守門（比照 Expense）。
+  def category_belongs_to_same_company
+    return if company_id.blank? || category.nil?
+    errors.add(:category_id, "belongs to another company") if category.company_id != company_id
+  end
+
+  # 收入必綁 kind='income' 的類別。若 Category 尚未儲存可能 nil，由 presence/belongs_to 先擋。
+  def category_kind_is_income
+    return if category.nil?
+    errors.add(:category_id, "必須為收入類別") unless category.kind == "income"
+  end
+
+  # 買方統編一律選填（開給個人的發票沒有買方統編）；有填就要是 8 碼數字。
+  def tax_id_format
+    return if tax_id.blank?
+    errors.add(:tax_id, "統編應為 8 碼數字") unless tax_id.to_s.match?(/\A\d{8}\z/)
+  end
+end

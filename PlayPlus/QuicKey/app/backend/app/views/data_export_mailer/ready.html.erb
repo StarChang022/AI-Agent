@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @user.name %> 您好，</p>
+    <p>您的資料匯出已完成</p>
+    <p>
+      匯出範圍：<%= @export.scope_label %><br>
+      筆數：<%= @export.record_count %> 筆<br>
+      下載期限：<%= @expires_at %> 前
+    </p>
+    <p>下載時需以管理員帳號登入；超過下載期限後連結失效，請重新匯出。</p>
+    <p><a href="<%= @url %>">下載檔案</a></p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

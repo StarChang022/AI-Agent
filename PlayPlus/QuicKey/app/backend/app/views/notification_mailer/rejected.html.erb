@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @name %> 您好，</p>
+    <p>您的請款簽核已駁回</p>
+    <p>
+      類別：<%= @reimbursement.category&.name %><br>
+      金額：<%= money(@reimbursement.amount) %>
+      <% if @reimbursement.description.present? %><br>描述：<%= @reimbursement.description %><% end %>
+      <% if @comment %><br>駁回原因：<%= @comment %><% end %>
+    </p>
+    <p><a href="<%= @url %>">重新提交</a></p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>

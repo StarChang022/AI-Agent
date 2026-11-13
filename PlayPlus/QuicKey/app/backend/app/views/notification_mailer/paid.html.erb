@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <p><%= @name %> 您好，</p>
+    <p>您的請款已發放</p>
+    <p>
+      類別：<%= @reimbursement.category&.name %><br>
+      金額：<%= money(@reimbursement.amount) %><br>
+      <% if @reimbursement.description.present? %>描述：<%= @reimbursement.description %><br><% end %>
+      發放方式：<%= @payment_method %><br>
+      發放日期：<%= @paid_on %>
+    </p>
+    <p><a href="<%= @url %>">查看詳情</a></p>
+    <p>—— Quickey Team</p>
+  </body>
+</html>
