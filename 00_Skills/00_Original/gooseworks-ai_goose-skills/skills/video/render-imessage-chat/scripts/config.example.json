@@ -1,0 +1,79 @@
+{
+  "_example_note": "Fictional worked example; choose new contact names, phone time, copy and brand facts for each customer. Runs with no chat images or background image and no paid calls; attachments may be inserted anywhere in authored order.",
+  "brand_name": "Sample Goods",
+  "theme": "dark",
+  "dynamic_island": true,
+  "width": 1080,
+  "height": 1920,
+  "safe_area": true,
+  "thread": {
+    "mode": "dm",
+    "header": {
+      "style": "conversation",
+      "unread": 0
+    },
+    "participants": [
+      {
+        "id": "me",
+        "name": "Me",
+        "self": true
+      },
+      {
+        "id": "friend",
+        "name": "Maya",
+        "color": "#E07A8B"
+      }
+    ],
+    "messages": [
+      {
+        "id": "m1",
+        "type": "text",
+        "from": "friend",
+        "text": "where did you find that tote?"
+      },
+      {
+        "id": "m2",
+        "type": "text",
+        "from": "me",
+        "text": "sample goods 😄",
+        "delivered": true
+      },
+      {
+        "id": "m3",
+        "type": "typing",
+        "from": "friend"
+      },
+      {
+        "id": "m4",
+        "type": "text",
+        "from": "friend",
+        "text": "send me the link pls"
+      },
+      {
+        "id": "m5",
+        "type": "text",
+        "from": "me",
+        "text": "samplegoods.example",
+        "delivered": true
+      },
+      {
+        "id": "m6",
+        "type": "text",
+        "from": "friend",
+        "text": "checking it out 👀"
+      }
+    ],
+    "clock": "10:24"
+  },
+  "end_card": {
+    "bg": "#faf7f2",
+    "fg": "#1a1a1d",
+    "cta_bg": "#1a1a1d",
+    "cta_fg": "#ffffff",
+    "wordmark_text": "Sample Goods",
+    "stars": 0,
+    "trust_trio": [],
+    "cta_text": "Explore the collection",
+    "dwell_sec": 2.5
+  }
+}

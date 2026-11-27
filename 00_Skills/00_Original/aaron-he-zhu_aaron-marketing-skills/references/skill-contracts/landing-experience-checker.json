@@ -1,0 +1,349 @@
+{
+  "$schema": "../skill-machine-contract.schema.json",
+  "completion_contract": {
+    "clauses": [
+      {
+        "clause_id": "done-01",
+        "condition_kind": "success",
+        "extraction_status": "classified",
+        "requirement": "required",
+        "source": {
+          "end_char": 186,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Skill Contract/Done when",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 0
+        },
+        "text": "all five checks are run and marked Pass / Partial / Fix, every Fix names the specific gap (not \"improve the page\"), and each failing check routes to the one sibling that owns the repair."
+      }
+    ],
+    "done_when": "all five checks are run and marked Pass / Partial / Fix, every Fix names the specific gap (not \"improve the page\"), and each failing check routes to the one sibling that owns the repair.",
+    "extraction_status": "classified",
+    "source": {
+      "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+      "section": "Skill Contract/Done when",
+      "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7"
+    }
+  },
+  "context_hints": {
+    "bundle_references": [
+      {
+        "path": "CONNECTORS.md",
+        "reason_code": "authored-reference",
+        "requirement": "optional",
+        "sha256": "68001b6af3f0fdf15f4110f7db7a09b557c5ffbc35553d59a93e78289f953809",
+        "source_line": 36
+      },
+      {
+        "path": "SECURITY.md",
+        "reason_code": "authored-reference",
+        "requirement": "optional",
+        "sha256": "324743c5bf447d990888f816fbe286ac8953d28401f8f02d199ceb08f4852720",
+        "source_line": 42
+      },
+      {
+        "path": "references/roas-benchmark.md",
+        "reason_code": "authored-reference",
+        "requirement": "optional",
+        "sha256": "2aef010db6ed59a7163fa07f2acbff00a377638f9e037951cda9ad5ffe097c1a",
+        "source_line": 63
+      },
+      {
+        "path": "references/skill-contract.md",
+        "reason_code": "authored-reference",
+        "requirement": "optional",
+        "sha256": "9e6ef5e4e51a46bcb5335d453bf1d448f150a3ac2358554f67dd156eac26b0ff",
+        "source_line": 32
+      },
+      {
+        "path": "scripts/connectors/README.md",
+        "reason_code": "authored-reference",
+        "requirement": "optional",
+        "sha256": "755816582373b846b95783c125c6d9cd57d5c20bbf4af97bc00aecdbaa557c56",
+        "source_line": 38
+      }
+    ],
+    "project_paths": []
+  },
+  "contract_id": "skill:landing-experience-checker",
+  "control_requirements": [],
+  "handoff_contract": {
+    "extraction_status": "partially-classified",
+    "items": [
+      {
+        "condition": null,
+        "extraction_status": "classified",
+        "item_id": "handoff-01",
+        "kind": "primary",
+        "source": {
+          "end_char": 214,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 0
+        },
+        "target_skills": [
+          "ad-account-auditor"
+        ],
+        "text": "- **Primary**: [ad-account-auditor](../../activate/ad-account-auditor/SKILL.md) — once the page passes preflight, score the account against ROAS and run the launch go/no-go (it computes the RQS and the O1/O2 vetoes"
+      },
+      {
+        "condition": null,
+        "extraction_status": "unclassified",
+        "item_id": "handoff-02",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 237,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 216
+        },
+        "target_skills": [],
+        "text": "this skill does not)."
+      },
+      {
+        "condition": "If a check is marked Fix (page copy, layout, or form)**: [landing-optimizer](../../../influencer/report/landing-optimizer/SKILL.md) — it owns the actual page repair",
+        "extraction_status": "classified",
+        "item_id": "handoff-03",
+        "kind": "outcome",
+        "source": {
+          "end_char": 406,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 238
+        },
+        "target_skills": [
+          "landing-optimizer"
+        ],
+        "text": "- **If a check is marked Fix (page copy, layout, or form)**: [landing-optimizer](../../../influencer/report/landing-optimizer/SKILL.md) — it owns the actual page repair"
+      },
+      {
+        "condition": "after the fix.",
+        "extraction_status": "unclassified",
+        "item_id": "handoff-04",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 450,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 408
+        },
+        "target_skills": [],
+        "text": "return here to re-preflight after the fix."
+      },
+      {
+        "condition": "If the live-offer wording on the page drifted from the registered offer**: [offer-claims-registry](../../../protocol/offer-claims-registry/SKILL.md) — reconcile the canonical offer terms, then re-run the message-match check.",
+        "extraction_status": "partially-classified",
+        "item_id": "handoff-05",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 679,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 451
+        },
+        "target_skills": [
+          "offer-claims-registry"
+        ],
+        "text": "- **If the live-offer wording on the page drifted from the registered offer**: [offer-claims-registry](../../../protocol/offer-claims-registry/SKILL.md) — reconcile the canonical offer terms, then re-run the message-match check."
+      },
+      {
+        "condition": "If neither ad copy nor page copy is available** (NEEDS_INPUT): stop and ask for the destination URL and the ad headlines",
+        "extraction_status": "unclassified",
+        "item_id": "handoff-06",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 804,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 680
+        },
+        "target_skills": [],
+        "text": "- **If neither ad copy nor page copy is available** (NEEDS_INPUT): stop and ask for the destination URL and the ad headlines"
+      },
+      {
+        "condition": null,
+        "extraction_status": "unclassified",
+        "item_id": "handoff-07",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 844,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 806
+        },
+        "target_skills": [],
+        "text": "do not fabricate a continuity verdict."
+      },
+      {
+        "condition": null,
+        "extraction_status": "unclassified",
+        "item_id": "handoff-08",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 975,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 845
+        },
+        "target_skills": [],
+        "text": "- Global visited-set / `max-depth: 3` termination contract from [skill-contract.md](../../../references/skill-contract.md) applies"
+      },
+      {
+        "condition": null,
+        "extraction_status": "unclassified",
+        "item_id": "handoff-09",
+        "kind": "unclassified",
+        "source": {
+          "end_char": 1051,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Next Best Skill",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 977
+        },
+        "target_skills": [],
+        "text": "stop once the page is auditor-ready or a Fix has been routed to its owner."
+      }
+    ],
+    "next_best": "- **Primary**: [ad-account-auditor](../../activate/ad-account-auditor/SKILL.md) — once the page passes preflight, score the account against ROAS and run the launch go/no-go (it computes the RQS and the O1/O2 vetoes; this skill does not).\n- **If a check is marked Fix (page copy, layout, or form)**: [landing-optimizer](../../../influencer/report/landing-optimizer/SKILL.md) — it owns the actual page repair; return here to re-preflight after the fix.\n- **If the live-offer wording on the page drifted from the registered offer**: [offer-claims-registry](../../../protocol/offer-claims-registry/SKILL.md) — reconcile the canonical offer terms, then re-run the message-match check.\n- **If neither ad copy nor page copy is available** (NEEDS_INPUT): stop and ask for the destination URL and the ad headlines; do not fabricate a continuity verdict.\n- Global visited-set / `max-depth: 3` termination contract from [skill-contract.md](../../../references/skill-contract.md) applies; stop once the page is auditor-ready or a Fix has been routed to its owner.",
+    "summary": "> Emit the standard shape from [skill-contract.md §Handoff Summary Format](../../../references/skill-contract.md).",
+    "summary_ref": {
+      "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+      "section": "Skill Contract/Handoff Summary",
+      "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7"
+    },
+    "summary_source": "skill-section",
+    "target_skills": [
+      "ad-account-auditor",
+      "landing-optimizer",
+      "offer-claims-registry"
+    ]
+  },
+  "identity": {
+    "class": null,
+    "discipline": "ad",
+    "name": "landing-experience-checker",
+    "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+    "phase": "orchestrate",
+    "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+    "version": "20.2.0"
+  },
+  "input_contract": {
+    "argument_hint": "<destination URL> [ad copy/headlines] [goal: dr|prospecting]",
+    "clauses": [
+      {
+        "clause_id": "read-01",
+        "extraction_status": "partially-classified",
+        "kind": "evidence-input",
+        "requirement": "unclassified",
+        "source": {
+          "end_char": 235,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Skill Contract/Reads",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 0
+        },
+        "text": "the destination URL (or its pasted copy), the ad headlines/hooks that point at it, the promised offer/claim, ROAS profile (`direct-response|prospecting|incremental-profit`), and any `~~page speed` (PageSpeed/CrUX) read the user can run"
+      },
+      {
+        "clause_id": "read-02",
+        "extraction_status": "unclassified",
+        "kind": "unclassified",
+        "requirement": "unclassified",
+        "source": {
+          "end_char": 431,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Skill Contract/Reads",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 237
+        },
+        "text": "accepted offer wording from the claims projection owned by [offer-claims-registry](../../../protocol/offer-claims-registry/SKILL.md), when present, to check the page still honors the live offer."
+      }
+    ],
+    "extraction_status": "partially-classified",
+    "reads": "the destination URL (or its pasted copy), the ad headlines/hooks that point at it, the promised offer/claim, ROAS profile (`direct-response|prospecting|incremental-profit`), and any `~~page speed` (PageSpeed/CrUX) read the user can run; accepted offer wording from the claims projection owned by [offer-claims-registry](../../../protocol/offer-claims-registry/SKILL.md), when present, to check the page still honors the live offer.",
+    "source": {
+      "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+      "section": "Skill Contract/Reads",
+      "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7"
+    }
+  },
+  "output_contract": {
+    "clauses": [
+      {
+        "clause_id": "write-01",
+        "extraction_status": "unclassified",
+        "kind": "unclassified",
+        "permission_posture": "unclassified",
+        "side_effect": "unclassified",
+        "source": {
+          "end_char": 91,
+          "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+          "section": "Skill Contract/Writes",
+          "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7",
+          "span_basis": "field-text",
+          "start_char": 0
+        },
+        "text": "a user-facing continuity report (the five-check punch list) and a reusable handoff summary."
+      }
+    ],
+    "extraction_status": "unclassified",
+    "source": {
+      "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+      "section": "Skill Contract",
+      "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7"
+    },
+    "summary": "an ad↔page continuity punch list — each of the five checks (message-match, above-the-fold, speed, form friction, mobile) marked Pass / Partial / Fix with the specific gap and the one lever to hand off, plus the standard handoff summary for `memory/ad/landing-experience-checker/`.",
+    "summary_source": "expected-output",
+    "writes": "a user-facing continuity report (the five-check punch list) and a reusable handoff summary."
+  },
+  "provenance": {
+    "generator": "generate-skill-contracts-v1",
+    "shared_contract": {
+      "path": "references/skill-contract.md",
+      "section": "Skill Contract",
+      "sha256": "9e6ef5e4e51a46bcb5335d453bf1d448f150a3ac2358554f67dd156eac26b0ff"
+    },
+    "system_catalog": {
+      "path": "references/system-catalog.json",
+      "sha256": "d9320294ffb04ef5e90bc6763637483361114a77f8ed6e4542cc2d5cd95b2d1a",
+      "version": "20.2.0"
+    }
+  },
+  "routing_contract": {
+    "boundary": "Not for redesigning or rewriting the page — use landing-optimizer; not for scoring the account or the RQS — use ad-account-auditor. 落地页体验预检/广告落地页一致性检查",
+    "description": "Use when the user asks to \"pre-launch check the landing page\", \"run a Quality-Score preflight\", or \"verify ad-to-page message match before launch\"; produces an ad↔page continuity report — message-match gaps, above-the-fold check, page-speed read, form-friction count, mobile-render flags — as a pass/fix punch list. Not for redesigning or rewriting the page — use landing-optimizer; not for scoring the account or the RQS — use ad-account-auditor. 落地页体验预检/广告落地页一致性检查",
+    "source": {
+      "path": "ad/orchestrate/landing-experience-checker/SKILL.md",
+      "section": "frontmatter",
+      "sha256": "46a1d782f89649a90cf88eda27011badf0d2097330eb426a133b5b9774fc6fc7"
+    },
+    "trigger_phrases": [
+      "pre-launch check the landing page",
+      "run a Quality-Score preflight",
+      "verify ad-to-page message match before launch"
+    ],
+    "trigger_source": "description-quoted",
+    "when_to_use": "Use before a paid campaign goes live to preflight the destination page against the ads: message-match continuity, above-the-fold offer/CTA presence, page-load speed, form-field friction, and mobile rendering. Also when the user asks why an ad's Quality Score or landing-page-experience rating is likely to be low."
+  },
+  "schema_version": "1.0"
+}

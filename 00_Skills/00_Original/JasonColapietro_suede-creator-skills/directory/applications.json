@@ -1,0 +1,458 @@
+{
+  "schema_version": 1,
+  "updated": "2026-11-26",
+  "applications": [
+    {
+      "issue": 445,
+      "applicant": "djmoonlitse-gif",
+      "repo": "moonlitnayeem/fairvalid-ai",
+      "scope_version": "7e59f2e0c9fa5498733a3cb8b773f30e47f3851779409bb0f24374a31ec72011",
+      "kind": "skill",
+      "scope": [
+        "email-verification",
+        "fairmatch-leads"
+      ],
+      "applied_at": "2026-11-25T09:38:12Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 430,
+      "applicant": "skillsforbots",
+      "repo": "skillsforbots/grok-bot-skills",
+      "scope_version": "a47b09cbf12be5c990d5641f6c22d6c23ff85fed7b17071f6d784ea598ef6ca1",
+      "kind": "skill",
+      "scope": [
+        "bot-safety-rules-starter",
+        "reminder-basics"
+      ],
+      "applied_at": "2026-11-20T16:16:55Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 428,
+      "applicant": "kochetkov-ma",
+      "repo": "kochetkov-ma/brewpage-publish-plugins",
+      "scope_version": "f41742bc4a026eb52c3a738934783a25179cb7a422f6a1bf688998b03154cc24",
+      "kind": "skill",
+      "scope": [
+        "brewpage-publish"
+      ],
+      "applied_at": "2026-11-20T09:06:26Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 414,
+      "applicant": "jangtrinh",
+      "repo": "jangtrinh/design-os",
+      "scope_version": "ba6a5004ff31065ad6015ddeb9c4f11ae3ef107e93ec8f1a0662c349aab2adb1",
+      "kind": "skill",
+      "scope": [
+        "design-os",
+        "design-os-designer"
+      ],
+      "applied_at": "2026-11-19T02:12:32Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 413,
+      "applicant": "antoinersx",
+      "repo": "StalkC/stalkchain-plugin",
+      "scope_version": "f2985f3b0bf5ed7a1b8b0f8b19594bb236f39515e76856aacc2721a777a06b1f",
+      "kind": "skill",
+      "scope": [
+        "trader-check",
+        "token-check",
+        "smart-money-radar"
+      ],
+      "applied_at": "2026-11-19T01:39:13Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 408,
+      "applicant": "xiaoxuux",
+      "repo": "rnthking/redya-skills",
+      "scope_version": "43cd223413f4b6f31ad31ca0ddd4c014e173fcaa7114f1dc465d290072d2c03e",
+      "kind": "skill",
+      "scope": null,
+      "applied_at": "2026-11-18T04:15:12Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 406,
+      "applicant": "nexscope",
+      "repo": "nexscope-ai/Amazon-Skills",
+      "scope_version": "b772d0dcd0c90494de8d09afab0ab69eacff383801ee2ace4395c583b7b0af43",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-11-17T06:39:36Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 405,
+      "applicant": "nexscope",
+      "repo": "nexscope-ai/eCommerce-Skills",
+      "scope_version": "6ba2ae4d751e2f3121cf8484443ca13c0b82e63f10d0684e53a687f599608bbc",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-11-17T06:39:34Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 404,
+      "applicant": "KKitar",
+      "repo": "ASOScan/aso-skills",
+      "scope_version": "b18471de47e64c4c2a9f8bc20ebcc238f4eb596278417757e6d59551cb2380cb",
+      "kind": "skill",
+      "scope": [
+        "aso-fundamentals",
+        "asoscan-router",
+        "asoscan-setup",
+        "competitor-analysis",
+        "keyword-intelligence",
+        "keyword-opportunities",
+        "keyword-spy",
+        "metadata-audit",
+        "review-insights"
+      ],
+      "applied_at": "2026-11-17T04:05:11Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 396,
+      "applicant": "KKKKhazix",
+      "repo": "KKKKhazix/khazix-skills",
+      "scope_version": "f524d0312ebec9c9cf7d7778dd49ca34ad5c9f628751fdcd216b093483d870ed",
+      "kind": "skill",
+      "scope": [
+        "aihot"
+      ],
+      "applied_at": "2026-11-14T12:04:54Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 394,
+      "applicant": "Wlain",
+      "repo": "klingai-tech/claude-plugin",
+      "scope_version": "00e95e7b8d3c1c9d1034a93d2701d8d87fed889f5b9ce118cf6ab5a41de2e19a",
+      "kind": "skill",
+      "scope": [
+        "kling-ai",
+        "kling-ai-generate-image",
+        "kling-ai-generate-video"
+      ],
+      "applied_at": "2026-11-14T07:07:33Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 392,
+      "applicant": "fengyiqicoder",
+      "repo": "fengyiqicoder/go-public",
+      "scope_version": "a341626744646d18fcb230f1163174d209ff24ad8dad5fe4ecaf2ec434a24267",
+      "kind": "skill",
+      "scope": [
+        "go-public"
+      ],
+      "applied_at": "2026-11-13T15:01:15Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 390,
+      "applicant": "mohiddin7",
+      "repo": "mohiddin7/resume-tribunal",
+      "scope_version": "af9810a6e53ddeafd0dabb66715d121239bbc82cd8f960fab61e64a823e7ff8b",
+      "kind": "skill",
+      "scope": [
+        "resume-tribunal"
+      ],
+      "applied_at": "2026-11-13T04:52:44Z",
+      "issue_state": "closed"
+    },
+    {
+      "issue": 384,
+      "applicant": "harbourlark",
+      "repo": "sieblyio/agent-skills",
+      "scope_version": "f3397d04a5b039e14c3c7eb9e4ab7bd4600509757f20f22aa5387b3178ca5698",
+      "kind": "skill",
+      "scope": [
+        "siebly-crypto-exchange-api"
+      ],
+      "applied_at": "2026-11-11T21:02:03Z",
+      "issue_state": "closed"
+    },
+    {
+      "issue": 379,
+      "applicant": "janpopovic",
+      "repo": "inhotel-io/govisit-toolkit",
+      "scope_version": "3c3d0b9ae519aff142e98a2ac107421538f7aa2f15e7b92bd69b49a72a169917",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-11-11T01:58:11Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 378,
+      "applicant": "f-o-x11",
+      "repo": "f-o-x11/deed-page-skill",
+      "scope_version": "ac1498cc3359caeb27e432b0b339833e3ce437da1d7e6e97f972595a9df21289",
+      "kind": "skill",
+      "scope": [
+        "deed-page"
+      ],
+      "applied_at": "2026-11-10T22:51:06Z",
+      "issue_state": "closed"
+    },
+    {
+      "issue": 375,
+      "applicant": "waynehamadi",
+      "repo": "waynehamadi/datacircle",
+      "scope_version": "4e585cd1dd821958883fd442080a8ae340bf0afc5e15109fafbbb38d13b72c2a",
+      "kind": "skill",
+      "scope": [
+        "datacircle"
+      ],
+      "applied_at": "2026-11-10T19:25:42Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 374,
+      "applicant": "korey2028-prog",
+      "repo": "korey2028-prog/resume-claim-guard",
+      "scope_version": "8f6eaff1b5cfe3ab1a917c30fef0a61f9b1c35404421a7e32da984dde2139597",
+      "kind": "skill",
+      "scope": [
+        "resume-claim-guard"
+      ],
+      "applied_at": "2026-11-10T16:22:05Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 371,
+      "applicant": "OakcoderX",
+      "repo": "OakcoderX/awesome-agent-skills",
+      "scope_version": "32bab7220728b680a0ba9bd81fc48017415df2e46153f62eea8ff653df335ead",
+      "kind": "skill",
+      "scope": [
+        "socratic-story-cartographer"
+      ],
+      "applied_at": "2026-11-10T00:07:31Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 359,
+      "applicant": "cloudgpuapp",
+      "repo": "mrhy7176/cloudgpu-agent-skills",
+      "scope_version": "8e72048ab422fad09586c9881c4be9f99594daef3697513a59b96a0de7618062",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-11-08T12:16:25Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 348,
+      "applicant": "andrewsiah",
+      "repo": "andrewsiah/agentswarm-work-skill",
+      "scope_version": "09da6327f066f4878ba768e0626c8f8c026ed77a665f8501eba5fa56a7c6325f",
+      "kind": "skill",
+      "scope": [
+        "agentswarm-work"
+      ],
+      "applied_at": "2026-11-07T18:01:18Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 344,
+      "applicant": "supermax-33",
+      "repo": "shiptopaid/shiptopaid-lite",
+      "scope_version": "ae20c756f5b668fa722e51b0690ce2d81c5d2e96c98f1fb142433996461d6fe1",
+      "kind": "skill",
+      "scope": [
+        "polar-checkout",
+        "polar-webhooks",
+        "launch-audit-lite"
+      ],
+      "applied_at": "2026-11-07T04:42:39Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 339,
+      "applicant": "aakashH242",
+      "repo": "aakashH242/video-director",
+      "scope_version": "fbc5a8865006c89dce995edb4d9318b50af9d6861b170f1df19313740aaa9a2f",
+      "kind": "skill",
+      "scope": [
+        "video-director"
+      ],
+      "applied_at": "2026-11-05T02:29:54Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 336,
+      "applicant": "poptins",
+      "repo": "email-marketing-skills-hub/email-marketing-skills",
+      "scope_version": "dee1703fd4173166aaf0c37ddc38d50f11f118c9a92e031fde2ef13ebae11ff0",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-11-04T15:39:04Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 317,
+      "applicant": "pranshuchittora",
+      "repo": "vostride/agent-qa",
+      "site": "https://vostride.com/",
+      "scope_version": "7ecd4be9a2d235ffa35d0ce88b9c344e2809b3e489df4b6821c329df9e3c2716",
+      "kind": "agent",
+      "scope": [
+        "agent-qa"
+      ],
+      "applied_at": "2026-11-01T07:04:07Z",
+      "issue_state": "closed"
+    },
+    {
+      "issue": 316,
+      "applicant": "InkRoomAI",
+      "repo": "InkRoom-AI/inkroom-client",
+      "scope_version": "11b79f8dc2d00a40ec3f7cfd04e488c92ef2350dab93c16362bd5a90e596a15c",
+      "kind": "skill",
+      "scope": [
+        "inkroom-prompts",
+        "inkroom-prompt-reverse"
+      ],
+      "applied_at": "2026-11-01T01:00:01Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 307,
+      "applicant": "scorpiock",
+      "repo": "geekflare/geekflare-skills",
+      "scope_version": "fe25e2090db95cb1d12e0ee33e58f8af331f575474b0b6c66d125a0eb50f9099",
+      "kind": "skill",
+      "scope": [
+        "geekflare"
+      ],
+      "applied_at": "2026-10-30T19:20:48Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 304,
+      "applicant": "azeemkafridi",
+      "repo": "azeemkafridi/bulkpublish-ai-toolkit",
+      "scope_version": "3c15de099738fc60fb88e0e608df3a61faa9fc4f33c64c83ca17dd03d1f17fa2",
+      "kind": "skill",
+      "scope": "all",
+      "applied_at": "2026-10-30T06:49:26Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 294,
+      "applicant": "dustinliang666-blip",
+      "repo": "dustinliang666-blip/lava-mcp",
+      "scope_version": "08f1b852b31b77e19a2989bac10520a479f1dc82486cdf210eaa35c2152fd434",
+      "kind": "skill",
+      "scope": [
+        "lava-news-heat"
+      ],
+      "applied_at": "2026-10-28T16:04:49Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 291,
+      "applicant": "zealous1",
+      "repo": "arcmira/mcp",
+      "scope_version": "c4f5a1a2404f3cf8d9cf1cbca6db84c56382169ddefbadf1635725790019685b",
+      "kind": "skill",
+      "scope": [
+        "arcmira",
+        "company-watch",
+        "compare-shows",
+        "find-quotes",
+        "person-research",
+        "sponsor-research"
+      ],
+      "applied_at": "2026-10-27T20:08:05Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 276,
+      "applicant": "umutyesildal",
+      "repo": "umutyesildal/berlin-job-search",
+      "scope_version": "6e811a55b5ff041238cc7609d2d3e46d16d244c6745471cefd2ca7233d152fe6",
+      "kind": "skill",
+      "scope": [
+        "berlin-job-search"
+      ],
+      "applied_at": "2026-10-25T10:37:39Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 264,
+      "applicant": "Anonyfox",
+      "repo": "Anonyfox/lfr",
+      "scope_version": "e5852df7f7d31a737feb471943b89e11aff060871d23421327721673374a0f55",
+      "kind": "skill",
+      "scope": [
+        "lfr"
+      ],
+      "applied_at": "2026-10-24T07:58:02Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 259,
+      "applicant": "cwong5",
+      "repo": "cwong5/extra-caffeine-mcp",
+      "scope_version": "d35f58e783113157f3e6ffb98b2f7f7c3fc241fad010084d2ae20e2b951d3728",
+      "kind": "skill",
+      "scope": [
+        "extra-caffeine-workflow"
+      ],
+      "applied_at": "2026-10-23T14:42:48Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 250,
+      "applicant": "MelMayssonOwen",
+      "repo": "MelMayssonOwen/agent-skills",
+      "scope_version": "94494f6fd1083bef0781eef0ff7e1f675729002b75ac431f6d5dd2aaa77680c3",
+      "kind": "skill",
+      "scope": [
+        "timetopost-social-scheduler",
+        "timetopost-autoseo-blog",
+        "toolfound-launch-kit",
+        "sheetfolk-budget-builder",
+        "amazon-listing-checker",
+        "clef-music-tools"
+      ],
+      "applied_at": "2026-10-22T00:51:51Z",
+      "issue_state": "open"
+    },
+    {
+      "issue": 243,
+      "applicant": "gregoire-costory",
+      "repo": "costory-io/costory-finops-mcp-skills",
+      "scope_version": "e7c8d2234670abcfc74e0314ddeaae0f1f3efa083ad9161b19e728dcb5b497d8",
+      "kind": "skill",
+      "scope": [
+        "cost-change-investigation",
+        "virtual-dimensions",
+        "bigquery",
+        "costory-finops"
+      ],
+      "applied_at": "2026-10-19T07:09:58Z",
+      "issue_state": "closed"
+    },
+    {
+      "issue": 231,
+      "applicant": "appierun",
+      "repo": "appierun/appie-mcp",
+      "scope_version": "2dc5519afe193d8a1972f7b29234155dc80c63462abb9033033b08efcc1ad8a0",
+      "kind": "skill",
+      "scope": [
+        "appie-article-writer",
+        "appie-chatbot",
+        "appie-url-shortener"
+      ],
+      "applied_at": "2026-10-17T05:18:22Z",
+      "issue_state": "closed"
+    }
+  ]
+}

@@ -1,0 +1,980 @@
+"use client";
+
+import { unwrapAction } from "@/lib/action-result";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Group, LeadPreview } from "@/lib/server/types";
+import {
+  deleteGroupAction,
+  exportLeadGroupCsvAction,
+  getLeadOutreachAction,
+  runScheduledActionNowAction,
+  stopLeadOutreachAction,
+} from "@/app/actions";
+import { TextField } from "@/app/ui/text-field";
+import { useSidebarResource } from "@/app/use-sidebar-resource";
+import { LEADS_RESOURCE } from "@/app/sidebar-early-fetch";
+import {
+  ALL_LEADS_GROUP,
+  DEFAULT_LEAD_PAGE_SIZE,
+  EMPTY_LEAD_PAGE,
+  LEAD_PAGE_SIZES,
+  leadPageQueryString,
+  type LeadPage,
+} from "@/lib/lead-page";
+import { ContentReveal, LeadsTableSkeleton, Skeleton } from "@/app/app-skeletons";
+import NewAgentButton from "@/app/(app)/agents/new-agent-button";
+import { useBodyScrollLock } from "@/app/use-body-scroll-lock";
+import {
+  consumeAgentStartedNotice,
+  useToast,
+  userFacingError,
+} from "@/app/toast";
+import MobileHeaderPortal from "@/app/mobile-header-portal";
+import { useWorkspaceTimeZone } from "@/app/workspace-time-zone";
+import type { LeadOutreachSummary, ScheduledAction } from "@/lib/server/scheduled-actions";
+import {
+  ActionDetails,
+  CloseButton,
+  OutreachPanelHeader,
+  OutreachSection,
+  OutreachProgressSection,
+  resultMessage,
+} from "@/app/(app)/actions/action-details";
+import { LeadAvatar } from "@/app/lead-avatar";
+
+type LeadsViewProps = {
+  groups: Group[];
+};
+
+function LinkedInProfileLink({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open LinkedIn profile"
+      onClick={(event) => event.stopPropagation()}
+      className="inline-grid h-[10px] w-[10px] shrink-0 -translate-y-[2px] place-items-center rounded-[2px] transition-opacity hover:opacity-80"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/linkedin-in-mark.svg" alt="" className="h-full w-full object-contain" />
+    </a>
+  );
+}
+
+const ALL_CONTACTS_TAB = ALL_LEADS_GROUP;
+
+function outreachEmptyCopy(status: LeadPreview["outreachStatus"]) {
+  if (status === "replied") return "They replied. Continue the thread in Messages.";
+  if (status === "stopped") return "Outreach is stopped.";
+  if (status === "declined") return "They declined the invite.";
+  if (status === "messaged") return "No more sends are scheduled.";
+  if (status === "invited") return "Connection request sent. No follow-up is scheduled.";
+  if (status === "connected") return "Connected. No message is scheduled.";
+  return "No outreach is scheduled yet.";
+}
+
+function LeadContact({ lead }: { lead: LeadPreview }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <LeadAvatar
+        name={lead.name}
+        avatarUrl={lead.avatarUrl}
+        leadId={lead.id}
+        className="h-10 w-10 bg-[#ba3871]"
+        initialsClassName="text-[12px] font-semibold text-white"
+      />
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-end gap-0.5">
+          {lead.linkedInUrl ? (
+            <a
+              href={lead.linkedInUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="truncate text-[13px] font-semibold leading-none text-[#0a66c2] hover:underline"
+            >
+              {lead.name}
+            </a>
+          ) : (
+            <span className="truncate text-[13px] font-semibold leading-none text-zinc-950">{lead.name}</span>
+          )}
+          {lead.linkedInUrl ? <LinkedInProfileLink href={lead.linkedInUrl} /> : null}
+        </div>
+        <div className="mt-1 truncate text-[12px] font-medium text-zinc-800">{lead.title || "-"}</div>
+      </div>
+    </div>
+  );
+}
+
+function LeadSignal({
+  lead,
+  groupName,
+}: {
+  lead: LeadPreview;
+  groupName?: string;
+}) {
+  const signalKeyword = lead.signalText || (groupName ? `"${groupName.toLowerCase()}"` : "");
+  const postUrl = lead.signalUrl || lead.engagementContext?.postUrl;
+  const quote = lead.engagementContext?.commentText || lead.engagementContext?.postText;
+  return (
+    <OutreachSection title="Why they're a lead" first>
+      <p className="text-[13px] leading-5 text-zinc-700">
+        {lead.leadReason || "Engaged with a LinkedIn post"}
+        {postUrl ? (
+          <>
+            {" · "}
+            <a
+              href={postUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="text-[#0a66c2] hover:underline"
+            >
+              View post
+            </a>
+          </>
+        ) : null}
+      </p>
+      {quote ? (
+        <p className="mt-2 line-clamp-3 border-l-2 border-zinc-200 pl-3 text-xs leading-5 text-zinc-500">
+          {lead.engagementContext?.commentText ? "Their comment: " : "Post: "}
+          {quote}
+        </p>
+      ) : signalKeyword ? (
+        <p className="mt-2 line-clamp-2 whitespace-pre-wrap text-xs leading-5 text-zinc-500">Signal: {signalKeyword}</p>
+      ) : null}
+    </OutreachSection>
+  );
+}
+
+function downloadCsv(filename: string, csv: string) {
+  // UTF-8 BOM so Excel opens accented names correctly.
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+const PER_PAGE_OPTIONS = LEAD_PAGE_SIZES;
+const OUTREACH_REFRESH_MS = 5_000;
+const LEAD_LIST_REFRESH_MS = 120_000;
+const LEAD_LIST_RETURN_REFRESH_MS = 30_000;
+// The server searches the whole workspace, so wait for a pause in typing.
+const SEARCH_DEBOUNCE_MS = 250;
+const selectLeadsData = (data: Record<string, unknown>) => ({
+  groups: data.groups as Group[] || [],
+  leadPage: data.leadPage as LeadPage || EMPTY_LEAD_PAGE,
+});
+
+export default function LeadsView({ groups }: LeadsViewProps) {
+  const timeZone = useWorkspaceTimeZone();
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(ALL_CONTACTS_TAB);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [perPage, setPerPage] = useState<number>(DEFAULT_LEAD_PAGE_SIZE);
+  const [page, setPage] = useState(1);
+  // The server pages, filters and searches; the default view's key is plain
+  // LEADS_RESOURCE so the early fetch, warmer and IndexedDB share it.
+  const pageQuery = leadPageQueryString({
+    groupId: selectedGroupId,
+    search: debouncedSearch,
+    page,
+    perPage,
+  });
+  const leadsResource = useSidebarResource(
+    LEADS_RESOURCE + (pageQuery ? `?${pageQuery}` : ""),
+    { groups, leadPage: EMPTY_LEAD_PAGE },
+    selectLeadsData,
+  );
+  const { groups: loadedGroups, leadPage } = leadsResource.value;
+  const isInitialLoading = leadsResource.loading;
+  // The previous page stays on screen until the requested one arrives.
+  const isPageLoading = !isInitialLoading && leadPage.key !== pageQuery;
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [mobileGroupMenu, setMobileGroupMenu] = useState<Group | null>(null);
+  const [desktopGroupMenu, setDesktopGroupMenu] = useState<{
+    groupId: string;
+    left: number;
+    top: number;
+  } | null>(null);
+  const [deleteGroup, setDeleteGroup] = useState<Group | null>(null);
+  const [exportGroup, setExportGroup] = useState<Group | null>(null);
+  const [deletedGroupIds, setDeletedGroupIds] = useState<Set<string>>(new Set());
+  const [openLeadId, setOpenLeadId] = useState("");
+  const [openActionId, setOpenActionId] = useState("");
+  // Outreach is loaded per lead as it opens. The workspace-wide action list
+  // took 14-60s on large workspaces and held the whole panel on "Loading".
+  const [outreachByLead, setOutreachByLead] = useState<
+    Record<string, { actions: ScheduledAction[]; summary: LeadOutreachSummary | null }>
+  >({});
+  const [outreachErrors, setOutreachErrors] = useState<Record<string, string>>({});
+  const [confirmingId, setConfirmingId] = useState("");
+  const [confirmingStopLeadId, setConfirmingStopLeadId] = useState("");
+  const [pendingId, setPendingId] = useState("");
+  const [feedback, setFeedback] = useState<Record<string, { ok: boolean; text: string }>>({});
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
+  const { showError, showAgentStarted } = useToast();
+  useBodyScrollLock(Boolean(mobileGroupMenu || deleteGroup || exportGroup || mobilePreviewOpen));
+
+  const openOutreach = outreachByLead[openLeadId];
+  const actionsForOpenLead = useMemo(
+    () => [...(openOutreach?.actions || [])].sort((a, b) => a.at.localeCompare(b.at)),
+    [openOutreach],
+  );
+  const openAction = actionsForOpenLead.find((action) => action.id === openActionId) || actionsForOpenLead[0];
+  const openLeadIdRef = useRef(openLeadId);
+  openLeadIdRef.current = openLeadId;
+
+  async function loadLeadOutreach(leadId: string, options?: { quiet?: boolean }) {
+    if (!leadId) return;
+    try {
+      const outreach = unwrapAction(await getLeadOutreachAction(leadId));
+      setOutreachByLead((current) => ({ ...current, [leadId]: outreach }));
+      setOutreachErrors((current) => {
+        if (!(leadId in current)) return current;
+        const next = { ...current };
+        delete next[leadId];
+        return next;
+      });
+    } catch (error) {
+      if (!options?.quiet) {
+        setOutreachErrors((current) => ({
+          ...current,
+          [leadId]: userFacingError(error, "Outreach details could not be loaded."),
+        }));
+      }
+    }
+  }
+
+  function selectLead(leadId: string) {
+    setConfirmingId("");
+    setConfirmingStopLeadId("");
+    setOpenLeadId(leadId);
+    setOpenActionId("");
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767.98px)").matches) {
+      setMobilePreviewOpen(true);
+    }
+  }
+
+  async function runNow(action: ScheduledAction) {
+    setPendingId(action.id);
+    setFeedback((current) => {
+      const next = { ...current };
+      delete next[action.id];
+      return next;
+    });
+    const formData = new FormData();
+    formData.set("enrollmentId", action.id);
+    try {
+      const { result } = unwrapAction(await runScheduledActionNowAction(formData));
+      setFeedback((current) => ({ ...current, [action.id]: resultMessage(result, action.kind) }));
+      setConfirmingId("");
+      await loadLeadOutreach(action.lead?.id || openLeadId);
+      leadsResource.reload();
+    } catch (error) {
+      setFeedback((current) => ({
+        ...current,
+        [action.id]: { ok: false, text: userFacingError(error, "The action could not be sent.") },
+      }));
+    } finally {
+      setPendingId("");
+    }
+  }
+
+  async function stopOutreach(action: ScheduledAction) {
+    const leadId = action.lead?.id;
+    if (!leadId) return;
+    setPendingId(action.id);
+    setFeedback((current) => {
+      const next = { ...current };
+      delete next[action.id];
+      return next;
+    });
+    const formData = new FormData();
+    formData.set("leadId", leadId);
+    try {
+      unwrapAction(await stopLeadOutreachAction(formData));
+      setConfirmingStopLeadId("");
+      await loadLeadOutreach(leadId);
+      leadsResource.reload();
+    } catch (error) {
+      setFeedback((current) => ({
+        ...current,
+        [action.id]: { ok: false, text: userFacingError(error, "Outreach could not be stopped.") },
+      }));
+    } finally {
+      setPendingId("");
+    }
+  }
+
+  // Cached leads show instantly and refresh quietly behind the panel.
+  useEffect(() => {
+    void loadLeadOutreach(openLeadId, { quiet: openLeadId in outreachByLead });
+  }, [openLeadId]);
+
+  // The open lead's outreach is one small read, so it stays near-live. The
+  // list is every lead in the workspace (12 MB on the largest one); reloading
+  // it every 5 s kept the server busy enough to slow every other page, so it
+  // refreshes every 2 minutes while visible and when the user returns.
+  useEffect(() => {
+    let listLoadedAt = Date.now();
+    const refresh = (listMaxAgeMs: number) => {
+      if (document.hidden) return;
+      void loadLeadOutreach(openLeadIdRef.current, { quiet: true });
+      if (Date.now() - listLoadedAt < listMaxAgeMs) return;
+      listLoadedAt = Date.now();
+      leadsResource.reload();
+    };
+    const tick = () => refresh(LEAD_LIST_REFRESH_MS);
+    const onReturn = () => refresh(LEAD_LIST_RETURN_REFRESH_MS);
+    const interval = window.setInterval(tick, OUTREACH_REFRESH_MS);
+    window.addEventListener("focus", onReturn);
+    document.addEventListener("visibilitychange", onReturn);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onReturn);
+      document.removeEventListener("visibilitychange", onReturn);
+    };
+  }, [leadsResource.reload]);
+
+  // Leads-only agents land here after launch. Show the same started card.
+  useEffect(() => {
+    const notice = consumeAgentStartedNotice();
+    if (!notice) return;
+    showAgentStarted(notice.name || undefined, notice.kind);
+  }, [showAgentStarted]);
+
+  // A new search starts on page 1, in the same update so only one request goes out.
+  useEffect(() => {
+    if (search === debouncedSearch) return;
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [search, debouncedSearch]);
+
+  // The server already dropped leads outside live groups. A group deleted a
+  // moment ago is hidden here until the reload after its delete lands.
+  const pageRows = useMemo(() => {
+    if (!deletedGroupIds.size) return leadPage.leads;
+    const liveGroupIds = new Set(
+      loadedGroups.filter((group) => !deletedGroupIds.has(group.id)).map((group) => group.id),
+    );
+    return leadPage.leads.filter((lead) =>
+      (lead.groupIds || []).some((id) => liveGroupIds.has(id)),
+    );
+  }, [leadPage.leads, loadedGroups, deletedGroupIds]);
+
+  const total = leadPage.total;
+  const totalPages = Math.max(1, Math.ceil(total / leadPage.perPage));
+  const currentPage = leadPage.page;
+  const start = (currentPage - 1) * leadPage.perPage;
+  const end = Math.min(start + leadPage.leads.length, total);
+  const openLead = pageRows.find((lead) => lead.id === openLeadId) ?? null;
+  const pageLeadKey = pageRows.map((lead) => lead.id).join(",");
+
+  useEffect(() => {
+    if (!pageLeadKey) {
+      setOpenLeadId("");
+      setOpenActionId("");
+      return;
+    }
+    const ids = pageLeadKey.split(",");
+    setOpenLeadId((current) => (ids.includes(current) ? current : ids[0]));
+  }, [pageLeadKey]);
+
+  function outreachPreview(onClose?: () => void) {
+    if (!openLead) {
+      return (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <p className="text-xs text-zinc-500">Select a lead to preview outreach.</p>
+        </div>
+      );
+    }
+    const group = loadedGroups.find((item) => openLead.groupIds.includes(item.id));
+    const outreach = outreachByLead[openLead.id];
+    const summary = outreach?.summary;
+    if (openAction) {
+      return (
+        <ActionDetails
+          bare
+          hideCompany
+          showTimeline
+          action={openAction}
+          siblings={actionsForOpenLead}
+          onSelectSibling={(action) => setOpenActionId(action.id)}
+          timeZone={timeZone}
+          pending={pendingId === openAction.id}
+          confirming={confirmingId === openAction.id}
+          confirmingStop={confirmingStopLeadId === openAction.lead?.id}
+          feedback={feedback[openAction.id]}
+          onConfirm={() => {
+            setConfirmingStopLeadId("");
+            setConfirmingId(openAction.id);
+          }}
+          onCancel={() => setConfirmingId("")}
+          onRun={() => runNow(openAction)}
+          onConfirmStop={() => {
+            setConfirmingId("");
+            setConfirmingStopLeadId(openAction.lead?.id || "");
+          }}
+          onCancelStop={() => setConfirmingStopLeadId("")}
+          onStop={() => stopOutreach(openAction)}
+          onMessageSaved={() => loadLeadOutreach(openLead.id, { quiet: true })}
+          onClose={onClose}
+          intro={<LeadSignal lead={openLead} groupName={group?.name} />}
+          stage={Math.max(summary?.stage ?? 0, openAction.isReply ? 4 : 0)}
+        />
+      );
+    }
+    if (!outreach && !outreachErrors[openLead.id]) {
+      return (
+        <div className="relative grid h-full place-items-center" role="status" aria-label="Loading outreach">
+          {onClose ? (
+            <div className="absolute right-3 top-3">
+              <CloseButton onClose={onClose} label="Close outreach preview" />
+            </div>
+          ) : null}
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--md-sys-color-outline-variant)] border-t-[var(--md-sys-color-on-surface)]" />
+        </div>
+      );
+    }
+    return (
+      <aside className="flex h-full min-h-0 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
+          <OutreachPanelHeader
+            lead={openLead}
+            subtitle={openLead.title}
+            actions={onClose ? <CloseButton onClose={onClose} label="Close outreach preview" /> : null}
+          />
+          <p className={`mt-4 text-[13px] leading-5 ${outreachErrors[openLead.id] && !outreach ? "text-amber-800" : "text-zinc-600"}`}>
+            {summary
+              ? summary.detail
+              : outreach
+                ? outreachEmptyCopy(openLead.outreachStatus)
+                : outreachErrors[openLead.id]}
+          </p>
+          <div className="mt-5">
+            <LeadSignal lead={openLead} groupName={group?.name} />
+          </div>
+          {summary ? (
+            <OutreachProgressSection
+              key={openLead.id}
+              leadId={openLead.id}
+              items={summary.timeline}
+              timeZone={timeZone}
+              stage={summary.stage}
+            />
+          ) : null}
+        </div>
+      </aside>
+    );
+  }
+
+  function toggleSelected(id: string) {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
+  }
+
+  function toggleAll() {
+    if (selected.size === pageRows.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(pageRows.map((row) => row.id)));
+    }
+  }
+
+  async function confirmExportGroup() {
+    const target = exportGroup;
+    if (!target) return;
+    setExportGroup(null);
+
+    try {
+      const { count, csv } = unwrapAction(await exportLeadGroupCsvAction(target.id, timeZone));
+      if (count === 0) {
+        showError("This lead group has no leads to export.");
+        return;
+      }
+      const slug =
+        target.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "lead-group";
+      downloadCsv(`${slug}-leads.csv`, csv);
+    } catch (error) {
+      showError(userFacingError(error, "The CSV could not be exported."));
+    }
+  }
+
+  async function confirmDeleteGroup() {
+    const target = deleteGroup;
+    if (!target) return;
+
+    const wasSelected = selectedGroupId === target.id;
+    setDeletedGroupIds((current) => new Set(current).add(target.id));
+    if (wasSelected) setSelectedGroupId(ALL_CONTACTS_TAB);
+    setDeleteGroup(null);
+
+    const formData = new FormData();
+    formData.set("groupId", target.id);
+
+    try {
+      unwrapAction(await deleteGroupAction(formData));
+      leadsResource.reload();
+    } catch (error) {
+      setDeletedGroupIds((current) => {
+        const next = new Set(current);
+        next.delete(target.id);
+        return next;
+      });
+      if (wasSelected) setSelectedGroupId(target.id);
+      showError(
+        userFacingError(error, "Lead group could not be deleted."),
+      );
+    }
+  }
+
+  function openDesktopGroupMenu(button: HTMLButtonElement, group: Group) {
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    const rect = button.getBoundingClientRect();
+    const menuWidth = 144;
+    setDesktopGroupMenu({
+      groupId: group.id,
+      left: Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8)),
+      top: rect.bottom,
+    });
+  }
+
+  return (
+    <div className="app-x flex h-full min-h-0 min-w-0 flex-col gap-3 md:mr-0.5 md:pb-3">
+      {/* Header */}
+      <div className="hidden shrink-0 items-center justify-between gap-3 pt-6 md:flex">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold leading-none tracking-tight text-[var(--md-sys-color-on-surface)]">
+            Leads
+          </h1>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <NewAgentButton className="m3-btn m3-btn-filled h-8 shrink-0 cursor-pointer gap-1 px-2.5 text-xs">
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Add leads
+          </NewAgentButton>
+          <TextField
+            className="m3-text-field--compact w-56"
+            variant="filled"
+            placeholder="Search leads"
+            aria-label="Search leads"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            leadingIcon={
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            }
+          />
+        </div>
+      </div>
+
+      {/* Mobile header actions */}
+      <MobileHeaderPortal>
+        <div className="md:hidden">
+          <div className="m3-mobile-header-action fixed right-2 z-[92] w-[152px] min-w-0">
+            <TextField
+              className="m3-text-field--compact [&_.m3-text-field__input]:pl-2"
+              variant="filled"
+              placeholder="Search leads"
+              aria-label="Search leads"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              leadingIcon={
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              }
+            />
+          </div>
+        </div>
+      </MobileHeaderPortal>
+
+      {/* Tabs fused with the table card: the active tab shares the card's white
+          surface and borders, browser-style, so the selected group is obvious.
+          The row overlaps the card's top border by 1px (-mb-px) and the active
+          tab's white fill erases the border segment beneath it. */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          className="skeleton-static relative z-10 -mb-px flex min-w-0 shrink-0 touch-pan-x items-end gap-1 overflow-x-auto px-2 thin-scroll-overlay"
+          onScroll={() => setDesktopGroupMenu(null)}
+        >
+          {[{ id: ALL_CONTACTS_TAB, name: "All contacts" }, ...loadedGroups]
+            .filter((item) => !deletedGroupIds.has(item.id))
+            .map((item) => {
+            const active = selectedGroupId === item.id;
+            return (
+              <div
+                key={item.id}
+                className={`group relative flex shrink-0 items-center rounded-t-lg border ${
+                  active
+                    ? "border-zinc-200 border-b-transparent bg-white text-zinc-950"
+                    : "border-transparent text-zinc-600 hover:bg-zinc-950/[0.04] hover:text-zinc-900"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedGroupId(item.id);
+                    setSelected(new Set());
+                    setPage(1);
+                  }}
+                  title={item.name}
+                  className={`cursor-pointer py-2 pl-3.5 text-[13px] ${active ? "font-semibold" : "font-medium"} ${item.id === ALL_CONTACTS_TAB ? "pr-3.5" : "pr-1"}`}
+                >
+                  <span className="block max-w-[220px] translate-y-px truncate whitespace-nowrap">{item.name}</span>
+                </button>
+                {item.id !== ALL_CONTACTS_TAB ? (
+                  <div className="group/dots relative mr-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                    <button
+                      type="button"
+                      aria-haspopup="menu"
+                      aria-label={`Actions for ${item.name}`}
+                      onMouseEnter={(event) => openDesktopGroupMenu(event.currentTarget, item as Group)}
+                      onFocus={(event) => openDesktopGroupMenu(event.currentTarget, item as Group)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (window.matchMedia("(max-width: 767.98px)").matches) {
+                          setMobileGroupMenu(item as Group);
+                        } else {
+                          openDesktopGroupMenu(event.currentTarget, item as Group);
+                        }
+                      }}
+                      className="grid h-6 w-6 cursor-pointer place-items-center rounded text-zinc-500 hover:bg-zinc-200/60 hover:text-zinc-800"
+                    >
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="5" cy="12" r="1.7" />
+                        <circle cx="12" cy="12" r="1.7" />
+                        <circle cx="19" cy="12" r="1.7" />
+                      </svg>
+                    </button>
+                    {/* Keep the menu outside the tab strip's overflow clip while retaining its hover bridge. */}
+                    {desktopGroupMenu?.groupId === item.id ? (
+                      <div
+                        className="fixed z-50 hidden pt-1 group-focus-within/dots:block group-hover/dots:block"
+                        style={{ left: desktopGroupMenu.left, top: desktopGroupMenu.top }}
+                      >
+                        <div className="m3-menu m3-menu--origin-top-right m3-menu--compact w-36">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDesktopGroupMenu(null);
+                              setExportGroup(item as Group);
+                            }}
+                            className="m3-menu-item"
+                          >
+                            Export CSV
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDesktopGroupMenu(null);
+                              setDeleteGroup(item as Group);
+                            }}
+                            className="m3-menu-item m3-menu-item--danger"
+                          >
+                            Delete group
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+          {isInitialLoading
+            ? [0, 1].map((item) => <Skeleton key={item} className="mb-2.5 h-4 w-20 shrink-0" />)
+            : null}
+        </div>
+
+        {/* Table card — M3 outlined card hosting scannable grid */}
+        <section className="m3-card m3-card-outlined m3-card-lg m3-lateral-viewport flex min-h-0 flex-1 flex-col bg-white">
+        {isInitialLoading ? (
+          <LeadsTableSkeleton />
+        ) : (
+          <ContentReveal key={leadPage.groupId} className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(22rem,2fr)_minmax(0,3fr)]">
+            <div className="flex min-h-0 min-w-0 flex-col md:border-r md:border-zinc-200">
+              <div className="m3-table-grid-header hidden shrink-0 grid-cols-[40px_minmax(0,1fr)] items-center gap-3 md:grid">
+                <span>
+                  <input
+                    type="checkbox"
+                    checked={pageRows.length > 0 && selected.size === pageRows.length}
+                    onChange={toggleAll}
+                    className="h-3.5 w-3.5 cursor-pointer accent-[#e85e6b]"
+                  />
+                </span>
+                <span>Contact</span>
+              </div>
+
+              <div
+                aria-busy={isPageLoading}
+                className={`m3-table-grid min-h-0 flex-1 overflow-y-auto transition-opacity ${isPageLoading ? "opacity-60" : ""}`}
+              >
+                {pageRows.length === 0 ? (
+                  <div className="grid h-full place-items-center p-6 text-center text-[12px] font-medium text-zinc-700 md:p-10">
+                    {leadPage.search ? (
+                      "No leads match your search."
+                    ) : (
+                      <div>
+                        <span className="material-symbols-outlined text-3xl text-zinc-400">person_search</span>
+                        <h2 className="mt-3 text-sm font-semibold text-zinc-900">No leads yet</h2>
+                        <p className="mt-1 text-xs font-normal text-zinc-500">Leads your agents find will appear here.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  pageRows.map((lead) => {
+                    const isChecked = selected.has(lead.id);
+                    const isOpen = openLeadId === lead.id;
+                    return (
+                      <div
+                        key={lead.id}
+                        aria-selected={isOpen}
+                        onClick={() => selectLead(lead.id)}
+                        className={`m3-table-grid-row grid cursor-pointer grid-cols-[40px_minmax(0,1fr)] items-center gap-3 ${
+                          isOpen ? "bg-[#fff7fa]" : isChecked ? "bg-[#fff5f6]/40" : ""
+                        }`}
+                      >
+                        <span>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onClick={(event) => event.stopPropagation()}
+                            onChange={() => toggleSelected(lead.id)}
+                            className="h-3.5 w-3.5 cursor-pointer accent-[#e85e6b]"
+                          />
+                        </span>
+                        <div className="min-w-0 py-1">
+                          <LeadContact lead={lead} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-t border-[var(--md-sys-color-outline-variant)] px-3 text-[11px]">
+                <span className="min-w-0 truncate font-medium text-[var(--md-sys-color-on-surface-variant)]">
+                  {total === 0 ? "0 results" : `${start + 1}–${end} of ${total}`}
+                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <label className="flex items-center gap-1.5 font-medium text-[var(--md-sys-color-on-surface-variant)]">
+                    <span className="hidden sm:inline">Rows</span>
+                    <select
+                      value={String(perPage)}
+                      onChange={(event) => {
+                        setPerPage(Number(event.target.value));
+                        setPage(1);
+                      }}
+                      className="h-7 cursor-pointer rounded-md border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)] px-1.5 text-[11px] font-semibold text-[var(--md-sys-color-on-surface)] outline-none focus:border-[var(--md-sys-color-primary)]"
+                      aria-label="Rows per page"
+                    >
+                      {PER_PAGE_OPTIONS.map((option) => (
+                        <option key={option} value={String(option)}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="flex items-center gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="grid h-7 w-7 cursor-pointer place-items-center rounded-md border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)] text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:bg-[var(--md-sys-state-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Previous page"
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                    <span className="grid h-7 min-w-7 place-items-center rounded-md bg-[var(--md-sys-color-primary-container)] px-1.5 text-[11px] font-bold text-[var(--md-sys-color-on-primary-container)]">
+                      {currentPage}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="grid h-7 w-7 cursor-pointer place-items-center rounded-md border border-[var(--md-sys-color-outline)] bg-[var(--md-sys-color-surface-container)] text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:bg-[var(--md-sys-state-hover)] disabled:cursor-not-allowed disabled:opacity-40"
+                      aria-label="Next page"
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="hidden min-h-0 min-w-0 bg-[var(--md-sys-color-surface-container)] md:flex md:flex-col">
+              {outreachPreview()}
+            </div>
+          </ContentReveal>
+        )}
+      </section>
+      </div>
+
+      {mobilePreviewOpen && openLead ? (
+        <div
+          className="m3-modal-scrim actions-mobile-dialog-scrim z-[120] md:!hidden"
+          role="presentation"
+          onClick={() => setMobilePreviewOpen(false)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Outreach for ${openLead.name}`}
+            className="m3-modal-surface actions-mobile-sheet flex w-full flex-col overflow-hidden bg-[var(--md-sys-color-surface-container)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {outreachPreview(() => setMobilePreviewOpen(false))}
+          </section>
+        </div>
+      ) : null}
+
+      {mobileGroupMenu ? (
+        <div
+          className="m3-modal-scrim z-[120] md:hidden"
+          role="presentation"
+          onClick={() => setMobileGroupMenu(null)}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Actions for ${mobileGroupMenu.name}`}
+            className="m3-modal-surface"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p className="truncate text-sm font-semibold text-[var(--md-sys-color-on-surface)]">
+              {mobileGroupMenu.name}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setExportGroup(mobileGroupMenu);
+                setMobileGroupMenu(null);
+              }}
+              className="m3-menu-item mt-4 w-full rounded-lg"
+            >
+              Export CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteGroup(mobileGroupMenu);
+                setMobileGroupMenu(null);
+              }}
+              className="m3-menu-item m3-menu-item--danger mt-1 w-full rounded-lg"
+            >
+              Delete group
+            </button>
+          </section>
+        </div>
+      ) : null}
+
+      {exportGroup ? (
+        <div
+          className="m3-dialog-scrim z-50"
+          role="presentation"
+          onClick={() => setExportGroup(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="export-group-title"
+            className="m3-dialog-surface"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="export-group-title" className="m3-dialog-title">
+              Export lead group?
+            </h2>
+            <p className="m3-dialog-body">
+              Download the leads in {exportGroup.name} as a CSV file, including
+              names, LinkedIn profiles, companies, AI fit scores, and why each
+              lead is a great fit.
+            </p>
+            <div className="m3-dialog-actions">
+              <button
+                type="button"
+                onClick={() => setExportGroup(null)}
+                className="m3-dialog-btn m3-dialog-btn--text"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmExportGroup}
+                className="m3-dialog-btn m3-dialog-btn--filled"
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteGroup ? (
+        <div
+          className="m3-dialog-scrim z-50"
+          role="presentation"
+          onClick={() => setDeleteGroup(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-group-title"
+            className="m3-dialog-surface"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="delete-group-title" className="m3-dialog-title">
+              Delete lead group?
+            </h2>
+            <p className="m3-dialog-body">
+              Delete {deleteGroup.name}? Every lead in this group is permanently deleted
+              from your workspace, including outreach history for those leads.
+            </p>
+            <div className="m3-dialog-actions">
+              <button
+                type="button"
+                onClick={() => setDeleteGroup(null)}
+                className="m3-dialog-btn m3-dialog-btn--text"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteGroup}
+                className="m3-dialog-btn m3-dialog-btn--destructive"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}

@@ -1,0 +1,29 @@
+# Personal tests and caches
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Node and temp files
+node_modules/
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+
+# Local social-post data
+social-post/.rd/
+social-post/style_profile.md
+social-post/content_plan.md
+social-post/_scraped_posts_draft.md
+social-post/drafts/
+social-post/data/*
+!social-post/data/rule_registry.json
+
+# Claude Code local permissions
+.claude/
+!.claude/skills/

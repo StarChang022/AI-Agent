@@ -1,0 +1,84 @@
+---
+name: blitz-seo
+description: Runs a focused 30-day SEO sprint that concentrates search-intent alignment, internal link equity, first-hand proof, and targeted backlinks onto a single money page to push it into the Top 3. Use when a high-value page is stuck on Page 2, the user mentions "blitz seo" or a 30-day SEO sprint, or SEO effort is spread too thin across dozens of URLs.
+metadata:
+  version: 1.0.0
+  author: illyism
+  source: https://il.ly/skills/blitz-seo
+---
+
+# Blitz SEO: a 30-day sprint to rank one page
+
+Put 30 days of effort into ranking one page for one money keyword (3 at most). Most SEO work is spread across too many pages. Hundreds of pages past position 10 earn little; 1-3 money pages in the top 3 earn most of the revenue.
+
+## Initial assessment
+
+**Check for project context first:** if `.cursor/project-context.md` or `.claude/project-context.md` exists, read it for product, audience, and current rankings. Otherwise identify:
+
+1. **Money keyword candidates**: high-intent, high-volume keywords tied to the core offering. Not blog keywords, not long-tails.
+2. **Current position**: a page stuck at position 5-20 is the ideal Blitz target (already indexed, needs pressure).
+3. **Revenue link**: would ranking top 3 for this keyword directly produce signups or sales?
+4. **Available resources**: backlink budget, existing blog posts for internal links, social accounts for signals.
+
+**The target test:** your Blitz keyword should be something that _hurts to lose_ to competitors.
+
+## The sprint
+
+### Step 1: Pick one keyword that matters
+
+- High intent, tied to the core offering, with real revenue behind it
+- Check the SERP: if competitors with weaker products outrank the user, that is the target
+- Limit to 1 keyword (3 absolute max). Saying no to everything else is the strategy.
+
+### Step 2: Choose one page to win with
+
+Rewrite and optimize a single page to own that keyword:
+
+- Tight H1 with the keyword
+- Keyword in title tag, URL, and meta description
+- LSI/related phrases in subheadings
+- Fast load speed, mobile-optimized
+- Visual trust: screenshots, logos, charts, testimonials
+- Make it the hero of the domain: link to it from the homepage and main nav if possible
+
+### Step 3: The daily optimization ritual (30 days)
+
+Every day:
+
+- [ ] Add internal links from older posts/pages to the target page
+- [ ] Build 3-5 new backlinks pointing at the target page
+- [ ] Make one on-page tweak based on competitor SERP analysis
+- [ ] Re-submit the page in Google Search Console
+- [ ] Share the page contextually (Reddit, Quora, X) where relevant
+- [ ] Log every change and the daily rank position
+
+Do not overthink any single change. Iterate fast, observe, adjust.
+
+## Output
+
+When the user invokes this skill, produce a concrete sprint plan:
+
+1. Recommended target keyword (with reasoning) and target page
+2. On-page rewrite checklist specific to that page
+3. A 30-day calendar with the daily ritual filled in
+4. A simple tracking log format (date, change made, position, notes)
+5. Benchmarks: page-one movement expected around day 14-20 if pressure holds
+
+## When to use it
+
+Use Blitz SEO when:
+
+- Stuck on page 2 for a keyword that brings revenue
+- Launching something new that needs one page to win fast
+- Weaker competitors outrank the user
+
+Do not use it for brand-new domains with zero authority, or for keywords with no revenue attached.
+
+## Reference result
+
+Original sprint: position #11 to Page 1 by day 17, on a domain Google already trusted.
+
+## Related
+
+- Full article: https://il.ly/blog/blitz-seo
+- Conversion copy for the winning page: [blitz-copy](https://il.ly/skills/blitz-copy)

@@ -1,0 +1,399 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState, type ReactNode } from "react";
+import LogoMark from "./logo-mark";
+import { useHydrated } from "./use-hydrated";
+import WorkspaceSwitcher, { type WorkspaceSwitcherItem } from "./workspace-switcher";
+
+const primaryNav = [
+  { href: "/overview", label: "Overview", icon: "apps" },
+  { href: "/agents", label: "AI Agents", icon: "model_training" },
+  { href: "/messages", label: "Messages", icon: "inbox" },
+  { href: "/leads", label: "Leads", icon: "identity_platform" },
+];
+const STORAGE_KEY = "omentir-sidebar-collapsed";
+
+/* 40px row; outline icons. Hover is a faint plate; the selected item is a
+   pale blue pill with blue ink (--app-nav-active-*, set in globals.css). */
+const navBase =
+  "flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-[14px] font-normal transition-colors duration-150";
+const navActive =
+  "bg-[var(--app-nav-active-bg)] text-[var(--app-nav-active-ink)]";
+const navIdle =
+  "text-[var(--md-sys-color-on-surface-variant)] hover:bg-[var(--md-sys-nav-item-active)] hover:text-[var(--md-sys-color-on-surface)]";
+
+/* Same geometry expanded and collapsed: icons stay pinned at one x while the
+   aside width animates, so nothing jumps. The 64px rail leaves exactly a
+   40px square row, which becomes the collapsed hover/active plate. */
+const desktopNavBase =
+  "flex min-h-10 items-center gap-3 overflow-hidden rounded-lg px-[10px] py-2 text-[14px] font-normal transition-colors duration-150";
+
+const collapseBtnClass =
+  "flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent p-0 text-[var(--md-sys-color-on-surface-variant)]";
+
+function navClassName(active: boolean) {
+  return `${navBase} ${active ? navActive : navIdle}`;
+}
+
+function desktopNavClassName(active: boolean) {
+  return `${desktopNavBase} ${active ? navActive : navIdle}`;
+}
+
+function NavIcon({ name }: { name: string }) {
+  return (
+    <span className="material-symbols-outlined ms-size-20 leading-none" aria-hidden="true">
+      {name}
+    </span>
+  );
+}
+
+function isHrefActive(pathname: string, href: string) {
+  if (href === "/overview") return pathname === "/overview";
+  return pathname.startsWith(href);
+}
+
+function SidebarLabel({
+  collapsed,
+  children,
+}: {
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className={`min-w-0 translate-y-[0.5px] whitespace-nowrap transition-opacity ${collapsed
+          ? "opacity-0 duration-100"
+          : "opacity-100 delay-100 duration-200"
+        }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function getPageTitle(pathname: string) {
+  if (pathname === "/overview") return "Overview";
+  if (pathname.startsWith("/actions")) return "Actions";
+  if (pathname.startsWith("/agents/new")) return "New Agent";
+  if (pathname.startsWith("/agents")) return "AI Agents";
+  if (pathname.startsWith("/messages")) return "Messages";
+  if (pathname.startsWith("/leads")) return "Leads";
+  if (pathname.startsWith("/workspace")) return "Workspace";
+  if (pathname.startsWith("/my-product")) return "Workspace";
+  if (pathname.startsWith("/api-keys")) return "Assistants";
+  if (pathname.startsWith("/settings")) return "Settings";
+  if (pathname.startsWith("/connect")) return "Connect";
+  if (pathname.startsWith("/onboarding")) return "Get Started";
+  if (pathname.startsWith("/upgrade")) return "Upgrade";
+  return "Omentir";
+}
+
+export default function Sidebar({
+  localMode = false,
+  showApi = false,
+  workspaces = [],
+  activeWorkspaceId = "",
+  canCreateWorkspace = false,
+}: {
+  localMode?: boolean;
+  /** Shown for every plan. Plans without API access land on the page locked. */
+  showApi?: boolean;
+  workspaces?: WorkspaceSwitcherItem[];
+  activeWorkspaceId?: string;
+  canCreateWorkspace?: boolean;
+}) {
+  const pathname = usePathname() ?? "";
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const hydrated = useHydrated();
+  // Gate pathname-derived title behind `hydrated` like the active styles below:
+  // the shell prerenders without the real pathname, so deriving the title before
+  // mount makes SSR ("Omentir") and the hydrated title (e.g. "Actions") disagree.
+  const pageTitle = getPageTitle(hydrated ? pathname : "");
+  const isCollapsed = hydrated && collapsed;
+
+  // After hydration: restore collapse from localStorage. useEffect (not
+  // useLayoutEffect) so we never re-render during the streaming resume pass.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setCollapsed(localStorage.getItem(STORAGE_KEY) === "1");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  // Close mobile sidebar on route change.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setMobileOpen(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
+
+  const toggle = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
+
+  const openMobileMenu = () => setMobileOpen(true);
+
+  // Active highlight only after hydration so server HTML and client props match.
+  const linkActive = (href: string) => hydrated && isHrefActive(pathname, href);
+
+  const renderNavLink = (item: (typeof primaryNav)[number], onClick?: () => void) => {
+    const active = linkActive(item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onClick}
+        title={isCollapsed ? item.label : undefined}
+        aria-current={active ? "page" : undefined}
+        className={navClassName(active)}
+      >
+        <NavIcon name={item.icon} />
+        <span>{item.label}</span>
+      </Link>
+    );
+  };
+
+  const workspaceActive = linkActive("/workspace") || linkActive("/my-product");
+  const apiActive = linkActive("/api-keys");
+  const settingsActive = linkActive("/settings");
+
+  const workspaceControl = ({
+    collapsed: isRowCollapsed,
+    className,
+    onNavigate,
+    label,
+  }: {
+    collapsed: boolean;
+    className: string;
+    onNavigate?: () => void;
+    label: ReactNode;
+  }) =>
+    workspaces.length ? (
+      <WorkspaceSwitcher
+        workspaces={workspaces}
+        activeWorkspaceId={activeWorkspaceId}
+        canCreateWorkspace={canCreateWorkspace}
+        collapsed={isRowCollapsed}
+        active={workspaceActive}
+        className={className}
+        onNavigate={onNavigate}
+      />
+    ) : (
+      <Link
+        href="/workspace"
+        prefetch
+        onClick={onNavigate}
+        title={isRowCollapsed ? "Workspace" : undefined}
+        aria-current={workspaceActive ? "page" : undefined}
+        className={className}
+      >
+        <NavIcon name="package_2" />
+        {label}
+      </Link>
+    );
+
+  const bottomLinks = (onClick?: () => void) => (
+    <>
+      {!localMode && showApi ? (
+        <Link
+          href="/api-keys"
+          prefetch
+          onClick={onClick}
+          aria-current={apiActive ? "page" : undefined}
+          className={`mb-0.5 last:mb-0 ${navClassName(apiActive)}`}
+        >
+          <NavIcon name="smart_toy" />
+          <span>Assistants</span>
+        </Link>
+      ) : null}
+      <Link
+        href="/settings"
+        prefetch
+        onClick={onClick}
+        aria-current={settingsActive ? "page" : undefined}
+        className={`mb-0.5 last:mb-0 ${navClassName(settingsActive)}`}
+      >
+        <NavIcon name="settings" />
+        <span>Settings</span>
+      </Link>
+      {workspaceControl({
+        collapsed: false,
+        className: `mb-0.5 last:mb-0 ${navClassName(workspaceActive)}`,
+        onNavigate: onClick,
+        label: <span>Workspace</span>,
+      })}
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top app bar: 56px compact; no bottom border — surface contrast only */}
+      <div className="fixed inset-x-0 top-0 z-[90] flex h-14 items-center bg-[var(--md-sys-color-surface)] px-2 md:hidden">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={openMobileMenu}
+            aria-expanded={mobileOpen}
+            aria-label="Open menu"
+            className="ms-icon-button shrink-0 touch-manipulation text-[var(--md-sys-color-on-surface)]"
+          >
+            <span className="material-symbols-outlined" aria-hidden="true">
+              menu
+            </span>
+          </button>
+          <span className="text-[15px] font-medium leading-none tracking-tight text-[var(--md-sys-color-on-surface)]">
+            {pageTitle}
+          </span>
+        </div>
+      </div>
+
+      {/* Mobile scrim — Pattern D: always mounted so exit can fade (300ms).
+          When closed, CSS sets pointer-events:none + visibility:hidden so it
+          cannot steal dashboard clicks (a prior bug when only opacity was 0). */}
+      <div
+        className={`m3-drawer-scrim fixed inset-0 z-[95] bg-black/40 md:hidden ${
+          mobileOpen ? "m3-drawer-scrim--open" : "m3-drawer-scrim--closed"
+        }`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen ? true : undefined}
+      />
+
+      {/* Mobile modal drawer */}
+      <aside
+        className={`m3-drawer fixed inset-y-0 left-0 z-[100] flex w-[80%] max-w-[320px] flex-col bg-[var(--md-sys-color-surface)] md:hidden ${
+          mobileOpen ? "m3-drawer--open" : "m3-drawer--closed"
+        }`}
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen ? true : undefined}
+      >
+        <div className="flex h-12 shrink-0 items-center px-2">
+          <Link
+            href="/overview"
+            prefetch
+            onClick={() => setMobileOpen(false)}
+            className="flex min-w-0 flex-1 items-center gap-2.5 px-2 text-[13px] font-medium text-[var(--md-sys-color-on-surface)]"
+          >
+            <LogoMark className="h-5 w-5 shrink-0" />
+            <span className="select-none">Omentir</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
+            className={collapseBtnClass}
+          >
+            <span className="material-symbols-outlined ms-size-20" aria-hidden="true">
+              chevron_left
+            </span>
+          </button>
+        </div>
+
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 pt-1">
+          {primaryNav.map((item) => renderNavLink(item, () => setMobileOpen(false)))}
+        </nav>
+
+        <div className="mt-auto flex shrink-0 flex-col px-2 pb-2 pt-2">
+          {bottomLinks(() => setMobileOpen(false))}
+        </div>
+      </aside>
+
+      {/* Desktop sidebar - collapsible; no edge border — surface contrast only */}
+      <aside
+        className={`sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden bg-[var(--md-sys-color-surface)] transition-[width] duration-300 ease-[cubic-bezier(0.2,0,0,1)] md:flex ${isCollapsed ? "w-16" : "w-60"
+          }`}
+      >
+        <div className="flex h-16 shrink-0 items-center px-3">
+          {/* Stays mounted and shrinks with the aside; once it is squeezed to
+              its 16px minimum, the chevron's -translate-x-2 centers it in the rail. */}
+          <Link
+            href="/overview"
+            prefetch
+            tabIndex={isCollapsed ? -1 : undefined}
+            aria-hidden={isCollapsed || undefined}
+            className={`flex min-w-0 flex-1 items-center gap-2.5 overflow-hidden pl-2 text-[16px] font-semibold tracking-tight text-[var(--md-sys-color-on-surface)] transition-opacity ${
+              isCollapsed
+                ? "pointer-events-none opacity-0 duration-100"
+                : "opacity-100 delay-100 duration-200"
+            }`}
+          >
+            <LogoMark className="h-6 w-6 shrink-0" />
+            <span className="select-none whitespace-nowrap">Omentir</span>
+          </Link>
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={`${collapseBtnClass} transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+              isCollapsed ? "-translate-x-2 rotate-180" : "rotate-0"
+            }`}
+          >
+            <span className="material-symbols-outlined ms-size-20" aria-hidden="true">
+              chevron_left
+            </span>
+          </button>
+        </div>
+
+        <nav
+          className={`flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3 pt-1 transition-[padding] duration-300 ease-[cubic-bezier(0.2,0,0,1)] px-3`}
+        >
+          {primaryNav.map((item) => {
+            const active = linkActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={isCollapsed ? item.label : undefined}
+                aria-current={active ? "page" : undefined}
+                className={desktopNavClassName(active)}
+              >
+                <NavIcon name={item.icon} />
+                <SidebarLabel collapsed={isCollapsed}>{item.label}</SidebarLabel>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div
+          className={`mt-auto flex shrink-0 flex-col pb-2 pt-1 transition-[padding] duration-300 ease-[cubic-bezier(0.2,0,0,1)] px-3`}
+        >
+          {!localMode && showApi ? (
+            <Link
+              href="/api-keys"
+              prefetch
+              title={isCollapsed ? "Assistants" : undefined}
+              aria-current={apiActive ? "page" : undefined}
+              className={`mb-0.5 last:mb-0 ${desktopNavClassName(apiActive)}`}
+            >
+              <NavIcon name="smart_toy" />
+              <SidebarLabel collapsed={isCollapsed}>Assistants</SidebarLabel>
+            </Link>
+          ) : null}
+          <Link
+            href="/settings"
+            prefetch
+            title={isCollapsed ? "Settings" : undefined}
+            aria-current={settingsActive ? "page" : undefined}
+            className={`mb-0.5 last:mb-0 ${desktopNavClassName(settingsActive)}`}
+          >
+            <NavIcon name="settings" />
+            <SidebarLabel collapsed={isCollapsed}>Settings</SidebarLabel>
+          </Link>
+          {workspaceControl({
+            collapsed: isCollapsed,
+            className: `mb-0.5 last:mb-0 ${desktopNavClassName(workspaceActive)}`,
+            label: <SidebarLabel collapsed={isCollapsed}>Workspace</SidebarLabel>,
+          })}
+        </div>
+      </aside>
+    </>
+  );
+}

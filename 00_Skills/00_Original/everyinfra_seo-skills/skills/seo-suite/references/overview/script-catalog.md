@@ -1,0 +1,106 @@
+# 脚本目录(87 个实装脚本)
+
+> 2026-10-21 从 SKILL.md 第 3 节原样搬来。SKILL.md 只留路由表,脚本逐条说明以本文件为准;脚本计数以 `scripts/` 文件系统和 `data/capability-matrix.json` 为准。每个脚本的数据来源与降级见 [data-source-contract.md](data-source-contract.md)。
+
+## 3. 可执行层(87 个实装脚本,AI 直接调用;全部 stdlib 零依赖)
+规则已变代码——**对应任务先跑脚本拿事实,再按能力文件解读**。markets.json 是 18 市场规则数据层(多语言脚本共读)。新增脚本必须登记 `data/capability-matrix.json`(`tests/test_capability_matrix.py` 五检守护,self_check 消费其中①②),人读版 CAPABILITY_MATRIX.md 与合同表同步:
+
+**审计与页面质量**
+- `field_data.py --url U [--strategy mobile] [--as-cwv-csv out.csv]`:CWV 现场数据真实 API 客户端——PSI(无 key 低配额)现场 p75 vs 实验数据分开呈现+CrUX(需 key)双源;官方阈值判定;--as-cwv-csv 直喂 traffic_funnel 的 good_ux 阶段
+- `doctor.py --wizard [--want cwv,rank,...]`:数据接入向导——逐项列需要的数据源/当前已配否/获取方式/降级路径(配 references/overview/data-onboarding.md)
+- `site_crawl.py example.com`:**全站发现与爬取(体检第 0 步)**——四级发现链(urls→robots→sitemap[≥50 条时 sitemap 优先,站内链接指向、sitemap 没列的 URL 排在后面请求,同受 --max;`--sitemap-only` 只抓 sitemap]→首页 BFS);**审本地开发版网站(localhost / 127.0.0.1)加 `--allow-local`**:只放行回环地址,私网段照旧拒,不加时报错会提示;子域发现(DNS 探测+可选 crt.sh);内外链图(edges/孤儿页/外链域聚合;sitemap 模式也先抓首页,带跟踪参数的内链计入干净 URL 的入链,截断时孤儿只代表已抓样本);遵守 robots+crawl-delay,默认 500 页;--urls-out 直接喂 site_audit/traffic_funnel;另出 `link_issues`(重定向目标页无直接内链、HTTP 页链 HTTPS/HTTPS 页链 HTTP、HTTPS→HTTP 重定向)、`subdomain_robots`(各子域各自的 robots.txt)与 --check-external 时的 `external_redirects`(外链 URL 3xx 抽检,写明查了几个、共几个);`site_issues` 按 Ahrefs Site Audit 逐项列(canonical、重复 title/description 按组列页、nofollow 入链、断链、302、重定向链(带起点和来源页)、hreflang/lang、慢页、没压缩等;另有软 404 `soft_404`、canonical 指向 noindex `canonical_points_to_noindex`、链到 4xx 的站内链接 `links_to_4xx_page`(带来源页),`--check-resources` 另查图片/JS/CSS 坏链、重定向、体积;逐项见 [ahrefs-site-audit-coverage.md](../technical/ahrefs-site-audit-coverage.md))
+- `site_audit.py URL [--market]`:单页全项审计(CRITICAL 退出码 1);--market 接线 markets.json 18 市场阈值(chars/fullwidth/grapheme 单位),词数 CJK·天城文·泰文字素·全字母文字感知;含 **AI Search Health 独立子分**(Semrush 口径 8 bot+Last-Modified 183 天+语义 HTML 比值+llms.txt+BLUF 密度+rendering 5 检查,--json 出 ai_search_health 节;--export-dir 出每规则具名受影响 URL 清单+summary.json+报告受影响面% 列);另查 h1 前的低级标题、相对 og:url、插件内容(Lighthouse plugins 口径)、bingbot 专属 robots 指令与 max-video-preview;--serp-titles 给了 SERP 标题才比 title 是否被改写
+- `health_score.py --input audit.json`:分层健康分——Ahrefs 主分(仅 CRITICAL 扣分,Weak/Fair/Good/Excellent 分档)+Lumar 六大类树(缺数据源 N/A 不计入)+Ryte impact 排序(立即处理/值得探索两栏);--ignore/--severity/--config rules.json 规则开关
+- `traffic_funnel.py --audit audit.json --gsc gsc.csv`:六阶段页面流失漏斗(available⊃indexable⊃uniqueness[Simhash+DeepRank]⊃in_serps⊃with_clicks⊃good_ux);无 GSC 自动截断+coverage 声明
+- `quality_rater.py FILE`:六维内容评分,publishing_ready=≥80 且 0 critical;证据行 UTF-16 偏移核验+同形字/孤立代理风险标注(标注层,不改六维分数)
+- `above_fold.py URL`:首屏 700 字符"5 秒测试"(四元素加权 ≥70;跳过导航、Cookie 横幅、「跳到正文」链接和 x-cloak / display:none 的隐藏块;为落地页设计,新闻首页等站型的 CTA / 信任分不适用)
+- `trust_signals.py URL`:证言/社会证明/风险反转(6 类中 ≥3 类满分)/权威(为商业落地页设计:新闻、媒体首页里的引语和百分比会被当成证言和社会证明,这类站型不用它打分)
+- `core_eeat.py FILE`:CORE-EEAT 机械化(GEO/SEO 双分+1 项 veto 封顶 60,≥2 项标 BLOCKED 不出分)
+- `content_score.py --draft 文件 --competitors c1,c2,c3 --keyword 主词`:透明内容评分器——MarketMuse 公式(50 话题×min 提及,2)+Surfer 双轨(SEO 轨+AI 轨前三查)+意图系数;竞品<3 拒评;术语表(重要度/典型区间/缺失清单+observed-consensus 共识词筛:≥2 竞品正文精确定位才入推荐层,落选留排除码);`--facts` D/K 事实分级(行首 D: 点名声明/K: 中性观察,分报不混算)
+- `fix_plan.py --url|--audit audit.json`:审计→修复物生成器(6 类 FixItem:robots/llms/schema/meta/ai_discovery/content);默认 dry-run,--apply 只写 ./seo-fixes/;--estimate 收益预估
+- `grounding_page.py --facts brand.yaml`:品牌实体事实页生成(Rankscale 11 条:dl 事实/FAQ 含名/volatile 独立/is-NOT 消歧/JSON-LD 镜像);--check 校验已有页
+- `audit_compare.py --old a.json --new b.json`:两次审计对比(新增/已修复/delta 三清单+页级 changed);--baseline-gate N 回归门(Lumar Protect 语义)
+- `ci_format.py audit.json --format sarif|junit|github`:CI 输出格式化(SARIF 挂 Code Scanning/JUnit 挂测试报告/github 注解);配仓库根 action.yml 一站式 PR 门禁
+- `sensor_volatility.py --gsc gsc.csv`:自有词集 SERP 波动分(0-10 四档+z30 异常日);--context 供 monitor 告警附注"疑似算法更新而非站点问题"
+- `forecast.py --kws kws.csv`:SEO 商业提案六步(seoClarity 官方):est_traffic→校准系数持久化→三 scenario(rank3/pct10/pos2,>30 位不预测)→orders/value/acquisition_value;省钱+赚钱双结构;配 templates/monitor/forecast-report.md
+- `prioritize.py --audit audit.json`:条件优先级引擎(Botify 口径):18 条声明式规则+放大器+条件依赖型(noindex 意图/canonical PageRank)+segment 切换重算;"立即处理/值得探索"两栏
+- `changelog.py --db monitor.db`:页面变更审计追踪(Conductor 口径):5 枚举事件+字段白名单+14 天日/更早周粒度;根因诊断"流量下跌那天页面改了什么"
+- `doctor.py`:环境自检+凭证分层探测(T0 纯静态→T3 GA4,只探键名不读值)+全输出 redact;退出码 0=ready/3=需处理;报告按 tier 自动声明数据覆盖范围 `--sources [--ws] [--json]` 列出 `seo-ops/playbook/sources.json` 登记的数据源,免费的在前。
+- `ai_views.py --url|--html`:AI 视图层生成(Scrunch AXP 等价):语义净化版 HTML+Markdown+tokereductions 统计;默认 dry-run,--apply 写 ./ai-views/,人审后自行部署;不承诺引用提升(同 llms.txt 实证口径)
+- `envelope.py --audit audit.json [--health] [--priority]`:三源统一封套 audit-data.json(summary/categories/action_plan 三段 phases)+**部分落盘契约**(每 category 即落盘 findings/*.md,--resume 断点续跑)
+- `trend_watch.py watch|gate|backlog [--config 垂直配置]`:热点监控与选题闸门——**监控的是产品所在行业的趋势**(vertical_tokens 三层词表:品类+品牌+竞品;reddit_subs 按垂直选版),不是 SEO 元领域;六信号源(403 源跳过)→四问闸门(相关≥25 分/净新观点≥5/窗口 24-72h 分型/独家三选一)→GO·PIVOT·WATCH·DROP+wire 否决;briefs/ 落盘决策件配 trend-jack-playbook.md
+- `remediation.py init|list|update|verify|report`:修复项生命周期——从 envelope 封套生成工单(phase→deadline SLA),verify 对比新旧体检**自动核销已修复项**(部分命中标 partial,新 finding 提示增补);wontfix 强制 note(接受≠消失);report 出 SLA 达成率——补全"体检→建议→修复→验证→关闭"闭环的最后一环
+- `benchmark_report.py --audits dir|--monitor-db|--scores`:匿名基准聚合(State of GEO 式):P25/50/75 分布+Top 失败规则频次;偏差自白首尾强制;只聚合数字绝不含域名 
+
+**技术 SEO**
+- `sitemap_audit.py URL`:六坏桶+lastmod 三判定(伪造检测);给站点 URL 时先读 robots.txt 的 Sitemap 声明;子 sitemap 超过 --max-child 时按位置均匀抽样(含最新的末尾);逐条检查默认 ≤500 条全查、超过均匀抽 500 条,[范围] 行写明查了几条/共几条;sitemap 返回 HTML 报「不是 sitemap(软 404)」(退出码 1)
+- `hreflang_cluster.py URL...`:簇矩阵(ISO 639-1 + 可选 ISO 15924 文字码 + ISO 3166-1 区域码;es-419 这类数字区域码 Google 不支持;回链缺失只影响那一对,不是整簇作废;多载体同时声明只作维护提示)
+- `redirect_chain.py URL`:逐跳链/循环/301 检查/HTTPS→HTTP 降级/302 与 HTTP→HTTPS 提示/终点 4xx·5xx/终点页 meta refresh
+- `robots_posture.py URL`:AI 爬虫矩阵——**37 bot 四层名单(search 15/training 11/user 8/other 3,带官方核实标记)**+CITATION_BOTS 5 个**两级评分**(通配符 Allow 只拿部分分,专属规则才满分)+RFC 9309 四态判定+Cloudflare 注入检测+Content-Signal+AI bot 策略一致性(`inconsistent_ai_policies`);--fix-robots 打印可追加的修复块
+- `llmstxt.py validate|check|generate`:v2 校验/线上探测(每个文件按自己的路径报;首页 Markdown 版本认 index.html.md 或 index.md)/生成
+- `schema_lint.py URL`:@id/悬空引用/自评评分/占位符黑名单/评分越界/Google 富结果必填项;退出码 0 无 CRITICAL 和富结果错误、1 有、2 用法错或抓不到、3 页面没有 JSON-LD
+- `head_check.py URL|FILE`:head 元素检查——charset 须在前 1024 字节(ERROR)/og:image 绝对 URL;与 OG 重复的 twitter:*、可删旧标签(x-ua-compatible 等)、元素顺序只记 INFO;og:url 须 http(s):// 绝对 URL(ogp.me);不发 Accept-Language,被重定向时打印最终 URL;微信/QQ itemprop:`--market` 显式给出时以它为准(zh 才查),不给时按 `<html lang>` 与正文汉字自动识别中文页(中文页不加 `--market zh` 也会查,日/韩文页跳过)
+
+**关键词与 SERP**
+- `gsc_mining.py 导出.csv [--mode matrix] [--decay cur prev] [--brand RE]`:striking distance/低 CTR(排名 1–10,期望曲线是本套件口径)/蚕食/衰退(本期消失的查询按 0 计);接受网页导出的 `Top queries` 列
+- `question_align.py --gsc qp.csv --pages pages.csv [--brand RE] [--fetch|--html-dir D] [--page URL]`:提问对齐候选页(展示多、点击 0)——title/H1/首段对查询词的覆盖与缺词、匿名查询占比、按本站分段 CTR 算的期望点击;方法见 [question-alignment.md](../content/question-alignment.md)
+- `serp_overlap.py 输入.csv`:四档聚类判据(7-10/4-6/2-3/0-1)
+- `keyword_variants.py`:跨语言变体归组(阿正书/越声调/全半角/土 İ/俄 ё)
+- `payment_intent.py`:支付即意图标注(OXXO/cuotas/Pix/COD…)
+- `geo_difficulty.py`:GEO 难度公式+客户三档
+- `serp_occupancy.py --market XX`:市场 SERP 占位审计(UGC 五霸/聚合器/投诉站)
+- `grid_rank.py rank_data.csv`:本地网格排名三指标(ARP/ATRP/SoLV;未命中 21 惩罚+盲区=ATRP−ARP 必同报)
+
+- `link_intel.py listicles|ccgraph|crawl|intersect|footprint`:**竞品与外链发现**——榜单文章挖上下游种子站;Common Crawl 域名级链接图(免费,季度版,流式读约 9GB 不落盘)查任意域的入链域和种子之间互链;抓合作/友链/资源页和以对方品牌命名的页,页面级找互换(两边页面都给);外联候选=链到 ≥N 个种子、没链我们(--ledger 标已联系);footprint 按 SERP 抽样算竞品排在哪些词、靠哪类页面,我们缺位的词按赢家页面类型归组。流程与判据见 [link-intelligence](../research/link-intelligence.md)
+
+**多语言实装(markets.json 数据层)**
+- `market_lint.py --market XX FILE`:v3 检查注册表 64 条——special_checks 动态机检 52 条映射(全角可见长度(日 32)/泰文字素/句长/营销词 18 语/格式/敬语混用/简繁混检+ko nosourceinfo/ja 星5つ/en 可引性四要素/pt CNPIX骗局/de Werbung 双披露/id baku-gaul/EYD/th 佛历/pl 变音/sierotki/nl je-u·KvK 等)+ v3 常开机检 12 项(营销词密度/句长CV/FAQ问句密度/有源数字密度/H2 疑问式占比/列表密度/标题关键词位次/日期格式/电话前缀/货币符号/母语字符占比/noai·noimageai·nosnippet AI 退出 meta);--report 尾部打印该市场 AUTO 比例
+- `local_format.py --market de|fr|ar|zh`:数字/标点空格/RTL 数字/日期/电话
+- `ste_lint.py FILE [--lang en] [--glossary terms.csv] [--json]`:ASD-STE100 近似检查(程序句 ≤20 词、描述句 ≤25 词、段落 ≤6 句、一句一指令、被动、缩写、分号、术语一致);口径见 [asd-ste100-web-writing.md](../content/asd-ste100-web-writing.md),不出「合规」结论
+- `text_metrics.py`:多文字词数(拉丁/西里尔/天城体按词、CJK 按字)/metronomic 句长 AI 签名/slop/Unicode 水印(--scrub 清除)
+- `text_units.py`:按市场计量单位统计
+
+**AI/GEO 测量**
+- `citation_panel.py init|record|report|diff|decay|score`:采样面板(五状态/配对分母/Wilson CI);record `--answer-file` 自动提及检测(URL 掩码+实体词表自动填 mentioned/position);init 意图冻结分母(denominator_freeze 档案,分母不随答案漂移);report 按 branded·unbranded 分报(targeting 两栏各出全套指标+交叉错配计数);diff 配对差分(只对同 prompt×engine 且同指纹配对算 Δ,跨指纹强制标注"不可比");**decay 子命令**=Profound citation decay 协议(7 点平滑/4 道闸门/半衰期双口径并记/重写队列——Profound 厂商研究称中位 11 天(2026-09-30 博文,88.3 万页)与调研口径 ~4.5 周并记不选边,复测按短口径 W+2、刷新投入按长口径 8-12 周;两口径出处与分池规则见 multilingual-workflow.md);score=五维打分写回(硬 cap 机检+反通胀聚合);diff 带 signals(|Δ|≥5pp 且 n≥10/fingerprint/贡献排序);report 出 SoV/win_rate/citation_rate+brand vs source visibility;prompts 对象化(--prompts-file 吃 prompt-bank.md/--stage-mix 5+3+2/--persona-fanout)
+- `fanout_analysis.py 输入.csv`:query fan-out 三桶(added/dropped/preserved)
+- `ai_referral_log.py < access.log`:AI referrer 下界分析(+--bot-ua 先行指标);**bot 四桶分类**(on_demand/search_index/training/agent)+failure_rate 两级+llms.txt 双基线;--attribution 出 GA4 正则+归因纪律+自报问卷
+- `citation_gaps.py --panel panel.json --brand-domains a.com`:引用缺口(竞品被引你没被的 URL+外联简报;has_competitor_run 高优先)+来源五分类(Editorial/Corporate/UGC/Reference/Own,逐域定性+行动提示)+gapLabel 七叉决策树(逐 prompt 诊断标签,competitor_owned 最高优先)→ 配 citation-outreach-brief.md 模板,与 cite_domain.py 串联
+- `oracle_check.py --facts brand.yaml --responses responses.json`:AI 回答 vs 品牌事实核查(Athena 口径:25 条门槛/finding 状态机/Inaccuracy%/按引擎 model_accuracy)
+- `cite_domain.py --input json`:CITE 40 项域名评级(veto BLOCK)+引用证据清单(三类来源分离:仅 provider_citation 计入 engines_cited;5 家引擎原始 JSON 字段路径,报告尾部与 --json citation_evidence 均输出)
+
+**归因与管道**
+- `did_attribution.py --pre --post`:DiD 对照归因(56/28/7 参数/三态判定/断代检测)
+- `seo_vs_ads.py --gsc --ads`:四桶 join(double-paying 检测+省额区间)
+- `yt_outlier.py videos.csv`:YouTube 2× 离群+标题词频(长短分基线)
+- `trend_scout.py`:HN+Reddit 趋势雷达(失败源明说不猜)
+- `freshness.py [DIR]`:证据保鲜(>90 天 stale/未来日期 error/--fail-stale)
+- `report_build.py --findings json --out html`:自包含报告(禁 script/80KB/>20 条=失败报告)
+
+**持续监控守护(从一次性审计到长期监控+自动完善)**
+- `onboard.py start|show|note|answer|skip|event|status|diagnose`(RQ-237):开局 6 环。`start` 调 product_scan 读产品、lifecycle 判阶段,起草 `seo-ops/context/profile.json` 和 `product.md`(全部未确认),打印第 1 环;`show` 打印一环(agent 先做什么、带出处的草稿、≤4 个带猜测的问题、停下的指令);`answer --quote <用户原话> --confirm` 确认一环(没有原话、没问过、必答题没答齐都退出码 3);`skip` 只在第 1 环确认后可用;敏感答案存 `context/private/`(进 .gitignore);第 5 环「明确不做」进结构化禁用清单 `deny`。流程见 [onboarding](onboarding.md)
+- `product_scan.py --site URL [--repo DIR]`(RQ-237):开局第一步,零依赖读首页、定价、文档、llms.txt、sitemap 页面类型和语言前缀、robots、Wayback 首次出现日期;给仓库时读框架、路由、内容文件、埋点、README。输出带出处的事实草稿(`facts`,kind=fact/inferred)和阶段信号(`signals`)
+- `lifecycle.py diagnose [--scan] [--ws] [--metrics]`(RQ-237):两条轴诊断。产品阶段 6 档 × 成熟度 5 维(技术、内容、外链与品牌、AI 可见度、团队与测量)各 5 级,规则全在 `data/lifecycle.json`(用户可在 `seo-ops/playbook/lifecycle.json` 覆盖);证据缺的判未知并列出要补什么;给出最该补的一格和下一件事。规则说明见 [lifecycle-stages](lifecycle-stages.md)
+- `plan.py build|show --ws seo-ops`(RQ-237 第 2 批):开局第 6 环出方案。只从本阶段的打法里选(`data/playbooks.json`,用户可在 `seo-ops/playbook/plays.json` 加或覆盖),按成熟度最弱的一格加权;only_if / done_if / veto / 禁用清单逐条过滤并写明理由;每条建议填上档案里的产品事实,写清动哪类页面、看哪个数、怎么量、第几周做;产出 `seo-ops/plan/plan.json`、`roadmap.md`、`strategy-book.zh.md` / `.en.md`。第 1 环没确认或阶段未知退出码 3。打法卡见 [stage-0-idea](../lifecycle/stage-0-idea.md)、[stage-1-prelaunch](../lifecycle/stage-1-prelaunch.md)
+- `launch_check.py --url URL [--allow-local] [--prod-host DOMAIN] [--strict]`(RQ-237 第 2 批):上线清单 25 项(18 项自动查、7 项手动),每项有级别(block / warn / info)和负责人(`seo-ops/plan/launch-owners.json` 覆盖默认角色);本地预览、预发、正式站都能跑;`--prod-host` 查 canonical 和 og:image 是否指向正式域名。说明见 [stage-1-prelaunch](../lifecycle/stage-1-prelaunch.md)
+- `demand_check.py --seeds FILE | --seed TERM [--names a,b --tlds com,io]`(RQ-237 第 2 批):想法阶段的需求验证,不要 key。三家公开联想接口取联想词和问题 / 比较 / 价格词,报信号强弱、意图分布、跑题率和反复出现的词;联想数不是搜索量(`[est]`),`--volumes` 补关键词工具导出(`[real]`);`--names` 用 RDAP 查域名注册记录、看名字的联想是否被占。说明见 [stage-0-idea](../lifecycle/stage-0-idea.md) 没给 `--volumes` 时用 `sources.json` 登记的 `keyword_volume` 源,付费源要 `--allow-paid <源名>`。
+- `loops.py status|run|resolve --ws seo-ops`(RQ-237 第 3 批):第二次打开以后的长期循环。`status` 一屏写清档案上次核对日、阶段、方案第几周、本周路线项和各循环状态;`run` 按 `data/loops.json` 的 6 个循环(每周运营单、30 天档案核对、90 天季度复盘、产品变了、到了下一阶段门槛、改版保护)判断要不要问,问过的按指纹去重、一轮最多 3 问,退出码 1 = 有问题要问,开局没做完退出码 3;`--scan` / `--rescan` 和档案比,只问变了的部分;`resolve` 带用户原话写回档案。说明见 [loops-and-site-move](../lifecycle/loops-and-site-move.md)
+- `site_move.py baseline|compare`(RQ-237 第 3 批):改版 / 迁移保护。改动前 `baseline` 存每页状态码、title、H1、canonical、hreflang、结构化数据、noindex、站内链接(可合 GSC 网页点击);改动后 `compare --map CSV|MIGRATION.md` 查漏 301、链式和临时跳转、跳到首页或映射表以外、canonical / hreflang / 站内链接 / sitemap 还指向旧址、新加 noindex、结构化数据丢失;block 级退出码 1。说明见 [loops-and-site-move](../lifecycle/loops-and-site-move.md)
+- `teach.py rule|check|export|show`(RQ-237 第 4 批):用户按自己的想法教它。`rule add --quote <原话> [--deny 词]` 把原话带日期写进 `seo-ops/playbook/rules.md`,「不做 X」同时进结构化禁用清单 `deny.json`(没给 `--deny` 也没写 `--no-deny` 退出码 3);`check new/try/enable` 生成零依赖检查脚本、在 ≥3 个页面上试跑给用户看、带原话启用并记 sha256,脚本变了自动停用;`export <名>` 去掉站点专属内容整理成 seo-skills 的 PR 草稿目录,只打印 `gh pr create --draft`,不提交。说明见 [playbook](playbook.md)
+- `playbook.py hook|context|skill-dir`(RQ-237 第 4 批):playbook 的共用库和钩子。所有出建议的脚本用它的 `deny_match` 过滤禁用项;`hook` 是插件 SessionStart 钩子(注入规则和禁用清单),其他宿主开工前跑 `context`;`skill-dir` 打印 skill 实际安装位置(SEO_SUITE_DIR → CLAUDE_PLUGIN_ROOT → ~/.claude/skills → ~/.agents/skills)。数据源登记 `sources.json` 也在这里读写
+- `pm_context.py read|write`(RQ-237 第 4 批):和 marketingskills 的 product-marketing 共用 `.agents/product-marketing.md`。开局第 1 环读它当草稿;某一环确认后 onboard 自动把改过的条目写回,只改对应那一行,照对方规矩升版本号、改 Last updated、Changelog 最上面加一行;文件没有不建
+- `project.py init|migrate|adopt|run triage|next|status`:长期运营的工作区与编排器。`init` 在站点仓库根目录建 `seo-ops/`(project.yaml 带 `schema_version: 2`、history/ 体检快照、ledger/ 台账、monitor/ 监控、.gitignore 排除缓存和原始流量行),这是运营状态的唯一位置,可提交进 git;同一仓库多站点用 `--dir seo-ops-<名>`。`migrate` 把旧版 `<slug>.seo/`、`.seo-monitor/` 和散落的 remediations.json/panel.json 等搬进 `seo-ops/`:先复制、逐项核对(文件集合、工单 id 集合),全对上才把旧位置改名为 `*.migrated-<日期>` 保留;两处都有同名状态时拒绝。工作区 schema 比本版新时一律退出码 2,不改写。`next` 的阶段判定用记录里的时间(triage.json 的 generated_at、工单的 implemented_at),新克隆后照样判对
+- `project.py ops weekly|monthly`(= `ops.py`):每周 / 每月运营单,一屏 `seo-ops/runs/<日期>/agenda.md`:硬告警、只推荐一件事(给 `--repo` 时附源码候选)、问题五态(已解决 / 好转 / 仍在 / 变差 / 新增,没复查到的记「未复查」)、到期复验、搜索与 AI 可见度(每个数写数据源,GSC 两个来源抽 3 天对账)、有点击却有问题的页五张清单、覆盖率(不够不出分)。`ops change add` 记改动(回滚命令、预期指标、≤120 字 Search Console 标注,复验日 +14/+28 天);`ops ack` 记已读;`ops notify` 有硬告警或连续 2 期没人看才推 Telegram。外部数据包格式和定时做法见 [ops-agenda](../monitoring/ops-agenda.md)
+- `ga4_api.py channels|ai --property ID [--days N] [--compare]`:GA4 Data API 只读;`ai` 用 GA4 自带的「AI Assistant」渠道按来源拆引擎,没有该渠道时按来源域名白名单认,输出写明口径
+- `gsc_api.py inspect --site … [--budget 100] URL...`:URL Inspection(收录判定、覆盖状态、Google 选的 canonical、最近抓取);按每站每天配额记台账 `seo-ops/ledger/inspect-quota.json`,留 10% 余量
+- `bing_wmt.py submit|feeds|urlstatus|stats|pagequery --site …`:Bing Webmaster API。**给 Google 交网址或 sitemap 时同一批也交 Bing**:网址用 `submit`(每天约 100 条,读 `GetUrlSubmissionQuota` 为准),sitemap 用 `feeds --submit <URL>`;`feeds` 列每张 sitemap 的状态和条数,有读不到的(如 `The page is not accessible`)退出码 3。发布时的变更推送用 `indexnow.py`(Bing、Yandex、Naver 等共享,不含 Google)。
+- `source_map.py --repo PATH [--rev origin/main] [--no-fetch] [--fetch-base URL] URL...`:线上 URL → 该改的源文件(Next.js App Router、纯静态)。先抓页面的 title、描述、H1、首段,切成片段在仓库里反查原文(越少见越可信;import 链里的文件加分,语言目录对不上减分;标题是模板拼的就把原文拆成「措辞 + 数据值」:import 链里模板和写死的字面量解释措辞,生成物里的表值、模板空位里的短名字算数据值,只撞上数据值的文件不算证据;第一名给写措辞的模板,数据表的真源另配在 `combo` 里);再用路由和动态段办法补候选;生成物顺着头部注释指到生成器,翻译流水线产出的本语言译文(头部写 localization pipeline)不算生成物、就是这页的源;路由 import 链外的文件(博客合集、消息包)打折且不标动手,运行时按文件名和 slug 读的数据文件除外;每个候选带置信度,低于 0.7 只列候选不动手。例 4 实测见 `tools/testsites/run_example4.py`
+- `guard_hook.py`:Claude Code 改动前钩子(`project.py ops install` 写进站点仓 `.claude/settings.json`)。在 main / master 上改 robots、noindex、canonical、重定向就拦下(退出码 2),让 agent 先开分支、开草稿 PR
+- `monitor.py init|run|diff|report|rebuild|quarantine|maintenance|sample-keypages`:守护核心——日检四问(可见性 site: 抽查/流量 GSC/索引 robots+sitemap/存活状态码+混合内容)+周检趋势(title-meta 漂移/llms.txt/sitemap lastmod/AI 爬虫放行),SQLite 快照入库,diff 按百分比阈值×最小样本地板出四级告警(critical/warn/info/low=自愈);quarantine 隔离坏 run(不再作 diff 基线)、maintenance 维护窗口(只记快照不产告警)、sample-keypages 按 sitemap 模板分组抽样建议 key_pages;visibility 检查支持 serp_source 源适配(bing 默认/duckduckgo 零 key/付费源注册位+对照表,config 可换);全模式 `--dry-run` + `--budget-minutes` 运行上限;`monitor.db` 只是缓存(不进 git),每次 run 的快照写 `runs/run-NNNNN.json`、每次 diff 写库的告警写 `runs/diff-NNNNN.json`、隔离状态写 `runs/status-NNNNN.json`,库不在时自动重建(`rebuild` 可手动);当前目录有 `seo-ops/` 时 `--dir` 默认 `seo-ops/monitor`;部署模板见仓库 `.github/workflows/seo-monitor.yml`(本地 cron/launchd/claude -p 无头路径在注释里)
+- `notify.py`:告警分级路由器——slack/discord/telegram/SMTP 四渠道(secrets 走环境变量);critical 即时/warn 日批/info 周批/low 静默进报告
+- 方法论:[持续运营手册](../monitoring/continuous-operations.md)(日四问/周趋势/月校准分层、四级 playbook、防疲劳三律、自动安全项 vs draft PR 人审边界)
+
+**套件自维护**
+- `self_check.py` / `link_check.py`
+- `intel_check.py init|check [--source 名]`:信源变更检测(29 源注册表:RSS top-item(宽口径源按关键词过滤)+页面 hash,与 [信源监控体系](intel-sources.md) 同步维护)——check 拉全部源与 `.intel-state.json` 基线 diff,按 source→module 映射输出应更新的套件文件;退出码 1=有变更,按[自更新协议](self-update-protocol.md)执行更新
+
+来源方法论见 NOTICE(百仓深扫改写,非复制代码)。

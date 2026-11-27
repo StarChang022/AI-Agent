@@ -1,0 +1,314 @@
+{
+ "checked_at": "2026-11-26T09:29:09.374921+00:00",
+ "sources": {
+  "google-blog": {
+   "top": "New filtering and reporting capabilities in the Search Analytics API",
+   "seen": [
+    "New learning paths: curated YouTube playlists for Search fundamentals and Technical SEO",
+    "Announcing web multimodal Search performance reporting in Search Console",
+    "Search Central Live Deep Dive Europe 2026: Meet the community speakers",
+    "Search Central Live India 2026: Bengaluru, We're Coming (For Real This Time)",
+    "Search Central Live is coming to Bogota and Ciudad de M\u00e9xico",
+    "Supporting a shared AI training control for websites",
+    "Search Central Live in Zurich is back!",
+    "Moving to a CDN without overwhelming your origin (or blocking Googlebot)",
+    "New filtering and reporting capabilities in the Search Analytics API"
+   ],
+   "ts": "2026-11-17T09:10:25.483795+00:00"
+  },
+  "google-updates": {
+   "hash": "35f21bcc769d5245c4c69dc16f977cab",
+   "ts": "2026-11-25T09:47:59.102236+00:00"
+  },
+  "gsc-announce": {
+   "top": "New filtering and reporting capabilities in the Search Analytics API",
+   "seen": [
+    "New learning paths: curated YouTube playlists for Search fundamentals and Technical SEO",
+    "Announcing web multimodal Search performance reporting in Search Console",
+    "Search Central Live Deep Dive Europe 2026: Meet the community speakers",
+    "Search Central Live India 2026: Bengaluru, We're Coming (For Real This Time)",
+    "Search Central Live is coming to Bogota and Ciudad de M\u00e9xico",
+    "Supporting a shared AI training control for websites",
+    "Search Central Live in Zurich is back!",
+    "Moving to a CDN without overwhelming your origin (or blocking Googlebot)",
+    "New filtering and reporting capabilities in the Search Analytics API"
+   ],
+   "ts": "2026-11-17T09:10:26.700669+00:00"
+  },
+  "status-dashboard": {
+   "hash": "69dd1cff06a2df955976f82438f4a7b4",
+   "ts": "2026-11-25T09:47:59.795339+00:00"
+  },
+  "lighthouse": {
+   "top": "v13.6.0",
+   "seen": [
+    "Lantern Test Data",
+    "v13.5.0",
+    "v13.4.1",
+    "v13.4.0",
+    "v13.3.0",
+    "v13.6.0"
+   ],
+   "ts": "2026-10-28T06:50:15.365076+00:00"
+  },
+  "bing-wm": {
+   "top": "Introducing Topics Portfolio (Beta) in AI Performance",
+   "seen": [
+    "Introducing AI Performance in Bing Webmaster Tools Public Preview",
+    "Does Duplicate Content Hurt SEO and AI Search Visibility?",
+    "How AI Search Is Changing\u202fthe\u202fWay\u202fConversions\u202fare Measured",
+    "Bing Introduces Support for the data-nosnippet HTML Attribute",
+    "Keeping Content Discoverable with Sitemaps in AI Powered Search",
+    "Introducing Topics Portfolio (Beta) in AI Performance"
+   ],
+   "ts": "2026-10-14T06:06:27.928530+00:00"
+  },
+  "openai-bots": {
+   "hash": "b413e08c8f138e149cdc7a9881aaaf04",
+   "ts": "2026-11-26T09:28:53.036999+00:00"
+  },
+  "ard-spec": {
+   "top": "Merge pull request #119 from jdamick/adopt-ai-catalog-urn",
+   "seen": [
+    "Merge pull request #85 from thegovind/conformance-extension-media-types",
+    "Merge pull request #86 from aaitor/add-nevermined-payment-example",
+    "Merge pull request #82 from ards-project/drop-guha-affiliation",
+    "docs(conformance): add Nevermined payment example catalog",
+    "conformance: report extension media types as informational",
+    "Merge pull request #80 from eeee2345/spec/scan-vs-compliance-attestat\u2026",
+    "chore: merge main and update attestation scopes for v0.91 (\u00a74.5.2)",
+    "Merge pull request #106 from ards-project/fix-cddl-explore-facet-buckets",
+    "spec(cddl): allow empty buckets array in explore-facet-result (#34)",
+    "Merge pull request #105 from ards-project/fix-skill-and-recognized-me\u2026",
+    "Merge pull request #111 from 91pavan/docs/observability-section",
+    "feat(spec): add informative observability guidance",
+    "Merge pull request #119 from jdamick/adopt-ai-catalog-urn",
+    "spec: adopt AI Catalog's urn:air grammar (Appendix C, ADR-0011)"
+   ],
+   "ts": "2026-11-25T09:48:02.161269+00:00"
+  },
+  "anthropic-crawl": {
+   "hash": "776f64b4d0bcf5eac7656bf908d52a73",
+   "ts": "2026-11-25T09:48:02.734101+00:00"
+  },
+  "schema-org": {
+   "hash": "c28ae2197ecacc4469ac00319b179a7f",
+   "ts": "2026-11-20T08:30:05.264715+00:00",
+   "unstable_streak": 0
+  },
+  "crux": {
+   "hash": "837a78edf4e6a064f862d87c37f69c5d",
+   "ts": "2026-11-17T09:10:30.278817+00:00"
+  },
+  "yandex-wm": {
+   "hash": "21566637756a98d90aec3ec40706e672",
+   "ts": "2026-11-26T09:28:56.739054+00:00"
+  },
+  "naver-wm": {
+   "hash": "d435acf416e7e94b5a1cffcc1962f617",
+   "ts": "2026-11-24T10:53:39.403028+00:00"
+  },
+  "baidu-ziyuan": {
+   "hash": "5b970db79a084daa5d7c5e7f41f4db61",
+   "ts": "2026-10-11T08:35:05.849665+00:00"
+  },
+  "statcounter-search": {
+   "hash": "ac6c1d5392e4d7ac9fe2c7f3fb2948c2",
+   "ts": "2026-11-26T09:29:04.791493+00:00",
+   "unstable_streak": 3
+  },
+  "statcounter-ai": {
+   "hash": "56137b84086106b08153ce52c0368840",
+   "ts": "2026-11-26T09:29:05.329655+00:00"
+  },
+  "semrush-sensor": {
+   "hash": "713659c081a51d4ab53b228564d0da4a",
+   "ts": "2026-11-26T09:29:05.974851+00:00"
+  },
+  "seroundtable": {
+   "top": "ChatGPT Ads New Call-To-Actions, Business Agents Beyond US, More Audience Metrics & More",
+   "seen": [
+    "OpenAI ChatGPT Ads Updates: Intelligent Bidding, New Cost Targets, Geo-Flexibility & Product Set Filters",
+    "Daily Search Forum Recap: November 12, 2026",
+    "Google Tests Dropping AI Mode From Search Bar & Ask Anything",
+    "Microsoft 365 Outage Impact On Microsoft Advertising",
+    "Daily Search Forum Recap: November 13, 2026",
+    "Search News Buzz Video Recap: Google November Core Update Is Here, ChatGPT Business Hub Gives Us Clicks, Yahoo Pivot Search & Google Ads Invalid Traffic",
+    "Yahoo Scout To Pay Publishers Through The ILC For Using Content In AI Answers",
+    "Google Business Profiles Now Lets You Add Facebook Messenger Number",
+    "Daily Search Forum Recap: November 16, 2026",
+    "Google Search Analytics API Adds Branded Queries, Multimodal & Country/Devices Filters",
+    "Google November 2026 Core Update Ranking Flux - What We're Seeing",
+    "Google AI Mode Drops Gemini Label & Rolls Out Gemini 4 Carbon To Pro Subs",
+    "Google AI Overviews With Unfaded Citation Block",
+    "Google Tag & Google Tag Manager Unification",
+    "Daily Search Forum Recap: November 17, 2026",
+    "FBI: SEO Poisoning Led To $28 Million In Ransomware Payments",
+    "Google: A Site Move Doesn't Improve A Site's Overall Quality",
+    "Daily Search Forum Recap: November 18, 2026",
+    "Google Ads Releases Several AI Max For Search For Travel Campaigns Help Docs",
+    "Google Ads New Commercial Exemptions To US Election Advertising Policy",
+    "Microsoft Advertising Announces Biggest Upgrade To Bidding Models",
+    "Google Ads PMax Setup Now With Channel Prioritization & Promo Mode",
+    "Google Search Officially Rolls Out Collapsible Sidebar",
+    "Microsoft Confirms Ads Are In AI Overviews On Bing Search",
+    "Daily Search Forum Recap: November 19, 2026",
+    "Google Search What People Are Saying AI-Generated Emojis",
+    "Google Hotel Search Listings With Continue On Google To Book",
+    "Daily Search Forum Recap: November 20, 2026",
+    "Search News Buzz Video Recap: Google November Core Update Status, FBI Alert On SEO Poisoning, Bing & ChatGPT Web Only Links, Microsoft Ads Bid Upgrade",
+    "Google, ChatGPT & Others AI Engines Provide Coupon Codes",
+    "ChatGPT Card Design",
+    "Google Expands & Clarifies Sexual Content Advertising Policy Examples",
+    "Google StarSearch, AIGC, Zero-History Discovery, Feed Ranking & More",
+    "You Can Connect ChatGPT Business Hub With ChatGPT Ad Account",
+    "Google Search Profiles Is Rolling Out Globally",
+    "New Google Business Profiles Controls For Appointments & Dinner Reservations",
+    "Google Documents Previously Undocumented Crawlers & Fetchers",
+    "Google: Connect Apps To Search In Return For Personal Responses",
+    "Google Posts FAQs on Back Button Hijacking Spam",
+    "Daily Search Forum Recap: November 23, 2026",
+    "Google On How Links Are Selected & Shown In AI Overviews & AI Mode",
+    "New Google Search Ranking Hub, Ranking Principles, Feedback & AI Training Control",
+    "Google December 2026 Core Update Preannounced - Complex Queries & Personalization",
+    "Daily Search Forum Recap: November 24, 2026",
+    "Google November 2026 Core Update Has Completed Rolling Out - What Happened?",
+    "ChatGPT Ads New Call-To-Actions, Business Agents Beyond US, More Audience Metrics & More",
+    "Daily Search Forum Recap: November 25, 2026",
+    "Google Ads Encourages Dynamically Scoring Conversion Values Hack",
+    "Bing Image Search Ask Visual Search Button",
+    "Google Image Collections & Saved Items Adds Ask Anything AI Mode"
+   ],
+   "ts": "2026-11-26T09:29:07.120612+00:00"
+  },
+  "google-docs-rss": {
+   "top": "Added an FAQ to the back button hijacking spam policy",
+   "seen": [
+    "Updating the Indexing API quota page",
+    "Added documentation on the UGC Fresh Data Program",
+    "Updated guidance on using generative AI content",
+    "Added creator property and updated interactionStatistic in VideoObject structured data",
+    "Added local business query support to the aggregator and supplier units",
+    "Updated the control what you share with Google Search documentation",
+    "Updated guidance on crawlable URL structures",
+    "Updated guidance on preventing user-generated spam",
+    "Added \"things to do\" query support to the aggregator and supplier units",
+    "Added documentation on identifying traffic from Google Search",
+    "Removed the Data Feed validation tool from the book actions documentation",
+    "Added an FAQ to the back button hijacking spam policy"
+   ],
+   "ts": "2026-11-24T10:53:51.809291+00:00"
+  },
+  "openai-bots-rss": {
+   "hash": "f237661cad613ae8cbd3da9f508b2565",
+   "ts": "2026-10-18T05:51:38.708920+00:00"
+  },
+  "chrome-blog": {
+   "top": "What's New in WebGPU (Chrome 155-156)",
+   "seen": [
+    "What's New in WebGPU (Chrome 155-156)",
+    "Shipping JPEG XL in Chrome",
+    "Email verification updates, October 2026",
+    "Chrome 156 beta",
+    "HTML-in-Canvas updates: Iterating toward a better Web API"
+   ],
+   "ts": "2026-11-06T07:53:59.823893+00:00"
+  },
+  "web-dev-blog": {
+   "top": "New to the web platform in September",
+   "seen": [
+    "New to the web platform in September",
+    "August 2026 Baseline monthly digest",
+    "Find features to support for Interop 2027 with your coding agent",
+    "Submit your proposals for Interop 2027",
+    "New to the web platform in August"
+   ],
+   "ts": "2026-11-06T07:54:00.066950+00:00"
+  },
+  "cloudflare-blog": {
+   "top": "Introducing Search for Agents",
+   "seen": [
+    "Agents aren\u2019t humans (but they kinda are)",
+    "See the agents, set the terms: new visibility and control for personal agents",
+    "Cross-request KV cache exposure in the GLM-5.3 Workers AI model, and our remediation with SGLang",
+    "How Commerce.com and Cloudflare are getting storefronts ready for AI agents",
+    "Adapting to AI penetration testing orchestrators: The Modern Security Model",
+    "See the agents, set the terms: New visibility and control for personal agents",
+    "An updated Clairic and Clairic-flash are now open-weight, from the new Workers AI Superintelligence team",
+    "Introducing Search for Agents"
+   ],
+   "ts": "2026-11-26T09:29:07.747688+00:00"
+  },
+  "openai-news": {
+   "top": "ChatGPT Ads increases its market presence in 44 countries",
+   "seen": [
+    "Flipsnack grows product signups with conversion optimization",
+    "Making it easier for websites to express AI training preferences",
+    "Evernote turns AI-driven discovery into paid subscriptions",
+    "ChatGPT Ads increases its market presence in 44 countries",
+    "How VistaPrint helps small businesses get the word out"
+   ],
+   "ts": "2026-11-18T08:30:36.262696+00:00"
+  },
+  "bing-search-blog": {
+   "top": "Your choice: Turn AI answers on or off in Bing",
+   "seen": [
+    "Your content, your choice: clearer preferences for training and grounding",
+    "New AI Visibility Insights in Bing Webmaster Tools: Intents, Topics, Citation Share, Compare",
+    "Announcing Microsoft Web IQ",
+    "A Smarter Way to Explore Images Has Come to Bing",
+    "Keeping Trusted Content Visible in an AI-Powered Search World",
+    "Your choice: Turn AI answers on or off in Bing"
+   ],
+   "ts": "2026-11-12T08:16:56.885244+00:00"
+  },
+  "msads-blog": {
+   "top": "Put AI to work engaging customers in more places: What's new in Microsoft Advertising this November",
+   "seen": [
+    "What's new in Microsoft Clarity: Agent insights, faster answers, and AI discovery",
+    "Build, steer, and measure your campaigns with AI: What's new in Microsoft Advertising this October",
+    "Put AI to work engaging customers in more places: What's new in Microsoft Advertising this November"
+   ],
+   "ts": "2026-11-20T08:30:26.352559+00:00"
+  },
+  "google-maps-blog": {
+   "top": "New Ask Maps features to help with holiday travel and prep",
+   "seen": [
+    "Celebrate 110 years of national parks with Maps, Search, and Gemini",
+    "Ask Maps gets more helpful with food ordering and more",
+    "Simulate real-world places with Project Genie and Street View",
+    "7 ways to travel smarter this summer, with help from Google",
+    "New ways we\u2019re protecting businesses on Maps",
+    "Developers can now build with Google Maps Platform in AI Studio.",
+    "New Ask Maps features to help with holiday travel and prep",
+    "Ask Maps is coming to Europe."
+   ],
+   "ts": "2026-11-17T09:10:44.804980+00:00"
+  },
+  "google-shopping-blog": {
+   "top": "An intelligent new shopping cart",
+   "seen": [
+    "An intelligent new shopping cart",
+    "Boost your holiday sales with these agentic commerce updates",
+    "Rethink 2026",
+    "The latest AI news we announced in May 2026",
+    "Catch up on 12 major I/O 2026 moments"
+   ],
+   "ts": "2026-11-06T07:54:01.662474+00:00"
+  },
+  "arxiv-geo": {
+   "top": "Welfare-Enhancing Mechanism Design for Agent Ecosystems",
+   "seen": [
+    "IntentGEO: Intent-aware Generative Engine Optimization for Recommendation",
+    "Characterizing Adversarial GEO via Implicit Brand Injection",
+    "Do GEO Gains Survive the Live Web? Evaluating In-the-Wild Visibility Gains of Generative Engine Optimization via LIVE-GEO",
+    "Predicting What Answer Engines Cite: Open Decision Models, Rerankers and a Distilled 4B Student on Ten Engines under Controlled Retrieval",
+    "Toolflation: Seller Agents Distort Tool Markets Through Spontaneous Generative Engine Optimization",
+    "Security of Deep Research Agents: Attack Surface, Defenses, Benchmarks, and Agenda Seeding against Research Planning",
+    "GEOHunter: Mapping a Generative Engine Optimization Network in the Wild",
+    "Welfare-Enhancing Mechanism Design for Agent Ecosystems"
+   ],
+   "ts": "2026-11-26T09:29:09.374358+00:00"
+  }
+ }
+}

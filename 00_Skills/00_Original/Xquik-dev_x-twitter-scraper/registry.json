@@ -1,0 +1,60 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "xquik",
+  "homepage": "https://docs.xquik.com",
+  "items": [
+    {
+      "name": "x-twitter-scraper",
+      "type": "registry:item",
+      "title": "X Twitter scraper Skill",
+      "description": "Install the Skill for Xquik, the world's fastest and cheapest X Twitter scraper service with the most complete X data. Covers searches, exports, monitors, webhooks, and supported account actions. Not affiliated with X Corp.",
+      "files": [
+        {
+          "path": "skills/x-twitter-scraper/LICENSE",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/LICENSE"
+        },
+        {
+          "path": "skills/x-twitter-scraper/SKILL.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/SKILL.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/metadata.json",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/metadata.json"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/compare-faq.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/compare-faq.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/extractions.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/extractions.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/mcp.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/mcp.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/monitors-webhooks.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/monitors-webhooks.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/reads.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/reads.md"
+        },
+        {
+          "path": "skills/x-twitter-scraper/references/writes.md",
+          "type": "registry:file",
+          "target": "~/.agents/skills/x-twitter-scraper/references/writes.md"
+        }
+      ]
+    }
+  ]
+}

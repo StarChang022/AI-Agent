@@ -1,0 +1,337 @@
+#!/usr/bin/env node
+// Builds the standalone Suede Skills Directory site for https://suedeai.directory
+// from the pages scripts/build-directory.mjs already wrote to docs/directory/.
+//
+//   node scripts/build-directory-site.mjs [--out dist/suedeai-directory]
+//
+// The directory moves from skills.suedeai.ai/directory/<path> to
+// suedeai.directory/<path>. This script copies docs/directory/ to the root of the
+// output, copies docs/assets/ beside it, and rewrites URLs:
+//   - https://skills.suedeai.ai/directory/... becomes https://suedeai.directory/...
+//   - root-absolute /directory/... becomes /...
+//   - relative links that leave the directory (to the Suede Skills pack,
+//     its blog or its home page) become absolute https://skills.suedeai.ai/... links,
+//     except /assets/..., which ships with this site
+//   - relative links that stay inside the directory are left alone: every page
+//     moves up one level together, so they still resolve
+//   - Suede call-to-action links tagged utm_source=skills.suedeai.ai are
+//     retagged utm_source=suedeai.directory
+//   - og:image and twitter:image move to https://suedeai.directory/assets/...
+//     when the image ships in docs/assets/
+// It also writes robots.txt, sitemap.xml, llms.txt and 404.html for the new host.
+// Nothing under docs/ is modified. vercel.json runs this as the build command.
+import fs from "node:fs";
+import { createHash } from "node:crypto";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import featuredCatalog from "../directory/featured-projects.json" with { type: "json" };
+import { makerSettings } from "./directory/maker-settings-v2.mjs";
+import makerProfiles from "../directory/maker-profiles.json" with { type: "json" };
+import { skillTargets } from "./directory/maker-catalog.mjs";
+import { loadMakerProfiles } from "./directory/maker-profiles.mjs";
+import { renderFeaturedMakerProfiles, skillMakerRenderer } from "./directory/maker-projection-v2.mjs";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+export const OLD = "https://skills.suedeai.ai";
+export const NEW = "https://suedeai.directory";
+const TEXT = new Set([".html", ".json", ".xml", ".txt", ".js", ".svg", ".css", ".webmanifest"]);
+const ATTR_RE = /\b(href|src|action|poster)="([^"]*)"/g;
+const SKIP_RE = /^(#|mailto:|tel:|data:|javascript:|blob:)/i;
+const OLD_DIR_RE = /https:\/\/skills\.suedeai\.ai\/directory(?=[/"'\s<>)?#,\]}\\]|$)/g;
+
+// Rewrites one URL found in a page that was published at `pageUrl` on the old host.
+export function rewriteUrl(value, pageUrl) {
+  if (!value || SKIP_RE.test(value) || value.startsWith("//")) return value;
+  let abs;
+  try { abs = new URL(value, pageUrl); } catch { return value; }
+  if (abs.origin !== OLD) return value;
+  const isRelative = !/^[a-z][a-z0-9+.-]*:/i.test(value) && !value.startsWith("/");
+  const pageInDirectory = new URL(pageUrl).pathname.startsWith("/directory/");
+  const p = abs.pathname;
+  const tail = abs.search + abs.hash;
+  if (p === "/directory" || p.startsWith("/directory/")) {
+    if (isRelative && pageInDirectory) return value;
+    const moved = p.slice("/directory".length) || "/";
+    return value.startsWith(OLD) ? `${NEW}${moved}${tail}` : `${moved}${tail}`;
+  }
+  if (p.startsWith("/assets/")) return `${p}${tail}`;
+  return `${OLD}${p}${tail}`;
+}
+
+// On its own domain the directory is its own WebSite. The pages were built as
+// part of the Suede Skills site, so their isPartOf named that site; search
+// engines take the site name from this node, so it has to name this host.
+export const SITE_NODE = {
+  "@type": "WebSite",
+  "@id": `${NEW}/#website`,
+  name: "Suede Skills Directory",
+  url: `${NEW}/`,
+  inLanguage: "en",
+  publisher: { "@id": "https://suedeai.ai/#organization" },
+};
+const LD_RE = /(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g;
+
+export function rehomeWebsite(html) {
+  return html.replace(LD_RE, (whole, open, body, close) => {
+    let data;
+    try { data = JSON.parse(body); } catch { return whole; }
+    let changed = false;
+    const walk = (v) => {
+      if (Array.isArray(v)) return v.map(walk);
+      if (!v || typeof v !== "object") return v;
+      if (v["@type"] === "WebSite" && v["@id"] === `${OLD}/#website`) { changed = true; return { ...SITE_NODE }; }
+      return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)]));
+    };
+    const next = walk(data);
+    if (!changed) return whole;
+    const indent = body.match(/\n([ \t]*)\S[^\n]*\n?\s*$/)?.[1] ?? "";
+    return `${open}\n${JSON.stringify(next, null, 2).split("\n").map((l) => indent + l).join("\n")}\n${indent.slice(2)}${close}`;
+  });
+}
+
+// Outbound Suede calls to action carry utm_source naming the host the
+// visitor clicked from. Every page this build writes is served on
+// suedeai.directory, so its links say so; docs/ keeps skills.suedeai.ai.
+const UTM_SOURCE_RE = /([?&]|&amp;)utm_source=skills\.suedeai\.ai(?=&|"|'|#|\s|$)/g;
+// Shared Light / Dark / AI agent view switch. Added to every served page at build
+// time (both hosts); idempotent and a no-op for fragments without </body>.
+export const AGENT_VIEW_SRC = "https://suedeai.ai/agent-view.js";
+export const AGENT_VIEW_TAG = `<script src="${AGENT_VIEW_SRC}" defer></script>`;
+export function injectAgentView(html) {
+  if (html.includes(AGENT_VIEW_SRC) || !html.includes("</body>")) return html;
+  const i = html.lastIndexOf("</body>");
+  return `${html.slice(0, i)}${AGENT_VIEW_TAG}\n${html.slice(i)}`;
+}
+export const retagUtmSource = (html) => html.replace(UTM_SOURCE_RE, "$1utm_source=suedeai.directory");
+
+// The social card ships with this site under /assets/, so the preview image
+// is served from the same host as the page. An image that is not part of
+// docs/assets/ keeps its original URL.
+const SOCIAL_IMAGE_RE = /(<meta (?:property="og:image(?::secure_url)?"|name="twitter:image(?::src)?") content=")https:\/\/skills\.suedeai\.ai\/assets\/([^"?#]+)([^"]*")/g;
+const shippedAsset = (rel) => {
+  const file = path.join(ROOT, "docs", "assets", ...rel.split("/"));
+  return !rel.split("/").includes("..") && fs.existsSync(file) && fs.statSync(file).isFile();
+};
+export function rehomeSocialImages(html, assetExists = shippedAsset) {
+  return html.replace(SOCIAL_IMAGE_RE, (whole, open, rel, rest) => (assetExists(rel) ? `${open}${NEW}/assets/${rel}${rest}` : whole));
+}
+
+export function rewriteText(text, ext, pageUrl, { assetExists = shippedAsset, agentView = true } = {}) {
+  let out = text;
+  if (ext === ".html" || ext === ".svg") out = out.replace(ATTR_RE, (_, attr, v) => `${attr}="${rewriteUrl(v, pageUrl)}"`);
+  out = out.replace(OLD_DIR_RE, NEW);
+  if (ext === ".html") {
+    out = rehomeSocialImages(retagUtmSource(rehomeWebsite(out)), assetExists);
+    if (agentView) out = injectAgentView(out);
+  }
+  // The search index and report files carry root-absolute listing paths.
+  if (ext === ".json" || ext === ".js") out = out.replace(/(["'])\/directory\//g, "$1/");
+  return out;
+}
+
+// The directory's own icon set (directory/assets/favicon/): a bold S that
+// stays legible at 16px, the full ringed mark from 32px up, and a home-screen
+// icon. The shared 64px icon's thin rings blur to a pale square in a tab.
+const SHARED_ICON = '<link rel="icon" href="/assets/favicon-64.png" type="image/png">';
+const DIRECTORY_ICONS = [
+  '<link rel="icon" href="/favicon.ico" sizes="48x48">',
+  '<link rel="icon" href="/assets/favicon/favicon-16.png" type="image/png" sizes="16x16">',
+  '<link rel="icon" href="/assets/favicon/favicon-32.png" type="image/png" sizes="32x32">',
+  '<link rel="icon" href="/assets/favicon/favicon-192.png" type="image/png" sizes="192x192">',
+  '<link rel="apple-touch-icon" href="/assets/favicon/apple-touch-icon.png" sizes="180x180">',
+].join("\n    ");
+
+// The More menu closes on Escape (focus returns to its button), on a click
+// outside it, and when focus leaves it, like any other dropdown.
+const MORE_MENU_SCRIPT = `  <script>
+  (function () {
+    var more = document.querySelector('.directory-more');
+    if (!more) return;
+    var summary = more.querySelector('summary');
+    more.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && more.open) { more.open = false; summary.focus(); }
+    });
+    document.addEventListener('click', function (e) { if (more.open && !more.contains(e.target)) more.open = false; });
+    more.addEventListener('focusout', function (e) { if (more.open && e.relatedTarget && !more.contains(e.relatedTarget)) more.open = false; });
+  })();
+</script>`;
+
+// Compact only the standalone directory chrome. Secondary destinations stay
+// reachable by keyboard and with JavaScript off using a native disclosure.
+function compactNavigation(page) {
+  const nav = /(<div class="nav-links">)([\s\S]*?)(<\/div>\s*<\/details>)/;
+  return page.replace(nav, (whole, open, body, close) => {
+    const main = [], secondary = [], action = [];
+    for (const match of body.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)) {
+      const link = match[0];
+      if (link.includes('class="nav-cta"')) action.push(link);
+      else if (/>\s*(Skills|Featured Skills|Agents)\s*<\/a>$/.test(link)) main.push(link);
+      else secondary.push(link);
+    }
+    if (main.length < 2 || !secondary.length || action.length !== 1) return whole;
+    const more = `<details class="directory-more"><summary aria-label="More pages">More <span class="directory-more-caret" aria-hidden="true">▾</span></summary><div class="directory-more-links">${secondary.join("")}</div></details>`;
+    return open + [...main, more, ...action].join("\n") + close;
+  }).replace(SHARED_ICON, DIRECTORY_ICONS)
+    .replace("</head>", '    <link rel="stylesheet" href="/assets/cracked-devs.css">\n</head>')
+    .replace("</body>", `${MORE_MENU_SCRIPT}\n</body>`);
+}
+
+// Keep the editorial CTA on the standalone homepage, not on every generated
+// directory page or on the linked feature itself.
+function addCrackedDevs(home) {
+  const note = 'Don’t click. They’re already insufferable.';
+  const cta = (layout) => {
+    const id = `cracked-devs-${layout}-note`;
+    return `<a class="cracked-devs-link" href="${OLD}/cracked.html" aria-describedby="${id}">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9.2 0 2 9h5l-1 7 8-10H9l.2-6Z"/></svg>
+            Cracked Devs <span aria-hidden="true">→</span>
+          </a>
+          <span class="cracked-devs-note" id="${id}">${note}</span>`;
+  };
+  const submit = /<a href="submit\/" class="nav-cta">[^<]+<\/a>/;
+  const main = '<main id="main"';
+  if (!submit.test(home) || !home.includes(main)) {
+    throw new Error("The standalone directory homepage CTA anchors have changed");
+  }
+  return home
+    .replace(submit, (link) => `<div class="cracked-devs-desktop">
+          ${cta("desktop")}
+          ${link}
+        </div>`)
+    .replace(main, `<div class="shell cracked-devs-mobile">
+      ${cta("mobile")}
+    </div>
+    ${main}`);
+}
+
+function copyTree(src, dest, transform) {
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      fs.mkdirSync(d, { recursive: true });
+      copyTree(s, d, transform);
+    } else if (entry.isFile()) {
+      const ext = path.extname(entry.name).toLowerCase();
+      if (transform && TEXT.has(ext)) fs.writeFileSync(d, transform(fs.readFileSync(s, "utf8"), ext, s));
+      else fs.copyFileSync(s, d);
+    }
+  }
+}
+
+const makerTargets = new Set(featuredCatalog.projects.filter(item => item.status !== "pending").map(item => item.id));
+function addMakerLinks(html) {
+  return html.replace(/(<article class="featured-project" id="([a-z0-9-]+)"[^>]*>[\s\S]*?)(<\/article>)/g, (whole, card, id, close) => {
+    if (!makerTargets.has(id)) return whole;
+    if (!card.includes("</header>")) throw new Error("Missing featured heading for maker listing " + id);
+    return card.replace("</header>", `</header><div class="skill-actions"><a class="button" href="/maker/?id=${id}" data-maker-claim>Claim or manage →</a> <a class="button secondary" href="#featured-badge-${id}">Get badge</a></div>`) + close;
+  });
+}
+
+export function build(out, { env = process.env, makerProjection = makerProfiles } = {}) {
+  const docs = path.join(ROOT, "docs");
+  const dirSrc = path.join(docs, "directory");
+  if (!fs.existsSync(path.join(dirSrc, "index.html"))) throw new Error("docs/directory is missing; run node scripts/build-directory.mjs first");
+  fs.rmSync(out, { recursive: true, force: true });
+  fs.mkdirSync(out, { recursive: true });
+
+  const showMakerLinks = env.MAKER_V2_FEATURED_LINKS === "true" && Boolean(makerSettings(env));
+  const publish = env.MAKER_V2_PUBLISH_PROFILES === "true";
+  let featuredProjection = makerProjection;
+  let skills = new Map();
+  if (publish) {
+    const skillRows = makerProjection.profiles.filter(row => row.listing.startsWith("skill:"));
+    skills = loadMakerProfiles({ ...makerProjection, profiles: skillRows }, new Map(skillTargets.map(t => ["skill:" + t.id, t.repo])));
+    featuredProjection = { ...makerProjection, profiles: makerProjection.profiles.filter(row => !row.listing.startsWith("skill:")) };
+  }
+  const skillMaker = skillMakerRenderer(skillTargets, skills, showMakerLinks);
+  const reports = [];
+  copyTree(dirSrc, out, (text, ext, file) => {
+    const rel = path.relative(dirSrc, file).split(path.sep).join("/");
+    const original = rewriteText(text, ext, `${OLD}/directory/${rel}`, { agentView: !rel.startsWith("maker/") });
+    const rewritten = ext === ".html" ? compactNavigation(original) : original;
+    if (rel === "index.html") return addCrackedDevs(rewritten);
+    if (rel === "featured/index.html") {
+      const featured = publish
+        ? renderFeaturedMakerProfiles(rewritten, featuredProjection, featuredCatalog.projects) : rewritten;
+      return showMakerLinks ? addMakerLinks(featured) : featured;
+    }
+    if (ext === ".html") return skillMaker.render(rel, rewritten);
+    if (path.basename(file) !== "report.json") return rewritten;
+    const { report_version: previousVersion, ...evidence } = JSON.parse(rewritten);
+    // Match the original directory report verifier: hash compact evidence in
+    // its existing property order, excluding the report identity itself.
+    const report_version = createHash("sha256").update(JSON.stringify(evidence)).digest("hex");
+    reports.push({ rel, previousVersion, report_version });
+    return JSON.stringify({ ...evidence, report_version }, null, 2) + "\n";
+  });
+  skillMaker.verify();
+  for (const { rel, previousVersion, report_version } of reports) {
+    const listing = path.join(out, path.dirname(rel), "index.html");
+    // Compact repository rows link reports without displaying a version.
+    if (!fs.existsSync(listing)) continue;
+    const html = fs.readFileSync(listing, "utf8");
+    const previous = `Report version <code>${previousVersion.slice(0, 12)}</code>`;
+    if (!html.includes(previous)) throw new Error(`Missing report version in ${listing}`);
+    fs.writeFileSync(listing, html.replaceAll(previous, `Report version <code>${report_version.slice(0, 12)}</code>`));
+  }
+  fs.mkdirSync(path.join(out, "assets"), { recursive: true });
+  const icons = path.join(ROOT, "directory", "assets", "favicon");
+  fs.copyFileSync(path.join(icons, "favicon.ico"), path.join(out, "favicon.ico"));
+  copyTree(path.join(docs, "assets"), path.join(out, "assets"), null);
+  fs.copyFileSync(path.join(ROOT, "directory", "assets", "cracked-devs.css"), path.join(out, "assets", "cracked-devs.css"));
+  fs.mkdirSync(path.join(out, "assets", "favicon"), { recursive: true });
+  for (const f of fs.readdirSync(icons)) fs.copyFileSync(path.join(icons, f), path.join(out, "assets", "favicon", f));
+
+  const notFound = path.join(docs, "404.html");
+  // The shared 404 says which host the visitor missed; on this host, say this one.
+  if (fs.existsSync(notFound)) fs.writeFileSync(path.join(out, "404.html"), rewriteText(fs.readFileSync(notFound, "utf8"), ".html", `${OLD}/404.html`)
+    .replaceAll("This page is not on skills.suedeai.ai.", "This page is not on suedeai.directory.")
+    .replace(SHARED_ICON, DIRECTORY_ICONS));
+
+  const sitemap = fs.readFileSync(path.join(docs, "directory-sitemap.xml"), "utf8");
+  const urls = [...sitemap.matchAll(/  <url>[\s\S]*?<\/url>\n/g)].map((m) => m[0]).filter((u) => u.includes(`<loc>${OLD}/directory/`));
+  fs.writeFileSync(path.join(out, "sitemap.xml"),
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => u.replace(OLD_DIR_RE, NEW)).join("")}</urlset>\n`);
+
+  const robots = fs.readFileSync(path.join(docs, "robots.txt"), "utf8")
+    .replace(/^# skills\.suedeai\.ai:/m, "# suedeai.directory:")
+    .replace(/^Sitemap: .*$/m, `Sitemap: ${NEW}/sitemap.xml`);
+  fs.writeFileSync(path.join(out, "robots.txt"), robots);
+
+  // The IndexNow key file skills.suedeai.ai publishes at the root of docs/.
+  // Serving it on this host too lets the estate sweep in suede-seo submit
+  // suedeai.directory, which had no key of its own.
+  for (const name of fs.readdirSync(docs)) {
+    const key = name.match(/^([A-Za-z0-9-]{8,128})\.txt$/)?.[1];
+    if (key && fs.readFileSync(path.join(docs, name), "utf8").trim() === key) fs.copyFileSync(path.join(docs, name), path.join(out, name));
+  }
+
+  // Keep the existing Google ownership proofs on the directory's own host.
+  for (const name of fs.readdirSync(docs)) {
+    if (/^google[0-9a-f]+\.html$/.test(name)) fs.copyFileSync(path.join(docs, name), path.join(out, name));
+  }
+
+  const llmsLines = fs.readFileSync(path.join(docs, "llms.txt"), "utf8").split("\n").filter((l) => l.includes(`${OLD}/directory`));
+  fs.writeFileSync(path.join(out, "llms.txt"), [
+    "# Suede Skills Directory",
+    "",
+    "> A curated, graded index of public Agent Skills for Claude Code, Codex and Cursor. Skill listings link to the author's GitHub repository, state licenses and show 0–99 Suede Skill Check scores. A separate Agents catalog covers runnable local and hosted editions with evidence-specific /10 ratings, alongside a searchable ungraded catalog with official sources. Published by Suede; edited by Jason Colapietro.",
+    "",
+    "- [Find graded skills inside your agent](https://suedeai.directory/finder/): Installable read-only finder skill for Claude Code, Codex and Cursor.",
+    "- [State of Agent Skills](https://suedeai.directory/state-of-agent-skills/): Snapshot-based quality report with downloadable data and chart; excludes Suede skills.",
+    "- [Rising Skills](https://suedeai.directory/rising/): Five skills from the recorded weekly install snapshot, with scores and source links.",
+    ...llmsLines.map((l) => l.replace(OLD_DIR_RE, NEW)),
+    "",
+    `Suede's own skill pack, Suede Skills: ${OLD}/`,
+    "",
+  ].join("\n"));
+  return { urls: urls.length, llms: llmsLines.length };
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const i = process.argv.indexOf("--out");
+  const out = path.resolve(ROOT, i > 0 ? process.argv[i + 1] : "dist/suedeai-directory");
+  const r = build(out);
+  console.log(`Wrote ${path.relative(ROOT, out)} for ${NEW} (${r.urls} sitemap URLs, ${r.llms} llms.txt lines).`);
+}

@@ -1,0 +1,951 @@
+import "server-only";
+
+// Shared handling for provider events about a lead: an accepted connection
+// request and an inbound reply. Both are found by the tick's provider sync
+// (batched polling). The old Unipile webhook ran the same state transitions,
+// which is why the logic lives here instead of inside one caller.
+
+import {
+  claimLeadOutcomeNotification,
+  claimOwnerRequestNotification,
+  claimReplyNotification,
+  createConversationMessage,
+  findLeadForWorkspace,
+  getConversation,
+  getLeadsByIds,
+  getLinkedInAccountForWorkspace,
+  getProductProfile,
+  getWorkspace,
+  listCampaignEnrollments,
+  listCampaigns,
+  listWorkspaceIdsSharingLinkedIn,
+  logAutomationRun,
+  planActionSlots,
+  releaseLeadOutcomeNotification,
+  releaseOwnerRequestNotification,
+  releaseReplyNotification,
+  setConversationReplyIntent,
+  updateEnrollment,
+  updateLead,
+} from "./data";
+import { findNextScheduledStepIndex } from "./campaign-sequence";
+import { sendWindowTimeZoneForLead } from "./lead-time-zone";
+import { nextAiReplyAt } from "./send-schedule";
+import { capturePostHogEvent } from "@/lib/posthog-server";
+import { classifyReplyIntent, draftCampaignMessage, type ReplyIntentClassification } from "./gemini";
+import { abVariantFor, writtenSequenceMessage } from "./outreach-rules";
+import { enrollmentSenderId } from "@/lib/sender-rotation";
+import { findMigratedMessage, MIGRATED_REPLY_WINDOW } from "./migrated-message-match";
+import {
+  enrollmentBlocksAiReply,
+  isHotReply,
+  isMeetingBooked,
+  shouldArmAiReply,
+  shouldStopForReply,
+} from "./reply-automation-policy";
+import { hasActiveSubscription } from "./subscription";
+import { leadAvatarBytes } from "./lead-avatar-cache";
+import {
+  emailWasSkipped,
+  sendInterestedLeadNotification,
+  sendOwnerRequestNotification,
+  sendReplyNotification,
+} from "./email";
+import {
+  getLinkedInPostCreatedAt,
+  getLinkedInPostText,
+  isFirstDegreeConnection,
+  listLinkedInPostsForProfile,
+  retrieveLinkedInProfile,
+} from "./linkedin";
+import { pickLeadForProviderIdentity } from "../linkedin-identity";
+import type {
+  Campaign,
+  CampaignEnrollment,
+  Lead,
+  LinkedInAccount,
+} from "./types";
+
+export async function refreshLeadProfileForDrafting(
+  lead: Lead,
+  account: LinkedInAccount,
+) {
+  const identifier = lead.providerProfileId || lead.linkedInUrl;
+  if (!identifier) return lead;
+
+  try {
+    const [profile, posts] = await Promise.all([
+      retrieveLinkedInProfile({
+        accountId: account.accountId,
+        identifier,
+        // The first message to an accepted connection must not lose to the
+        // daily discovery cap. Discovery spent all 75 views in the first hours
+        // of the day, so every lead without stored profile context failed here
+        // for the rest of it, day after day (2026-11: 131 accepted leads never
+        // got their first message). Only first messages read here, so views
+        // stay bounded by acceptances and the daily message quota.
+        ignoreViewBudget: true,
+      }),
+      listLinkedInPostsForProfile({
+        accountId: account.accountId,
+        identifier,
+        limit: 3,
+      }).catch(() => []),
+    ]);
+    if (!profile) {
+      if (lead.profileContext) return lead;
+      throw new Error("Full LinkedIn profile context is not available yet.");
+    }
+
+    const recentPosts = posts
+      .map((post) => {
+        const text = getLinkedInPostText(post).replace(/\s+/g, " ").trim().slice(0, 600);
+        if (!text) return "";
+        const createdAt = getLinkedInPostCreatedAt(post);
+        return `${createdAt.slice(0, 10)} | ${text}`;
+      })
+      .filter(Boolean);
+    const existingContext = profile.profileContext || lead.profileContext;
+    const profileContext =
+      existingContext || recentPosts.length
+        ? {
+            about: existingContext?.about || "",
+            experience: existingContext?.experience || [],
+            education: existingContext?.education || [],
+            skills: existingContext?.skills || [],
+            certifications: existingContext?.certifications || [],
+            projects: existingContext?.projects || [],
+            volunteering: existingContext?.volunteering || [],
+            languages: existingContext?.languages || [],
+            recentPosts,
+            capturedAt: new Date().toISOString(),
+          }
+        : undefined;
+    const enrichedLead: Lead = {
+      ...lead,
+      ...Object.fromEntries(
+        Object.entries(profile).filter(
+          ([, value]) => value !== undefined && value !== "",
+        ),
+      ),
+      ...(profileContext ? { profileContext } : {}),
+    };
+
+    await updateLead(lead.workspaceId, lead.id, {
+      providerProfileId: enrichedLead.providerProfileId,
+      linkedInUrl: enrichedLead.linkedInUrl,
+      avatarUrl: enrichedLead.avatarUrl,
+      name: enrichedLead.name,
+      title: enrichedLead.title,
+      company: enrichedLead.company,
+      location: enrichedLead.location,
+      summary: enrichedLead.summary,
+      profileContext: enrichedLead.profileContext,
+    });
+    return enrichedLead;
+  } catch (error) {
+    console.error(`[automation] failed to refresh profile context for lead ${lead.id}:`, error);
+    if (lead.profileContext) return lead;
+    throw error;
+  }
+}
+
+// Pre-drafts the upcoming AI message when a wait step starts, so the Actions
+// page shows the exact text that will go out instead of "will be generated at
+// send time". The send path reuses the draft (matched by stepIndex). Manual
+// templates that render cleanly are already previewable, so they're skipped.
+// Never throws: a failed preview just means the message drafts at send time.
+export async function draftUpcomingMessagePreview(input: {
+  campaign: Campaign;
+  lead: Lead;
+  account: LinkedInAccount;
+  // First step index the enrollment will look at after the wait completes.
+  fromStepIndex: number;
+  messageEdits?: CampaignEnrollment["messageEdits"];
+  enrollmentId: string;
+}): Promise<CampaignEnrollment["nextMessageDraft"]> {
+  const { campaign, lead, account, fromStepIndex, messageEdits } = input;
+  const messageStepIndex = findNextScheduledStepIndex(campaign.steps, fromStepIndex);
+  const messageStep = campaign.steps[messageStepIndex];
+  if (!messageStep || messageStep.type !== "message") return undefined;
+  // The user wrote this one, or the template renders cleanly: nothing to draft.
+  if (writtenSequenceMessage(messageStep, lead, messageEdits, abVariantFor(input.enrollmentId))) {
+    return undefined;
+  }
+
+  try {
+    const sequencePosition = campaign.steps
+      .slice(0, messageStepIndex + 1)
+      .filter((candidate) => candidate.type === "message").length;
+    const leadForDrafting =
+      sequencePosition === 1
+        ? await refreshLeadProfileForDrafting(lead, account)
+        : lead;
+    const [profile, conversation] = await Promise.all([
+      getProductProfile(campaign.workspaceId),
+      getConversation(campaign.workspaceId, lead.id),
+    ]);
+    const body = await draftCampaignMessage({
+      lead: leadForDrafting,
+      productProfile: profile,
+      campaignName: campaign.name,
+      templateHint: messageStep.messageTemplate,
+      senderName: account.displayName,
+      sequencePosition,
+      conversation: conversation?.messages || [],
+      campaignGoal: campaign.campaignGoal,
+      messageTone: campaign.messageTone,
+    });
+    if (!body.trim()) return undefined;
+    return { stepIndex: messageStepIndex, body, createdAt: new Date().toISOString() };
+  } catch (error) {
+    console.error(
+      `[automation] failed to pre-draft message preview for lead ${lead.id}:`,
+      error,
+    );
+    return undefined;
+  }
+}
+
+// Webhook-side wrapper around the send planner. Acceptances arrive at
+// arbitrary hours, so the first message gets a real slot inside the campaign's
+// send window rather than "now" or "now + wait". Falls back to the naive time
+// if planning fails: a slightly-off schedule beats dropping the signal.
+async function planFirstAvailableSlot(input: {
+  workspaceId: string;
+  campaign: Campaign | undefined;
+  // The enrollment's sender, whose caps and spacing the slot must respect.
+  linkedInAccountId?: string;
+  enrollmentId: string;
+  kind: "message";
+  earliestAt: number;
+  // Where the lead is: an acceptance arriving at any hour is planned into the
+  // next opening of THEIR window, not the workspace's.
+  leadLocation: string | undefined;
+}) {
+  const fallback = new Date(input.earliestAt).toISOString();
+  if (!input.campaign) return fallback;
+
+  try {
+    const workspace = await getWorkspace(input.workspaceId);
+    const plan = await planActionSlots({
+      workspace,
+      campaign: input.campaign,
+      linkedInAccountId: input.linkedInAccountId,
+      actions: [
+        {
+          id: input.enrollmentId,
+          kind: input.kind,
+          earliestAt: input.earliestAt,
+          timezone: sendWindowTimeZoneForLead(input.leadLocation, workspace.timezone),
+        },
+      ],
+    });
+    const slot = plan.get(input.enrollmentId);
+    return slot === undefined ? fallback : new Date(slot).toISOString();
+  } catch (error) {
+    console.error(
+      `[automation] slot planning failed for enrollment ${input.enrollmentId}:`,
+      error,
+    );
+    return fallback;
+  }
+}
+
+// Records an accepted connection request on one enrollment: store the
+// acceptance and start the configured post-acceptance wait before calling
+// Gemini - a drafting/provider failure must never lose the primary acceptance
+// signal or shift the user's timer.
+export async function applyConnectionAccepted(input: {
+  workspaceId: string;
+  lead: Lead;
+  enrollment: CampaignEnrollment;
+  campaign: Campaign | undefined;
+  // Account the event arrived on, when known; saves a fetch if it matches the
+  // campaign's account.
+  account?: LinkedInAccount | null;
+}) {
+  const { workspaceId, lead, enrollment, campaign } = input;
+  if (enrollmentBlocksAiReply(enrollment) || lead.outreachStatus === "stopped") return;
+  const currentStep = campaign?.steps[enrollment.currentStepIndex];
+  // The wait step's delay is the EARLIEST the first message may go, not the
+  // time it goes. Acceptances arrive whenever the lead happens to click, so
+  // without the planner a 3am acceptance produced a 3:15am first message.
+  const earliestAt =
+    Date.now() + (currentStep?.type === "wait" ? currentStep.delayMinutes * 60 * 1000 : 0);
+  const nextActionAt = await planFirstAvailableSlot({
+    workspaceId,
+    campaign,
+    linkedInAccountId: campaign ? enrollmentSenderId(campaign, enrollment) : undefined,
+    enrollmentId: enrollment.id,
+    kind: "message",
+    earliestAt,
+    leadLocation: lead.location,
+  });
+
+  await updateEnrollment(workspaceId, enrollment.id, {
+    status: "connected",
+    inviteExpired: undefined,
+    ...(currentStep?.type === "wait"
+      ? { currentStepIndex: enrollment.currentStepIndex + 1, nextActionAt }
+      : { nextActionAt }),
+  });
+
+  await capturePostHogEvent({
+    event: "connection_request_accepted",
+    distinctId: workspaceId,
+    insertId: `connection_request_accepted:${enrollment.id}`,
+    properties: {
+      lead_id: lead.id,
+      enrollment_id: enrollment.id,
+      campaign_id: campaign?.id,
+    },
+  });
+
+  try {
+    if (!campaign) return;
+    const senderId = enrollmentSenderId(campaign, enrollment);
+    const campaignAccount =
+      input.account && (!senderId || senderId === input.account.id)
+        ? input.account
+        : await getLinkedInAccountForWorkspace(workspaceId, senderId, {
+            fallbackToDefault: true,
+          });
+    if (!campaignAccount) return;
+    const draftFromStepIndex =
+      currentStep?.type === "wait"
+        ? enrollment.currentStepIndex + 1
+        : enrollment.currentStepIndex;
+    const nextMessageDraft = await draftUpcomingMessagePreview({
+      campaign,
+      lead,
+      account: campaignAccount,
+      fromStepIndex: draftFromStepIndex,
+      messageEdits: enrollment.messageEdits,
+      enrollmentId: enrollment.id,
+    });
+
+    if (nextMessageDraft) {
+      await updateEnrollment(workspaceId, enrollment.id, { nextMessageDraft });
+    }
+  } catch (error) {
+    console.error(`[inbound] failed to pre-draft accepted lead ${lead.id}:`, error);
+  }
+}
+
+function campaignHandsOffOnReply(campaignId: string | undefined, campaigns: Campaign[]) {
+  return campaigns.find((item) => item.id === campaignId)?.replyHandling === "handoff";
+}
+
+export function enrollmentCanReceiveAcceptance(enrollment: CampaignEnrollment) {
+  if (enrollment.status === "connection_sent") return true;
+  if (!enrollment.connectionSentAt) return false;
+  if (enrollment.status !== "stopped" && enrollment.status !== "error") return false;
+  return !enrollmentBlocksAiReply(enrollment);
+}
+
+const LIVE_INBOUND_ENROLLMENT_STATUSES: CampaignEnrollment["status"][] = [
+  "connection_sent",
+  "connected",
+  "message_sent",
+  "reply_received",
+  "replied",
+  "error",
+  "stopped",
+];
+
+const INBOUND_IDENTITY_MATCH_STATUSES: CampaignEnrollment["status"][] = [
+  "connection_sent",
+  "connected",
+  "message_sent",
+  "reply_received",
+  "replied",
+  "error",
+];
+
+export async function findLeadForInboundEvent(input: {
+  workspaceId: string;
+  leadId?: string;
+  linkedInUrl?: string;
+  providerProfileId?: string;
+  publicIdentifier?: string;
+  fullName?: string;
+  matchPendingAcceptance?: boolean;
+}) {
+  const ownedIds = await listWorkspaceIdsSharingLinkedIn(input.workspaceId);
+  const workspaceIds = [
+    input.workspaceId,
+    ...ownedIds.filter((id) => id !== input.workspaceId),
+  ];
+  for (const workspaceId of workspaceIds) {
+    const lead = await findLeadForInboundEventInWorkspace({ ...input, workspaceId });
+    if (lead) return lead;
+  }
+  return null;
+}
+
+async function findLeadForInboundEventInWorkspace(input: {
+  workspaceId: string;
+  leadId?: string;
+  linkedInUrl?: string;
+  providerProfileId?: string;
+  publicIdentifier?: string;
+  fullName?: string;
+  matchPendingAcceptance?: boolean;
+}) {
+  const enrollments = await listCampaignEnrollments(input.workspaceId);
+  const candidateIds = new Set<string>();
+  for (const enrollment of enrollments) {
+    if (
+      INBOUND_IDENTITY_MATCH_STATUSES.includes(enrollment.status) &&
+      !enrollmentBlocksAiReply(enrollment)
+    ) {
+      candidateIds.add(enrollment.leadId);
+      continue;
+    }
+    if (input.matchPendingAcceptance && enrollmentCanReceiveAcceptance(enrollment)) {
+      candidateIds.add(enrollment.leadId);
+    }
+  }
+
+  if (candidateIds.size) {
+    const leads = await getLeadsByIds(input.workspaceId, [...candidateIds]);
+    const matched = pickLeadForProviderIdentity(leads, {
+      providerProfileId: input.providerProfileId,
+      linkedInUrl: input.linkedInUrl,
+      publicIdentifier: input.publicIdentifier,
+      name: input.fullName,
+    });
+    if (matched) return matched;
+  }
+
+  return findLeadForWorkspace({
+    workspaceId: input.workspaceId,
+    leadId: input.leadId,
+    linkedInUrl: input.linkedInUrl,
+    providerProfileId: input.providerProfileId,
+    publicIdentifier: input.publicIdentifier,
+  });
+}
+
+// An owner-sent message shows up when an invite note opens a chat. That
+// usually means they accepted, but they can also reply without accepting,
+// so confirm first-degree before unlocking campaign messages.
+export async function applyAcceptanceIfFirstDegree(input: {
+  workspaceId: string;
+  lead: Lead;
+  account?: LinkedInAccount | null;
+}) {
+  const identifier = input.lead.providerProfileId || input.lead.linkedInUrl;
+  if (!input.account || !identifier) return false;
+
+  const [enrollments, campaigns] = await Promise.all([
+    listCampaignEnrollments(input.workspaceId),
+    listCampaigns(input.workspaceId),
+  ]);
+  const pending = enrollments.filter(
+    (enrollment) =>
+      enrollment.leadId === input.lead.id && enrollmentCanReceiveAcceptance(enrollment),
+  );
+  if (!pending.length) return false;
+
+  const connected = await isFirstDegreeConnection({
+    accountId: input.account.accountId,
+    identifier,
+    ignoreViewBudget: true,
+  });
+  if (connected !== true) return false;
+
+  const campaignsById = new Map(campaigns.map((campaign) => [campaign.id, campaign]));
+  await Promise.all(
+    pending.map((enrollment) =>
+      applyConnectionAccepted({
+        workspaceId: input.workspaceId,
+        lead: input.lead,
+        enrollment,
+        campaign: campaignsById.get(enrollment.campaignId),
+        account: input.account,
+      }),
+    ),
+  );
+  if (input.lead.outreachStatus !== "replied" && input.lead.outreachStatus !== "stopped") {
+    await updateLead(input.workspaceId, input.lead.id, { outreachStatus: "connected" });
+  }
+  return true;
+}
+
+function leadEnrollmentsForInbound(
+  enrollments: CampaignEnrollment[],
+  leadId: string,
+) {
+  return enrollments.filter(
+    (enrollment) =>
+      enrollment.leadId === leadId &&
+      LIVE_INBOUND_ENROLLMENT_STATUSES.includes(enrollment.status) &&
+      !enrollmentBlocksAiReply(enrollment),
+  );
+}
+
+export type InboundMessageResult =
+  | { duplicate: true }
+  | {
+      duplicate: false;
+      intent: Awaited<ReturnType<typeof classifyReplyIntent>>["intent"];
+      confidence: number;
+    };
+
+type InboundPersistInput = {
+  workspaceId: string;
+  lead: Lead;
+  body: string;
+  senderName: string;
+  providerMessageId?: string;
+  // LinkedIn's time for the message, for recognising replies stored before a switch.
+  providerCreatedAt?: string;
+  campaignIdHint?: string;
+  account?: LinkedInAccount | null;
+  notifyEmailOverride?: string;
+};
+
+
+export type InboundPersistResult =
+  | { skip: true; duplicate: true }
+  | {
+      skip?: false;
+      duplicate: boolean;
+      inserted: boolean;
+      workspaceId: string;
+      lead: Lead;
+      body: string;
+      senderName: string;
+      providerMessageId?: string;
+      account?: LinkedInAccount | null;
+      campaign?: Campaign;
+      campaigns: Campaign[];
+      leadEnrollments: CampaignEnrollment[];
+      handoffEnrollmentIds: string[];
+      armedEnrollmentIds: string[];
+      notifyEmail?: string;
+      alreadyClassified?: ReplyIntentClassification;
+    };
+
+// Store the reply, flip outreach, arm or stop enrollments, and send the
+// handoff email before Gemini runs. Classification used to sit on this path
+// and delayed /leads, Messages, and reply emails by tens of seconds, then
+// the webhook timed out and the 45-minute sync became the real pipeline.
+export async function persistInboundReply(
+  input: InboundPersistInput,
+): Promise<InboundPersistResult> {
+  const { workspaceId, lead } = input;
+  if (!input.body.trim()) return { skip: true, duplicate: true };
+
+  const [enrollments, campaigns, existingConversation, workspace] = await Promise.all([
+    listCampaignEnrollments(workspaceId),
+    listCampaigns(workspaceId),
+    getConversation(workspaceId, lead.id),
+    getWorkspace(workspaceId),
+  ]);
+
+  const existingMessages = existingConversation?.messages || [];
+  // The first syncs after leaving Unipile read replies it already delivered,
+  // now under new ids. They were handled then; storing them again would
+  // duplicate the thread, re-arm AI replies and send the reply email twice.
+  if (
+    findMigratedMessage(
+      existingMessages,
+      { id: input.providerMessageId, direction: "inbound", body: input.body, createdAt: input.providerCreatedAt },
+      MIGRATED_REPLY_WINDOW,
+    )
+  ) {
+    return { skip: true, duplicate: true };
+  }
+  const alreadyStored = Boolean(
+    input.providerMessageId &&
+      existingMessages.some((message) => message.id === input.providerMessageId),
+  );
+  const alreadyClassified =
+    alreadyStored && existingConversation?.replyIntent
+      ? {
+          intent: existingConversation.replyIntent,
+          confidence: existingConversation.replyIntentConfidence || 0,
+          reason: existingConversation.replyIntentReason || "",
+          nextStepHint: existingConversation.replyIntentNextStepHint || "",
+          ownerRequest: existingConversation.replyOwnerRequest || "",
+        }
+      : undefined;
+
+  const leadEnrollments = leadEnrollmentsForInbound(enrollments, lead.id);
+  const handoffEnrollments = leadEnrollments.filter((enrollment) =>
+    campaignHandsOffOnReply(enrollment.campaignId, campaigns),
+  );
+  const previousIntent = existingConversation?.replyIntent;
+  const previousIntentConfidence = existingConversation?.replyIntentConfidence;
+  const aiReplyCandidates = leadEnrollments.filter((enrollment) => {
+    const enrollmentCampaign = campaigns.find((item) => item.id === enrollment.campaignId);
+    return shouldArmAiReply({
+      replyHandling: enrollmentCampaign?.replyHandling,
+      enrollmentStatus: enrollment.status,
+      previousIntent,
+      previousIntentConfidence,
+      lastError: enrollment.lastError,
+    });
+  });
+  const stoppedEnrollments = leadEnrollments.filter(
+    (enrollment) => !aiReplyCandidates.some((active) => active.id === enrollment.id),
+  );
+
+  const campaignId =
+    input.campaignIdHint || leadEnrollments[0]?.campaignId || aiReplyCandidates[0]?.campaignId;
+  const campaign = campaigns.find((item) => item.id === campaignId);
+
+  const inserted = await createConversationMessage({
+    workspaceId,
+    leadId: lead.id,
+    campaignId,
+    userId: workspaceId,
+    senderName: input.senderName,
+    body: input.body,
+    providerMessageId: input.providerMessageId,
+  });
+
+  const conversationAfterInsert = inserted
+    ? [...existingMessages, { direction: "inbound" as const }]
+    : existingMessages;
+  const lastMessage = conversationAfterInsert[conversationAfterInsert.length - 1];
+  const needsReplyArm = Boolean(inserted || lastMessage?.direction === "inbound");
+
+  if (needsReplyArm) {
+    if (aiReplyCandidates.length) {
+      const toArm = aiReplyCandidates.filter(
+        (enrollment) => enrollment.status !== "reply_received",
+      );
+      const toStop = stoppedEnrollments.filter(
+        (enrollment) => enrollment.status !== "replied" && enrollment.status !== "stopped",
+      );
+      const replyAt = nextAiReplyAt();
+      await Promise.all([
+        ...toArm.map((enrollment) =>
+          updateEnrollment(workspaceId, enrollment.id, {
+            status: "reply_received",
+            nextActionAt: replyAt,
+            lastError: undefined,
+            pendingAction: undefined,
+            nextMessageDraft: undefined,
+          }),
+        ),
+        ...toStop.map((enrollment) =>
+          updateEnrollment(workspaceId, enrollment.id, { status: "replied" }),
+        ),
+      ]);
+    } else {
+      await Promise.all(
+        leadEnrollments
+          .filter(
+            (enrollment) => enrollment.status !== "replied" && enrollment.status !== "stopped",
+          )
+          .map((enrollment) =>
+            updateEnrollment(workspaceId, enrollment.id, { status: "replied" }),
+          ),
+      );
+    }
+
+    await updateLead(workspaceId, lead.id, { outreachStatus: "replied" });
+  }
+
+  const email = hasActiveSubscription(workspace)
+    ? input.notifyEmailOverride || workspace.notificationEmail
+    : undefined;
+  const notifyOnHandoff = handoffEnrollments.some(
+    (enrollment) =>
+      campaigns.find((item) => item.id === enrollment.campaignId)?.notifyOnReply !== false,
+  );
+
+  if (email && notifyOnHandoff && (await claimReplyNotification(workspaceId, lead.id))) {
+    try {
+      const result = await sendReplyNotification({
+        to: email,
+        leadName: input.senderName,
+        campaignName: campaign?.name,
+        body: input.body,
+        handoff: handoffEnrollments.length > 0,
+        idempotencyKey: input.providerMessageId
+          ? `reply-${workspaceId}-${lead.id}-${input.providerMessageId}`
+          : undefined,
+      });
+      if (emailWasSkipped(result)) {
+        throw new Error("Email delivery is not configured.");
+      }
+    } catch (error) {
+      await releaseReplyNotification(workspaceId, lead.id).catch((releaseError) => {
+        console.error("[inbound] failed to release reply notification claim:", releaseError);
+      });
+      console.error("[inbound] failed to send reply notification:", error);
+    }
+  }
+
+  if (inserted) {
+    await logAutomationRun({
+      workspaceId,
+      kind: "webhook",
+      status: "completed",
+      message: `Stored reply from ${input.senderName}`,
+    });
+  }
+
+  return {
+    duplicate: !inserted,
+    inserted,
+    workspaceId,
+    lead,
+    body: input.body,
+    senderName: input.senderName,
+    providerMessageId: input.providerMessageId,
+    account: input.account,
+    campaign,
+    campaigns,
+    leadEnrollments,
+    handoffEnrollmentIds: handoffEnrollments.map((enrollment) => enrollment.id),
+    armedEnrollmentIds: aiReplyCandidates.map((enrollment) => enrollment.id),
+    notifyEmail: email,
+    alreadyClassified,
+  };
+}
+
+export async function finishInboundReplyClassification(
+  persisted: Exclude<InboundPersistResult, { skip: true }>,
+): Promise<InboundMessageResult> {
+  const {
+    workspaceId,
+    lead,
+    campaigns,
+    leadEnrollments,
+    armedEnrollmentIds,
+    handoffEnrollmentIds,
+    campaign,
+    notifyEmail,
+  } = persisted;
+
+  const [productProfile, existingConversation] = await Promise.all([
+    getProductProfile(workspaceId),
+    getConversation(workspaceId, lead.id),
+  ]);
+  const existingMessages = (existingConversation?.messages || []).filter(
+    (message) => message.id !== persisted.providerMessageId,
+  );
+
+  // A newly stored reply always gets its own label. Reusing the conversation's
+  // stored intent gave every later reply the first one's: a "warm" first
+  // reply kept a later "not interested, stop" warm, so the AI answered it.
+  // Only a message we already stored (a retry) keeps the label we acted on.
+  const classification =
+    persisted.alreadyClassified ||
+    (!persisted.inserted && existingConversation?.replyIntent
+      ? {
+          intent: existingConversation.replyIntent,
+          confidence: existingConversation.replyIntentConfidence || 0,
+          reason: existingConversation.replyIntentReason || "",
+          nextStepHint: existingConversation.replyIntentNextStepHint || "",
+          ownerRequest: existingConversation.replyOwnerRequest || "",
+        }
+      : await classifyReplyIntent({
+          lead,
+          productProfile,
+          conversation: existingMessages,
+          latestInbound: persisted.body,
+        }));
+
+  if (!persisted.alreadyClassified) {
+    await setConversationReplyIntent(workspaceId, lead.id, {
+      intent: classification.intent,
+      reason: classification.reason,
+      confidence: classification.confidence,
+      nextStepHint: classification.nextStepHint,
+      ownerRequest: classification.ownerRequest,
+    });
+  }
+
+  const toStopForIntent = leadEnrollments.filter((enrollment) => {
+    if (handoffEnrollmentIds.includes(enrollment.id)) return false;
+    if (!armedEnrollmentIds.includes(enrollment.id)) return false;
+    const enrollmentCampaign = campaigns.find((item) => item.id === enrollment.campaignId);
+    return shouldStopForReply({
+      replyHandling: enrollmentCampaign?.replyHandling,
+      intent: classification.intent,
+      confidence: classification.confidence,
+    });
+  });
+  await Promise.all(
+    toStopForIntent.map((enrollment) =>
+      updateEnrollment(workspaceId, enrollment.id, {
+        status: "stopped",
+        pendingAction: undefined,
+        lastError: `Skipped AI reply (intent: ${classification.intent || "unknown"}).`,
+      }),
+    ),
+  );
+
+  const ownerRequest = (classification.ownerRequest || "").trim();
+  const isHotInterest = isHotReply(classification.intent, classification.confidence);
+  const meetingBooked = isMeetingBooked(classification.intent, classification.confidence);
+  const stoppedAtInterest =
+    isHotInterest &&
+    (leadEnrollments.length === 0 ||
+      toStopForIntent.some((enrollment) => {
+        const mode = campaigns.find((item) => item.id === enrollment.campaignId)?.replyHandling;
+        return mode !== "handoff" && mode !== "ai_until_booked";
+      }));
+
+  if (notifyEmail && (meetingBooked || stoppedAtInterest)) {
+    if (
+      await claimLeadOutcomeNotification(
+        workspaceId,
+        lead.id,
+        meetingBooked ? "meeting" : "interest",
+      )
+    ) {
+      try {
+        // A missing photo must never cost the notification.
+        const photo = await leadAvatarBytes(lead).catch(() => null);
+        const result = await sendInterestedLeadNotification({
+          to: notifyEmail,
+          lead: {
+            name: lead.name,
+            title: lead.title,
+            company: lead.company,
+            location: lead.location,
+            linkedInUrl: lead.linkedInUrl,
+            summary: lead.summary,
+            fitScore: lead.fitScore,
+            scoreReasons: lead.scoreReasons,
+            signalText: lead.signalText,
+            photo: photo ?? undefined,
+          },
+          campaignName: campaign?.name,
+          linkedInAccountName: persisted.account?.displayName,
+          interestSignal: persisted.body,
+          ownerRequest: ownerRequest || undefined,
+          interestReason:
+            classification.nextStepHint ||
+            classification.reason ||
+            (meetingBooked ? "Confirmed a booked meeting" : "Showed buying interest"),
+          idempotencyKey: persisted.providerMessageId
+            ? `interest-${workspaceId}-${lead.id}-${persisted.providerMessageId}`
+            : `interest-${workspaceId}-${lead.id}`,
+        });
+        if (emailWasSkipped(result)) {
+          throw new Error("Email delivery is not configured.");
+        }
+        await logAutomationRun({
+          workspaceId,
+          kind: "webhook",
+          status: "completed",
+          message: `${meetingBooked ? "Meeting booked" : "Interest detected"}: ${lead.name} (${classification.intent}, ${classification.confidence.toFixed(2)}), ${classification.reason}`,
+        });
+      } catch (error) {
+        await releaseLeadOutcomeNotification(
+          workspaceId,
+          lead.id,
+          meetingBooked ? "meeting" : "interest",
+        ).catch((releaseError) => {
+          console.error("[inbound] failed to release outcome notification claim:", releaseError);
+        });
+        console.error("[inbound] failed to send interested-lead notification:", error);
+      }
+    }
+  } else if (
+    notifyEmail &&
+    leadEnrollments.length === 0 &&
+    (await claimReplyNotification(workspaceId, lead.id))
+  ) {
+    try {
+      const result = await sendReplyNotification({
+        to: notifyEmail,
+        leadName: persisted.senderName,
+        campaignName: campaign?.name,
+        body: persisted.body,
+        handoff: false,
+        idempotencyKey: persisted.providerMessageId
+          ? `reply-${workspaceId}-${lead.id}-${persisted.providerMessageId}`
+          : undefined,
+      });
+      if (emailWasSkipped(result)) {
+        throw new Error("Email delivery is not configured.");
+      }
+    } catch (error) {
+      await releaseReplyNotification(workspaceId, lead.id).catch((releaseError) => {
+        console.error("[inbound] failed to release reply notification claim:", releaseError);
+      });
+      console.error("[inbound] failed to send reply notification:", error);
+    }
+  }
+
+  // The lead asked for something a text reply can't deliver (a PDF, a demo
+  // video, an email) on a thread the AI runs. The AI will answer on its own,
+  // or has gone quiet, so without this email nobody would send it. A reply
+  // that already earns the interest or meeting email carries the request
+  // there instead: one email per reply.
+  const messageId = persisted.providerMessageId;
+  if (
+    notifyEmail &&
+    ownerRequest &&
+    messageId &&
+    armedEnrollmentIds.length > 0 &&
+    !meetingBooked &&
+    !stoppedAtInterest &&
+    (await claimOwnerRequestNotification(workspaceId, lead.id, messageId))
+  ) {
+    try {
+      const result = await sendOwnerRequestNotification({
+        to: notifyEmail,
+        lead: {
+          name: lead.name,
+          title: lead.title,
+          company: lead.company,
+          linkedInUrl: lead.linkedInUrl,
+        },
+        campaignName: campaign?.name,
+        linkedInAccountName: persisted.account?.displayName,
+        request: ownerRequest,
+        message: persisted.body,
+        previousMessage: existingMessages.findLast((message) => message.direction === "outbound")
+          ?.body,
+        aiWillReply: armedEnrollmentIds.some(
+          (id) => !toStopForIntent.some((enrollment) => enrollment.id === id),
+        ),
+        idempotencyKey: `owner-request-${workspaceId}-${lead.id}-${messageId}`,
+      });
+      if (emailWasSkipped(result)) {
+        throw new Error("Email delivery is not configured.");
+      }
+      await logAutomationRun({
+        workspaceId,
+        kind: "webhook",
+        status: "completed",
+        message: `Owner emailed: ${lead.name} asked for ${ownerRequest}`,
+      });
+    } catch (error) {
+      await releaseOwnerRequestNotification(workspaceId, lead.id, messageId).catch(
+        (releaseError) => {
+          console.error("[inbound] failed to release owner request claim:", releaseError);
+        },
+      );
+      console.error("[inbound] failed to send owner request notification:", error);
+    }
+  }
+
+  return persisted.inserted
+    ? {
+        duplicate: false as const,
+        intent: classification.intent,
+        confidence: classification.confidence,
+      }
+    : { duplicate: true as const };
+}
+
+export async function processInboundMessage(
+  input: InboundPersistInput,
+): Promise<InboundMessageResult> {
+  const persisted = await persistInboundReply(input);
+  if (persisted.skip) return { duplicate: true };
+  return finishInboundReplyClassification(persisted);
+}

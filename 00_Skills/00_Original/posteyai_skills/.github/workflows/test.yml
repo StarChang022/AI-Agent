@@ -1,0 +1,157 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  node-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22.x, 24.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # check-release-tag compares shipped content against the tag pack.json
+        # pins. That comparison reads local refs, so without full history and
+        # tags it returns "cannot compare" and the drift half never fires.
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Run Tests
+        run: node --test
+
+      - name: Check version consistency
+        run: node scripts/check-versions.js
+
+      # pack.json's rawBase pins refs/tags/skills/<skill>/v<version>, so a
+      # version released without its tag pushed 404s every fetch-based install.
+      # Reads the remote, because actions/checkout fetches no tags and a local
+      # `git tag -l` would pass vacuously here.
+      #
+      # main only. A release PR legitimately carries a version whose tag does
+      # not exist yet — the tag is pushed after the merge, and this is what
+      # notices when nobody did.
+      # A tag can only point at the merge commit, so it is pushed after the merge.
+      # Without a grace window this step is red on every release until someone
+      # re-runs it — and a gate that is routinely red is one nobody reads. Inside
+      # the window a missing tag is reported as pending; release-tags.yml runs the
+      # same check on a schedule with no grace, so a tag nobody pushed still fails.
+      - name: Check the released version has its tag
+        if: github.ref == 'refs/heads/main'
+        run: node scripts/check-release-tag.mjs --grace-minutes 30
+
+      # Two scopes on purpose. Full repo: secret-shaped patterns + committed
+      # high-entropy hashes (root tests/ is skipped inside the scanner —
+      # synthetic secret-shaped fixtures). No private secret here: the private
+      # terms (person names, internal repo/product names) legitimately appear
+      # in committed infra files like CLAUDE.md and would false-positive.
+      - name: Check for leaks (full repo, committed denylist)
+        run: node scripts/check-leaks.js .
+
+      # Shipped skill content only, with the private term list merged in.
+      # LEAK_EXTRA_TERMS is newline- or comma-separated plaintext terms; it is
+      # EMPTY on fork PRs (no secrets) — maintainers re-check on merge.
+      - name: Check for leaks (shipped content, private denylist)
+        run: node scripts/check-leaks.js skills
+        env:
+          LEAK_EXTRA_TERMS: ${{ secrets.LEAK_EXTRA_TERMS }}
+
+      # check-setup-links.mjs has existed in scripts/ since before this program and
+      # was invoked by nothing — a check that runs only when someone remembers is
+      # indistinguishable from no check. Wiring is the deliverable, not the script.
+      - name: Check setup links resolve
+        run: node scripts/check-setup-links.mjs
+
+      # setup.md is executed by an agent, so a command that waits for a keystroke
+      # is a broken document, not a style nit. check-doc-commands.js cannot see
+      # this: it scans skills/ only, and matches postey.js commands only, so no
+      # pattern in it can match `npx` or `claude plugin`. Offline.
+      - name: Check setup doc is agent-executable
+        run: node scripts/check-setup-doc.mjs
+
+      # C5: mcp-tools.tools: is derived from capabilities:, never hand-written.
+      # The hand-kept list had silently omitted file_manager, list_files and
+      # read_file — capabilities the skill claims but could not call. Offline.
+      - name: Check mcp-tools.tools is derived from capabilities
+        run: node scripts/gen-mcp-tools.js --check
+
+      # The capability contract: every capability the server exposes is owned by
+      # exactly one skill. C1's allowlist of not-yet-claimed capabilities shrinks
+      # as each pillar ships, and an entry that becomes claimed fails as stale —
+      # so the list cannot rot into a permanent exemption. Offline.
+      - name: Check capability contract (C1 cover, C2 exclusive)
+        run: node scripts/check-capability-contract.js
+
+      # A skill that mirrors the hub's CLI must mirror it byte-for-byte, snapshot
+      # included — postey.js requires it at runtime. Offline.
+      - name: Check mirrored CLI copies are byte-identical
+        run: node scripts/check-script-parity.js
+
+      # Shipped docs must not advertise a pack that does not exist. The Content
+      # Flows table names the skill carrying each flow, and during the split those
+      # packs appear one at a time. Offline.
+      - name: Check no doc advertises a nonexistent pack
+        run: node scripts/check-pack-discovery.js
+
+      # A skill must ship every file it references. Once skills are split, a
+      # reference to a file that moved elsewhere still reads fine in prose but is
+      # simply not installed. Catches markdown links AND backtick refs — the
+      # content flows cite the craft layer with backticks. Offline.
+      - name: Check no skill references a file it does not ship
+        run: node scripts/check-cross-skill-links.js
+
+      # check-server-card.js existed, was wired to an npm script, and was invoked
+      # by nothing — its own header says the drift it was written for went
+      # unnoticed "because the only thing that could have caught it never ran".
+      # Needs the network, so it is allowed to fail without failing the build;
+      # a missing server card must not red a fork PR.
+      - name: Check the published server card matches the snapshot
+        run: node scripts/check-server-card.js
+        continue-on-error: true
+
+      # S9.6 — enforcement. The responsibility contract is prose until a build
+      # fails on it. Offline: reads the committed snapshot, so it runs on forks.
+      - name: Check skill/MCP capability overlap
+        run: node scripts/check-capability-overlap.js
+
+      # F-031 — the guides routed writes to CLI commands S9.1 had already deleted,
+      # and nothing compared the guidance to the COMMANDS table. Offline: parses
+      # the CLI source and SKILL.md's routing map, so it runs on forks.
+      - name: Check docs route to commands that exist
+        run: node scripts/check-doc-commands.js
+
+      # Replaces check-platform-sync.js (S9.5). That script compared SKILL.md's
+      # `platforms:` against postey.js's SOCIAL_PLATFORMS — two hand-maintained
+      # copies agreeing with each other, and it soft-skipped to green when either
+      # was absent. Both now derive from capability-snapshot.json; the offline
+      # tests hold the repo consistent, this step holds it against the server.
+      - name: Check capability snapshot is current
+        run: node scripts/refresh-capability-snapshot.js --check
+        env:
+          MCP_SERVER_URL: ${{ secrets.MCP_STAGING_URL }}
+          POSTEY_API_KEY: ${{ secrets.MCP_STAGING_API_KEY }}
+
+      # Source-parse mode soft-skips here (no sibling backend checkout in CI).
+      # Setting the MCP_STAGING_URL + MCP_STAGING_API_KEY secrets switches on
+      # runtime verification, which HARD-FAILS if the fetch fails — a
+      # configured check never degrades into a green skip.
+      - name: Check MCP tool sync
+        run: |
+          MCP_TOOLS_DIR=../postey-backend/app/core/mcp/tools \
+          node scripts/check-mcp-tool-sync.js
+        env:
+          MCP_SERVER_URL: ${{ secrets.MCP_STAGING_URL }}
+          POSTEY_API_KEY: ${{ secrets.MCP_STAGING_API_KEY }}
+

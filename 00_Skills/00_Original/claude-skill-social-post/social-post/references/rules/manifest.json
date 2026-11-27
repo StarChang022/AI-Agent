@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "rules": [
+    {
+      "rule_id": "R1",
+      "title": "一篇只服務一個主要目標",
+      "path": "R01.md",
+      "sha256": "4998b55a78d402816dccb71da085a90185923be396036c1f5e8fab86a33b00a7"
+    },
+    {
+      "rule_id": "R2",
+      "title": "觀測事實與推論分欄",
+      "path": "R02.md",
+      "sha256": "b6dec5c05e472e2c45d3343c1b0aa9fc791cf2259fa1261d45b94a3547617761"
+    },
+    {
+      "rule_id": "R3",
+      "title": "只比較相近 maturity",
+      "path": "R03.md",
+      "sha256": "0e31f048d81c6ee588673c2db18c817d7ebd85ef2592f8d8a8750af540418710"
+    },
+    {
+      "rule_id": "R4",
+      "title": "分開讀 distribution、watch quality 與 conversion",
+      "path": "R04.md",
+      "sha256": "2cfb4ddec2b0fe35cef9ce0c976dc2c103c594f7a87cb1cfae338bbae8db6b0c"
+    },
+    {
+      "rule_id": "R5",
+      "title": "變因同時改動就列 confound",
+      "path": "R05.md",
+      "sha256": "ced4c4421c6864bd09b787976be0e0ddd8192e72b42e473dc9f7a16fc413b346"
+    },
+    {
+      "rule_id": "R6",
+      "title": "時段先當假設",
+      "path": "R06.md",
+      "sha256": "4154bd7e69a7d06a0c58d74b8e958cd33b3c5fca0c0f612d765facf6eb84fd27"
+    },
+    {
+      "rule_id": "R7",
+      "title": "跨平台快照不得混成單一平台",
+      "path": "R07.md",
+      "sha256": "9e6760c8493eea3364d5f36093f47e37fbcfe3b3c4fa12f3768fd31432a6ca00"
+    },
+    {
+      "rule_id": "R8",
+      "title": "私人學習與公開方法分離",
+      "path": "R08.md",
+      "sha256": "6632f0dbfbf4f913c86590980cb518cd6df93102666aa9512d5de9099e94ad75"
+    }
+  ]
+}

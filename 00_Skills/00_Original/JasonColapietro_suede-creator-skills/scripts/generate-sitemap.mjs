@@ -1,0 +1,468 @@
+#!/usr/bin/env node
+// Regenerates docs/sitemap.xml from the pages actually on disk, with each
+// <lastmod> pulled from that file's real git history. Run it after any docs/
+// change so search engines see accurate recrawl signal instead of a sitemap
+// that quietly falls behind (root cause of the 2026-07-21 staleness fix).
+//
+// Usage:
+//   node scripts/generate-sitemap.mjs          # write docs/sitemap.xml
+//   node scripts/generate-sitemap.mjs --check  # exit 1 if the file would change
+
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const repoRoot = path.resolve(path.dirname(__filename), "..");
+const docsRoot = path.join(repoRoot, "docs");
+const sitemapPath = path.join(docsRoot, "sitemap.xml");
+const directorySitemapPath = path.join(docsRoot, "directory-sitemap.xml");
+const checkOnly = process.argv.includes("--check");
+
+const BASE_URL = "https://skills.suedeai.ai";
+
+function ownsGitHistory() {
+  const result = spawnSync(
+    "git",
+    ["-C", repoRoot, "rev-parse", "--show-toplevel"],
+    { encoding: "utf8" }
+  );
+  if (result.status !== 0) return false;
+  return path.resolve(result.stdout.trim()) === repoRoot;
+}
+
+const hasOwnGitHistory = ownsGitHistory();
+
+function hasCompleteHistory() {
+  if (!hasOwnGitHistory) return false;
+  const result = spawnSync(
+    "git",
+    ["-C", repoRoot, "rev-parse", "--is-shallow-repository"],
+    { encoding: "utf8" }
+  );
+  return result.status === 0 && result.stdout.trim() === "false";
+}
+
+const canVerifyGitDates = hasCompleteHistory();
+
+// Priority is an editorial signal, not something derivable from disk, so it
+// stays a deliberate list. Anything not named here (including every new
+// skill page dropped into docs/skills/) defaults to the tier below rather
+// than requiring a manual sitemap edit.
+const FIXED_PAGES = [
+  { file: "index.html", loc: "/", priority: "1.0", changefreq: "weekly" },
+  { file: "guide.html", loc: "/guide.html", priority: "0.9", changefreq: "weekly" },
+  { file: "skills/index.html", loc: "/skills/", priority: "0.9", changefreq: "weekly" },
+  { file: "copy.html", loc: "/copy.html", priority: "0.8", changefreq: "weekly" },
+  { file: "plugins.html", loc: "/plugins.html", priority: "0.8", changefreq: "weekly" },
+  // Indexable, self-canonical, linked from the global nav as "Cracked Devs"
+  // and from llms.txt, but was never in the sitemap.
+  { file: "cracked.html", loc: "/cracked.html", priority: "0.7", changefreq: "weekly" },
+  // Every third-party directory, registry and list that carries the pack,
+  // rendered from docs/listings.json by scripts/build-listings.mjs.
+  { file: "listings.html", loc: "/listings.html", priority: "0.6", changefreq: "monthly" },
+  { file: "ai-instructions/index.html", loc: "/ai-instructions/", priority: "0.5", changefreq: "monthly" },
+];
+
+const FLAGSHIP_SKILLS = [
+  "suede-workflow-skills",
+  "suede-seo-audit",
+  "suede-ai-seo",
+  "suede-copy",
+  "suede-design",
+  "suede-visibility-grader",
+  "suede-ai-eval",
+  "suede-agent-teams",
+  "suede-rights-passport",
+  "suede-release-linter",
+  "suede-code",
+  "suede-ci-gate",
+];
+const FLAGSHIP_PRIORITY = "0.85";
+const SKILL_DEFAULT_PRIORITY = "0.8";
+const SKILL_CHANGEFREQ = "weekly";
+
+const BLOG_INDEX_PRIORITY = "0.7";
+const BLOG_INDEX_CHANGEFREQ = "weekly";
+const BLOG_POST_PRIORITY = "0.7";
+const BLOG_POST_CHANGEFREQ = "monthly";
+
+// The book index sits with the guide and skill index as a primary entry point;
+// chapters are long-lived reference pages that change only when the Markdown
+// they are generated from changes.
+const BOOK_INDEX_PRIORITY = "0.85";
+const BOOK_INDEX_CHANGEFREQ = "monthly";
+const BOOK_CHAPTER_PRIORITY = "0.7";
+const BOOK_CHAPTER_CHANGEFREQ = "monthly";
+
+// The third-party skill directory: the hub and category pages are entry
+// points; repository and skill pages are long-tail reference pages.
+const DIRECTORY_INDEX_PRIORITY = "0.9";
+const DIRECTORY_CATEGORY_PRIORITY = "0.8";
+const DIRECTORY_REPO_PRIORITY = "0.6";
+const DIRECTORY_SKILL_PRIORITY = "0.5";
+
+function readText(file) {
+  return fs.readFileSync(file, "utf8");
+}
+
+function isNoindex(absPath) {
+  if (!fs.existsSync(absPath)) return false;
+  const text = readText(absPath);
+  const match = text.match(/<meta\s+name="robots"\s+content="([^"]*)"/i);
+  return !!match && /noindex/i.test(match[1]);
+}
+
+// Fallback date for files git can't date yet (dirty, untracked, or no repo).
+// This must be the LOCAL date, not toISOString()'s UTC date: `git log
+// --date=short` prints each commit's date in its recorded local offset, so
+// between 00:00 UTC and local midnight the two disagree by a day. A sitemap
+// regenerated pre-commit would stamp "tomorrow", the commit would record
+// "today", and CI's clean-tree --check would fail on the mismatch.
+function localToday() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+// The page's own dateModified is the editorial claim about when it last
+// changed; the sitemap follows it. Git dates only pages that make no claim
+// (skill cards). Before this, blog essays declaring 2026-08-07 sat in a
+// sitemap saying 2026-09-05 because a schema tweak had touched the file
+// (record-audit.py in suede-seo, 2026-09-11).
+function declaredDate(relPath) {
+  const abs = path.join(repoRoot, relPath);
+  if (!fs.existsSync(abs)) return null;
+  const m = readText(abs).match(/"dateModified":\s*"(\d{4}-\d{2}-\d{2})"/);
+  return m ? m[1] : null;
+}
+
+// A shallow clone answers `git log -1 -- <file>` with the graft commit for
+// every file, so its dates would stamp every unchanged page with the clone's
+// newest commit. There, a clean file keeps the lastmod already committed in
+// the sitemap; only a file with uncommitted changes moves to today.
+const committedLastmod = new Map(
+  [...parseSitemapEntries(fs.existsSync(sitemapPath) ? readText(sitemapPath) : "")].map(([loc, e]) => [loc, e.lastmod])
+);
+
+// docs/<p>/index.html is served at /<p>/; any other docs file at its own path.
+const locFor = (relPath) =>
+  `${BASE_URL}/${relPath.split(path.sep).join("/").replace(/^docs\//, "").replace(/(^|\/)index\.html$/, "$1")}`;
+
+function lastCommitDate(relPath) {
+  const loc = locFor(relPath);
+  const declared = declaredDate(relPath);
+  if (declared) return declared;
+  if (!hasOwnGitHistory) {
+    return localToday();
+  }
+  const status = spawnSync(
+    "git",
+    ["-C", repoRoot, "status", "--porcelain", "--", relPath],
+    { encoding: "utf8" }
+  );
+  if (status.status === 0 && status.stdout.trim()) {
+    return localToday();
+  }
+  if (!canVerifyGitDates && committedLastmod.has(loc)) {
+    return committedLastmod.get(loc);
+  }
+  const result = spawnSync(
+    "git",
+    ["-C", repoRoot, "log", "-1", "--format=%ad", "--date=short", "--", relPath],
+    { encoding: "utf8" }
+  );
+  const date = result.stdout.trim();
+  if (date) return date;
+  // Uncommitted or untracked (new page not yet committed): fall back to
+  // today so the generated sitemap is still a well-formed date, not blank.
+  return localToday();
+}
+
+function listSkillFiles() {
+  const skillsDir = path.join(docsRoot, "skills");
+  return fs
+    .readdirSync(skillsDir)
+    .filter((f) => f.endsWith(".html") && f !== "index.html")
+    .filter((f) => !isNoindex(path.join(skillsDir, f)))
+    .map((f) => f.replace(/\.html$/, ""))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function listBlogPostFiles() {
+  const blogDir = path.join(docsRoot, "blog");
+  if (!fs.existsSync(blogDir)) return [];
+  return fs
+    .readdirSync(blogDir)
+    .filter((f) => f.endsWith(".html") && f !== "index.html")
+    .filter((f) => !isNoindex(path.join(blogDir, f)))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function buildEntries() {
+  const entries = [];
+
+  for (const page of FIXED_PAGES) {
+    const abs = path.join(docsRoot, page.file);
+    if (isNoindex(abs)) continue;
+    entries.push({
+      loc: `${BASE_URL}${page.loc}`,
+      lastmod: lastCommitDate(path.join("docs", page.file)),
+      changefreq: page.changefreq,
+      priority: page.priority,
+    });
+  }
+
+  const skillNames = listSkillFiles();
+  const flagship = FLAGSHIP_SKILLS.filter((name) => skillNames.includes(name));
+  const rest = skillNames.filter((name) => !FLAGSHIP_SKILLS.includes(name));
+
+  for (const name of [...flagship, ...rest]) {
+    const relPath = path.join("docs", "skills", `${name}.html`);
+    entries.push({
+      loc: `${BASE_URL}/skills/${name}.html`,
+      lastmod: lastCommitDate(relPath),
+      changefreq: SKILL_CHANGEFREQ,
+      priority: FLAGSHIP_SKILLS.includes(name) ? FLAGSHIP_PRIORITY : SKILL_DEFAULT_PRIORITY,
+    });
+  }
+
+  const blogIndexAbs = path.join(docsRoot, "blog", "index.html");
+  if (fs.existsSync(blogIndexAbs) && !isNoindex(blogIndexAbs)) {
+    entries.push({
+      loc: `${BASE_URL}/blog/`,
+      lastmod: lastCommitDate(path.join("docs", "blog", "index.html")),
+      changefreq: BLOG_INDEX_CHANGEFREQ,
+      priority: BLOG_INDEX_PRIORITY,
+    });
+  }
+
+  for (const file of listBlogPostFiles()) {
+    entries.push({
+      loc: `${BASE_URL}/blog/${file}`,
+      lastmod: lastCommitDate(path.join("docs", "blog", file)),
+      changefreq: BLOG_POST_CHANGEFREQ,
+      priority: BLOG_POST_PRIORITY,
+    });
+  }
+
+  // docs/book/ is generated by scripts/build-book-site.mjs, so enumerate it
+  // from disk the same way skills and blog posts are. A chapter added to the
+  // book lands in the sitemap on the next run without a manual edit here.
+  const bookIndexAbs = path.join(docsRoot, "book", "index.html");
+  if (fs.existsSync(bookIndexAbs) && !isNoindex(bookIndexAbs)) {
+    entries.push({
+      loc: `${BASE_URL}/book/`,
+      lastmod: lastCommitDate(path.join("docs", "book", "index.html")),
+      changefreq: BOOK_INDEX_CHANGEFREQ,
+      priority: BOOK_INDEX_PRIORITY,
+    });
+
+    const chapters = fs
+      .readdirSync(path.join(docsRoot, "book"))
+      .filter((f) => f.endsWith(".html") && f !== "index.html")
+      .filter((f) => !isNoindex(path.join(docsRoot, "book", f)))
+      .sort((a, b) => a.localeCompare(b));
+
+    for (const file of chapters) {
+      entries.push({
+        loc: `${BASE_URL}/book/${file}`,
+        lastmod: lastCommitDate(path.join("docs", "book", file)),
+        changefreq: BOOK_CHAPTER_CHANGEFREQ,
+        priority: BOOK_CHAPTER_PRIORITY,
+      });
+    }
+
+    // Search engines index PDFs, and the print edition is a real destination
+    // rather than a byproduct, so list it beside the chapters it duplicates.
+    const printEdition = path.join(docsRoot, "book", "s-tier.pdf");
+    if (fs.existsSync(printEdition)) {
+      entries.push({
+        loc: `${BASE_URL}/book/s-tier.pdf`,
+        lastmod: lastCommitDate(path.join("docs", "book", "s-tier.pdf")),
+        changefreq: BOOK_CHAPTER_CHANGEFREQ,
+        priority: BOOK_CHAPTER_PRIORITY,
+      });
+    }
+  }
+
+  // docs/directory/ is generated by scripts/build-directory.mjs. Every page
+  // declares dateModified (the dataset snapshot date), so lastmod comes from
+  // the page itself and no git call is needed per page.
+  const directoryAbs = path.join(docsRoot, "directory");
+  if (fs.existsSync(path.join(directoryAbs, "index.html")) && !isNoindex(path.join(directoryAbs, "index.html"))) {
+    const pages = [];
+    const walk = (dir, depth) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        const abs = path.join(dir, entry.name);
+        const index = path.join(abs, "index.html");
+        if (fs.existsSync(index) && !isNoindex(index)) pages.push({ abs, depth });
+        walk(abs, depth + 1);
+      }
+    };
+    walk(directoryAbs, 1);
+    const tier = (rel, depth) => {
+      if (rel === "directory/methodology" || rel === "directory/submit") return { priority: "0.5", changefreq: "monthly" };
+      // Editorial guides (directory/editorial/) answer the questions the
+      // directory ranks for, so they sit with the category hubs; the free
+      // check is the publisher entry point.
+      if (rel === "directory/guides" || rel.startsWith("directory/guides/")) return { priority: DIRECTORY_CATEGORY_PRIORITY, changefreq: rel === "directory/guides" ? "weekly" : "monthly" };
+      if (rel === "directory/check") return { priority: "0.7", changefreq: "monthly" };
+      // Task pages ("best Claude Code skills for <task>") answer the same
+      // buying question as the category hubs, so they share the tier; each
+      // "<skill> alternatives" page ranks above the skill page it compares.
+      if (rel === "directory/for" || rel.startsWith("directory/for/")) return { priority: DIRECTORY_CATEGORY_PRIORITY, changefreq: "weekly" };
+      // Browse pages (topics, cost and license, capabilities, new, top 100)
+      // answer the same "which skills for X" question as the category hubs.
+      if (/^directory\/(?:topics|pricing|features|new|top|trust|stacks|plugins|grok|mcp-servers|rules|publishers|compare|api)(?:\/|$)/.test(rel)) return { priority: DIRECTORY_CATEGORY_PRIORITY, changefreq: "weekly" };
+      if (rel.endsWith("/alternatives")) return { priority: DIRECTORY_REPO_PRIORITY, changefreq: "weekly" };
+      if (depth === 1) return { priority: DIRECTORY_CATEGORY_PRIORITY, changefreq: "weekly" };
+      if (depth === 2) return { priority: DIRECTORY_REPO_PRIORITY, changefreq: "weekly" };
+      return { priority: DIRECTORY_SKILL_PRIORITY, changefreq: "monthly" };
+    };
+    entries.push({
+      loc: `${BASE_URL}/directory/`,
+      lastmod: lastCommitDate(path.join("docs", "directory", "index.html")),
+      changefreq: "weekly",
+      priority: DIRECTORY_INDEX_PRIORITY,
+    });
+    const ordered = pages
+      .map(({ abs, depth }) => ({ rel: path.relative(docsRoot, abs).split(path.sep).join("/"), depth }))
+      .sort((a, b) => a.depth - b.depth || a.rel.localeCompare(b.rel));
+    for (const { rel, depth } of ordered) {
+      entries.push({
+        loc: `${BASE_URL}/${rel}/`,
+        lastmod: lastCommitDate(path.join("docs", rel, "index.html")),
+        ...tier(rel, depth),
+      });
+    }
+  }
+
+  return entries;
+}
+
+// A sitemap regenerated after a squash merge differs only in <lastmod>, so the
+// check separates structural drift (a URL, priority, or changefreq that no
+// longer matches the site — always a failure) from date lag (tolerated briefly,
+// failed once it rots). Grace is deliberately short: long enough to absorb a
+// merge, far too short to let recrawl signal go stale unnoticed.
+const LASTMOD_GRACE_DAYS = 30;
+
+function parseSitemapEntries(xml) {
+  const parsed = new Map();
+  const blockPattern = /<url>([\s\S]*?)<\/url>/g;
+  let block;
+  while ((block = blockPattern.exec(xml)) !== null) {
+    const field = (name) => (block[1].match(new RegExp(`<${name}>([^<]*)</${name}>`)) || [])[1];
+    const loc = field("loc");
+    if (loc) parsed.set(loc, { lastmod: field("lastmod"), changefreq: field("changefreq"), priority: field("priority") });
+  }
+  return parsed;
+}
+
+function daysBetween(earlier, later) {
+  const from = Date.parse(`${earlier}T00:00:00Z`);
+  const to = Date.parse(`${later}T00:00:00Z`);
+  if (Number.isNaN(from) || Number.isNaN(to)) return Number.POSITIVE_INFINITY;
+  return Math.round((to - from) / 86_400_000);
+}
+
+function compareSitemaps(currentXml, expectedEntries) {
+  const committed = parseSitemapEntries(currentXml);
+  const structural = [];
+  const staleWithinGrace = [];
+  const staleBeyondGrace = [];
+  const expectedLocs = new Set();
+
+  for (const entry of expectedEntries) {
+    expectedLocs.add(entry.loc);
+    const found = committed.get(entry.loc);
+    if (!found) {
+      structural.push(`missing URL: ${entry.loc}`);
+      continue;
+    }
+    if (found.changefreq !== entry.changefreq || found.priority !== entry.priority) {
+      structural.push(`changefreq/priority drift: ${entry.loc}`);
+      continue;
+    }
+    if (found.lastmod === entry.lastmod) continue;
+    const lag = daysBetween(found.lastmod, entry.lastmod);
+    if (lag < 0 || !Number.isFinite(lag)) {
+      // Committed date is newer than Git, or unparseable — a hand edit, not lag.
+      structural.push(`lastmod is not derived from Git history: ${entry.loc}`);
+    } else if (lag > LASTMOD_GRACE_DAYS) {
+      staleBeyondGrace.push(`${entry.loc} (${lag} days behind)`);
+    } else {
+      staleWithinGrace.push(entry.loc);
+    }
+  }
+  for (const loc of committed.keys()) {
+    if (!expectedLocs.has(loc)) structural.push(`stale URL no longer on the site: ${loc}`);
+  }
+  return { structural, staleWithinGrace, staleBeyondGrace };
+}
+
+function renderXml(entries) {
+  const urls = entries
+    .map(
+      (e) =>
+        `  <url>\n    <loc>${e.loc}</loc>\n    <lastmod>${e.lastmod}</lastmod>\n    <changefreq>${e.changefreq}</changefreq>\n    <priority>${e.priority}</priority>\n  </url>`
+    )
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+const allEntries = buildEntries();
+// The directory moved to suedeai.directory. Its pages on this host canonicalize
+// there, so they leave this host's sitemap; scripts/build-directory-site.mjs
+// builds the suedeai.directory sitemap from docs/directory-sitemap.xml.
+const isDirectory = (e) => e.loc.startsWith(`${BASE_URL}/directory/`);
+const outputs = [
+  { file: sitemapPath, label: "docs/sitemap.xml", entries: allEntries.filter((e) => !isDirectory(e)) },
+  { file: directorySitemapPath, label: "docs/directory-sitemap.xml", entries: allEntries.filter(isDirectory) },
+];
+
+if (checkOnly) {
+  if (!canVerifyGitDates) {
+    const reason = hasOwnGitHistory
+      ? "shallow checkout has incomplete Git history"
+      : "packaged checkout has no repository-local Git history";
+    console.log(`Sitemap freshness check skipped: ${reason}.`);
+    process.exit(0);
+  }
+  let failed = false;
+  for (const { file, label, entries } of outputs) {
+    const current = fs.existsSync(file) ? readText(file) : "";
+    const drift = compareSitemaps(current, entries);
+    if (drift.structural.length > 0) {
+      console.error(`${label} is out of date (${entries.length} URLs expected). Run: node scripts/generate-sitemap.mjs`);
+      for (const problem of drift.structural) console.error(`  ${problem}`);
+      failed = true;
+      continue;
+    }
+    if (drift.staleBeyondGrace.length > 0) {
+      console.error(`${label} has <lastmod> values more than ${LASTMOD_GRACE_DAYS} days behind Git. Run: node scripts/generate-sitemap.mjs`);
+      for (const problem of drift.staleBeyondGrace) console.error(`  ${problem}`);
+      failed = true;
+      continue;
+    }
+    if (drift.staleWithinGrace.length > 0) {
+      // A squash merge gives every file it touched a new commit date, so the
+      // committed sitemap goes stale the instant the merge lands, and no
+      // pre-merge check can catch it, because the commit that changes the date
+      // is created by the merge itself. Failing here would red main on every
+      // docs-touching PR. Structure is still enforced exactly; only a short
+      // date lag is tolerated, and it is reported rather than hidden.
+      console.log(`${label} <lastmod> lags Git by up to ${LASTMOD_GRACE_DAYS} days on ${drift.staleWithinGrace.length} URL(s), within grace. Run: node scripts/generate-sitemap.mjs to refresh.`);
+    }
+    console.log(`${label} is up to date (${entries.length} URLs).`);
+  }
+  process.exit(failed ? 1 : 0);
+}
+
+for (const { file, label, entries } of outputs) {
+  fs.writeFileSync(file, renderXml(entries));
+  console.log(`Wrote ${label} with ${entries.length} URLs.`);
+}

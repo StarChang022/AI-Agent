@@ -1,0 +1,252 @@
+# ASO & App Marketing Skills
+
+
+<a href="https://www.appeeky.com">
+  <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/b5872442-99f9-4e66-8667-96eb03e55f98" />
+</a>
+<div align="center">
+<p align="center">
+  <a href="https://x.com/appeeky">
+    <img src="https://img.shields.io/badge/Follow on X-000000?style=for-the-badge&logo=x&logoColor=white" alt="Follow on X" />
+  </a>
+  <a href="https://www.linkedin.com/in/erencanarica/">
+    <img src="https://img.shields.io/badge/Follow on LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="Follow on LinkedIn" />
+  </a>
+  </p>
+</div>
+
+AI agent skills for App Store Optimization (ASO) and mobile app marketing. Built for indie developers, app marketers, and growth teams who want **Cursor**, **Claude Code**, or any Agent Skills-compatible AI assistant to help with keyword research, metadata optimization, competitor analysis, market intelligence, and app growth. Powered by real App Store data via the [Appeeky API](https://docs.appeeky.com).
+
+# Appeeky Spec: App growth, run by your coding agent
+<a href="https://spec.appeeky.com">
+<img src="https://cdn.jsdelivr.net/npm/@appeeky/spec/.github/assets/cover.gif" alt="Animated pixel-art night sky over a hilltop: a puffin in a scarf hops between Grok, Claude Code, Codex and Cursor on the left and Gemini CLI, opencode, T3 Code and Zed on the right. Above them: App growth, run by your coding agent, the features with their logos and the places it runs, from GitHub Actions and Docker to Hetzner, DigitalOcean, AWS, Google Cloud, Railway, Fly.io and Render." width="100%" />
+</a>
+
+[Appeeky Spec](https://spec.appeeky.com) puts your app's whole growth loop in one folder of your repo: the store listing and the searches it should win, reviews and competitors, what AI assistants say about the app, ads, experiments, and what every past change did. Your coding agent (Claude Code, Codex, Cursor, Gemini CLI and others) reads it and proposes the next change as a pull request. You merge it. The change is checked against the store rules, pushed to App Store Connect and Google Play, and measured on day 7 and day 14, and the result goes into a playbook the next change starts from.
+
+## Our other open-source skills and local app growth
+
+For agent skills for mobile app user acquisition — TikTok ads, Meta ads, Apple Search Ads, ad creatives, and ROAS - see [ua-skills](https://github.com/appeeky/ua-skills).
+
+### Local App Growth
+
+A native macOS app — a local-first for app growth. App Store Connect, Google Play, Apple Search Ads, Meta/TikTok ads, and RevenueCat sync into a cache on your Mac: full history, no CSV exports, credentials in the Keychain. Reviews, ads intelligence, and keyword data stay fast (and work offline). A built-in terminal pairs with MCP, so the same agents that use these skills can talk to your local data. Download from [Appeeky](https://appeeky.com/desktop).
+
+ <a href="https://www.appeeky.com/desktop">
+<img width="3072" height="2040" alt="image" src="https://github.com/user-attachments/assets/2c04ba9d-eb91-4543-8d38-21fa48cd476f" />
+  </a>
+
+## Why This Exists
+
+Most ASO knowledge lives in blog posts, courses, and expensive consultants. We packaged it into skills that any AI agent can use — so you get expert-level ASO guidance directly in your IDE.
+
+Each skill contains battle-tested frameworks, scoring rubrics, and output templates. The agent reads the skill, pulls real data from the App Store (via Appeeky), and gives you actionable recommendations — not generic advice.
+
+## Quick Start
+
+**Cursor** — `npx skills add appeeky/aso-skills -a cursor`
+
+**Claude Code** — `npx skills add appeeky/aso-skills`
+
+**Manual** — `git clone https://github.com/appeeky/aso-skills.git && cp -r aso-skills/plugin/skills/* .cursor/skills/`
+
+Then ask your agent:
+
+```
+"Run an ASO audit for my app (id: 1617391485)"
+"Find the best keywords for a meditation app"
+"Optimize my App Store title and subtitle"
+"How many downloads do I need to reach top 10 in Health & Fitness?"
+"What apps are rising in the charts right now?"
+"Give me a market briefing for the Games category"
+"How are my downloads and revenue trending this month?"
+"Help me plan a Christmas In-App Event"
+"What seasonal keywords should I add in December?"
+"Optimize my Google Play listing"
+"My app rating dropped — how do I recover it?"
+"Set up a weekly competitor monitoring routine for apps X, Y, Z"
+"Help me pitch TechCrunch for my app launch"
+"Build an Apple Search Ads campaign structure for my fitness app"
+"My app has a crash affecting 2% of sessions — help me triage it"
+```
+
+**Don't want to remember 30 skill names?** Just use the router:
+
+```
+/aso-router  →  routes your request to the right specialist skill automatically
+```
+
+Or invoke directly: `/aso-audit`, `/keyword-research`, `/metadata-optimization`, `/market-movers`, `/market-pulse`, `/asc-metrics`, `/in-app-events`, `/seasonal-aso`, `/android-aso`, `/apple-search-ads`, `/competitor-tracking`
+
+## Skills
+
+### ASO Core
+
+| Skill | What it does |
+|-------|-------------|
+| [`aso-audit`](plugin/skills/aso-audit) | Scores your listing across 10 factors (0-100), flags problems, gives a prioritized fix list |
+| [`keyword-research`](plugin/skills/keyword-research) | Finds keywords by volume × difficulty × relevance, groups them into primary/secondary/long-tail |
+| [`metadata-optimization`](plugin/skills/metadata-optimization) | Writes title, subtitle, keyword field, description — with 3 variants and character counts |
+| [`competitor-analysis`](plugin/skills/competitor-analysis) | Keyword gaps, creative teardown, positioning map, and specific opportunities to exploit |
+| [`seasonal-aso`](plugin/skills/seasonal-aso) | Seasonal keyword calendar, metadata swap strategy, timing checklist, and trending-moment tactics |
+| [`android-aso`](plugin/skills/android-aso) | Google Play-specific ASO — indexed description strategy, short description, Play Experiments, rating recovery |
+
+### Creative & International
+
+| Skill | What it does |
+|-------|-------------|
+| [`screenshot-optimization`](plugin/skills/screenshot-optimization) | 10-slot screenshot strategy with design briefs, text overlay copy, and competitor audit |
+| [`app-preview-video`](plugin/skills/app-preview-video) | Up to 3 App Preview videos per locale — script template, beat-by-beat structure, Apple/Play specs, rejection avoidance |
+| [`app-icon-optimization`](plugin/skills/app-icon-optimization) | Icon design principles, A/B testing via PPO/Play Experiments, category differentiation, and icon briefs |
+| [`custom-product-pages`](plugin/skills/custom-product-pages) | Apple CPPs — variant strategy by audience/channel, ASA + CPP unlock, measurement floor, common mistakes |
+| [`review-management`](plugin/skills/review-management) | Sentiment analysis, response templates (HEAR framework), rating improvement tactics |
+| [`localization`](plugin/skills/localization) | Market prioritization matrix, per-country keyword research, cultural adaptation checklist |
+
+### Growth
+
+| Skill | What it does |
+|-------|-------------|
+| [`app-launch`](plugin/skills/app-launch) | 8-week launch timeline with daily checklists, channel strategy, and press outreach templates |
+| [`ua-campaign`](plugin/skills/ua-campaign) | Apple Search Ads, Meta, Google UAC — campaign structure, bidding, creative specs, budget allocation |
+| [`apple-search-ads`](plugin/skills/apple-search-ads) | Deep-dive ASA — campaign structure, match types, CPP routing, bid strategy, weekly optimization checklist |
+| [`creator-ugc-marketing`](plugin/skills/creator-ugc-marketing) | TikTok / IG / YouTube creator program — briefs, sourcing, hook angles, Spark Ads / Partnership Ads, measurement |
+| [`referral-program`](plugin/skills/referral-program) | In-app referral / invite mechanics — reward sizing, K-factor math, fraud prevention, deep link flow |
+| [`web-to-app-funnel`](plugin/skills/web-to-app-funnel) | Web → app install funnels (incl. quiz + Stripe + deferred deep link) to bypass App Store fees on subs |
+| [`app-store-featured`](plugin/skills/app-store-featured) | Featuring readiness score, Apple tech checklist, pitch template, In-App Events calendar |
+| [`in-app-events`](plugin/skills/in-app-events) | Plan and write App Store In-App Events — copy, image brief, keyword strategy, submission timeline |
+| [`app-clips`](plugin/skills/app-clips) | App Clip use cases, card design, URL scheme setup, SKOverlay handoff, and measurement |
+| [`press-and-pr`](plugin/skills/press-and-pr) | Media targeting tiers, pitch templates, press kit checklist, embargo strategy, Product Hunt launch |
+
+### Revenue & Retention
+
+| Skill | What it does |
+|-------|-------------|
+| [`monetization-strategy`](plugin/skills/monetization-strategy) | Pricing tiers, paywall timing, trial structure, category benchmarks |
+| [`paywall-optimization`](plugin/skills/paywall-optimization) | Paywall conversion funnel diagnostic, 7-element audit, A/B test playbook (Superwall, RevenueCat, Adapty) |
+| [`subscription-lifecycle`](plugin/skills/subscription-lifecycle) | Trial nurture sequences, voluntary/involuntary churn reduction, dunning, and win-back campaigns |
+| [`retention-optimization`](plugin/skills/retention-optimization) | Activation → habit → engagement framework, push notification sequences, churn prevention |
+| [`onboarding-optimization`](plugin/skills/onboarding-optimization) | First-run flow audit, activation event definition, permission prompt timing, sign-up friction reduction |
+| [`rating-prompt-strategy`](plugin/skills/rating-prompt-strategy) | SKStoreReviewRequest / Play In-App Review timing, pre-prompt survey, version-gating, and rating recovery |
+
+### Analytics & Testing
+
+| Skill | What it does |
+|-------|-------------|
+| [`app-analytics`](plugin/skills/app-analytics) | Event tracking plan, dashboard setup, KPI framework with category benchmarks |
+| [`attribution-setup`](plugin/skills/attribution-setup) | SKAdNetwork 4 / AdAttributionKit / MMP setup — conversion-value schema design, deep link debug playbook |
+| [`ab-test-store-listing`](plugin/skills/ab-test-store-listing) | Hypothesis → variant design → sample size → interpretation for App Store A/B tests |
+| [`asc-metrics`](plugin/skills/asc-metrics) | Analyze your exact App Store Connect data (downloads, revenue, subscriptions, countries) via Appeeky Connect |
+| [`crash-analytics`](plugin/skills/crash-analytics) | Crashlytics setup, crash triage framework (P0–P3), symbolication, phased release strategy, rating recovery |
+
+### Market Intelligence
+
+| Skill | What it does |
+|-------|-------------|
+| [`market-movers`](plugin/skills/market-movers) | Identifies top chart gainers/losers, new entries, and dropped apps — explains what's driving changes |
+| [`market-pulse`](plugin/skills/market-pulse) | Full market briefing: chart movements + trending keywords + featured apps + new launches in one view |
+| [`competitor-tracking`](plugin/skills/competitor-tracking) | Weekly competitor surveillance — metadata changes, keyword shifts, rating trends, chart movement deltas |
+
+### Strategy & Recovery
+
+| Skill | What it does |
+|-------|-------------|
+| [`category-positioning`](plugin/skills/category-positioning) | Pick / switch primary + secondary App Store / Play categories — competitive density, featuring odds, switch-cost analysis |
+| [`app-rejection-recovery`](plugin/skills/app-rejection-recovery) | Diagnose Apple / Google rejections by guideline, draft Resolution Center responses, decide fix vs appeal |
+
+### Foundation
+
+| Skill | What it does |
+|-------|-------------|
+| [`aso-router`](plugin/skills/aso-router) | **Single entry point** — reads any natural-language ASO request and routes to the right specialist skill. Use when you don't want to remember every skill name |
+| [`app-marketing-context`](plugin/skills/app-marketing-context) | Creates a context doc (app, audience, competitors, goals) that all other skills reference |
+
+## How It Works
+
+```
+You: "Run an ASO audit for Headspace"
+
+Agent:
+  1. Reads aso-audit/SKILL.md (framework, scoring rubric, output template)
+  2. Calls Appeeky API → fetches metadata, keywords, ratings, competitors
+  3. Scores each factor (title: 8/10, subtitle: 6/10, keywords: 4/10...)
+  4. Returns: ASO Score Card + Quick Wins + High-Impact Changes + Strategic Recs
+```
+
+Skills reference each other — `aso-audit` might suggest running `keyword-research` for deeper analysis, which then feeds into `metadata-optimization` for implementation.
+
+## Installation
+
+### Cursor
+
+| Method | Command |
+|--------|---------|
+| CLI | `npx skills add appeeky/aso-skills -a cursor` |
+| Project-level | `cp -r aso-skills/plugin/skills/* .cursor/skills/` |
+| Global | `cp -r aso-skills/plugin/skills/* ~/.cursor/skills/` |
+
+### Claude Code
+
+Install as a Claude Code plugin (all 40 skills, updatable with `/plugin marketplace update aso-skills`):
+
+```
+/plugin marketplace add appeeky/aso-skills
+/plugin install aso-skills@aso-skills
+```
+
+Plugin skills are namespaced, e.g. `/aso-skills:aso-audit`.
+
+| Method | Command |
+|--------|---------|
+| Plugin | `/plugin marketplace add appeeky/aso-skills` then `/plugin install aso-skills@aso-skills` |
+| CLI | `npx skills add appeeky/aso-skills` |
+| Specific skills | `npx skills add appeeky/aso-skills --skill aso-audit keyword-research` |
+| Manual | `cp -r aso-skills/plugin/skills/* .claude/skills/` |
+
+### Any Agent
+
+```bash
+git submodule add https://github.com/appeeky/aso-skills.git .agents/aso-skills
+```
+
+Works with any tool that supports the [Agent Skills](https://agentskills.io) standard (`.agents/skills/`, `.cursor/skills/`, `.claude/skills/`, `.codex/skills/`).
+
+## Appeeky Integration
+
+Skills work standalone with general ASO knowledge. Connect [Appeeky](https://docs.appeeky.com/mcp) for real-time App Store data:
+
+```json
+{
+  "mcpServers": {
+    "appeeky": {
+      "url": "https://mcp.appeeky.com/mcp",
+      "headers": { "Authorization": "Bearer apk_your_key_here" }
+    }
+  }
+}
+```
+
+With Appeeky connected, skills can pull live keyword rankings, competitor metadata, download estimates, trending keywords, and featured apps.
+
+### Appeeky Connect — First-Party ASC Data
+
+The `asc-metrics` skill uses **Appeeky Connect**, a new integration that syncs your exact App Store Connect data (downloads, revenue, subscriptions, trials, IAP, and country breakdowns) into Appeeky nightly.
+
+Connect once at [appeeky.com → Settings → Integrations](https://appeeky.com) and then ask:
+
+```
+"How are my downloads trending this month?"
+"What are my top 5 markets by revenue?"
+"Compare this month's subscriptions to last month"
+```
+
+Requires Indie plan( coffee price: $8/month) or higher. See [tools/integrations/appeeky-connect.md](tools/integrations/appeeky-connect.md) for the full API reference.
+
+See [tools/REGISTRY.md](tools/REGISTRY.md) for the full capability matrix.
+
+## Contributing
+
+PRs welcome — fix an inaccuracy, improve a framework, or add a new skill. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT

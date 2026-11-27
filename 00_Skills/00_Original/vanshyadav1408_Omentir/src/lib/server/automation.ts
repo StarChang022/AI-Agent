@@ -1,0 +1,3168 @@
+import "server-only";
+
+import { wasWorkspaceLeadProcessed } from "./workspace-lead-history";
+import { LeadReplyNotSyncedError, stopForOwnerMessage, stopForOwnerMessageWebhook } from "./owner-message-guard";
+
+import {
+  acquireTickLock,
+  releaseTickLock,
+  renewTickLock,
+  getActiveCampaigns,
+  getCampaignsForProviderSync,
+  getAgent,
+  getDueAgents,
+  getDueEnrollments,
+  getDueReplyEnrollments,
+  getConversation,
+  getCampaign,
+  getCampaignEnrollment,
+  getDailyLeadDiscoveryUsage,
+  findLeadForWorkspace,
+  listConnectedLinkedInAccountsEverywhere,
+  listOutreachPausedWorkspaceIds,
+  getLinkedInAccountForWorkspace,
+  getProductProfile,
+  getWorkspace,
+  claimDailyNotification,
+  claimNotificationAfterInterval,
+  releaseDailyNotification,
+  releaseNotificationAfterInterval,
+  releaseSystemTask,
+  claimEnrollmentAction,
+  claimActionSlot,
+  claimSystemTask,
+  createConversationMessage,
+  consumeDailyQuota,
+  deferAgentRun,
+  getInviteCooldown,
+  getInviteCooldownRecord,
+  claimInviteCooldownProbe,
+  clearInviteCooldown,
+  hasDailyQuotaRemaining,
+  loadSchedulingContext,
+  ownerWasEmailedAboutRequest,
+  planActionSlots,
+  type SchedulingContext,
+  enrollNewLeadsInCampaign,
+  leadDocId,
+  listAutomationRuns,
+  listCampaigns,
+  listConnectionSentEnrollments,
+  listExpiredInviteEnrollments,
+  listLastActionTimes,
+  listLeadEnrollments,
+  listLeads,
+  loadWorkspaceLeadRejections,
+  listWorkspaces,
+  listAllLinkedInAccounts,
+  clearInviteLimitSignals,
+  logAutomationRun,
+  updateWorkspaceBilling,
+  markAgentRun,
+  markAgentStarted,
+  nextDayAgentSlot,
+  prepareEnrollmentActionNow,
+  recordDailyLeadDiscoveryRun,
+  recordInviteLimitSignal,
+  saveLeadRejections,
+  setInviteCooldown,
+  updateEnrollment,
+  updateLead,
+  upsertLead,
+} from "./data";
+import { findNextScheduledStepIndex } from "./campaign-sequence";
+import { resolveBookingLink } from "@/lib/scheduling-link";
+import {
+  draftCampaignMessage,
+  draftCampaignReplyMessage,
+  MAX_AI_SEQUENCE_MESSAGES,
+  normalizeAgentSearch,
+} from "./gemini";
+import {
+  DAILY_LEAD_FILTER_LIMIT,
+  LeadFilterCapReached,
+  scoreLeadForProduct,
+  type LeadScore,
+} from "./lead-qualification";
+import {
+  applyAcceptanceIfFirstDegree,
+  applyConnectionAccepted,
+  draftUpcomingMessagePreview,
+  findLeadForInboundEvent,
+  processInboundMessage,
+  refreshLeadProfileForDrafting,
+} from "./inbound";
+import { matchLeadsToProviderIdentities } from "../linkedin-identity";
+import { agentTargetLocations, matchesTargetLocation } from "./geo";
+import { sendWindowTimeZoneForLead } from "./lead-time-zone";
+import {
+  agentUsesPeopleEngine,
+  enrichLinkedInLead,
+  runPeopleEngineForAgent,
+} from "./people-engine";
+import { planLimits } from "@/lib/plan-limits";
+import {
+  automationDecisionMessage,
+  getAutomationSafetyMode,
+  isWorkspaceAutomationPaused,
+  type AutomationSafetyMode,
+  type AutomationSafetyOptions,
+} from "./automation-safety";
+import {
+  canSendCampaignMessage,
+  connectionNoteFor,
+  inviteNotesFor,
+  isInviteRateLimitedErrorType,
+  isInviteResendBlockedErrorType,
+  INVITE_LIMIT_SIGNAL_THRESHOLD,
+  shouldRetryConnectionWithoutNote,
+  isAnonymousLinkedInProfile,
+  writtenSequenceMessage,
+  abVariantFor,
+  stepHasVariant,
+} from "./outreach-rules";
+import {
+  shouldHaltOutreachSend,
+  shouldStopForReply,
+  USER_STOPPED_OUTREACH_ERROR,
+} from "./reply-automation-policy";
+import { shouldSendDailyDigest } from "@/lib/daily-digest";
+import { inviteRateLimitPause, localDayAndHour, nextInviteLimitRetryAt } from "./scheduling";
+import {
+  inviteCooldownPark,
+  isWithinSendWindow,
+  SPACING_MINUTES,
+  type SendActionKind,
+} from "./send-schedule";
+import { listActiveOwnSessionAccountIds } from "./linkedin-own/session-store";
+import { hasActiveSubscription } from "./subscription";
+import { runInviteWithdrawals } from "./linkedin-health";
+import { shouldMarkBillingExpired, shouldPurgeLinkedInAccounts } from "@/lib/linkedin-billing-purge";
+import { isIdleLinkedInAccount } from "@/lib/linkedin-poll-cadence";
+import { disconnectLegacyLinkedInAccounts, purgeWorkspaceLinkedInAccounts } from "./linkedin-accounts";
+import { cancelWhopSeatMembership } from "./whop";
+import { sendPlatformStatsSnapshot } from "./platform-stats";
+import { capturePostHogEvent } from "@/lib/posthog-server";
+import { getBlockedCountryKeys, newExclusionCheck, type ExclusionCheck } from "./blacklist";
+import { isLocationBlocked } from "@/lib/exclusions";
+import { campaignSenderIds, enrollmentSenderId } from "@/lib/sender-rotation";
+import {
+  emailWasSkipped,
+  sendDailyDigestEmail,
+  sendInvitePauseNotification,
+} from "./email";
+import {
+  hasPendingSentInvitation,
+  isFirstDegreeConnection,
+  listRecentInboundMessages,
+  listRecentRelations,
+  listSentInvitationProviderIds,
+  profileSearchKeys,
+  searchLinkedInProfiles,
+  sendConnectionRequest,
+  sendLinkedInMessage,
+  LinkedInMessageSendBlocked,
+  LinkedInRecipientUnresolved,
+  LinkedInResponseError,
+} from "./linkedin";
+import type {
+  Campaign,
+  CampaignEnrollment,
+  CampaignStep,
+  Lead,
+  LinkedInAccount,
+  Workspace,
+} from "./types";
+
+// Per agent per local day. A short run does not end the day: the agent gets
+// up to MAX_DAILY_DISCOVERY_ATTEMPTS runs (30 minutes apart) until it reaches
+// the target, tracked in its own usageDays doc.
+const DEFAULT_DAILY_DISCOVERED_LEAD_LIMIT = 75;
+const MAX_DAILY_DISCOVERY_ATTEMPTS = 4;
+const DISCOVERY_REFILL_MINUTES = 30;
+// Standard (non-signal) agents pull broad keyword matches, so a real fit check
+// must gate what gets saved - otherwise irrelevant leads enter campaigns and
+// get contacted. Mirrors the signal engine's QUALIFIED_SCORE_THRESHOLD (65).
+const STANDARD_AGENT_SCORE_THRESHOLD = 65;
+const TICK_LOCK_ID = "automation-tick";
+// Must exceed a legitimate tick's worst-case runtime, or the next cron starts
+// while the previous tick is still sending and the per-tick pacing budgets
+// double up. A single signal-agent discovery run alone may take 15 minutes
+// (PEOPLE_ENGINE_RUN_MS), so 8 minutes overlapped routinely. A crashed tick
+// (lock released in finally; only a process kill leaks it) now delays
+// automation by at most 20 minutes, which the account drip safely absorbs.
+const TICK_LOCK_TTL_MS = 20 * 60 * 1000;
+const TICK_LOCK_RENEW_INTERVAL_MS = 5 * 60 * 1000;
+// A distributed cadence gate is separate from the overlap TTL. Production may
+// have several PM2 processes (and an external cron), all with their own timer.
+// 1.75 minutes tolerates scheduler jitter while keeping the intended ~2-minute
+// tick cadence instead of multiplying it by the instance count.
+const TICK_SCHEDULE_MIN_INTERVAL_MS = 1.75 * 60 * 1000;
+// LinkedIn pushes nothing when an invite is accepted (the old Unipile
+// new_relation webhook lagged up to 8 hours and is gone), so the dashboard's
+// acceptance path is this per-account sweep against relations + sent invites,
+// not a rare fallback. Pending invites carry no individual recheck schedule:
+// a pool of a few hundred used to consume the due-enrollment window.
+const CONNECTION_SWEEP_INTERVAL_MS = 2 * 60 * 60 * 1000;
+// Invites that vanished from the sent list get one live profile check each to
+// confirm acceptance; bounded per sweep so a burst can never drain the
+// account's daily profile-view budget.
+const CONNECTION_SWEEP_CHECK_LIMIT = 20;
+// Reply-sync fallback cadence per account. Webhooks deliver replies instantly;
+// this bounds how stale a reply can go unnoticed when webhooks are down.
+const REPLY_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+// Overlap window when filtering provider messages against the last sync
+// cursor, so boundary messages are never skipped (dedupe drops re-reads).
+const REPLY_SYNC_OVERLAP_MS = 10 * 60 * 1000;
+const REPLY_SYNC_MESSAGE_LIMIT = 100;
+// Cadences for an account with no send in two weeks (isIdleLinkedInAccount).
+// Each check is paid proxy traffic, so a connected but unused account is read
+// hourly, not every five minutes. A late reply still arrives within the hour.
+const IDLE_REPLY_SYNC_INTERVAL_MS = 60 * 60 * 1000;
+const IDLE_CONNECTION_SWEEP_INTERVAL_MS = 12 * 60 * 60 * 1000;
+// The full account enumeration only runs every cycle claim, keeping the claim
+// reads off the per-tick hot path.
+const PROVIDER_SYNC_CYCLE_MS = 5 * 60 * 1000;
+const LINKEDIN_BILLING_PURGE_INTERVAL_MS = 30 * 60 * 1000;
+// Nothing can connect an old Unipile account anymore, so this is a cheap
+// repeat of a one-time cleanup rather than a per-tick read.
+const LEGACY_ACCOUNT_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const PROXY_RESTOCK_INTERVAL_MS = 5 * 60_000;
+const LINKEDIN_WORKSPACE_PURGE_INTERVAL_MS = 6 * 60 * 60 * 1000;
+// Paused/draft campaigns park their enrollments a full day (marked with
+// pausedDeferredAt) because resumeCampaign wakes them explicitly - shorter
+// defers just churn the due queue hourly. Workspaces without an active
+// subscription have no resume hook (billing can restore any time), so they
+// stay on an hourly recheck.
+const PAUSED_CAMPAIGN_DEFER_MINUTES = 24 * 60;
+const INACTIVE_WORKSPACE_DEFER_MINUTES = 60;
+const CONNECTION_GIVE_UP_DAYS = 21;
+// How long after sending the acceptance sweep keeps watching an invite the
+// sequence gave up on. Auto-withdraw (28 days by default) usually ends it first.
+const LATE_ACCEPTANCE_DAYS = 90;
+const ENROLLMENT_MAX_RETRIES = 3;
+const CONNECTION_SEND_RETRY_MINUTES = 30;
+const ENROLLMENT_RETRY_MINUTES = 6 * 60;
+const ENROLLMENT_COOLDOWN_MINUTES = 24 * 60;
+const MISSING_ACCOUNT_RETRY_MINUTES = 60;
+const UNCONFIRMED_PROVIDER_SEND_PREFIX = "Unconfirmed provider send";
+
+class UnconfirmedProviderSendError extends Error {}
+
+// The send provably never reached LinkedIn: the client got a rejection back,
+// or the recipient id could not be resolved before any request was made.
+function isRejectedBeforeDelivery(error: unknown) {
+  return error instanceof LinkedInResponseError || error instanceof LinkedInRecipientUnresolved;
+}
+
+// Before LinkedInRecipientUnresolved existed, this pre-send failure was
+// wrapped as an unconfirmed send and parked for manual review. Nothing was
+// sent, so those enrollments can resume.
+const UNRESOLVED_RECIPIENT_ERROR_MARKER = "LinkedIn provider id is required";
+
+// Human-like pacing. Invites and follow-ups share one per-account drip of at
+// most one per SPACING_MINUTES, enforced across ticks and manual runs by the
+// persistent claimActionSlot gate. AI replies use that same gate at send time
+// so they cannot double-send with an invite, but they are not handed back to
+// the planner: that is what parked them behind the send window and the queue.
+const PACING_MIN_PER_TICK = 1;
+const PACING_MAX_PER_TICK = 3;
+// Only used when the planner itself fails (Firestore error); a short defer so
+// the enrollment retries rather than stranding.
+const PACING_FALLBACK_MINUTES = 10;
+
+// A cannot_resend_yet rejection is treated as being about the recipient (a
+// previous invite to the same person is pending or was withdrawn - LinkedIn
+// blocks re-invites for around three weeks), so only that enrollment is
+// deferred, for the full block window - a shorter defer just fails again. The
+// account-level circuit breaker needs INVITE_LIMIT_SIGNAL_THRESHOLD distinct
+// recipients rejected with no success in between. Because the provider error
+// cannot distinguish those cases, the first pause is 6 hours with one live
+// probe. A failed retry after that waits 3 days or next Monday, whichever
+// comes first, instead of probing a real weekly cap every few hours. Parked
+// enrollments sleep until the breaker ends (inviteCooldownPark); a successful
+// probe/manual send wakes them early via clearInviteCooldown.
+const RESEND_BLOCKED_DEFER_MINUTES = 21 * 24 * 60;
+
+// Daily digest email: the workspace's chosen local hour, when they have turned
+// the summary on. Ticks run every couple of minutes, so that hour is what
+// normally sends; the next two hours the same day exist so an outage across
+// the chosen hour still gets the digest out instead of at whatever hour the
+// tick recovered. Past that it is skipped - a "your last 24 hours" mail late
+// at night is worse than none.
+const DIGEST_WINDOW_MS = 24 * 60 * 60 * 1000;
+// Guard against a second digest inside one local day, without pinning the send
+// to yesterday's clock time: a catch-up send later the same day is still
+// >= 20h before tomorrow's send hour, so the next digest does not drift later
+// every day (which a strict 24h interval did).
+const DIGEST_MIN_INTERVAL_MS = 20 * 60 * 60 * 1000;
+
+type TickBudget = {
+  connects: number;
+  messages: number;
+  // Per-tick cache of this LinkedIn account's invite cooldown: undefined = not yet
+  // fetched, null = none active.
+  inviteCooldownUntil?: string | null;
+  // Only one enrollment per account per tick is allowed to be the cooldown
+  // probe candidate, so the rest of the queue does not burn profile views.
+  inviteProbeUsed?: boolean;
+  // Slots handed out by the planner earlier in this same tick. They are already
+  // written to their enrollments, but a Firestore query issued moments later
+  // may not see them yet, so they ride along as additionalReserved to stop two
+  // enrollments in one tick being planned onto the same minute.
+  slotsPlannedThisTick: number[];
+  // Reserved slots + spent quota, read once per account per tick. Without this
+  // every deferred enrollment re-ran two Firestore queries on every tick.
+  // The quota snapshot goes stale as this tick sends, which can only make the
+  // planner optimistic about today; hasDailyQuotaRemaining is still checked
+  // live at send time, so the result is a re-plan next tick, never an
+  // over-send. Correct per-account even when two campaigns share the account:
+  // the context depends only on workspace + account, and each campaign's own
+  // send window is applied per call inside planActionSlots.
+  schedulingContext?: SchedulingContext;
+};
+
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+async function sendProviderAction<T>(action: () => Promise<T>) {
+  try {
+    return await action();
+  } catch (error) {
+    if (
+      error instanceof LinkedInResponseError ||
+      error instanceof LinkedInMessageSendBlocked ||
+      error instanceof LinkedInRecipientUnresolved
+    ) {
+      throw error;
+    }
+    throw new UnconfirmedProviderSendError(
+      error instanceof Error ? error.message : "The provider result was unavailable.",
+    );
+  }
+}
+
+async function sendConnectionRequestWithNoteFallback(input: {
+  accountId: string;
+  providerProfileId?: string;
+  linkedInUrl: string;
+  note?: string;
+}) {
+  try {
+    return { ...(await sendProviderAction(() => sendConnectionRequest(input))), noteSent: input.note };
+  } catch (error) {
+    // Personalized-note quota and weekly invite cap share one error type.
+    // A bare Connect is what the LinkedIn app sends, so retry without the note
+    // before treating this as a recipient or account limit.
+    if (
+      !shouldRetryConnectionWithoutNote(
+        input.note,
+        error instanceof LinkedInResponseError ? error.errorType : undefined,
+      )
+    ) {
+      throw error;
+    }
+    return {
+      ...(await sendProviderAction(() =>
+        sendConnectionRequest({
+          accountId: input.accountId,
+          providerProfileId: input.providerProfileId,
+          linkedInUrl: input.linkedInUrl,
+        }),
+      )),
+      noteSent: undefined,
+    };
+  }
+}
+
+function newTickBudget(): TickBudget {
+  return {
+    connects: 1,
+    messages: randomInt(PACING_MIN_PER_TICK, PACING_MAX_PER_TICK),
+    slotsPlannedThisTick: [],
+  };
+}
+
+// The single "when can this actually go out" answer, used for every deferral
+// that represents a pending send. Policy parks (paused campaign, invite
+// cooldown, 21-day give-up) deliberately do NOT come through here - they are
+// "re-evaluate later", not "send later", and forcing them into a send slot
+// would burn scheduling capacity on work that is not going to send.
+async function reserveSendSlot(input: {
+  budget: TickBudget;
+  workspace: Workspace;
+  campaign: Campaign;
+  // The account this action sends from. The budget is per account, so its
+  // cached scheduling context is that account's too.
+  linkedInAccountId: string;
+  enrollmentId: string;
+  kind: SendActionKind;
+  earliestAt?: number;
+  // The recipient's zone, so the slot lands inside THEIR window. Undefined
+  // falls back to the workspace's zone inside the planner.
+  timezone?: string;
+}) {
+  const { budget, workspace, campaign } = input;
+  try {
+    budget.schedulingContext ??= await loadSchedulingContext(
+      workspace,
+      campaign,
+      input.linkedInAccountId,
+    );
+    const plan = await planActionSlots({
+      workspace,
+      campaign,
+      linkedInAccountId: input.linkedInAccountId,
+      context: budget.schedulingContext,
+      additionalReserved: budget.slotsPlannedThisTick,
+      actions: [
+        {
+          id: input.enrollmentId,
+          kind: input.kind,
+          earliestAt: input.earliestAt ?? Date.now(),
+          timezone: input.timezone,
+        },
+      ],
+    });
+    const slot = plan.get(input.enrollmentId);
+    if (slot === undefined) return addMinutes(PACING_FALLBACK_MINUTES);
+    budget.slotsPlannedThisTick.push(slot);
+    return new Date(slot).toISOString();
+  } catch (error) {
+    // Planning is a read-heavy path; a Firestore hiccup must not strand the
+    // enrollment. Fall back to the old fixed defer so it retries soon.
+    console.warn(
+      "[automation] send-slot planning failed; using fallback defer:",
+      error instanceof Error ? error.message : error,
+    );
+    return addMinutes(PACING_FALLBACK_MINUTES);
+  }
+}
+
+type SourceAgentBlock = "paused" | "deleted" | null;
+type SourceAgentBlockLookup = (workspaceId: string, agentId: string) => Promise<SourceAgentBlock>;
+
+// Many due enrollments share the same source agent; its state only needs one
+// read per tick.
+//
+// Pause applies to leads-only agents too. It used to exempt them, reasoning
+// that a leads-only agent owns no outreach so its pause should only stop
+// discovery - but the leads it finds do get enrolled by campaigns on OTHER
+// groups, and the leads-only send block only covers the agent's own group.
+// Between them a paused leads-only agent kept sending invites with no way for
+// the user to stop it. Pausing any agent now freezes automated touches to the
+// leads it sourced.
+//
+// A deleted agent (doc gone) used to read as not paused, so its leads kept
+// flowing: deleteAgent stops the enrollments that exist at that moment, but a
+// lead of the deleted agent sitting in a second group was simply re-enrolled by
+// that group's campaign on a later tick and messaged again. Deleted now blocks
+// like paused, permanently rather than parked - there is no agent left to
+// resume.
+function newSourceAgentBlockLookup(): SourceAgentBlockLookup {
+  const cache = new Map<string, SourceAgentBlock>();
+  return async (workspaceId, agentId) => {
+    const key = `${workspaceId}:${agentId}`;
+    const cached = cache.get(key);
+    if (cached !== undefined) return cached;
+    const agent = await getAgent(workspaceId, agentId);
+    const block: SourceAgentBlock = !agent ? "deleted" : agent.status === "paused" ? "paused" : null;
+    cache.set(key, block);
+    return block;
+  };
+}
+
+function addMinutes(minutes: number) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString();
+}
+
+async function runAgents(mode: AutomationSafetyMode) {
+  const agents = await getDueAgents();
+  let leadsAdded = 0;
+  let signalsObserved = 0;
+  let signalAgents = 0;
+  let timeBudgetExpiredRuns = 0;
+
+  for (const agent of agents) {
+    try {
+      if (isWorkspaceAutomationPaused(mode, agent.workspaceId)) {
+        await safeLogAutomationRun({
+          workspaceId: agent.workspaceId,
+          kind: "agent",
+          status: "completed",
+          message: `Skipped agent ${agent.id}: workspace automation paused.`,
+        });
+        continue;
+      }
+      const account = await getLinkedInAccountForWorkspace(
+        agent.workspaceId,
+        agent.linkedInAccountId,
+        { fallbackToDefault: true },
+      );
+      const profile = await getProductProfile(agent.workspaceId);
+
+      if (!account) {
+        await markAgentRun(agent, false);
+        await safeLogAutomationRun({
+          workspaceId: agent.workspaceId,
+          kind: "agent",
+          status: "error",
+          message: `Agent ${agent.id} needs a connected LinkedIn account before discovery can run.`,
+        });
+        continue;
+      }
+
+      // Don't run paid lead discovery for workspaces without an active plan.
+      // Defer to the next daily slot - a bare `continue` left nextRunAt in the
+      // past, so the agent stayed due and re-read its workspace every tick.
+      const workspace = await getWorkspace(agent.workspaceId);
+      if (!hasActiveSubscription(workspace)) {
+        if (!mode.dryRun) await deferAgentRun(agent);
+        continue;
+      }
+
+      if (mode.dryRun) {
+        await safeLogAutomationRun({
+          workspaceId: agent.workspaceId,
+          kind: "agent",
+          status: "completed",
+          message: `DRY RUN would start agent ${agent.id}.`,
+        });
+        continue;
+      }
+
+      // Agent may have been deleted, paused, or already run by an overlapping
+      // tick since getDueAgents. Skip quietly - another run owns it or there is
+      // nothing left to mark running/error.
+      if (!(await markAgentStarted(agent))) continue;
+
+      // The workspace spent today's lead filters (shared by all its agents).
+      // Pause quietly like a reached daily target and come back tomorrow.
+      if (
+        !(await hasDailyQuotaRemaining(
+          agent.workspaceId,
+          "leadFilters",
+          DAILY_LEAD_FILTER_LIMIT,
+          workspace.timezone,
+        ))
+      ) {
+        await markAgentRun(agent, true, { nextRunAt: await nextDayAgentSlot(agent) });
+        continue;
+      }
+
+      if (agentUsesPeopleEngine(agent)) {
+        const usage = await getDailyLeadDiscoveryUsage(
+          agent.id,
+          workspace.timezone,
+        );
+        const planDailyLimit = planLimits(workspace.billing?.plan).dailyDiscoveredLeads;
+        const dailyTarget = Math.min(
+          DEFAULT_DAILY_DISCOVERED_LEAD_LIMIT,
+          planDailyLimit,
+        );
+        const remainingTarget = Math.max(0, dailyTarget - usage.discoveredLeads);
+
+        if (!remainingTarget) {
+          await markAgentRun(agent, true);
+          continue;
+        }
+
+        const result = await runPeopleEngineForAgent({
+          agent,
+          account,
+          profile,
+          timezone: workspace.timezone,
+          initialLeadTarget: remainingTarget,
+          dailyLeadLimit: remainingTarget,
+          locationSlot: usage.attempts,
+        });
+        signalAgents += 1;
+        signalsObserved += result.signalsObserved;
+        leadsAdded += result.leadsAdded;
+        if (result.timeBudgetExpired) timeBudgetExpiredRuns += 1;
+        const updatedUsage = await recordDailyLeadDiscoveryRun(
+          agent.workspaceId,
+          agent.id,
+          workspace.timezone,
+          result.leadsAdded,
+        );
+        const shouldRefill =
+          updatedUsage.discoveredLeads < dailyTarget &&
+          updatedUsage.attempts < MAX_DAILY_DISCOVERY_ATTEMPTS;
+        await markAgentRun(
+          agent,
+          true,
+          result.filterCapReached
+            ? { nextRunAt: await nextDayAgentSlot(agent) }
+            : shouldRefill
+              ? { nextRunAt: addMinutes(DISCOVERY_REFILL_MINUTES) }
+              : undefined,
+        );
+        continue;
+      }
+
+      const criteria = await normalizeAgentSearch(agent);
+      const targetLocations = agentTargetLocations(agent, profile);
+      const blockedCountries = await getBlockedCountryKeys(agent.workspaceId);
+
+      // Page past everyone already saved in this workspace, across all groups.
+      // A person is processed only once per workspace.
+      const existingLeads = await listLeads(agent.workspaceId, undefined, 5000);
+      const existingLeadsById = new Map(existingLeads.map((lead) => [lead.id, lead]));
+      const groupLeadKeys = new Set(
+        existingLeads
+          .flatMap((lead) => profileSearchKeys(lead)),
+      );
+
+      const rawLeads = await searchLinkedInProfiles({
+        accountId: account.accountId,
+        // The agent's own target locations are the contract with the user;
+        // don't let the AI-normalized criteria widen or drop them.
+        criteria: targetLocations.length ? { ...criteria, locations: targetLocations } : criteria,
+        limit: Math.min(
+          DEFAULT_DAILY_DISCOVERED_LEAD_LIMIT,
+          planLimits(workspace.billing?.plan).dailyDiscoveredLeads,
+        ),
+        agent,
+        excludeKeys: groupLeadKeys,
+      });
+
+      // People Jev already rejected anywhere in this workspace are skipped before
+      // a profile view or a Jev call is spent on them again. Saved one at a
+      // time: a cap stop leaves this loop by throwing.
+      const wasRejected = await loadWorkspaceLeadRejections(agent.workspaceId).catch((error) => {
+        console.error(
+          "[automation] load lead rejections failed:",
+          error instanceof Error ? error.message : error,
+        );
+        return () => false;
+      });
+      const rememberRejection = async (identity: string, score: LeadScore) => {
+        if (score.fitScore >= STANDARD_AGENT_SCORE_THRESHOLD || !score.questionKey) return;
+        await saveLeadRejections(agent, new Map([[identity, score.questionKey]])).catch((error) => {
+          console.error(
+            "[automation] save lead rejection failed:",
+            error instanceof Error ? error.message : error,
+          );
+        });
+      };
+
+      for (const rawLead of rawLeads) {
+        // Hard location gate. LinkedIn classic search ignores the agent's
+        // target country (network-biased results), and AI fit scoring alone
+        // still lets wrong-region leads through when title/industry match.
+        if (
+          !matchesTargetLocation(rawLead.location, targetLocations) ||
+          isLocationBlocked(rawLead.location, blockedCountries)
+        ) {
+          continue;
+        }
+        const identity = leadDocId(agent.workspaceId, rawLead);
+        if (profileSearchKeys(rawLead).some((key) => groupLeadKeys.has(key)) ||
+            wasRejected(identity) ||
+            await wasWorkspaceLeadProcessed(agent.workspaceId, rawLead)) continue;
+        const existing = existingLeadsById.get(identity);
+        if (existing) continue;
+        const enrichedLead = await enrichLinkedInLead(account, rawLead);
+        if (
+          isAnonymousLinkedInProfile(enrichedLead) ||
+          !matchesTargetLocation(enrichedLead.location, targetLocations) ||
+          isLocationBlocked(enrichedLead.location, blockedCountries) ||
+          profileSearchKeys(enrichedLead).some((key) => groupLeadKeys.has(key))
+        ) {
+          continue;
+        }
+
+        const enrichedExisting = existingLeadsById.get(
+          leadDocId(agent.workspaceId, enrichedLead),
+        );
+        if (enrichedExisting) continue;
+
+        const score = await scoreLeadForProduct(enrichedLead, profile, agent, workspace.timezone);
+        await rememberRejection(identity, score);
+        // Gate on fit so broad keyword matches (right title, wrong
+        // industry/location) don't enter the group and get auto-contacted.
+        if (score.fitScore < STANDARD_AGENT_SCORE_THRESHOLD) {
+          continue;
+        }
+        const savedLead = await upsertLead(agent.workspaceId, agent.targetGroupId, {
+          ...enrichedLead,
+          fitScore: score.fitScore,
+          scoreReasons: score.scoreReasons,
+          summary: score.summary || enrichedLead.summary,
+          sourceAgentId: agent.id,
+          outreachStatus: "new",
+        });
+        if (!savedLead.groupIds.includes(agent.targetGroupId) || savedLead.sourceAgentId !== agent.id) continue;
+        leadsAdded += 1;
+      }
+
+      await markAgentRun(agent, true);
+    } catch (error) {
+      // Hit the shared daily lead filter cap mid-run: leads already saved stay,
+      // and the agent ends this run normally instead of showing an error.
+      if (error instanceof LeadFilterCapReached) {
+        await markAgentRun(agent, true, { nextRunAt: await nextDayAgentSlot(agent) });
+        continue;
+      }
+      // Soft-fail the agent to error + next daily slot, but always record the
+      // real cause so the activity feed is not just a red badge with no reason.
+      // If the agent was deleted mid-run, markAgentRun no-ops and we skip the
+      // error log - there is no agent left to surface it on.
+      const message = error instanceof Error ? error.message : "Agent run failed";
+      console.error(
+        `[automation] agent ${agent.id} run failed:`,
+        message,
+        error instanceof Error ? error.stack : error,
+      );
+
+      // Vertex/Firestore INVALID_ARGUMENT is often one bad candidate payload
+      // after partial progress. Parking the agent as Error until tomorrow
+      // hid working discovery (leads already saved, outreach already running).
+      // Keep the agent active and on its normal daily slot; still log the error.
+      const softRecover = /INVALID_ARGUMENT|Request contains an invalid argument/i.test(
+        message,
+      );
+      const marked = await markAgentRun(agent, softRecover);
+      if (!marked) continue;
+      await logAutomationRun({
+        workspaceId: agent.workspaceId,
+        kind: "agent",
+        status: "error",
+        message: softRecover ? `Recovered active after: ${message}` : message,
+      });
+    }
+  }
+
+  return { agents: agents.length, signalAgents, signalsObserved, leadsAdded, timeBudgetExpiredRuns };
+}
+
+// The AI sequence is done with this lead (final message sent, or the cap was
+// hit) and they never replied. Silence is not a signal worth an email: the user
+// only hears from Omentir when a lead does something (replies, shows interest),
+// so this just records the end of the sequence in the activity log. The lead is
+// still on the Leads and Messages pages for anyone who wants to follow up.
+async function recordSequenceExhausted(input: {
+  workspace: Workspace;
+  campaign: Campaign;
+  lead: Lead;
+}) {
+  const { workspace, campaign, lead } = input;
+  await safeLogAutomationRun({
+    workspaceId: workspace.id,
+    kind: "campaign",
+    status: "completed",
+    message: `Sequence finished for ${lead.name} in ${campaign.name} with no reply; outreach stopped for this lead.`,
+  });
+}
+
+async function runEnrollment(
+  enrollment: CampaignEnrollment,
+  campaign: Campaign,
+  budgetForAccount: (linkedInAccountId: string) => TickBudget,
+  sourceAgentBlock: SourceAgentBlockLookup,
+  // A manual "Run now" is the user explicitly choosing this moment, so it may
+  // send outside the campaign's window and may retry through an invite
+  // cooldown. The per-account spacing still applies: that one protects the
+  // LinkedIn account, not the recipient's evening.
+  options: {
+    ignoreSendWindow?: boolean;
+    ignoreInviteCooldown?: boolean;
+    exclusionCheck?: ExclusionCheck;
+  } = {},
+) {
+  const updateCurrentEnrollment = (patch: Partial<CampaignEnrollment>) =>
+    updateEnrollment(enrollment.workspaceId, enrollment.id, patch);
+  const workspace = await getWorkspace(enrollment.workspaceId);
+  // The Settings switch beats every agent and campaign: with outreach off
+  // nothing goes out, whatever is active. Every send passes through here, so
+  // this also stops a tick that picked its work before the switch was flipped.
+  if (workspace.settings.outreachPaused) return "outreach-off";
+  const sendWindow = campaign.sendWindow || "always";
+  // Under sender rotation each lead has its own sender; it never moves to
+  // another account mid-sequence, so a disconnected sender waits like a
+  // disconnected campaign account always has.
+  const account = await getLinkedInAccountForWorkspace(
+    enrollment.workspaceId,
+    enrollmentSenderId(campaign, enrollment),
+    { fallbackToDefault: true },
+  );
+  if (!account) {
+    await updateCurrentEnrollment({
+      lastError: "No connected LinkedIn account.",
+      retryCount: (enrollment.retryCount || 0) + 1,
+      nextActionAt: addMinutes(MISSING_ACCOUNT_RETRY_MINUTES),
+    });
+    return "missing-account";
+  }
+  const budget = budgetForAccount(account.id);
+
+  const lead = await findLeadForWorkspace({
+    workspaceId: enrollment.workspaceId,
+    leadId: enrollment.leadId,
+  });
+  if (!lead) {
+    await updateCurrentEnrollment({ status: "stopped" });
+    return "stopped";
+  }
+  const ownerMessageBlocksSend = async (providerProfileId?: string) => {
+    try {
+      return await stopForOwnerMessage({
+        workspaceId: enrollment.workspaceId,
+        leadId: lead.id,
+        accountId: account.accountId,
+        providerProfileId: providerProfileId || lead.providerProfileId,
+        linkedInUrl: lead.linkedInUrl,
+        allowLegacyAutomatedMessages: campaign.steps.slice(0, enrollment.currentStepIndex)
+          .some((step) => step.type === "message"),
+        inviteNotes: inviteNotesFor([enrollment], [campaign], lead),
+      });
+    } catch (error) {
+      const waitingForReply = error instanceof LeadReplyNotSyncedError;
+      if (!waitingForReply) console.error("[automation] message history check failed:", error);
+      await updateCurrentEnrollment({
+        pendingAction: undefined,
+        nextActionAt: addMinutes(SPACING_MINUTES),
+        lastError: waitingForReply
+          ? error.message
+          : "Could not check LinkedIn messages. Outreach will retry later.",
+      });
+      return true;
+    }
+  };
+  const sendCheckedMessage = async (body: string) => {
+    try {
+      return await sendProviderAction(() => sendLinkedInMessage({
+        accountId: account.accountId,
+        providerProfileId: lead.providerProfileId,
+        linkedInUrl: lead.linkedInUrl,
+        body,
+        beforeSend: async (providerProfileId) => {
+          if (await ownerMessageBlocksSend(providerProfileId)) throw new LinkedInMessageSendBlocked();
+        },
+      }));
+    } catch (error) {
+      if (error instanceof LinkedInMessageSendBlocked) return null;
+      throw error;
+    }
+  };
+  if (
+    shouldHaltOutreachSend({
+      enrollmentStatus: enrollment.status,
+      lastError: enrollment.lastError,
+      outreachStatus: lead.outreachStatus,
+      kind: enrollment.status === "reply_received" ? "ai_reply" : "sequence",
+    })
+  ) {
+    if (enrollment.status !== "stopped" && enrollment.status !== "replied") {
+      await updateCurrentEnrollment({
+        status: "stopped",
+        lastError: USER_STOPPED_OUTREACH_ERROR,
+        pendingAction: undefined,
+      });
+    }
+    return "stopped";
+  }
+  if (lead.outreachStatus === "replied" && enrollment.status !== "reply_received") {
+    // Inbound arms the enrollment after it marks the lead replied. Stopping
+    // here used to win that race and permanently drop the AI reply. Live
+    // enrollments wait for the arm instead of sending more sequence messages.
+    if (
+      enrollment.status === "connection_sent" ||
+      enrollment.status === "connected" ||
+      enrollment.status === "message_sent" ||
+      enrollment.status === "error"
+    ) {
+      await updateCurrentEnrollment({ nextActionAt: addMinutes(SPACING_MINUTES) });
+      return "awaiting-reply-arm";
+    }
+    await updateCurrentEnrollment({ status: "stopped" });
+    return "stopped";
+  }
+
+  // Lead was removed from this campaign's group after enrollment - stop so we
+  // don't keep contacting someone the user pulled out of the audience.
+  if (!lead.groupIds?.includes(campaign.groupId)) {
+    await updateCurrentEnrollment({ status: "stopped" });
+    return "left-group";
+  }
+
+  // Leads-only agents discover and score only. If one sourced this lead, never
+  // connect or message - stop any enrollment that slipped through a shared
+  // group, a second group the lead also belongs to, or an older attach path.
+  if (lead.sourceAgentId) {
+    const sourceAgent = await getAgent(enrollment.workspaceId, lead.sourceAgentId);
+    if (sourceAgent?.leadsOnly) {
+      await updateCurrentEnrollment({
+        status: "stopped",
+        lastError:
+          "This lead was found by a leads-only agent and must not be messaged automatically.",
+      });
+      return "leads-only-agent";
+    }
+  }
+
+  // Blocked after enrolling (or newly matched once their company or location
+  // changed): stop before any invite, message or AI reply goes out.
+  const excluded = await (options.exclusionCheck ?? newExclusionCheck())(lead);
+  if (excluded === null) {
+    await updateCurrentEnrollment({ nextActionAt: addMinutes(SPACING_MINUTES) });
+    return "blacklist-unreadable";
+  }
+  if (excluded) {
+    await updateCurrentEnrollment({
+      status: "stopped",
+      lastError: "This person, their company or their country is blocked in Settings. Outreach stopped.",
+      pendingAction: undefined,
+    });
+    return "blacklisted";
+  }
+
+  // The clock the send window is read on. A 9-6 window means 9-6 where the
+  // LEAD is - the workspace's zone only stands in for leads whose profile
+  // location names nowhere we recognise.
+  const leadTimeZone = sendWindowTimeZoneForLead(lead.location, workspace.timezone);
+
+  // Pausing an agent freezes every automated touch to the leads it sourced -
+  // invites, follow-ups, acceptance polling, and AI replies - not just lead
+  // discovery. Park like a paused campaign (marked with pausedDeferredAt) so
+  // resumeAgent can wake exactly these enrollments instead of them idling for
+  // up to a day. Deletion is not resumable, so it stops outright instead.
+  const block = lead.sourceAgentId
+    ? await sourceAgentBlock(enrollment.workspaceId, lead.sourceAgentId)
+    : null;
+  if (block === "deleted") {
+    await updateCurrentEnrollment({
+      status: "stopped",
+      lastError: "The agent that sourced this lead was deleted; outreach stopped.",
+      pendingAction: undefined,
+    });
+    return "agent-deleted";
+  }
+  if (block === "paused") {
+    await updateCurrentEnrollment({
+      nextActionAt: addMinutes(PAUSED_CAMPAIGN_DEFER_MINUTES),
+      pausedDeferredAt: new Date().toISOString(),
+    });
+    return "agent-paused";
+  }
+
+  // Anonymized "LinkedIn Member" profiles can never be contacted; stop before
+  // spending invite budget on a send LinkedIn will reject.
+  if (enrollment.status === "queued" && isAnonymousLinkedInProfile(lead)) {
+    await updateCurrentEnrollment({
+      status: "stopped",
+      lastError: "Lead is an anonymized LinkedIn Member profile and cannot be contacted.",
+    });
+    return "stopped";
+  }
+
+  const recoveredStatus: CampaignEnrollment["status"] =
+    enrollment.connectionSentAt || lead.outreachStatus === "invited"
+      ? "connection_sent"
+      : lead.outreachStatus === "connected" || lead.outreachStatus === "messaged"
+        ? "connected"
+        : "queued";
+
+  if (enrollment.pendingAction) {
+    // A claim proves that an action was about to be sent, not that the provider
+    // did not receive it. Never blindly retry an action whose result was lost.
+    await updateCurrentEnrollment({
+      status: "error",
+      pendingAction: undefined,
+      lastError: `${UNCONFIRMED_PROVIDER_SEND_PREFIX}: previous ${enrollment.pendingAction.kind} result was lost; manual verification is required.`,
+      nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES),
+    });
+    return "unconfirmed-send";
+  }
+
+  if (enrollment.lastError?.startsWith(UNCONFIRMED_PROVIDER_SEND_PREFIX)) {
+    if (
+      recoveredStatus !== "queued" ||
+      enrollment.lastError.includes(UNRESOLVED_RECIPIENT_ERROR_MARKER)
+    ) {
+      await updateCurrentEnrollment({
+        status: recoveredStatus,
+        pendingAction: undefined,
+        lastError: undefined,
+      });
+      enrollment = {
+        ...enrollment,
+        status: recoveredStatus,
+        pendingAction: undefined,
+        lastError: undefined,
+      };
+    } else {
+      await updateCurrentEnrollment({ nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES) });
+      return "unconfirmed-send";
+    }
+  }
+
+  // Re-open recoverable automation failures so they re-enter the normal flow.
+  // Policy errors (message-before-connection, unknown step) stay parked only
+  // while their cause still holds - once the lead connects or the campaign's
+  // steps are fixed, the enrollment must recover instead of being parked
+  // forever (the acceptance webhook only wakes "connection_sent" enrollments,
+  // so this daily recheck is the only way back in). While the cause holds,
+  // re-opening would just bounce error → recover → error, so keep the park.
+  if (enrollment.status === "error") {
+    const lastError = enrollment.lastError || "";
+    const parkedStep = campaign.steps[enrollment.currentStepIndex] as CampaignStep | undefined;
+    const stillUnknownStep =
+      /Unknown campaign step type/i.test(lastError) &&
+      Boolean(parkedStep) &&
+      !["wait", "connect", "message"].includes((parkedStep as { type?: string }).type || "");
+    const stillBlockedBeforeConnection =
+      /Connection must be accepted/i.test(lastError) &&
+      !canSendCampaignMessage({ status: recoveredStatus }, lead);
+    if (stillUnknownStep || stillBlockedBeforeConnection) {
+      await updateCurrentEnrollment({ nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES) });
+      return "error-parked";
+    }
+    await updateCurrentEnrollment({
+      status: recoveredStatus,
+      pendingAction: undefined,
+      lastError: undefined,
+    });
+    enrollment = { ...enrollment, status: recoveredStatus, pendingAction: undefined, lastError: undefined };
+  }
+
+  if (enrollment.status === "reply_received") {
+    // Hand-off campaigns never AI-reply: the user owns the conversation after
+    // the first reply. The webhook stops these, but defend against a race or
+    // a campaign edited to hand-off while the enrollment was already armed.
+    if (campaign.replyHandling === "handoff") {
+      await updateCurrentEnrollment({
+        status: "replied",
+        pendingAction: undefined,
+        lastError: "Hand-off outreach: automation stopped after the lead replied.",
+      });
+      return "handoff-stop";
+    }
+
+    const conversation = await getConversation(enrollment.workspaceId, lead.id);
+    const intent = conversation?.replyIntent;
+    // The webhook applies the campaign's selected stopping point. Defend here
+    // if a race left the enrollment armed while the latest inbound was stored.
+    if (
+      shouldStopForReply({
+        replyHandling: campaign.replyHandling,
+        intent,
+        confidence: conversation?.replyIntentConfidence,
+      })
+    ) {
+      await updateCurrentEnrollment({
+        status: "stopped",
+        pendingAction: undefined,
+        lastError: `Skipped AI reply (intent: ${intent || "unknown"}).`,
+      });
+      return "reply-intent-stop";
+    }
+
+    // AI replies skip the campaign send window. A prospect who just wrote is
+    // waiting; parking until 9am is how these used to take hours. The random
+    // 2-15 minute inbound pause is what keeps the send from looking like a bot.
+    const replySlotAt = await claimActionSlot(enrollment.workspaceId, account.id);
+    if (replySlotAt) {
+      // Use the drip time directly. Running it through the planner would put
+      // the reply behind the reserved invite queue and the send window again.
+      await updateCurrentEnrollment({ nextActionAt: replySlotAt });
+      return "reply-spaced";
+    }
+
+    const profile = await getProductProfile(enrollment.workspaceId);
+    // The reply may say "I'll send it over" only when the owner was emailed
+    // about this exact reply. No email (none configured, send failed, a newer
+    // reply not classified yet) means the AI must not promise it.
+    const latestInboundId = conversation?.messages.findLast(
+      (message) => message.direction === "inbound",
+    )?.id;
+    const ownerRequest =
+      conversation?.replyOwnerRequest &&
+      latestInboundId &&
+      (await ownerWasEmailedAboutRequest(enrollment.workspaceId, lead.id, latestInboundId))
+        ? conversation.replyOwnerRequest
+        : undefined;
+    const body = await draftCampaignReplyMessage({
+      lead,
+      productProfile: profile,
+      campaignName: campaign.name,
+      conversation: conversation?.messages || [],
+      replyIntent: intent,
+      replyIntentConfidence: conversation?.replyIntentConfidence,
+      nextStepHint: conversation?.replyIntentNextStepHint,
+      senderName: account.displayName,
+      campaignGoal: campaign.campaignGoal,
+      messageTone: campaign.messageTone,
+      replyHandling: campaign.replyHandling,
+      // Campaign may override; otherwise use the My Product demo booking link.
+      bookingLink: resolveBookingLink(campaign.bookingLink, profile?.schedulingLink),
+      ownerRequest,
+    });
+
+    const claimed = await claimEnrollmentAction({
+      workspaceId: enrollment.workspaceId,
+      id: enrollment.id,
+      expectedStatus: enrollment.status,
+      expectedStepIndex: enrollment.currentStepIndex,
+      kind: "reply",
+    });
+    if (!claimed) return "action-claimed";
+
+    const sendResult = await sendCheckedMessage(body);
+    if (!sendResult) return "owner-message-blocked";
+    await createConversationMessage({
+      workspaceId: enrollment.workspaceId,
+      leadId: lead.id,
+      campaignId: campaign.id,
+      userId: enrollment.workspaceId,
+      senderName: "You",
+      body,
+      direction: "outbound",
+      outboundSource: "automation",
+      providerMessageId: sendResult.id,
+    });
+    // An AI reply is a LinkedIn message like any other, so it counts against
+    // the daily message budget. It previously did not, which meant the planner
+    // reserved capacity for replies that reality never spent.
+    await consumeDailyQuota(
+      enrollment.workspaceId,
+      "messages",
+      workspace.settings.dailyMessageLimit,
+      workspace.timezone,
+      account.id,
+    );
+    await updateLead(enrollment.workspaceId, lead.id, { outreachStatus: "replied" });
+    await updateCurrentEnrollment({
+      status: "replied",
+      pendingAction: undefined,
+      nextActionAt: addMinutes(24 * 60),
+    });
+    return "ai-reply";
+  }
+
+  // Acceptance is detected by the webhook (instant) or the per-account sweep
+  // (batched fallback), so a pending invite only comes due here at its give-up
+  // date (or via a manual run) - one final live check, then stop. Per-lead
+  // periodic polling burned a profile view per pending invite per day and
+  // crowded the due window out at scale.
+  if (enrollment.status === "connection_sent") {
+    const accepted = await isFirstDegreeConnection({
+      accountId: account.accountId,
+      identifier: lead.providerProfileId || lead.linkedInUrl,
+      ignoreViewBudget: true,
+    });
+
+    if (accepted === true) {
+      enrollment = { ...enrollment, status: "connected" };
+      await updateCurrentEnrollment({ status: "connected" });
+      await updateLead(enrollment.workspaceId, lead.id, { outreachStatus: "connected" });
+      await capturePostHogEvent({
+        event: "connection_request_accepted",
+        distinctId: enrollment.workspaceId,
+        insertId: `connection_request_accepted:${enrollment.id}`,
+        properties: {
+          lead_id: lead.id,
+          enrollment_id: enrollment.id,
+          campaign_id: campaign.id,
+        },
+      });
+    } else {
+      const sentAt = enrollment.connectionSentAt || enrollment.createdAt;
+      const giveUpAt =
+        new Date(sentAt).getTime() + CONNECTION_GIVE_UP_DAYS * 24 * 60 * 60 * 1000;
+      if (Date.now() >= giveUpAt) {
+        if (accepted === false) {
+          await updateCurrentEnrollment({ status: "stopped", inviteExpired: true });
+          return "invite-expired";
+        }
+        // Provider check failed at the give-up date. A short retry is fine
+        // here: this is one enrollment, not the whole pending-invite pool.
+        await updateCurrentEnrollment({ nextActionAt: addMinutes(12 * 60) });
+        return "awaiting-connection";
+      }
+      // Not yet due to give up. Do not park this on a 12-hour recheck: a
+      // pool of pending invites used to consume the entire due window every
+      // tick. The webhook and the per-account sweep wake it on acceptance.
+      await updateCurrentEnrollment({
+        nextActionAt: new Date(giveUpAt).toISOString(),
+      });
+      return "awaiting-connection";
+    }
+  }
+
+  const step = campaign.steps[enrollment.currentStepIndex] as CampaignStep | undefined;
+  if (!step) {
+    await updateCurrentEnrollment({ status: "stopped" });
+    return "complete";
+  }
+
+  const stepType = (step as { type?: string }).type;
+  if (!["wait", "connect", "message"].includes(stepType || "")) {
+    await updateCurrentEnrollment({
+      status: "error",
+      lastError: `Unknown campaign step type: ${stepType || "missing"}.`,
+      nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES),
+    });
+    return "unknown-step";
+  }
+
+  if (step.type === "wait") {
+    // Draft the message this wait leads up to right now (i.e. the moment the
+    // connection was accepted, for the connect→wait→message shape) so the user
+    // can review it on the Actions page for the whole wait window.
+    const nextMessageDraft = await draftUpcomingMessagePreview({
+      campaign,
+      lead,
+      account,
+      fromStepIndex: enrollment.currentStepIndex + 1,
+      messageEdits: enrollment.messageEdits,
+      enrollmentId: enrollment.id,
+    });
+    // The wait's delay sets the EARLIEST the next message may go; the planner
+    // then moves it to the first real slot at or after that inside the send
+    // window. This is what stops a connection accepted at 03:04 from firing
+    // its "15 minutes later" message at 03:19.
+    await updateCurrentEnrollment({
+      currentStepIndex: enrollment.currentStepIndex + 1,
+      nextActionAt: await reserveSendSlot({
+        budget,
+        workspace,
+        campaign,
+        linkedInAccountId: account.id,
+        enrollmentId: enrollment.id,
+        timezone: leadTimeZone,
+        kind: "message",
+        earliestAt: Date.now() + step.delayMinutes * 60 * 1000,
+      }),
+      ...(nextMessageDraft ? { nextMessageDraft } : {}),
+    });
+    return "wait";
+  }
+
+  if (step.type === "connect") {
+    // Another campaign already started outreach to this lead before this
+    // enrollment's first action - don't send a second invite to the same person.
+    if (enrollment.status === "queued" && lead.outreachStatus !== "new") {
+      await updateCurrentEnrollment({ status: "stopped" });
+      return "duplicate-lead";
+    }
+
+    // Account under a LinkedIn invite breaker: skip bulk sends, but allow one
+    // live probe (or Send connection now) because cannot_resend_yet is also
+    // what LinkedIn returns when a note quota is spent and a bare Connect still
+    // works. Parked enrollments sleep until the breaker ends; a successful
+    // probe or manual send wakes them early (see clearInviteCooldown).
+    if (budget.inviteCooldownUntil === undefined) {
+      budget.inviteCooldownUntil = await getInviteCooldown(enrollment.workspaceId, account.id);
+    }
+    if (budget.inviteCooldownUntil && !options.ignoreInviteCooldown) {
+      if (budget.inviteProbeUsed) {
+        await updateCurrentEnrollment(inviteCooldownPark(budget.inviteCooldownUntil));
+        return "invite-cooldown";
+      }
+      budget.inviteProbeUsed = true;
+    } else if (enrollment.inviteCooldownParkedAt) {
+      await updateCurrentEnrollment({ inviteCooldownParkedAt: undefined });
+    }
+
+    // Outside this campaign's send window: reschedule to the next opening
+    // rather than sending at 3am. Manual "Run now" bypasses this - the user
+    // explicitly chose the moment - which is why the check lives here and not
+    // in the shared claim.
+    if (!options.ignoreSendWindow && !isWithinSendWindow(sendWindow, leadTimeZone, Date.now())) {
+      await updateCurrentEnrollment({
+        nextActionAt: await reserveSendSlot({
+          budget,
+          workspace,
+          campaign,
+          linkedInAccountId: account.id,
+          enrollmentId: enrollment.id,
+          timezone: leadTimeZone,
+          kind: "invite",
+        }),
+      });
+      return "outside-send-window";
+    }
+
+    // Human-like pacing: only a few invites per account per tick. This gate
+    // must run before the 1st-degree profile check below - otherwise every
+    // queued enrollment performs a live profile view on every tick while
+    // waiting its turn, which is exactly the high-volume profile access
+    // pattern LinkedIn flags.
+    if (budget.connects <= 0) {
+      await updateCurrentEnrollment({
+        nextActionAt: await reserveSendSlot({
+          budget,
+          workspace,
+          campaign,
+          linkedInAccountId: account.id,
+          enrollmentId: enrollment.id,
+          timezone: leadTimeZone,
+          kind: "invite",
+        }),
+      });
+      return "connect-paced";
+    }
+
+    // Bail before profile views / AI drafting when today's invite budget is
+    // already spent - those work units were previously wasted on invite-limit.
+    // The planner rolls the enrollment to the next LOCAL day that has capacity,
+    // instead of the old hourly churn that made every workspace resume in a
+    // burst the instant the UTC day flipped.
+    if (
+      !(await hasDailyQuotaRemaining(
+        enrollment.workspaceId,
+        "invites",
+        workspace.settings.dailyInviteLimit,
+        workspace.timezone,
+        account.id,
+      ))
+    ) {
+      await updateCurrentEnrollment({
+        nextActionAt: await reserveSendSlot({
+          budget,
+          workspace,
+          campaign,
+          linkedInAccountId: account.id,
+          enrollmentId: enrollment.id,
+          timezone: leadTimeZone,
+          kind: "invite",
+        }),
+      });
+      return "invite-limit";
+    }
+
+    // Strict drip: at most one action per account per SPACING_MINUTES, across
+    // ticks and manual runs. Claimed before the profile check below so a
+    // waiting queue doesn't burn a live profile view on every tick; a claim
+    // that ends up not sending (already connected, LinkedIn rejection) only
+    // delays the next action - it can never over-send.
+    const nextSlotAllowedAt = await claimActionSlot(enrollment.workspaceId, account.id);
+    if (nextSlotAllowedAt) {
+      budget.connects = 0;
+      await updateCurrentEnrollment({
+        nextActionAt: await reserveSendSlot({
+          budget,
+          workspace,
+          campaign,
+          linkedInAccountId: account.id,
+          enrollmentId: enrollment.id,
+          timezone: leadTimeZone,
+          kind: "invite",
+          earliestAt: Date.parse(nextSlotAllowedAt),
+        }),
+      });
+      return "invite-spaced";
+    }
+
+    // Already a 1st-degree connection (connected manually or via another
+    // campaign): skip the redundant invite and move straight to messaging.
+    const alreadyConnected = await isFirstDegreeConnection({
+      accountId: account.accountId,
+      identifier: lead.providerProfileId || lead.linkedInUrl,
+    });
+    if (alreadyConnected) {
+      await updateLead(enrollment.workspaceId, lead.id, { outreachStatus: "connected" });
+      await updateCurrentEnrollment({
+        status: "connected",
+        currentStepIndex: enrollment.currentStepIndex + 1,
+        nextActionAt: addMinutes(1),
+      });
+      return "already-connected";
+    }
+
+    // AI never writes invitation notes. Only a user-written template that
+    // renders cleanly is attached; anything degraded means a bare invite,
+    // which converts fine and can't embarrass the sender.
+    const note = connectionNoteFor(step, lead);
+
+    const claimed = await claimEnrollmentAction({
+      workspaceId: enrollment.workspaceId,
+      id: enrollment.id,
+      expectedStatus: enrollment.status,
+      expectedStepIndex: enrollment.currentStepIndex,
+      kind: "connection",
+    });
+    if (!claimed) return "action-claimed";
+
+    budget.connects -= 1;
+    // The probe claim is the last gate before a live send so pacing/window
+    // misses do not spend the one attempt this cooldown window gets.
+    if (budget.inviteCooldownUntil && !options.ignoreInviteCooldown) {
+      const probed = await claimInviteCooldownProbe(enrollment.workspaceId, account.id);
+      if (!probed) {
+        const stillCooling = await getInviteCooldown(enrollment.workspaceId, account.id);
+        if (stillCooling) {
+          budget.inviteCooldownUntil = stillCooling;
+          await updateCurrentEnrollment({
+            ...inviteCooldownPark(stillCooling),
+            pendingAction: undefined,
+          });
+          return "invite-cooldown";
+        }
+        budget.inviteCooldownUntil = null;
+      }
+    }
+    // Send first; only count quota after LinkedIn accepts. Counting before send
+    // burned the full daily invite budget on rejected notes/ids, then every
+    // later enrollment sat on invite-limit with zero outreach.
+    const sendResult = await sendConnectionRequestWithNoteFallback({
+      accountId: account.accountId,
+      providerProfileId: lead.providerProfileId,
+      linkedInUrl: lead.linkedInUrl,
+      note,
+    });
+    // The account provably accepts invites, so any tallied cannot_resend_yet
+    // rejections were about their recipients, not an account-wide limit.
+    await clearInviteLimitSignals(enrollment.workspaceId, account.id);
+    await clearInviteCooldown(enrollment.workspaceId, account.id);
+    budget.inviteCooldownUntil = null;
+    const counted = await consumeDailyQuota(
+      enrollment.workspaceId,
+      "invites",
+      workspace.settings.dailyInviteLimit,
+      workspace.timezone,
+      account.id,
+    );
+    if (!counted) {
+      // Race: another path exhausted the limit after our pre-check. Invite
+      // already went out - record it and move on (slight overage is fine).
+      console.warn(
+        `[automation] invite sent for ${enrollment.id} after daily invite limit was reached`,
+      );
+    }
+    await updateLead(enrollment.workspaceId, lead.id, {
+      outreachStatus: "invited",
+      providerProfileId: sendResult.providerProfileId || lead.providerProfileId,
+    });
+    await updateCurrentEnrollment({
+      status: "connection_sent",
+      currentStepIndex: enrollment.currentStepIndex + 1,
+      connectionSentAt: new Date().toISOString(),
+      // The exact note LinkedIn files into the thread once the invite is
+      // accepted, so the owner-message checks recognise it as ours.
+      ...(sendResult.noteSent ? { connectionNote: sendResult.noteSent } : {}),
+      pendingAction: undefined,
+      // The send succeeded, so any stored rejection is stale; the Actions page
+      // surfaces lastError as the card's blocked reason.
+      lastError: undefined,
+      // Due again only at the give-up date; the webhook or the per-account
+      // sweep wakes it the moment the invite is actually accepted.
+      nextActionAt: addMinutes(CONNECTION_GIVE_UP_DAYS * 24 * 60),
+    });
+    await capturePostHogEvent({
+      event: "connection_request_sent",
+      distinctId: enrollment.workspaceId,
+      insertId: `connection_request_sent:${enrollment.id}`,
+      properties: {
+        lead_id: lead.id,
+        enrollment_id: enrollment.id,
+        campaign_id: campaign.id,
+      },
+    });
+    return "connection";
+  }
+
+  if (!canSendCampaignMessage(enrollment, lead)) {
+    await updateCurrentEnrollment({
+      status: "error",
+      lastError: "Connection must be accepted before sending campaign messages.",
+      nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES),
+    });
+    return "message-before-connection";
+  }
+
+  // Sequence follow-ups still respect the send window. AI replies to a live
+  // inbound are handled in the reply_received branch above and never reach here.
+  const messageKind: SendActionKind = "message";
+
+  if (!options.ignoreSendWindow && !isWithinSendWindow(sendWindow, leadTimeZone, Date.now())) {
+    await updateCurrentEnrollment({
+      nextActionAt: await reserveSendSlot({
+        budget,
+        workspace,
+        campaign,
+        linkedInAccountId: account.id,
+        enrollmentId: enrollment.id,
+        timezone: leadTimeZone,
+        kind: messageKind,
+      }),
+    });
+    return "outside-send-window";
+  }
+
+  // Human-like pacing: only a few messages per account per tick.
+  if (budget.messages <= 0) {
+    await updateCurrentEnrollment({
+      nextActionAt: await reserveSendSlot({
+        budget,
+        workspace,
+        campaign,
+        linkedInAccountId: account.id,
+        enrollmentId: enrollment.id,
+        timezone: leadTimeZone,
+        kind: messageKind,
+      }),
+    });
+    return "message-paced";
+  }
+
+  if (
+    !(await hasDailyQuotaRemaining(
+      enrollment.workspaceId,
+      "messages",
+      workspace.settings.dailyMessageLimit,
+      workspace.timezone,
+      account.id,
+    ))
+  ) {
+    await updateCurrentEnrollment({
+      nextActionAt: await reserveSendSlot({
+        budget,
+        workspace,
+        campaign,
+        linkedInAccountId: account.id,
+        enrollmentId: enrollment.id,
+        timezone: leadTimeZone,
+        kind: messageKind,
+      }),
+    });
+    return "message-limit";
+  }
+
+  // Messages now share the per-account drip with invites. Previously they had
+  // no spacing at all and went 1-3 per two-minute tick, so a burst of
+  // follow-ups could fire within a few minutes of each other.
+  const nextMessageSlotAt = await claimActionSlot(enrollment.workspaceId, account.id);
+  if (nextMessageSlotAt) {
+    budget.messages = 0;
+    await updateCurrentEnrollment({
+      nextActionAt: await reserveSendSlot({
+        budget,
+        workspace,
+        campaign,
+        linkedInAccountId: account.id,
+        enrollmentId: enrollment.id,
+        timezone: leadTimeZone,
+        kind: messageKind,
+        earliestAt: Date.parse(nextMessageSlotAt),
+      }),
+    });
+    return "message-spaced";
+  }
+
+  const profile = await getProductProfile(enrollment.workspaceId);
+  let body: string;
+  // Stage of this message when AI-drafted (0 for user-written templates).
+  // AI-run sequences hard-stop after MAX_AI_SEQUENCE_MESSAGES unanswered
+  // messages: a silent lead is not interested, so they are handed to the user
+  // by email instead of getting another AI touch.
+  let aiStage = 0;
+  // A message the user wrote for this lead goes out exactly as written. Read
+  // it fresh: the tick loads every enrollment up front, so an edit saved while
+  // the tick works through earlier leads is missing from `enrollment`.
+  const latestEnrollment = await getCampaignEnrollment(enrollment.workspaceId, enrollment.id);
+  const abVariant = abVariantFor(enrollment.id);
+  const written = writtenSequenceMessage(
+    step,
+    lead,
+    (latestEnrollment ?? enrollment).messageEdits,
+    abVariant,
+  );
+  // Only an unedited template send is part of the A/B comparison.
+  const sentAbVariant = written && !written.edited && stepHasVariant(step) ? abVariant : undefined;
+  if (written) {
+    body = written.text;
+  } else {
+    // Dedicated Gemini call per message per lead, with everything it needs:
+    // which message of the sequence this is (each stage has its own intent),
+    // the campaign's goal and tone, and the recent transcript already exchanged
+    // with this person, so follow-ups build on the first message instead of
+    // re-introducing the company.
+    const sequencePosition = campaign.steps
+      .slice(0, enrollment.currentStepIndex + 1)
+      .filter((candidate) => candidate.type === "message").length;
+    const conversation = await getConversation(enrollment.workspaceId, lead.id);
+    const messages = conversation?.messages || [];
+    const outboundSent = messages.filter((message) => message.direction === "outbound").length;
+    aiStage = Math.max(sequencePosition, outboundSent + 1);
+    if (campaign.replyHandling !== "handoff" && aiStage > MAX_AI_SEQUENCE_MESSAGES) {
+      await recordSequenceExhausted({ workspace, campaign, lead });
+      await updateCurrentEnrollment({
+        status: "stopped",
+        pendingAction: undefined,
+        lastError: `AI sequence finished after ${MAX_AI_SEQUENCE_MESSAGES} messages with no reply; outreach stopped for this lead.`,
+      });
+      return "sequence-exhausted";
+    }
+    // Reuse the pre-drafted preview the user saw on the Actions page, so what
+    // was shown is exactly what goes out. Only when no draft matches this step
+    // (older enrollments, preview drafting failed) is the message drafted here.
+    const draft = enrollment.nextMessageDraft;
+    const storedDraft =
+      draft && draft.stepIndex === enrollment.currentStepIndex && draft.body.trim()
+        ? draft.body
+        : undefined;
+    const leadForDrafting =
+      !storedDraft && sequencePosition === 1
+        ? await refreshLeadProfileForDrafting(lead, account)
+        : lead;
+    body =
+      storedDraft ??
+      (await draftCampaignMessage({
+        lead: leadForDrafting,
+        productProfile: profile,
+        campaignName: campaign.name,
+        templateHint: step.messageTemplate,
+        senderName: account.displayName,
+        sequencePosition,
+        conversation: messages,
+        campaignGoal: campaign.campaignGoal,
+        messageTone: campaign.messageTone,
+      }));
+  }
+  const claimed = await claimEnrollmentAction({
+    workspaceId: enrollment.workspaceId,
+    id: enrollment.id,
+    expectedStatus: enrollment.status,
+    expectedStepIndex: enrollment.currentStepIndex,
+    kind: "message",
+  });
+  if (!claimed) return "action-claimed";
+
+  // Same as invites: only count quota after LinkedIn accepts the send.
+  const messageSendResult = await sendCheckedMessage(body);
+  if (!messageSendResult) return "owner-message-blocked";
+  budget.messages -= 1;
+  // Record what was sent: follow-up and reply drafting read this transcript,
+  // and without it every later message drafts blind and repeats itself.
+  await createConversationMessage({
+    workspaceId: enrollment.workspaceId,
+    leadId: lead.id,
+    campaignId: campaign.id,
+    userId: enrollment.workspaceId,
+    senderName: account.displayName || "You",
+    body,
+    direction: "outbound",
+    outboundSource: "automation",
+    providerMessageId: messageSendResult.id,
+  });
+  await consumeDailyQuota(
+    enrollment.workspaceId,
+    "messages",
+    workspace.settings.dailyMessageLimit,
+    workspace.timezone,
+    account.id,
+  );
+  await updateLead(enrollment.workspaceId, lead.id, { outreachStatus: "messaged" });
+  // Final AI message of the ladder just went out: stop here instead of letting
+  // the enrollment idle on. No email - the lead never engaged, and an unanswered
+  // sequence is not news the user asked to be interrupted for.
+  if (aiStage >= MAX_AI_SEQUENCE_MESSAGES && campaign.replyHandling !== "handoff") {
+    await recordSequenceExhausted({ workspace, campaign, lead });
+    await updateCurrentEnrollment({
+      status: "stopped",
+      pendingAction: undefined,
+      lastError: `AI sequence finished after ${MAX_AI_SEQUENCE_MESSAGES} messages; outreach stopped for this lead.`,
+    });
+    return "sequence-exhausted";
+  }
+  // The sequence's own wait step defines the gap to the next message, so hand
+  // control back to it on the next tick. A fixed 24h defer here silently
+  // inflated every configured follow-up delay by a day (an 18h wait became
+  // ~42h - see tests/outreach-timeline.test.mts for the intended timeline).
+  // Only when the author put another action directly after this message (no
+  // wait step in between) do we keep a 24h floor between touches to the same
+  // person.
+  const stepAfterMessage = campaign.steps[enrollment.currentStepIndex + 1] as
+    | CampaignStep
+    | undefined;
+  await updateCurrentEnrollment({
+    status: "message_sent",
+    currentStepIndex: enrollment.currentStepIndex + 1,
+    pendingAction: undefined,
+    nextMessageDraft: undefined,
+    ...(sentAbVariant ? { abVariant: sentAbVariant } : {}),
+    // The send succeeded, so any stored rejection is stale; the Actions page
+    // surfaces lastError as the card's blocked reason.
+    lastError: undefined,
+    nextActionAt: addMinutes(
+      !stepAfterMessage || stepAfterMessage.type === "wait" ? 1 : 24 * 60,
+    ),
+  });
+  await capturePostHogEvent({
+    event: "message_sent",
+    distinctId: enrollment.workspaceId,
+    insertId: `message_sent:${enrollment.id}:${enrollment.currentStepIndex}`,
+    properties: {
+      lead_id: lead.id,
+      enrollment_id: enrollment.id,
+      campaign_id: campaign.id,
+    },
+  });
+  return "message";
+}
+
+export async function executeScheduledActionNow(workspaceId: string, enrollmentId: string) {
+  const mode = getAutomationSafetyMode();
+  if (mode.disabled || mode.dryRun || isWorkspaceAutomationPaused(mode, workspaceId)) {
+    throw new Error("Outreach is paused by the workspace safety settings.");
+  }
+
+  const workspace = await getWorkspace(workspaceId);
+  if (!hasActiveSubscription(workspace)) throw new Error("An active subscription is required.");
+  if (workspace.settings.outreachPaused) {
+    throw new Error("Outreach is off for this workspace. Turn it on in Settings to send this.");
+  }
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const enrollment = await getCampaignEnrollment(workspaceId, enrollmentId);
+    if (!enrollment) throw new Error("Scheduled action not found.");
+    if (["stopped", "replied"].includes(enrollment.status)) {
+      throw new Error("This outreach sequence is no longer active.");
+    }
+
+    const campaign = await getCampaign(workspaceId, enrollment.campaignId);
+    if (!campaign || campaign.status !== "active") {
+      throw new Error("This campaign is not active.");
+    }
+
+    const actionStepIndex = findNextScheduledStepIndex(
+      campaign.steps,
+      enrollment.currentStepIndex,
+    );
+    const step = campaign.steps[actionStepIndex];
+    if (!step || (step.type !== "connect" && step.type !== "message")) {
+      throw new Error("There is no outreach action to run.");
+    }
+
+    const lead = await findLeadForWorkspace({ workspaceId, leadId: enrollment.leadId });
+    if (!lead) throw new Error("Lead not found.");
+    if (
+      shouldHaltOutreachSend({
+        enrollmentStatus: enrollment.status,
+        lastError: enrollment.lastError,
+        outreachStatus: lead.outreachStatus,
+        kind: "manual",
+      })
+    ) {
+      throw new Error("Outreach for this lead was stopped.");
+    }
+    if (step.type === "message" && !canSendCampaignMessage(enrollment, lead)) {
+      const account = await getLinkedInAccountForWorkspace(
+        workspaceId,
+        enrollmentSenderId(campaign, enrollment),
+        { fallbackToDefault: true },
+      );
+      const identifier = lead.providerProfileId || lead.linkedInUrl;
+      const accepted =
+        account && identifier
+          ? await isFirstDegreeConnection({
+              accountId: account.accountId,
+              identifier,
+              ignoreViewBudget: true,
+            })
+          : null;
+      if (accepted !== true) {
+        throw new Error("The connection must be accepted before this message can be sent.");
+      }
+      await applyConnectionAccepted({
+        workspaceId,
+        lead,
+        enrollment,
+        campaign,
+        account,
+      });
+      await updateLead(workspaceId, lead.id, { outreachStatus: "connected" });
+      continue;
+    }
+    if (lead.sourceAgentId) {
+      const sourceAgent = await getAgent(workspaceId, lead.sourceAgentId);
+      if (!sourceAgent) {
+        throw new Error("The agent that found this lead was deleted, so its outreach is stopped.");
+      }
+      if (sourceAgent.leadsOnly) {
+        throw new Error(
+          "This lead was found by a leads-only agent and cannot be messaged automatically.",
+        );
+      }
+      if (sourceAgent.status === "paused") {
+        throw new Error("The agent that found this lead is paused. Resume it to run outreach.");
+      }
+    }
+
+    const prepared = await prepareEnrollmentActionNow({
+      workspaceId,
+      id: enrollment.id,
+      expectedStepIndex: enrollment.currentStepIndex,
+      actionStepIndex,
+    });
+    if (!prepared) continue;
+
+    try {
+      const manualBudget = newTickBudget();
+      const result = await runEnrollment(
+        prepared,
+        campaign,
+        () => manualBudget,
+        newSourceAgentBlockLookup(),
+        // Send connection now skips the window and the invite breaker: the user
+        // is doing what they can already do in the LinkedIn app.
+        { ignoreSendWindow: true, ignoreInviteCooldown: true },
+      );
+      await safeLogAutomationRun({
+        workspaceId,
+        kind: "campaign",
+        status: "completed",
+        message: `Manual action for enrollment ${enrollment.id}: ${result}.`,
+      });
+      if (enrollment.retryCount) {
+        await updateEnrollment(workspaceId, enrollment.id, { retryCount: 0 });
+      }
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Manual action failed";
+      const retryMinutes =
+        step.type === "connect" ? CONNECTION_SEND_RETRY_MINUTES : ENROLLMENT_RETRY_MINUTES;
+      await updateEnrollment(workspaceId, enrollment.id, {
+        lastError: message,
+        retryCount: (enrollment.retryCount || 0) + 1,
+        nextActionAt: addMinutes(retryMinutes),
+        ...(isRejectedBeforeDelivery(error) ? { pendingAction: undefined } : {}),
+      });
+      await safeLogAutomationRun({ workspaceId, kind: "campaign", status: "error", message });
+      throw new Error(message);
+    }
+  }
+
+  throw new Error("This action is already being processed. Refresh to see its latest status.");
+}
+
+// Pulls leads discovered after a campaign was created into that campaign so
+// they get contacted too. New enrollments are queued for "now", so they're
+// picked up by getDueEnrollments in this same tick.
+async function syncNewEnrollments(mode: AutomationSafetyMode, outreachOff: Set<string>) {
+  let newlyEnrolled = 0;
+  const campaigns = await getActiveCampaigns();
+
+  for (const campaign of campaigns) {
+    try {
+      // Outreach switched off in Settings: nobody new is queued, so the send
+      // times planned at enrollment are not all stale when it comes back on.
+      if (outreachOff.has(campaign.workspaceId)) continue;
+      if (mode.dryRun || isWorkspaceAutomationPaused(mode, campaign.workspaceId)) {
+        await safeLogAutomationRun({
+          workspaceId: campaign.workspaceId,
+          kind: "campaign",
+          status: "completed",
+          message: `${mode.dryRun ? "DRY RUN would sync" : "Skipped"} new enrollments for ${campaign.id}.`,
+        });
+        continue;
+      }
+      newlyEnrolled += await enrollNewLeadsInCampaign(campaign.workspaceId, campaign);
+    } catch (error) {
+      await safeLogAutomationRun({
+        workspaceId: campaign.workspaceId,
+        kind: "campaign",
+        status: "error",
+        message: `Enrolling new leads for ${campaign.id} failed: ${
+          error instanceof Error ? error.message : "unknown error"
+        }`,
+      });
+    }
+  }
+
+  return { newlyEnrolled, campaigns };
+}
+
+async function previewEnrollment(
+  enrollment: CampaignEnrollment,
+  campaign: Campaign,
+  sourceAgentBlock: SourceAgentBlockLookup,
+) {
+  const account = await getLinkedInAccountForWorkspace(
+    enrollment.workspaceId,
+    enrollmentSenderId(campaign, enrollment),
+    { fallbackToDefault: true },
+  );
+  if (!account) return "missing-account";
+  if (enrollment.pendingAction) return "pending-action";
+
+  const lead = await findLeadForWorkspace({
+    workspaceId: enrollment.workspaceId,
+    leadId: enrollment.leadId,
+  });
+  if (!lead) return "stopped";
+  if (
+    shouldHaltOutreachSend({
+      enrollmentStatus: enrollment.status,
+      lastError: enrollment.lastError,
+      outreachStatus: lead.outreachStatus,
+      kind: enrollment.status === "reply_received" ? "ai_reply" : "sequence",
+    })
+  ) {
+    return "stopped";
+  }
+  if (lead.outreachStatus === "replied" && enrollment.status !== "reply_received") {
+    if (
+      enrollment.status === "connection_sent" ||
+      enrollment.status === "connected" ||
+      enrollment.status === "message_sent" ||
+      enrollment.status === "error"
+    ) {
+      return "awaiting-reply-arm";
+    }
+    return "stopped";
+  }
+  if (!lead.groupIds?.includes(campaign.groupId)) return "left-group";
+  if (lead.sourceAgentId) {
+    const sourceAgent = await getAgent(enrollment.workspaceId, lead.sourceAgentId);
+    if (sourceAgent?.leadsOnly) {
+      return "leads-only-agent";
+    }
+  }
+  const block = lead.sourceAgentId
+    ? await sourceAgentBlock(enrollment.workspaceId, lead.sourceAgentId)
+    : null;
+  if (block) return block === "deleted" ? "agent-deleted" : "agent-paused";
+  if (enrollment.status === "reply_received") {
+    return campaign.replyHandling === "handoff" ? "would-stop-for-handoff" : "would-send-ai-reply";
+  }
+  if (enrollment.status === "connection_sent") return "would-check-connection";
+
+  const step = campaign.steps[enrollment.currentStepIndex] as CampaignStep | undefined;
+  if (!step) return "complete";
+  const stepType = (step as { type?: string }).type;
+  if (!["wait", "connect", "message"].includes(stepType || "")) return "unknown-step";
+  if (step.type === "wait") return `would-wait-${step.delayMinutes}m`;
+  if (step.type === "connect") {
+    if (enrollment.status === "queued" && lead.outreachStatus !== "new") return "duplicate-lead";
+    return "would-send-connection";
+  }
+  if (!canSendCampaignMessage(enrollment, lead)) return "message-before-connection";
+  return step.messageTemplate.trim() ? "would-send-message" : "would-draft-and-send-message";
+}
+
+async function runCampaigns(mode: AutomationSafetyMode) {
+  // Workspaces with outreach switched off in Settings. A failed read throws,
+  // so a tick that cannot tell who is switched off sends nothing.
+  const outreachOff = await listOutreachPausedWorkspaceIds();
+  let newlyEnrolled = 0;
+  let activeCampaigns: Campaign[] = [];
+  // Isolated so a failure to enroll new leads never blocks processing the
+  // enrollments that are already due.
+  try {
+    const syncResult = await syncNewEnrollments(mode, outreachOff);
+    newlyEnrolled = syncResult.newlyEnrolled;
+    activeCampaigns = syncResult.campaigns;
+  } catch (error) {
+    await safeLogAutomationRun({
+      kind: "campaign",
+      status: "error",
+      message: `Enrollment sync failed: ${error instanceof Error ? error.message : "unknown error"}`,
+    });
+  }
+
+  const workspaceIds = Array.from(new Set(activeCampaigns.map((campaign) => campaign.workspaceId)))
+    .filter((workspaceId) => !outreachOff.has(workspaceId));
+  const [replyEnrollments, enrollments] = await Promise.all([
+    getDueReplyEnrollments(50, workspaceIds),
+    getDueEnrollments(50, workspaceIds),
+  ]);
+  const seenEnrollmentIds = new Set<string>();
+  const dueEnrollments = [...replyEnrollments, ...enrollments].filter((enrollment) => {
+    if (seenEnrollmentIds.has(enrollment.id)) return false;
+    seenEnrollmentIds.add(enrollment.id);
+    return true;
+  });
+  const campaignCache = new Map<string, Campaign>();
+  const workspaceActiveCache = new Map<string, boolean>();
+  const sourceAgentBlock = newSourceAgentBlockLookup();
+  const exclusionCheck = newExclusionCheck();
+  // Per-LinkedIn-account send budget for this tick, so one connected account
+  // doesn't consume another's pacing allowance in the same workspace.
+  const budgets = new Map<string, TickBudget>();
+  const budgetForAccount = (linkedInAccountId: string) => {
+    let budget = budgets.get(linkedInAccountId);
+    if (!budget) {
+      budget = newTickBudget();
+      budgets.set(linkedInAccountId, budget);
+    }
+    return budget;
+  };
+  let actions = 0;
+
+  for (const enrollment of dueEnrollments) {
+    // With no other workspace left to read, the due queries look everywhere,
+    // which brings switched-off workspaces back in.
+    if (outreachOff.has(enrollment.workspaceId)) continue;
+    const campaign =
+      campaignCache.get(enrollment.campaignId) ||
+      (await listCampaigns(enrollment.workspaceId)).find((item) => item.id === enrollment.campaignId);
+
+    // Campaign deleted out from under the enrollment: stop it for good.
+    if (!campaign) {
+      if (mode.dryRun) {
+        await safeLogAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "completed",
+          message: automationDecisionMessage({
+            dryRun: true,
+            enrollmentId: enrollment.id,
+            campaignId: enrollment.campaignId,
+            leadId: enrollment.leadId,
+            result: "campaign-deleted",
+          }),
+        });
+      } else {
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, { status: "stopped" });
+      }
+      continue;
+    }
+
+    if (isWorkspaceAutomationPaused(mode, enrollment.workspaceId)) {
+      await safeLogAutomationRun({
+        workspaceId: enrollment.workspaceId,
+        kind: "campaign",
+        status: "completed",
+        message: automationDecisionMessage({
+          enrollmentId: enrollment.id,
+          campaignId: campaign.id,
+          leadId: enrollment.leadId,
+          result: "workspace-paused",
+        }),
+      });
+      continue;
+    }
+
+    // Paused/draft campaign: defer instead of `continue`. Leaving a due, never-
+    // updated enrollment in place lets inactive work occupy the limited due
+    // enrollment window and crowd out active campaigns. pausedDeferredAt marks
+    // the defer as pause-only so resumeCampaign can wake exactly these.
+    if (campaign.status !== "active") {
+      if (mode.dryRun) {
+        await safeLogAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "completed",
+          message: automationDecisionMessage({
+            dryRun: true,
+            enrollmentId: enrollment.id,
+            campaignId: campaign.id,
+            leadId: enrollment.leadId,
+            result: "campaign-inactive",
+          }),
+        });
+      } else {
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+          nextActionAt: addMinutes(PAUSED_CAMPAIGN_DEFER_MINUTES),
+          pausedDeferredAt: new Date().toISOString(),
+        });
+      }
+      continue;
+    }
+
+    // Don't run paid outreach for workspaces without an active subscription;
+    // defer (don't drop) so it resumes immediately once billing is restored.
+    let workspaceActive = workspaceActiveCache.get(enrollment.workspaceId);
+    if (workspaceActive === undefined) {
+      workspaceActive = hasActiveSubscription(await getWorkspace(enrollment.workspaceId));
+      workspaceActiveCache.set(enrollment.workspaceId, workspaceActive);
+    }
+    if (!workspaceActive) {
+      if (mode.dryRun) {
+        await safeLogAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "completed",
+          message: automationDecisionMessage({
+            dryRun: true,
+            enrollmentId: enrollment.id,
+            campaignId: campaign.id,
+            leadId: enrollment.leadId,
+            result: "workspace-inactive",
+          }),
+        });
+      } else {
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+          nextActionAt: addMinutes(INACTIVE_WORKSPACE_DEFER_MINUTES),
+        });
+      }
+      continue;
+    }
+
+    campaignCache.set(campaign.id, campaign);
+    try {
+      const result = mode.dryRun
+        ? await previewEnrollment(enrollment, campaign, sourceAgentBlock)
+        : await runEnrollment(enrollment, campaign, budgetForAccount, sourceAgentBlock, {
+            exclusionCheck,
+          });
+      if (result !== "stopped") actions += 1;
+      // A parked invite is not news: the breaker logs once when it arms, and a
+      // row per parked lead buried the Activity feed in thousands of repeats.
+      if (result !== "invite-cooldown") await safeLogAutomationRun({
+        workspaceId: enrollment.workspaceId,
+        kind: "campaign",
+        status: "completed",
+        message: automationDecisionMessage({
+          dryRun: mode.dryRun,
+          enrollmentId: enrollment.id,
+          campaignId: campaign.id,
+          leadId: enrollment.leadId,
+          result,
+        }),
+      });
+      if (!mode.dryRun && enrollment.retryCount) {
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, { retryCount: 0 });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Enrollment run failed";
+      const errorType = error instanceof LinkedInResponseError ? error.errorType : undefined;
+
+      if (error instanceof UnconfirmedProviderSendError) {
+        const unconfirmedMessage = `${UNCONFIRMED_PROVIDER_SEND_PREFIX}: ${message}`;
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+          status: "error",
+          lastError: unconfirmedMessage,
+          pendingAction: undefined,
+          nextActionAt: addMinutes(ENROLLMENT_COOLDOWN_MINUTES),
+        });
+        await logAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "error",
+          message: unconfirmedMessage,
+        });
+        continue;
+      }
+
+      if (errorType === "errors/invalid_recipient") {
+        // LinkedIn can never deliver to this recipient (deleted/locked
+        // profile, bad id) - retrying only burns pacing budget forever.
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+          status: "stopped",
+          lastError: message,
+          pendingAction: undefined,
+        });
+        await logAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "error",
+          message: `Stopped enrollment ${enrollment.id}: recipient unreachable. ${message}`,
+        });
+        continue;
+      }
+
+      if (isInviteResendBlockedErrorType(errorType)) {
+        // The error type is the same (errors/cannot_resend_yet) whether
+        // this one recipient can't be re-invited yet or the whole
+        // account hit its weekly cap. The sent-invitations list is ground
+        // truth for the first case: if this person already has a pending
+        // invite (sent manually or before this enrollment), record that
+        // reality and hand over to acceptance polling instead of retrying a
+        // send LinkedIn will keep rejecting.
+        const rejectedLead = await findLeadForWorkspace({
+          workspaceId: enrollment.workspaceId,
+          leadId: enrollment.leadId,
+        });
+        const rejectedAccount = await getLinkedInAccountForWorkspace(
+          enrollment.workspaceId,
+          enrollmentSenderId(campaign, enrollment),
+          { fallbackToDefault: true },
+        );
+        const invitePending =
+          rejectedLead && rejectedAccount
+            ? await hasPendingSentInvitation({
+                accountId: rejectedAccount.accountId,
+                providerProfileId: rejectedLead.providerProfileId,
+                linkedInUrl: rejectedLead.linkedInUrl,
+              })
+            : null;
+
+        if (invitePending) {
+          await updateLead(enrollment.workspaceId, enrollment.leadId, {
+            outreachStatus: "invited",
+          });
+          await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+            status: "connection_sent",
+            currentStepIndex: enrollment.currentStepIndex + 1,
+            connectionSentAt: new Date().toISOString(),
+            pendingAction: undefined,
+            lastError: undefined,
+            nextActionAt: addMinutes(CONNECTION_GIVE_UP_DAYS * 24 * 60),
+          });
+          await logAutomationRun({
+            workspaceId: enrollment.workspaceId,
+            kind: "campaign",
+            status: "completed",
+            message: `Lead ${enrollment.leadId} already has a pending invite; marked connection_sent and waiting for acceptance.`,
+          });
+          continue;
+        }
+
+        if (invitePending === null) {
+          await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+            lastError: message,
+            nextActionAt: addMinutes(ENROLLMENT_RETRY_MINUTES),
+            pendingAction: undefined,
+          });
+          await logAutomationRun({
+            workspaceId: enrollment.workspaceId,
+            kind: "campaign",
+            status: "error",
+            message: `Could not confirm whether a pending invite already exists for ${enrollment.leadId}; will retry. ${message}`,
+          });
+          continue;
+        }
+
+        // No pending invite: the recipient was previously invited and
+        // withdrawn (LinkedIn blocks re-invites for weeks), or the account is
+        // capped. A single rejection only defers this enrollment.
+        // Distinct-recipient rejections are tallied per LinkedIn account and
+        // cleared on any successful invite from that account. Enough failures
+        // close together arm a short breaker, but do not prove a weekly limit:
+        // withdrawn invites produce the same provider error.
+        await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+          lastError: message,
+          nextActionAt: addMinutes(RESEND_BLOCKED_DEFER_MINUTES),
+          pendingAction: undefined,
+        });
+        await logAutomationRun({
+          workspaceId: enrollment.workspaceId,
+          kind: "campaign",
+          status: "error",
+          message: `Invite to lead ${enrollment.leadId} is blocked from resending; deferring this enrollment three weeks. ${message}`,
+        });
+
+        if (!rejectedAccount) {
+          await logAutomationRun({
+            workspaceId: enrollment.workspaceId,
+            kind: "campaign",
+            status: "error",
+            message: `Could not identify the LinkedIn account for ${enrollment.id}; only the rejected recipient was deferred.`,
+          });
+          continue;
+        }
+
+        const distinctRejections = await recordInviteLimitSignal(
+          enrollment.workspaceId,
+          rejectedAccount.id,
+          enrollment.leadId,
+        );
+        if (distinctRejections >= INVITE_LIMIT_SIGNAL_THRESHOLD) {
+          const prior = await getInviteCooldownRecord(
+            enrollment.workspaceId,
+            rejectedAccount.id,
+          );
+          const budget = budgetForAccount(rejectedAccount.id);
+          budget.connects = 0;
+          if (prior?.active) {
+            // Do not replace an active window. A failed probe would otherwise
+            // wipe probedAt and let the next tick send again, hammering a real
+            // weekly cap. One live attempt per window is the whole point.
+            budget.inviteCooldownUntil ??= prior.until;
+            await logAutomationRun({
+              workspaceId: enrollment.workspaceId,
+              kind: "campaign",
+              status: "error",
+              message: `${distinctRejections} recipients were rejected within a day on ${rejectedAccount.displayName}; invite pause already active until ${budget.inviteCooldownUntil}.`,
+            });
+          } else {
+            const workspace = await getWorkspace(enrollment.workspaceId).catch(() => null);
+            const next = nextInviteLimitRetryAt({
+              previousStage: prior?.stage ?? 0,
+              timezone: workspace?.timezone,
+            });
+            await setInviteCooldown(
+              enrollment.workspaceId,
+              rejectedAccount.id,
+              next.until,
+              next.stage,
+            );
+            budget.inviteCooldownUntil = next.until;
+            await logAutomationRun({
+              workspaceId: enrollment.workspaceId,
+              kind: "campaign",
+              status: "error",
+              message:
+                next.stage === 1
+                  ? `${distinctRejections} recipients were rejected within a day on ${rejectedAccount.displayName}; pausing invites for this LinkedIn account until ${next.until}, then automatically probing again.`
+                  : `${distinctRejections} recipients were rejected within a day on ${rejectedAccount.displayName}; first retry still failed, pausing invites until ${next.until} (3 days or next Monday, whichever is sooner).`,
+            });
+            await notifyInvitePause(
+              enrollment.workspaceId,
+              next.until,
+              rejectedAccount.id,
+              rejectedAccount.displayName,
+            );
+          }
+        }
+        continue;
+      }
+
+      if (
+        isInviteRateLimitedErrorType(errorType, campaign.steps[enrollment.currentStepIndex]?.type)
+      ) {
+        // LinkedIn is refusing invites from this account, so the account
+        // pauses. Falling through to the per-lead retry below let the next
+        // queued lead try again on the next tick, all week.
+        const limitedAccount = await getLinkedInAccountForWorkspace(
+          enrollment.workspaceId,
+          enrollmentSenderId(campaign, enrollment),
+          { fallbackToDefault: true },
+        );
+        if (limitedAccount) {
+          const workspace = await getWorkspace(enrollment.workspaceId).catch(() => null);
+          const pause = inviteRateLimitPause({
+            prior: await getInviteCooldownRecord(enrollment.workspaceId, limitedAccount.id),
+            timezone: workspace?.timezone,
+          });
+          if (pause.started) {
+            await setInviteCooldown(
+              enrollment.workspaceId,
+              limitedAccount.id,
+              pause.until,
+              pause.stage,
+            );
+          }
+          const budget = budgetForAccount(limitedAccount.id);
+          budget.connects = 0;
+          budget.inviteCooldownUntil = pause.until;
+          await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+            ...inviteCooldownPark(pause.until),
+            lastError: message,
+            pendingAction: undefined,
+          });
+          await logAutomationRun({
+            workspaceId: enrollment.workspaceId,
+            kind: "campaign",
+            status: "error",
+            message: pause.started
+              ? `LinkedIn rate limited an invite from ${limitedAccount.displayName}; pausing invites for this LinkedIn account until ${pause.until}.`
+              : `LinkedIn still rate limits invites from ${limitedAccount.displayName}; invite pause stays until ${pause.until}.`,
+          });
+          if (pause.notifyOwner) {
+            await notifyInvitePause(
+              enrollment.workspaceId,
+              pause.until,
+              limitedAccount.id,
+              limitedAccount.displayName,
+            );
+          }
+          continue;
+        }
+      }
+
+      const retryCount = (enrollment.retryCount || 0) + 1;
+      const failedStep = campaign.steps[enrollment.currentStepIndex];
+      const retryMinutes =
+        retryCount >= ENROLLMENT_MAX_RETRIES
+          ? ENROLLMENT_COOLDOWN_MINUTES
+          : failedStep?.type === "connect"
+            ? CONNECTION_SEND_RETRY_MINUTES
+            : ENROLLMENT_RETRY_MINUTES;
+      await updateEnrollment(enrollment.workspaceId, enrollment.id, {
+        lastError: message,
+        retryCount,
+        nextActionAt: addMinutes(retryMinutes),
+        // A response-bearing LinkedIn error means the send was rejected outright,
+        // so its side effect never happened. Clear the in-flight claim so the
+        // next tick retries cleanly instead of seeing a stranded pendingAction
+        // and parking the enrollment for manual review. Network drops/timeouts
+        // (no LinkedInResponseError) stay ambiguous and keep the claim.
+        ...(isRejectedBeforeDelivery(error) ? { pendingAction: undefined } : {}),
+      });
+      await logAutomationRun({
+        workspaceId: enrollment.workspaceId,
+        kind: "campaign",
+        status: "error",
+        message,
+      });
+    }
+  }
+
+  return { enrollments: enrollments.length, actions, newlyEnrolled };
+}
+
+// Batched acceptance detection for one account: compare every pending invite
+// against recent first-degree relations (identity + unique name) and the
+// sent-invitations listing. Nothing pushes an acceptance to Omentir, so this
+// is the path that keeps the dashboard honest. Invites still in the sent list
+// are pending. Invites that vanished are either accepted or withdrawn; only
+// those few get a live profile check to confirm.
+async function sweepAcceptedInvitations(input: {
+  workspaceId: string;
+  account: LinkedInAccount;
+  campaignsById: Map<string, Campaign>;
+  senderIds: Set<string>;
+}) {
+  const { workspaceId, account, campaignsById, senderIds } = input;
+  // Only invites this account sent: a rotated campaign's other senders'
+  // invites are checked against their own accounts' connection lists.
+  const sentFromThisAccount = (enrollment: CampaignEnrollment) => {
+    const campaign = campaignsById.get(enrollment.campaignId);
+    return Boolean(campaign) && senderIds.has(enrollmentSenderId(campaign!, enrollment) || "");
+  };
+  const enrollments = (await listConnectionSentEnrollments(workspaceId)).filter(sentFromThisAccount);
+  // Invites given up at the give-up date that the lead may still accept. The
+  // old webhook reported those acceptances; without it they were lost and the
+  // lead never got the sequence.
+  const lateAcceptanceCutoff = Date.now() - LATE_ACCEPTANCE_DAYS * 24 * 60 * 60 * 1000;
+  const expiredInvites = (await listExpiredInviteEnrollments(workspaceId)).filter(
+    (enrollment) =>
+      sentFromThisAccount(enrollment) &&
+      Date.parse(enrollment.connectionSentAt || "") >= lateAcceptanceCutoff,
+  );
+  if (!enrollments.length && !expiredInvites.length) return { accepted: 0, unavailable: false };
+
+  const pendingLeads = (
+    await Promise.all(
+      [...enrollments, ...expiredInvites].map((enrollment) =>
+        findLeadForWorkspace({ workspaceId, leadId: enrollment.leadId }),
+      ),
+    )
+  ).filter((lead): lead is NonNullable<typeof lead> => Boolean(lead));
+
+  const relations = await listRecentRelations(account.accountId);
+  const pendingIds = await listSentInvitationProviderIds(account.accountId);
+  if (!relations && !pendingIds) {
+    await safeLogAutomationRun({
+      workspaceId,
+      kind: "campaign",
+      status: "error",
+      message: `Acceptance sweep for ${account.displayName || account.id} skipped: LinkedIn relation and sent-invitation lists unavailable.`,
+    });
+    return { accepted: 0, unavailable: true };
+  }
+
+  const acceptedLeadIds = new Set(
+    matchLeadsToProviderIdentities(pendingLeads, relations || []).map((lead) => lead.id),
+  );
+
+  let accepted = 0;
+  let checks = 0;
+  for (const enrollment of enrollments) {
+    const lead = pendingLeads.find((item) => item.id === enrollment.leadId);
+    if (!lead) continue;
+
+    if (acceptedLeadIds.has(lead.id)) {
+      await applyConnectionAccepted({
+        workspaceId,
+        lead,
+        enrollment,
+        campaign: campaignsById.get(enrollment.campaignId),
+        account,
+      });
+      await updateLead(workspaceId, lead.id, { outreachStatus: "connected" });
+      accepted += 1;
+      await safeLogAutomationRun({
+        workspaceId,
+        kind: "campaign",
+        status: "completed",
+        message: `Stored connection approval from ${lead.name} (acceptance sweep).`,
+      });
+      continue;
+    }
+
+    const identityKeys = profileSearchKeys(lead);
+    if (!identityKeys.length) continue;
+    // Still in the sent list: the invite is pending, nothing to do.
+    if (pendingIds && identityKeys.some((key) => pendingIds.has(key.toLowerCase()))) continue;
+    // Without the sent list we cannot tell pending from vanished; wait for
+    // the next relations page or webhook rather than guessing with profile views.
+    if (!pendingIds) continue;
+    if (checks >= CONNECTION_SWEEP_CHECK_LIMIT) break;
+    checks += 1;
+
+    const isConnected = await isFirstDegreeConnection({
+      accountId: account.accountId,
+      identifier: lead.providerProfileId || lead.linkedInUrl,
+      ignoreViewBudget: true,
+    });
+    // Not first-degree (withdrawn/expired invite) or unknown: leave the
+    // enrollment for its give-up date rather than guessing.
+    if (isConnected !== true) continue;
+
+    await applyConnectionAccepted({
+      workspaceId,
+      lead,
+      enrollment,
+      campaign: campaignsById.get(enrollment.campaignId),
+      account,
+    });
+    await updateLead(workspaceId, lead.id, { outreachStatus: "connected" });
+    accepted += 1;
+    await safeLogAutomationRun({
+      workspaceId,
+      kind: "campaign",
+      status: "completed",
+      message: `Stored connection approval from ${lead.name} (acceptance sweep).`,
+    });
+  }
+
+  // A late acceptance shows up among the newest connections. Only that list is
+  // used: a live profile check for every expired invite would spend profile
+  // views on the same people every sweep.
+  for (const enrollment of expiredInvites) {
+    const lead = pendingLeads.find((item) => item.id === enrollment.leadId);
+    if (!lead || !acceptedLeadIds.has(lead.id) || lead.outreachStatus === "stopped") continue;
+    // A newer invite to the same lead was just handled above; one sequence is enough.
+    if (enrollments.some((pending) => pending.leadId === lead.id)) continue;
+    await applyConnectionAccepted({
+      workspaceId,
+      lead,
+      enrollment,
+      campaign: campaignsById.get(enrollment.campaignId),
+      account,
+    });
+    await updateLead(workspaceId, lead.id, { outreachStatus: "connected" });
+    accepted += 1;
+    await safeLogAutomationRun({
+      workspaceId,
+      kind: "campaign",
+      status: "completed",
+      message: `Stored late connection approval from ${lead.name} (acceptance sweep).`,
+    });
+  }
+
+  return { accepted, unavailable: false };
+}
+
+// Reply-sync fallback for one account: pull recent provider messages and run
+// them through the paths the old Unipile messaging webhook used. Inbound text
+// becomes a stored reply; owner-sent messages stop outreach (or confirm an
+// invite-note acceptance). Dedupe on the provider message id makes re-reading
+// an already-handled message a no-op.
+async function syncInboundReplies(input: {
+  workspaceId: string;
+  account: LinkedInAccount;
+  previousRunAt: number;
+  campaigns: Campaign[];
+}) {
+  const { workspaceId, account } = input;
+  // First successful sync has no previous cursor. Look back a day so replies
+  // that arrived while the account was connecting are not dropped forever.
+  const lookbackMs = input.previousRunAt
+    ? input.previousRunAt - REPLY_SYNC_OVERLAP_MS
+    : Date.now() - 24 * 60 * 60 * 1000;
+  const messages = await listRecentInboundMessages({
+    accountId: account.accountId,
+    sinceMs: lookbackMs,
+    limit: REPLY_SYNC_MESSAGE_LIMIT,
+  });
+  if (!messages) {
+    throw new Error("Could not read recent LinkedIn messages for reply sync.");
+  }
+
+  let stored = 0;
+  for (const message of messages) {
+    // Without a stable provider id the dedupe cannot hold; skip rather than
+    // risk double-processing the same reply on every sync pass.
+    if (!message.id) continue;
+    if (!message.senderProviderId && !message.linkedInUrl && !message.senderName) continue;
+    const lead = await findLeadForInboundEvent({
+      workspaceId,
+      providerProfileId: message.senderProviderId || undefined,
+      linkedInUrl:
+        message.linkedInUrl ||
+        (message.senderProviderId
+          ? `https://www.linkedin.com/in/${message.senderProviderId}`
+          : undefined),
+      fullName: message.senderName,
+      matchPendingAcceptance: true,
+    });
+    if (!lead) continue;
+    const leadWorkspaceId = lead.workspaceId;
+    if (message.senderProviderId && !lead.providerProfileId) {
+      await updateLead(leadWorkspaceId, lead.id, {
+        providerProfileId: message.senderProviderId,
+      });
+      lead.providerProfileId = message.senderProviderId;
+    }
+
+    // Owner typed in the LinkedIn app: stop outreach, or unlock the sequence
+    // when an invite note opened a chat (the old webhook's is_sender path).
+    if (message.isSender) {
+      const stopped = await stopForOwnerMessageWebhook({
+        workspaceId: leadWorkspaceId,
+        leadId: lead.id,
+        providerMessageId: message.id,
+        body: message.body,
+        createdAt: message.createdAt,
+        inviteNotes: inviteNotesFor(
+          await listLeadEnrollments(leadWorkspaceId, lead.id),
+          input.campaigns,
+          lead,
+        ),
+      });
+      if (stopped) {
+        stored += 1;
+        continue;
+      }
+      if (await applyAcceptanceIfFirstDegree({ workspaceId: leadWorkspaceId, lead, account })) {
+        stored += 1;
+      }
+      continue;
+    }
+
+    const result = await processInboundMessage({
+      workspaceId: leadWorkspaceId,
+      lead,
+      body: message.body,
+      senderName: message.senderName || lead.name,
+      providerMessageId: message.id,
+      providerCreatedAt: message.createdAt,
+      account,
+    });
+    if (!result.duplicate) stored += 1;
+  }
+
+  return stored;
+}
+
+// Own LinkedIn accounts have no provider webhook. This phase polls replies
+// (~5 min) and accepted invites (~2 h) for every connected own session and
+// every campaign account. Runs on its own claim cycle so the per-account
+// claim reads stay off the every-tick hot path.
+async function runProviderSyncs(mode: AutomationSafetyMode) {
+  const result = { sweptAccounts: 0, acceptedViaSweep: 0, syncedReplies: 0 };
+  // Live provider reads plus real state transitions and emails - nothing here
+  // is dry-run safe, and a dry run must not consume the interval claims.
+  if (mode.dryRun) return result;
+
+  if (!(await claimSystemTask("provider-sync-cycle", PROVIDER_SYNC_CYCLE_MS))) return result;
+
+
+  const campaigns = await getCampaignsForProviderSync();
+  const accounts = new Map<
+    string,
+    {
+      workspaceId: string;
+      account: LinkedInAccount;
+      campaignsById: Map<string, Campaign>;
+      // Stored sender ids ("" = the campaign stored none) that resolved to
+      // this account. Under rotation one campaign spans several accounts, so
+      // the acceptance sweep checks each enrollment against its own sender.
+      senderIds: Set<string>;
+    }
+  >();
+  for (const campaign of campaigns) {
+    if (isWorkspaceAutomationPaused(mode, campaign.workspaceId)) continue;
+    const storedIds = campaignSenderIds(campaign);
+    for (const storedId of storedIds.length ? storedIds : [""]) {
+      try {
+        const account = await getLinkedInAccountForWorkspace(
+          campaign.workspaceId,
+          storedId || undefined,
+          { fallbackToDefault: true },
+        );
+        if (!account) continue;
+        const key = `${campaign.workspaceId}:${account.id}`;
+        const entry =
+          accounts.get(key) ||
+          {
+            workspaceId: campaign.workspaceId,
+            account,
+            campaignsById: new Map<string, Campaign>(),
+            senderIds: new Set<string>(),
+          };
+        entry.campaignsById.set(campaign.id, campaign);
+        entry.senderIds.add(storedId);
+        accounts.set(key, entry);
+      } catch (error) {
+        console.error(
+          `[automation] failed to resolve account for campaign ${campaign.id}:`,
+          error,
+        );
+      }
+    }
+  }
+
+  // Own-client accounts receive no provider webhook. The campaign loop
+  // above only reaches accounts an active campaign uses, so enumerate
+  // every live own session as well: each own account gets the same reply
+  // sync and acceptance sweep a webhook would have triggered, on the
+  // same claim intervals, whether or not a campaign is running.
+  try {
+    // One LinkedIn account connected under several Omentir logins has a row
+    // per login, and each login's leads are only found from its own row.
+    const liveSessions = new Set(await listActiveOwnSessionAccountIds());
+    for (const account of await listConnectedLinkedInAccountsEverywhere()) {
+      if (!liveSessions.has(account.accountId)) continue;
+      if (isWorkspaceAutomationPaused(mode, account.workspaceId)) continue;
+      const key = `${account.workspaceId}:${account.id}`;
+      if (!accounts.has(key)) {
+        accounts.set(key, {
+          workspaceId: account.workspaceId,
+          account,
+          campaignsById: new Map(),
+          senderIds: new Set(),
+        });
+      }
+    }
+  } catch (error) {
+    console.error("[automation] failed to enumerate own LinkedIn accounts for provider sync:", error);
+  }
+
+  // When the last-send read fails, every account keeps the fast cadence: a
+  // slow reply check must never be the result of an error.
+  let lastSentAt: Map<string, number> | null = null;
+  try {
+    lastSentAt = await listLastActionTimes([...accounts.values()].map((entry) => entry.account.id));
+  } catch (error) {
+    console.error("[automation] failed to read last send times for provider sync:", error);
+  }
+
+  for (const entry of accounts.values()) {
+    const idle = lastSentAt ? isIdleLinkedInAccount(lastSentAt.get(entry.account.id)) : false;
+    try {
+      const sweepTaskId = `connection-sweep-${entry.account.id}`;
+      if (
+        await claimSystemTask(
+          sweepTaskId,
+          idle ? IDLE_CONNECTION_SWEEP_INTERVAL_MS : CONNECTION_SWEEP_INTERVAL_MS,
+        )
+      ) {
+        const sweep = await sweepAcceptedInvitations(entry);
+        if (sweep.unavailable) {
+          await releaseSystemTask(sweepTaskId).catch((releaseError) => {
+            console.error("[automation] failed to release acceptance-sweep claim:", releaseError);
+          });
+        } else {
+          result.sweptAccounts += 1;
+          result.acceptedViaSweep += sweep.accepted;
+        }
+      }
+    } catch (error) {
+      await safeLogAutomationRun({
+        workspaceId: entry.workspaceId,
+        kind: "campaign",
+        status: "error",
+        message: `Acceptance sweep failed: ${error instanceof Error ? error.message : "unknown error"}`,
+      });
+    }
+
+    try {
+      const syncTaskId = `reply-sync-${entry.account.id}`;
+      const syncClaim = await claimSystemTask(
+        syncTaskId,
+        idle ? IDLE_REPLY_SYNC_INTERVAL_MS : REPLY_SYNC_INTERVAL_MS,
+      );
+      if (syncClaim) {
+        try {
+          result.syncedReplies += await syncInboundReplies({
+            workspaceId: entry.workspaceId,
+            account: entry.account,
+            previousRunAt: syncClaim.previousRunAt,
+            campaigns: [...entry.campaignsById.values()],
+          });
+        } catch (error) {
+          await releaseSystemTask(syncTaskId, {
+            previousRunAt: syncClaim.previousRunAt || syncClaim.claimedAt - REPLY_SYNC_INTERVAL_MS,
+            claimedAt: syncClaim.claimedAt,
+          }).catch((releaseError) => {
+            console.error("[automation] failed to release reply-sync claim:", releaseError);
+          });
+          throw error;
+        }
+      }
+    } catch (error) {
+      await safeLogAutomationRun({
+        workspaceId: entry.workspaceId,
+        kind: "campaign",
+        status: "error",
+        message: `Reply sync failed: ${error instanceof Error ? error.message : "unknown error"}`,
+      });
+    }
+  }
+
+  return result;
+}
+
+// Logging itself writes to Firestore, so it must never throw and abort the tick
+// (e.g. when the database is unreachable). Failures still surface in stdout.
+async function safeLogAutomationRun(run: Parameters<typeof logAutomationRun>[0]) {
+  try {
+    await logAutomationRun(run);
+  } catch (error) {
+    console.error("[automation] failed to log run:", error);
+  }
+}
+
+// Tells the workspace owner repeated provider rejections activated a temporary
+// account-specific safety pause. Called only when a pause is newly activated,
+// and additionally day-claimed per account. Never throws - an email failure
+// must not disturb enrollment error handling.
+async function notifyInvitePause(
+  workspaceId: string,
+  cooldownUntil: string,
+  linkedInAccountId: string,
+  accountName?: string,
+) {
+  let claimed = false;
+  let notificationKind = "";
+  let notificationDay = "";
+  try {
+    const workspace = await getWorkspace(workspaceId);
+    const email = workspace.notificationEmail;
+    // Product emails only go to paying/bypassed workspaces.
+    if (!email || !hasActiveSubscription(workspace)) return;
+
+    const timezone = workspace.timezone || "UTC";
+    const { day } = localDayAndHour(timezone);
+    notificationKind = `invite-pause-${linkedInAccountId}`;
+    notificationDay = day;
+    claimed = await claimDailyNotification(workspaceId, notificationKind, day);
+    if (!claimed) return;
+
+    const resumeAtText = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(cooldownUntil));
+    const result = await sendInvitePauseNotification({
+      to: email,
+      resumeAtText,
+      accountName,
+      idempotencyKey: `${notificationKind}-${workspaceId}-${day}`,
+    });
+    if (emailWasSkipped(result)) {
+      throw new Error("Email delivery is not configured.");
+    }
+    await safeLogAutomationRun({
+      workspaceId,
+      kind: "digest",
+      status: "completed",
+      message: `Sent temporary invite-pause notification to ${email}${accountName ? ` (${accountName})` : ""}.`,
+    });
+  } catch (error) {
+    if (claimed && notificationKind && notificationDay) {
+      await releaseDailyNotification(workspaceId, notificationKind, notificationDay).catch(
+        (releaseError) => {
+          console.error(
+            "[automation] failed to release invite-pause notification claim:",
+            releaseError,
+          );
+        },
+      );
+    }
+    console.error("[automation] failed to send invite-pause notification:", error);
+  }
+}
+
+// What the workspace's automation actually did in the trailing 24h, tallied
+// from automationRuns (the activity ground truth) plus lead creation times.
+async function collectDigestStats(workspaceId: string) {
+  const since = new Date(Date.now() - DIGEST_WINDOW_MS).toISOString();
+  const [leads, runs] = await Promise.all([
+    listLeads(workspaceId, undefined, 2000),
+    listAutomationRuns(workspaceId, 2000),
+  ]);
+  const recent = runs.filter((run) => run.createdAt >= since);
+  const count = (pattern: RegExp) =>
+    recent.filter((run) => pattern.test(run.message || "")).length;
+
+  return {
+    newLeads: leads.filter((lead) => lead.createdAt >= since).length,
+    invitesSent: count(/-> connection$/),
+    connectionsAccepted: count(/^Stored connection approval/),
+    messagesSent: count(/-> (message|ai-reply)$/),
+    repliesReceived: count(/^Stored reply from/),
+  };
+}
+
+// Sends each workspace one summary email at its chosen local hour, covering
+// the trailing 24 hours, only when the workspace has turned the summary on.
+async function sendDailyDigests(mode: AutomationSafetyMode) {
+  let sent = 0;
+  const workspaces = await listWorkspaces();
+
+  for (const workspace of workspaces) {
+    let claimed = false;
+    let notificationDay = "";
+    try {
+      const email = workspace.notificationEmail;
+      if (!email) continue;
+
+      const { day, hour } = localDayAndHour(workspace.timezone);
+      notificationDay = day;
+      if (
+        !shouldSendDailyDigest({
+          enabled: workspace.settings?.dailyDigestEmailEnabled,
+          subscriptionActive: hasActiveSubscription(workspace),
+          localHour: hour,
+          digestHour: workspace.settings?.dailyDigestHour,
+        })
+      ) {
+        continue;
+      }
+      // Dry-run must not consume the day claim, or the real tick stays silent.
+      if (mode.dryRun) continue;
+      claimed = await claimNotificationAfterInterval(
+        workspace.id,
+        "digest",
+        day,
+        DIGEST_MIN_INTERVAL_MS,
+      );
+      if (!claimed) continue;
+
+      const stats = await collectDigestStats(workspace.id);
+      const result = await sendDailyDigestEmail({
+        to: email,
+        day,
+        stats,
+        idempotencyKey: `digest-${workspace.id}-${day}`,
+      });
+      if (emailWasSkipped(result)) {
+        throw new Error("Email delivery is not configured.");
+      }
+      sent += 1;
+      await safeLogAutomationRun({
+        workspaceId: workspace.id,
+        kind: "digest",
+        status: "completed",
+        message: `Sent daily digest for ${day} to ${email}.`,
+      });
+    } catch (error) {
+      if (claimed && notificationDay) {
+        await releaseNotificationAfterInterval(workspace.id, "digest").catch((releaseError) => {
+          console.error("[automation] failed to release digest notification claim:", releaseError);
+        });
+      }
+      await safeLogAutomationRun({
+        workspaceId: workspace.id,
+        kind: "digest",
+        status: "error",
+        message: `Daily digest failed: ${error instanceof Error ? error.message : "unknown error"}`,
+      });
+    }
+  }
+
+  return sent;
+}
+
+async function purgeExpiredLinkedInAccounts(mode: AutomationSafetyMode) {
+  const result = { workspaces: 0, deleted: 0 };
+  if (mode.dryRun) return result;
+  if (!(await claimSystemTask("unipile-billing-purge", LINKEDIN_BILLING_PURGE_INTERVAL_MS))) {
+    return result;
+  }
+
+  const workspaces = await listWorkspaces();
+  for (const workspace of workspaces) {
+    let billing = workspace.billing;
+    if (shouldMarkBillingExpired(billing)) {
+      await cancelWhopSeatMembership(billing?.seatMembershipId);
+      billing = await updateWorkspaceBilling(workspace.id, {
+        provider: billing?.provider || "whop",
+        plan: billing?.plan || "solo",
+        status: "expired",
+        payerEmail: billing?.payerEmail,
+        currentPeriodEnd: billing?.currentPeriodEnd,
+        extraLinkedInSeats: 0,
+      });
+    }
+    if (!shouldPurgeLinkedInAccounts(billing)) continue;
+
+    const accounts = await listAllLinkedInAccounts(workspace.id);
+    if (!accounts.length) continue;
+    if (!(await claimSystemTask(`unipile-purge-${workspace.id}`, LINKEDIN_WORKSPACE_PURGE_INTERVAL_MS))) {
+      continue;
+    }
+
+    const purged = await purgeWorkspaceLinkedInAccounts(workspace.id);
+    result.workspaces += 1;
+    result.deleted += purged.deleted;
+    await safeLogAutomationRun({
+      workspaceId: workspace.id,
+      kind: "cron",
+      status: purged.failed ? "error" : "completed",
+      message: `Disconnected LinkedIn 7 days after the plan ended: removed ${purged.deleted} of ${purged.considered} LinkedIn account${purged.considered === 1 ? "" : "s"}${purged.failed ? `, ${purged.failed} failed` : ""}.`,
+    });
+  }
+
+  return result;
+}
+
+type RunAutomationTickOptions = AutomationSafetyOptions & {
+  scheduled?: boolean;
+};
+
+export async function runAutomationTick(options: RunAutomationTickOptions = {}) {
+  const mode = getAutomationSafetyMode(options);
+  if (mode.disabled) {
+    return { skipped: true as const, reason: "Automation is disabled by safety configuration." };
+  }
+
+  const ownerToken = await acquireTickLock(
+    TICK_LOCK_ID,
+    TICK_LOCK_TTL_MS,
+    options.scheduled ? TICK_SCHEDULE_MIN_INTERVAL_MS : 0,
+  ).catch((error) => {
+    console.error("[automation] failed to acquire tick lock:", error);
+    return null;
+  });
+  if (!ownerToken) {
+    return {
+      skipped: true as const,
+      reason: "Another automation tick is still running or started recently.",
+    };
+  }
+
+  const renewTimer = setInterval(() => {
+    void renewTickLock(TICK_LOCK_ID, ownerToken).catch((error) => {
+      console.error("[automation] failed to renew tick lock:", error);
+    });
+  }, TICK_LOCK_RENEW_INTERVAL_MS);
+  renewTimer.unref();
+
+  let released = false;
+  const releaseLock = async () => {
+    if (released) return;
+    released = true;
+    clearInterval(renewTimer);
+    await releaseTickLock(TICK_LOCK_ID, ownerToken).catch((error) => {
+      console.error("[automation] failed to release tick lock:", error);
+    });
+  };
+
+  try {
+    return await runAutomationTickInner(mode, releaseLock);
+  } finally {
+    await releaseLock();
+  }
+}
+
+async function runAutomationTickInner(
+  mode: AutomationSafetyMode,
+  // Discovery can run 15 minutes per agent. Holding the send lock that long
+  // skipped every later tick, so invites and follow-ups froze until the
+  // people-engine run finished. Release as soon as this tick's sends are done;
+  // claimActionSlot still serializes the actual LinkedIn calls.
+  onCampaignsDone?: () => Promise<void>,
+) {
+  let agentResult = {
+    agents: 0,
+    signalAgents: 0,
+    signalsObserved: 0,
+    leadsAdded: 0,
+    timeBudgetExpiredRuns: 0,
+  };
+  let campaignResult = { enrollments: 0, actions: 0, newlyEnrolled: 0 };
+  const errors: string[] = [];
+
+  // Before the send phase, so outreach on an account left from Unipile parks
+  // as "no connected account" instead of failing and using up retries.
+  if (!mode.dryRun) {
+    try {
+      if (await claimSystemTask("legacy-linkedin-disconnect", LEGACY_ACCOUNT_CHECK_INTERVAL_MS)) {
+        const disconnected = await disconnectLegacyLinkedInAccounts();
+        if (disconnected) {
+          console.warn(`[automation] marked ${disconnected} old Unipile LinkedIn account(s) as disconnected.`);
+        }
+      }
+    } catch (error) {
+      console.error("[automation] failed to disconnect old Unipile LinkedIn accounts:", error);
+    }
+  }
+
+  // Static IPs for LinkedIn accounts: buy spares, follow replacements, retire
+  // disconnected ones. Not awaited, so a slow proxy API never delays sends.
+  if (!mode.dryRun && process.env.BYTEFUL_API_PUBLIC_KEY && process.env.BYTEFUL_API_PRIVATE_KEY) {
+    void (async () => {
+      const { PROXY_RESTOCK_TASK, syncAndRestockProxies } = await import("./linkedin-own/proxy-restock");
+      if (await claimSystemTask(PROXY_RESTOCK_TASK, PROXY_RESTOCK_INTERVAL_MS)) await syncAndRestockProxies();
+    })().catch((error) => {
+      console.error("[automation] static IP restock failed:", error instanceof Error ? error.message : error);
+    });
+  }
+
+  // Run the agent (lead discovery) and campaign (connect/message) phases
+  // independently and concurrently. A failure or slowdown in one phase must
+  // not prevent the other from running - a backlog of slow discovery runs
+  // must never delay due connection requests and messages (and vice versa).
+  await Promise.all([
+    (async () => {
+      try {
+        agentResult = await runAgents(mode);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "runAgents failed";
+        errors.push(`agents: ${message}`);
+        console.error("[automation] agent phase failed:", error);
+        await safeLogAutomationRun({ kind: "agent", status: "error", message });
+      }
+    })(),
+    (async () => {
+      try {
+        campaignResult = await runCampaigns(mode);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "runCampaigns failed";
+        errors.push(`campaigns: ${message}`);
+        console.error("[automation] campaign phase failed:", error);
+        await safeLogAutomationRun({ kind: "campaign", status: "error", message });
+      } finally {
+        await onCampaignsDone?.();
+      }
+    })(),
+  ]);
+
+  // Webhook fallback work (acceptance sweep + reply sync) runs after the send
+  // phases so it never competes with due outreach for the same tick's runtime.
+  let providerSync = { sweptAccounts: 0, acceptedViaSweep: 0, syncedReplies: 0 };
+  try {
+    providerSync = await runProviderSyncs(mode);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "runProviderSyncs failed";
+    errors.push(`provider-sync: ${message}`);
+    console.error("[automation] provider sync phase failed:", error);
+  }
+
+  let invitesWithdrawn = 0;
+  try {
+    invitesWithdrawn = await runInviteWithdrawals(mode);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "runInviteWithdrawals failed";
+    errors.push(`invite-withdraw: ${message}`);
+    console.error("[automation] invite withdrawal phase failed:", error);
+  }
+
+  let linkedInPurge = { workspaces: 0, deleted: 0 };
+  try {
+    linkedInPurge = await purgeExpiredLinkedInAccounts(mode);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "LinkedIn billing purge failed";
+    errors.push(`linkedin-purge: ${message}`);
+    console.error("[automation] LinkedIn billing purge failed:", error);
+  }
+
+  try {
+    await sendPlatformStatsSnapshot(mode);
+  } catch (error) {
+    // Analytics only; never counted as a tick failure.
+    console.error("[automation] platform stats snapshot failed:", error);
+  }
+
+  // After the action phases so today's activity is included in the summary.
+  let digestsSent = 0;
+  try {
+    digestsSent = await sendDailyDigests(mode);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "sendDailyDigests failed";
+    errors.push(`digests: ${message}`);
+    console.error("[automation] digest phase failed:", error);
+  }
+
+  await safeLogAutomationRun({
+    kind: "cron",
+    status: errors.length ? "error" : "completed",
+    message: `${mode.dryRun ? "DRY RUN " : ""}Agents: ${agentResult.agents}, signal agents: ${agentResult.signalAgents}, signals: ${agentResult.signalsObserved}, leads: ${agentResult.leadsAdded}, time-expired runs: ${agentResult.timeBudgetExpiredRuns}, newly enrolled: ${campaignResult.newlyEnrolled}, campaign actions: ${campaignResult.actions}${providerSync.sweptAccounts ? `, sweeps: ${providerSync.sweptAccounts} (accepted: ${providerSync.acceptedViaSweep})` : ""}${providerSync.syncedReplies ? `, synced replies: ${providerSync.syncedReplies}` : ""}${invitesWithdrawn ? `, invites withdrawn: ${invitesWithdrawn}` : ""}${linkedInPurge.deleted ? `, LinkedIn accounts purged: ${linkedInPurge.deleted} from ${linkedInPurge.workspaces} workspace${linkedInPurge.workspaces === 1 ? "" : "s"}` : ""}${digestsSent ? `, digests: ${digestsSent}` : ""}${errors.length ? ` | errors: ${errors.join("; ")}` : ""}`,
+  });
+
+  return { agentResult, campaignResult, errors, dryRun: mode.dryRun };
+}

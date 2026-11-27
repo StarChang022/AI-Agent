@@ -1,0 +1,1125 @@
+{
+  "updated": "2026-11-26",
+  "page": {
+    "about": "Copy for /directory/featured/ and the awesome/featured.md view, rendered by scripts/build-directory.mjs and scripts/build-awesome-directory.mjs. Project entries below are the publishers\u2019 own work: keep their names, repositories, setup facts and review links exactly as reviewed.",
+    "title": "Featured Agent Skill Projects | Suede",
+    "lede": "Good tools deserve a closer look.",
+    "intro": "Each project here is reviewed against a pinned commit and accepted with a defined scope. Pick one, read the reviewed source, and start with the setup it actually needs.",
+    "selection": "Editorial features are chosen by the Suede team for useful workflows and clear setup. Quality scores on skill pages come from the published rubric and are never changed by a feature, a badge or any business relationship.",
+    "nominate": {
+      "headline": "Get your project featured",
+      "body": "Submit your repository and the exact skills or plugin in scope. Every accepted listing gets a README badge that links to it. Projects selected for a feature also get an intake review pinned to a commit and their own section on this page.",
+      "steps": [
+        "Request a listing with the repository and the skills or plugin you want reviewed.",
+        "Add your listing badge to the README so readers can find your listing.",
+        "Ask for a feature review. Projects with clear setup, a defined scope and documented data use are the strongest candidates."
+      ],
+      "button": "Submit your project",
+      "url": "https://skills.suedeai.ai/directory/submit/?utm_source=skills.suedeai.ai&utm_medium=directory&utm_campaign=featured-nominate&utm_content=a"
+    },
+    "services_cta": "category-agent-studio",
+    "services_cta_note": "Names a campaign in directory/services-cta.json, rendered after the project list, never inside a project card."
+  },
+  "featured_badge": {
+    "status": "live",
+    "about": "A README badge for featured publishers, so each feature earns a link back to its section. scripts/build-directory.mjs generates the SVG at the image URL while status is \"live\" and prints one snippet per project on the featured page.",
+    "alt": "Featured in Suede Skills Directory",
+    "image": "https://skills.suedeai.ai/directory/badges/featured.svg",
+    "href_pattern": "https://skills.suedeai.ai/directory/featured/#{id}",
+    "markdown_pattern": "[![Featured in Suede Skills Directory](https://skills.suedeai.ai/directory/badges/featured.svg)](https://skills.suedeai.ai/directory/featured/#{id})"
+  },
+  "projects": [
+    {
+      "id": "appie",
+      "published_at": "2026-10-18T04:48:30Z",
+      "name": "Appie",
+      "repo": "appierun/appie-mcp",
+      "kind": "Hosted MCP \u00b7 Three agent skills",
+      "license": "MIT",
+      "headline": "From an idea to an article, a chatbot, or a short link.",
+      "summary": "Bring Appie\u2019s writing, chatbot and link tools into your agent workflow. Pick the skill for the job and follow its individual setup instructions.",
+      "review": "directory/reviews/2026-10-17-appie-mcp.md",
+      "commit": "058385aa7dde6d74f84a64f12d4a00a4d03ae981",
+      "skills": [
+        {
+          "id": "appie-article-writer",
+          "title": "Write articles",
+          "description": "Create author profiles and generate articles through Appie\u2019s hosted MCP service."
+        },
+        {
+          "id": "appie-chatbot",
+          "title": "Build a chatbot",
+          "description": "Supply knowledge sources, track training and chat with a bot through Appie."
+        },
+        {
+          "id": "appie-url-shortener",
+          "title": "Shorten and track links",
+          "description": "Create short links and retrieve their click statistics from your agent."
+        }
+      ],
+      "setup": "Requires an Appie project, project API key and hosted MCP connection. The selected workflow sends its content to Appie; service operations may use credits. Each skill page covers its setup and data use."
+    },
+    {
+      "id": "coalwash",
+      "published_at": "2026-10-18T04:48:30Z",
+      "name": "CoalWash",
+      "repo": "TheColliery/CoalWash",
+      "kind": "Claude Code plugin \u00b7 Memory maintenance",
+      "license": "Apache-2.0",
+      "headline": "Understand what your agent carries into every session.",
+      "summary": "Measure memory and governance-file overhead, run maintenance, and inspect the changes. CoalWash pairs a structured-token guard with transaction snapshots and rollback tools.",
+      "review": "directory/reviews/2026-10-18-coalwash.md",
+      "commit": "9cbe008a90d2a9f25d892de8424852ac142f7909",
+      "capabilities": [
+        {
+          "title": "Measure the overhead",
+          "description": "Inspect always-loaded memory and governance files before choosing a maintenance pass."
+        },
+        {
+          "title": "Review the changes",
+          "description": "Use snapshots and rollback tools to inspect and recover transaction changes."
+        },
+        {
+          "title": "Check structured tokens",
+          "description": "Detect drops in tracked tokens such as paths, numbers and commands. Review prose meaning separately."
+        }
+      ],
+      "commands": [
+        "claude plugin marketplace add TheColliery/CoalWash",
+        "claude plugin install coalwash@coalwash"
+      ],
+      "setup": "Requires Claude Code and Node.js. Install the complete plugin so its commands, hooks and engine are available together.",
+      "behavior": "The plugin registers SessionStart, Stop, PreToolUse and PostToolUse hooks. Default automatic mode can direct Quick maintenance without a new prompt; Full semantic work requires consent and uses your agent\u2019s model. Stop hooks can hold session completion while maintenance is addressed.",
+      "guard_scope": "The edit guard snapshots supported Edit, Write and MultiEdit changes to memory and governance files and reports tracked-token drops. Shell writes are outside that edit guard. Token checks do not establish semantic preservation; inspect diffs and rollback results."
+    },
+    {
+      "id": "costory",
+      "published_at": "2026-10-19T20:40:16Z",
+      "name": "Costory",
+      "repo": "costory-io/costory-finops-mcp-skills",
+      "kind": "Hosted MCP \u00b7 Four FinOps skills",
+      "license": "Apache-2.0",
+      "headline": "Understand your cloud bill and choose the next action.",
+      "summary": "Investigate cost changes, explore BigQuery spend, and map shared costs to teams with an agent connected to Costory. Four workflows cover discovery, evidence, allocation and review.",
+      "review": "directory/reviews/2026-10-19-costory.md",
+      "commit": "38438bd87c39b1df3f07ca80e6577579c4c039ba",
+      "skills": [
+        {
+          "id": "bigquery",
+          "title": "Investigate BigQuery costs",
+          "description": "Compare compute and storage billing, explore query and dataset costs, and review allocation options."
+        },
+        {
+          "id": "cost-change-investigation",
+          "title": "Explain what changed",
+          "description": "Trace contributors and timing, check usage and operational evidence, and separate supported explanations from assumptions."
+        },
+        {
+          "id": "virtual-dimensions",
+          "title": "Allocate shared costs",
+          "description": "Draft custom cost axes, preview leftovers and rule overlap, then publish approved allocation rules."
+        },
+        {
+          "id": "costory-finops",
+          "title": "Start with the right workflow",
+          "description": "Choose the Costory tools and detailed skills for spend queries, investigations, budgets, dashboards, reports and alerts."
+        }
+      ],
+      "setup": "Requires a Costory workspace with billing data connected and its hosted MCP at https://app-api.costory.io/mcp, authenticated through browser OAuth. Queries use workspace cost data. Preview changes and confirm before publishing allocations, delivering reports or applying schema changes. Each linked skill page includes setup and source details."
+    },
+    {
+      "id": "extra-caffeine",
+      "published_at": "2026-10-23T18:49:23Z",
+      "name": "Extra Caffeine",
+      "repo": "cwong5/extra-caffeine-mcp",
+      "kind": "Local Mac MCP \u00b7 One workflow skill",
+      "license": "Proprietary \u00b7 All rights reserved",
+      "headline": "Keep your Mac awake while the work needs it.",
+      "summary": "Give local AI and file-processing work time to finish. The Extra Caffeine workflow guides an agent through authorized awake sessions, state checks and requested one-time schedules while preserving existing sessions.",
+      "review": "directory/reviews/2026-10-23-extra-caffeine.md",
+      "commit": "4e0ac32e685c5366ab487502173168470a42a178",
+      "setup": "Requires macOS 14+ and the free, separately installed Extra Caffeine 1.2+ app, kept open with AI assistants enabled by the user. The app and adapter are permanently free, with no payment, subscription or expiry. Follow the publisher\u2019s setup and license terms. The skill does not install the app or enable access. It prevents idle sleep, not closed-lid sleep, and does not wake a sleeping Mac. No security scan or runtime execution was performed: not scanned; runtime-unverified. Listed in the scored catalog as of November 19, 2026.",
+      "capabilities": [
+        {
+          "title": "One workflow: extra-caffeine-workflow",
+          "description": "Choose the duration and display behavior, verify awake state, and reconcile timeouts before retrying."
+        }
+      ],
+      "workflow_url": "https://github.com/cwong5/extra-caffeine-mcp/blob/4e0ac32e685c5366ab487502173168470a42a178/skills/extra-caffeine-workflow/SKILL.md"
+    },
+    {
+      "id": "opsibyte",
+      "published_at": "2026-10-24T04:35:14Z",
+      "name": "Opsibyte",
+      "repo": "MelMayssonOwen/agent-skills",
+      "kind": "Six skills \u00b7 Publishing, budgets, listings, and music",
+      "license": "MIT",
+      "headline": "Prepare a post, a launch, a workbook, or a practice session.",
+      "summary": "Six focused workflows combine human-reviewed publishing and launch preparation with local budget, listing-copy, and chord helpers. Each listing carries its own source-derived quality report and setup details.",
+      "review": "directory/reviews/2026-10-22-opsibyte.md",
+      "commit": "aebddbe40090c99fe0c5a1810536637186335502",
+      "skills": [
+        {
+          "id": "timetopost-social-scheduler",
+          "title": "Prepare a social schedule",
+          "description": "Draft distinct social posts, review account timing, and approve the exact content and schedule before publication."
+        },
+        {
+          "id": "timetopost-autoseo-blog",
+          "title": "Review blog drafts",
+          "description": "Connect a publishing destination, explore article topics, and prepare blog drafts for human review."
+        },
+        {
+          "id": "toolfound-launch-kit",
+          "title": "Prepare a product launch",
+          "description": "Research a product category, prepare an approved Toolfound submission, and track owner verification and launch status."
+        },
+        {
+          "id": "sheetfolk-budget-builder",
+          "title": "Create a budget workbook",
+          "description": "Create a local Excel budget workbook with household, sinking-fund, and side-hustle inputs."
+        },
+        {
+          "id": "amazon-listing-checker",
+          "title": "Review listing copy",
+          "description": "Review pasted listing copy for length, repeated terms, risky wording, and keyword coverage using a local Python helper."
+        },
+        {
+          "id": "clef-music-tools",
+          "title": "Practice and transpose chords",
+          "description": "Transpose chord symbols locally or use Clef MCP tools for piano chords, guitar-tab notes, and music practice."
+        }
+      ],
+      "setup": "Install one selected skill. TimeToPost needs its hosted MCP and browser OAuth; Toolfound and Clef document public discovery endpoints. Hosted services were not exercised in this review. Python 3 runs the local helpers. At the reviewed revision, use a new budget filename and calculate net cash flow separately; preserve existing campaign attribution manually. Upstream PR #1 supplies the tested corrections. Each skill page links its exact setup and source."
+    },
+    {
+      "id": "cisco-skill-scanner",
+      "published_at": "2026-10-25T21:52:58Z",
+      "name": "Cisco AI Defense Skill Scanner",
+      "repo": "cisco-ai-defense/skill-scanner",
+      "kind": "Security tooling \u00b7 Local source review",
+      "license": "Apache-2.0",
+      "headline": "Review a skill\u2019s source before you install it.",
+      "summary": "Inspect skill instructions and bundled code for known prompt-injection, exfiltration and command-execution patterns. The reviewed 2.3.1 release supports local static and behavioral analysis, with machine-readable findings to guide review.",
+      "review": "directory/reviews/2026-10-25-cisco-skill-scanner.md",
+      "commit": "c615acb70994cdf3f4ba54d955fef2e92ac84437",
+      "capabilities": [
+        {
+          "title": "Inspect source without running the skill",
+          "description": "Combine pattern detection with Python and Bash dataflow analysis. Review the source as data before installing its scripts or hooks."
+        },
+        {
+          "title": "Keep evidence with the findings",
+          "description": "Export JSON or SARIF, retain the exact source revision and scanner version, and inspect errors and coverage gaps alongside findings."
+        },
+        {
+          "title": "Choose what leaves the machine",
+          "description": "Local analysis can run in an isolated environment with network access disabled. Optional hosted LLM, AI Defense, OSV and VirusTotal routes can send data when enabled."
+        }
+      ],
+      "setup": "Use the reviewed 2.3.1 release with verified dependency pins. Exclude the hijacked litellm 1.107.0 release and correct the certifi version in Cisco\u2019s attached release lock. For local source review, disable hosted analyzers and behavioral alignment verification, use a network-disabled container, and retain every finding and error. Automated detection is best effort and does not certify a skill."
+    },
+    {
+      "id": "geekflare",
+      "published_at": "2026-10-31T00:34:27Z",
+      "name": "Geekflare",
+      "repo": "geekflare/geekflare-skills",
+      "commit": "b2429403c4b7e4f8f2a55773b161ef19643cd12b",
+      "review": "directory/reviews/2026-10-30-geekflare.md",
+      "license": "MIT",
+      "headline": "Turn public web pages into useful data and website checks.",
+      "summary": "The Geekflare skill guides agents through web search, structured page extraction, metadata, brand assets, screenshots, PDFs and website diagnostics. The reviewed scope is the single geekflare skill at skills/geekflare.",
+      "setup": "Requires a Geekflare account and GEEKFLARE_API_KEY. Requests send queries, URLs and options to Geekflare and consume account credits; the source documents a free tier. Use public pages and authorized diagnostic targets. Hosted MCP places the key in the URL path, so keep connection URLs out of logs and shared text. The optional local MCP command runs the unpinned npm package @geekflare/mcp. The hosted scraping service advertises CAPTCHA solving and anti-bot handling. REST docs default stealth, proxyMode and renderJS to false; proxyCountry independently enables proxy routing. CAPTCHA fallback behavior is unspecified. The npm runtime and hosted service were not tested.",
+      "skills": [
+        {
+          "id": "geekflare",
+          "title": "geekflare",
+          "description": "Choose tools for live search, page data, visual captures and website health checks through Geekflare MCP or its REST API."
+        }
+      ],
+      "kind": "One skill \u00b7 Public web data and website diagnostics"
+    },
+    {
+      "id": "trong-hieu",
+      "published_at": "2026-11-02T00:00:00Z",
+      "name": "Trong Hieu agent skills",
+      "repo": "tronghieu/agent-skills",
+      "commit": "831d1ae5c686a81b10f9c5b9cca04a7b8b97303d",
+      "review": "directory/reviews/2026-11-02-tronghieu-agent-skills.md",
+      "license": "MIT",
+      "kind": "Thirteen skills \u00b7 Decisions, products, projects and writing",
+      "headline": "Structured methods for decisions, plans, research and writing.",
+      "summary": "Give your agent a working method for the job in front of you: audit an argument, find a root cause, size a market, write the PRD, run the sprint, or take a novel from idea to manuscript. You bring the context and make the call; each skill supplies the structure, analysis and quality checks.",
+      "skills": [
+        {
+          "id": "brainstorm-coach",
+          "title": "Brainstorm with a coach",
+          "description": "Diverge on ideas together, then converge on priorities and next steps in a session document."
+        },
+        {
+          "id": "critical-thinking",
+          "title": "Audit an argument",
+          "description": "Examine the claims, evidence, assumptions, gaps and fallacies in a memo or draft, each anchored to quoted text."
+        },
+        {
+          "id": "cv-scorer",
+          "title": "Score CVs against a job",
+          "description": "Compare candidate CVs with a job description on a shared 100-point rubric with traceable evidence."
+        },
+        {
+          "id": "data-scientist",
+          "title": "Analyze data end to end",
+          "description": "Turn business questions into defensible analysis, validated models and decision-ready reports."
+        },
+        {
+          "id": "design-thinking",
+          "title": "Run design thinking",
+          "description": "Work from real user evidence through empathize, define, ideate, prototype and test."
+        },
+        {
+          "id": "fiction-studio",
+          "title": "Write fiction with a studio",
+          "description": "Take a bare idea to a polished prose manuscript with a team of named specialist agents."
+        },
+        {
+          "id": "market-researcher",
+          "title": "Research a market",
+          "description": "Run citation-backed market scans, sizing, competitor analysis, demand signals and trend analysis."
+        },
+        {
+          "id": "problem-solver",
+          "title": "Find the root cause",
+          "description": "Turn a recurring failure into a precise problem statement, verified root causes, traced solutions and a rollout plan."
+        },
+        {
+          "id": "product-manager",
+          "title": "Make product decisions",
+          "description": "Prioritize the backlog, write PRDs and user stories, set metrics and OKRs, and plan launches in a product workspace."
+        },
+        {
+          "id": "project-manager",
+          "title": "Manage project delivery",
+          "description": "Keep charters, schedules, estimates, risk registers, status reports and scope changes in a project workspace."
+        },
+        {
+          "id": "scrum-master",
+          "title": "Run the sprint",
+          "description": "Plan sprints, run daily pulses and retrospectives, track impediments and spot process anti-patterns."
+        },
+        {
+          "id": "socratic-questor",
+          "title": "Learn through questions",
+          "description": "Explore a topic or a document in dialogue with Gadfly, a Socratic questioning partner."
+        },
+        {
+          "id": "strategy-board",
+          "title": "Convene a strategy board",
+          "description": "Take a strategic question to a defended, board-ready recommendation with a team of named specialist advisers."
+        }
+      ],
+      "setup": "Install the skills you need one at a time from their directory listings; each listing carries its own score and install route. Every skill runs inside your agent with bundled references. Several bundle small local scripts for workspaces and checks, and data-scientist\u2019s helpers use Python with pandas, NumPy and scikit-learn. The MIT license at the repository root covers the reviewed source."
+    },
+    {
+      "id": "agent-qa",
+      "published_at": "2026-11-02T00:00:00Z",
+      "name": "agent-qa CLI by Vostride",
+      "repo": "vostride/agent-qa",
+      "commit": "2b848e3f094c3c81a9004eb63c236c32adc55da6",
+      "review": "directory/reviews/2026-11-02-agent-qa.md",
+      "license": "FSL-1.1-ALv2",
+      "kind": "QA agent CLI \u00b7 Dashboard, MCP and four skills",
+      "headline": "Describe a user journey. Get a tested run with the evidence.",
+      "summary": "agent-qa runs natural-language QA tests on web, Android and iOS apps and keeps the evidence from every run. Drive it from the CLI, review runs in the dashboard, or hand the work to your coding agent through MCP and four bundled skills.",
+      "capabilities": [
+        {
+          "title": "Write tests in plain language",
+          "description": "Describe a user journey and agent-qa tests it on web, Android or iOS."
+        },
+        {
+          "title": "Keep the evidence",
+          "description": "Inspect each failed step beside its screenshot and the recorded run evidence in the dashboard."
+        },
+        {
+          "title": "Remember what works",
+          "description": "memidex keeps facts and working procedures as reviewable files in your repository, and agent-qa validates lessons from each run."
+        },
+        {
+          "title": "Work from your coding agent",
+          "description": "Author tests, triage failures, read run evidence and debug fixes through the agent-qa MCP tools and skills."
+        }
+      ],
+      "setup": "Requires Node.js 24+ and a model connection. Install with npm install -D agent-qa, run npx agent-qa init, then follow the quickstart to connect a model and run the demo. Runs use the model provider you connect. Licensed under FSL-1.1-ALv2, the Functional Source License: any use other than a competing commercial product or service, with Apache-2.0 terms for each release two years after it is made available."
+    },
+    {
+      "id": "frametell",
+      "published_at": "2026-11-02T00:00:00Z",
+      "name": "Frametell",
+      "repo": "sitor-ai/frametell",
+      "commit": "63d598fa9aed1e6fe0cf8ef37a32a5a8eb437e74",
+      "review": "directory/reviews/2026-11-02-frametell.md",
+      "license": "AGPL-3.0 \u00b7 Local app",
+      "kind": "macOS app for Apple Silicon \u00b7 Explainer video agent",
+      "headline": "Turn an idea or your material into a narrated explainer video.",
+      "summary": "Start from one sentence or hand Frametell notes, documents, PDFs, slides and images. Its director agent drafts a storyboard for you to approve, then writes and voices the narration, draws every page and checks its own work before rendering a 1080p video with subtitles and publishing notes.",
+      "capabilities": [
+        {
+          "title": "Approve the plan first",
+          "description": "Sign off on the storyboard before anything is drawn, and point at any page to say what to change."
+        },
+        {
+          "title": "Narration and voice",
+          "description": "The agent writes the script and voices it with ElevenLabs, or with Volcengine TTS for Chinese."
+        },
+        {
+          "title": "Pages in your style",
+          "description": "Every page is drawn in a built-in style (warm-story, study, chalkboard, whiteboard or tech-dark) and checked with lint and screenshots."
+        },
+        {
+          "title": "A finished film",
+          "description": "A final check on the full video, then a 1080p MP4 with subtitles, with cost and time shown at every step."
+        }
+      ],
+      "setup": "Download the signed and notarized app for macOS on Apple Silicon, with Chrome, Edge or Chromium installed for drawing and rendering pages. Add a model provider key under Settings (Anthropic, OpenAI, Google, OpenRouter or any OpenAI- or Anthropic-compatible endpoint) and an ElevenLabs key for the voiceover. The app runs locally with your own keys, and requests go to the model and voice providers you configure. Windows and Intel Macs run Frametell from source with Node.js 22.19+ and pnpm. AGPL-3.0 covers the app in this repository."
+    },
+    {
+      "id": "bulkpublish",
+      "published_at": "2026-11-02T00:00:00Z",
+      "status": "pending",
+      "name": "BulkPublish",
+      "repo": "azeemkafridi/bulkpublish-ai-toolkit",
+      "commit": "256039e578a195aa8fd746deea386575c4e4fc1e",
+      "license": "MIT",
+      "kind": "Hosted MCP \u00b7 Eight agent skills",
+      "headline": "Schedule social posts across 15 networks from your agent.",
+      "summary": "Eight skills connect your assistant to BulkPublish to draft, schedule, publish and measure posts through its hosted MCP server, across networks from Instagram, LinkedIn and X to YouTube, TikTok and Bluesky.",
+      "capabilities": [
+        {
+          "title": "Draft and schedule posts",
+          "description": "Review the draft first, then schedule it, publish it or queue it in the next free slot."
+        },
+        {
+          "title": "Publish in bulk",
+          "description": "Upload media from files or URLs, manage the media library and batch-create posts."
+        },
+        {
+          "title": "Manage channels and the inbox",
+          "description": "Check connected channels and their health, and answer DMs, reviews and comments with your yes on each reply."
+        },
+        {
+          "title": "Measure and plan",
+          "description": "Pull engagement analytics, check plan limits and usage, and follow each platform\u2019s post types, media rules and character limits."
+        }
+      ],
+      "setup": "Requires a BulkPublish account and its hosted MCP server at https://mcp.bulkpublish.com/mcp, with OAuth sign-in that asks for your API key once. Posts, media and channel data go to BulkPublish within your plan\u2019s limits; the Inbox is part of the Pro and Business plans. Hosts without OAuth can use the documented key-in-URL connection, which carries your API key, so keep that URL private."
+    },
+    {
+      "id": "inkroom",
+      "published_at": "2026-11-02T00:00:00Z",
+      "status": "pending",
+      "name": "InkRoom",
+      "repo": "InkRoom-AI/inkroom-client",
+      "commit": "e5dace2bc96e88a9b3eafc81a34c3bed605323a7",
+      "license": "MIT \u00b7 Two skill folders",
+      "kind": "Two skills \u00b7 Image prompt library and prompt reverse",
+      "headline": "Find image prompts with real examples.",
+      "summary": "Search InkRoom\u2019s public prompt library by keyword and get each prompt with its original example image and source, or reconstruct reusable Chinese and English prompts from a single image.",
+      "capabilities": [
+        {
+          "title": "inkroom-prompts",
+          "description": "Search with one to three keyword groups, review up to three prompts with their example images, and optimize your own idea into a prompt when nothing matches. It also answers questions about public InkRoom models, prices and capabilities."
+        },
+        {
+          "title": "inkroom-prompt-reverse",
+          "description": "Reconstruct Chinese and English image-generation prompts from one image through an existing InkRoom MCP connection, with a cost preview before analysis."
+        }
+      ],
+      "setup": "inkroom-prompts needs no account, API key or MCP Token; it uses the InkRoom Prompts MCP tools, or its bundled scripts on Node.js 20.3+ with internet access. inkroom-prompt-reverse requires an InkRoom account, an MCP Token and the reverse_prompt capability, and each analysis uses account credits at the quoted price. MIT applies to the two skill folders, prompts/skills/inkroom-prompts and skills/inkroom-prompt-reverse; the repository has no root license. Prompts and images returned by the library keep their own terms."
+    },
+    {
+      "id": "empacer",
+      "published_at": "2026-11-02T00:00:00Z",
+      "status": "pending",
+      "name": "Empacer",
+      "site": "https://empacer.com",
+      "kind": "Hosted assistant \u00b7 Web app and Android",
+      "headline": "A voice-first assistant for small business owners.",
+      "summary": "Say or type what you need, and Empacer prepares customer replies, social posts, documents and the week\u2019s plan from your business details. It is built for owners who are also the whole team, from salons, barbershops and nail studios to bakeries, auto repair shops and photographers.",
+      "capabilities": [
+        {
+          "title": "Ask by voice or text",
+          "description": "Tap the voice button or type the task you need done."
+        },
+        {
+          "title": "Work from your details",
+          "description": "Empacer prepares the work from your business details, with photos, price lists or invoices attached when you need them."
+        },
+        {
+          "title": "Approve every result",
+          "description": "Each result arrives as a card you can edit, send back for changes, decline or approve. By default, nothing is sent until you approve it."
+        }
+      ],
+      "setup": "Use Empacer in the browser at app.empacer.com on a computer, phone or tablet, or on Android as Empacer for Business on Google Play. Empacer is a hosted service, so your requests and business details are handled by Empacer."
+    },
+    {
+      "id": "berlin-job-search",
+      "published_at": "2026-11-02T00:00:00Z",
+      "status": "pending",
+      "name": "Berlin Job Search",
+      "repo": "umutyesildal/berlin-job-search",
+      "commit": "153a417c09391fac3f23cef1beb012e97bed1f79",
+      "license": "MIT",
+      "kind": "One skill \u00b7 Claude Code and Codex plugin",
+      "headline": "Job search coaching built for Germany.",
+      "summary": "An AI job-search coach that knows how hiring works in Germany, Berlin first and Germany-wide. Search live German job sources, check German-language and Blue Card requirements, prepare a Lebenslauf or CV, practise interviews and track applications.",
+      "capabilities": [
+        {
+          "title": "Find roles",
+          "description": "Search with German and English titles across sources chosen for your field, drop off-target titles and save a ranked shortlist."
+        },
+        {
+          "title": "Check a posting",
+          "description": "See the German requirement with the quoted line, the salary against 2026 Blue Card thresholds, and agency and contract terms."
+        },
+        {
+          "title": "Apply and interview",
+          "description": "Prepare a German Lebenslauf and Anschreiben or an English CV and letter, checked against your CV, then practise mock interviews with scored feedback."
+        },
+        {
+          "title": "Track applications",
+          "description": "Log application news, draft follow-ups and see response rates on an offline dashboard."
+        }
+      ],
+      "setup": "Install it as a Claude Code or Codex plugin, or add it to any agent from the repository, then say \u201cSet up my job search.\u201d The bundled scripts need Python 3.9+ (standard library only) and internet access, with no API keys. Your CV, profile and tracker stay on your machine in job-search/. Sources include Bundesagentur f\u00fcr Arbeit, Arbeitnow, Daily Berlin Jobs, company job boards and LinkedIn\u2019s logged-out guest search, which is subject to LinkedIn\u2019s User Agreement. The skill never applies, sends messages or creates accounts for you."
+    },
+    {
+      "id": "lfr",
+      "published_at": "2026-11-02T00:00:00Z",
+      "status": "pending",
+      "name": "lfr",
+      "repo": "Anonyfox/lfr",
+      "commit": "091fa38639c1ac2f133b4863135d7851561d25c4",
+      "license": "MIT",
+      "kind": "Go CLI \u00b7 One root skill",
+      "headline": "Your own mail server, run by your agent.",
+      "summary": "One Go binary runs mail for your domains on one small server: mailboxes, and newsletters with their websites. Your agent operates it through the lfr CLI, on the server or over ssh.",
+      "capabilities": [
+        {
+          "title": "Set up a mail server",
+          "description": "Run lfr setup with your mail hostname, add a domain and publish exactly the DNS records lfr prints; lfr doctor checks them."
+        },
+        {
+          "title": "Run mailboxes",
+          "description": "Create addresses, aliases and forwarding, search and answer mail, and train the spam filter as you move messages."
+        },
+        {
+          "title": "Publish newsletters",
+          "description": "Run lists with double opt-in and stored consent proof, Markdown issues checked before sending, one-click unsubscribe and a website for each list."
+        }
+      ],
+      "setup": "Requires a Linux or macOS server you control and a domain whose DNS you manage. The skill installs lfr with curl -fsSL https://lfr.email/install.sh | sudo sh, which checks the release against its checksums; Homebrew and go install also work. lfr setup creates a hardened systemd service on ports 25, 80 and 443. Where a provider blocks outbound port 25, lfr hands DKIM-signed mail to an SMTP relay such as Amazon SES or SMTP2GO. Your agent asks for explicit approval before sending any message in your name."
+    },
+    {
+      "id": "shiptopaid-lite",
+      "name": "ShipToPaid Lite",
+      "repo": "shiptopaid/shiptopaid-lite",
+      "commit": "b508f878086491518709a2d17761821abfd4b084",
+      "kind": "Three agent skills \u00b7 Polar payments",
+      "license": "MIT",
+      "headline": "Take your Next.js app from checkout to paid access.",
+      "summary": "Add Polar subscriptions to an existing app with three focused skills for checkout, signed webhooks and a launch checklist. Keep payment state connected to server-side access.",
+      "capabilities": [
+        {
+          "title": "Create authenticated checkout",
+          "description": "Connect a signed-in user to a Polar subscription checkout and a payment-pending success screen."
+        },
+        {
+          "title": "Handle payment events",
+          "description": "Verify webhook signatures, deduplicate deliveries, allowlist products and guard against stale entitlement updates."
+        },
+        {
+          "title": "Check launch readiness",
+          "description": "Review production configuration, access checks and billing evidence with PASS, FAIL and NOT RUN outcomes."
+        }
+      ],
+      "setup": "Requires Node.js 22+ and a Polar sandbox account. Examples use Next.js App Router, TypeScript, Better Auth and PostgreSQL/Drizzle. Use an email address you control for tests. This free three-skill feature covers Polar; the separate paid pack and Stripe support are outside its scope.",
+      "published_at": "2026-11-07T09:07:30Z",
+      "review": "directory/reviews/2026-11-07-shiptopaid-lite.md"
+    },
+    {
+      "id": "video-director",
+      "name": "Video Director",
+      "repo": "aakashH242/video-director",
+      "commit": "1d0ed60aa9bfffa36302d9042a87a2b1fcb8aeeb",
+      "kind": "Agent skill \u00b7 Editable video production",
+      "license": "MIT code and docs \u00b7 Separate media terms",
+      "headline": "Make product demos you can revise in code.",
+      "summary": "Combine real app screens, editable SVG, AI artwork and procedural 3D into a local review MP4. Change words, timing and camera moves while keeping the useful assets.",
+      "capabilities": [
+        {
+          "title": "Show the actual interface",
+          "description": "Use readable real screenshots, deliberate close-ups and labels that follow the action."
+        },
+        {
+          "title": "Keep the scene editable",
+          "description": "Separate artwork from SVG/HTML foregrounds and procedural 3D so revisions stay precise."
+        },
+        {
+          "title": "Capture and inspect the export",
+          "description": "Use exact-frame local capture and encoded MP4 checks before handing over the video."
+        }
+      ],
+      "setup": "Requires Node.js 22.20+, FFmpeg/FFprobe and Playwright with Chromium; Three.js supports the 3D starter. The code-only first example needs no paid generation. AI artwork or voice services may charge separately. Original code and docs are MIT; bundled media has separate provenance and rights.",
+      "published_at": "2026-11-07T09:07:30Z",
+      "review": "directory/reviews/2026-11-07-video-director.md"
+    },
+    {
+      "id": "poptin-email-marketing",
+      "name": "Email Marketing Skills by Poptin",
+      "repo": "email-marketing-skills-hub/email-marketing-skills",
+      "commit": "13ea992854c4b3cbd93d2a427b391161be23b033",
+      "kind": "Twenty agent skills \u00b7 Email and audience growth",
+      "license": "MIT",
+      "headline": "Give each email workflow its own specialist.",
+      "summary": "Choose from twenty focused skills for campaign copy, lifecycle automation, segmentation, deliverability and signup experiences. Five core workflows and fifteen industry specialists work with your chosen marketing stack.",
+      "capabilities": [
+        {
+          "title": "Plan the campaign",
+          "description": "Build useful briefs, messages and measurement plans from approved offers and audience facts."
+        },
+        {
+          "title": "Design the customer journey",
+          "description": "Specify triggers, suppression rules, branches and exits for lifecycle automation and audience segments."
+        },
+        {
+          "title": "Match the industry",
+          "description": "Use dedicated guidance for ecommerce, SaaS, education, events and eleven other industries while keeping their data and review boundaries clear."
+        }
+      ],
+      "setup": "Read or copy each selected skill directory with its references. The documented Skills CLI requires Node.js 22.20+. A Poptin account is not needed to use the instructions. Live campaigns still need consent checks and authorization. The collection preserves the original standalone skills and is featured once, without duplicate catalog entries.",
+      "published_at": "2026-11-07T09:07:30Z",
+      "review": "directory/reviews/2026-11-07-poptin-email-marketing.md"
+    },
+    {
+      "id": "cloudgpu",
+      "published_at": "2026-11-09T23:09:11Z",
+      "name": "CloudGPU",
+      "repo": "mrhy7176/cloudgpu-agent-skills",
+      "kind": "GPU compute \u00b7 Five agent skills",
+      "license": "MIT",
+      "headline": "Match your AI workload to GPU compute, then bring the outputs home.",
+      "summary": "Five workflows cover compute proposals, ComfyUI images, short-drama assets, LoRA training and open-model inference with approved budgets and explicit exports.",
+      "review": "directory/reviews/2026-11-09-cloudgpu-agent-skills.md",
+      "commit": "83cde0602ec73f6c4f4eec8a60c42b34fef1bac1",
+      "capabilities": [
+        {
+          "title": "cloudgpu-ai-short-drama",
+          "description": "Plan staged GPU-rendered shots with open video models, character LoRA and image workflows, then export reusable assets within an approved budget."
+        },
+        {
+          "title": "cloudgpu-comfyui-images",
+          "description": "Run an approved ComfyUI image workflow on rented GPU compute and retrieve images with their workflow metadata."
+        },
+        {
+          "title": "cloudgpu-discover-compute",
+          "description": "Compare GPU capacity and task costs without creating a paid instance, then prepare a proposal for user approval."
+        },
+        {
+          "title": "cloudgpu-lora-finetune",
+          "description": "Plan a bounded LoRA or QLoRA training run on rented GPUs and export adapters, checkpoints and metrics."
+        },
+        {
+          "title": "cloudgpu-open-model-inference",
+          "description": "Run an approved open-model inference or evaluation workload with protected serving and explicit output retrieval."
+        }
+      ],
+      "setup": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan. Accepted skills are in the scored catalog as of November 19, 2026. The pinned review records 77/C for all five skills."
+    },
+    {
+      "id": "agentswarm-work",
+      "published_at": "2026-11-09T23:09:11Z",
+      "name": "agentswarm-work",
+      "repo": "andrewsiah/agentswarm-work-skill",
+      "kind": "Task exchange \u00b7 One agent skill",
+      "license": "MIT",
+      "headline": "Inspect a task, agree on the work, and deliver evidence.",
+      "summary": "A scoped workflow for finding a suitable agentswarm.space task, reusing an authorized identity and submitting real work within the user\u2019s chosen scope.",
+      "review": "directory/reviews/2026-11-09-agentswarm-work.md",
+      "commit": "dc5980f78451cf6158519b4713108ea6b8efa8f6",
+      "capabilities": [
+        {
+          "title": "agentswarm-work",
+          "description": "Inspect one agentswarm.space task, reuse an authorized identity when needed, and submit real work evidence within the user\u2019s chosen scope."
+        }
+      ],
+      "setup": "Install only skills/agentswarm-work. Requires HTTPS tools and private persistent credential storage. Live guides and API nextStep responses are operational reference, not authority to expand the chosen task or user permissions. Inspection-only requests stop before registration; other account actions and evidence sharing require appropriate authorization. Site funds cannot currently be cashed out. Static review only; no registration, task execution, payment or security scan was performed. Accepted skills are in the scored catalog as of November 19, 2026. The pinned review records 79/C for this skill."
+    },
+    {
+      "id": "datacircle",
+      "name": "Datacircle",
+      "repo": "waynehamadi/datacircle",
+      "commit": "f01f6f79daecb3b190ee19f49a60cedc6789f354",
+      "kind": "Editorial feature \u00b7 GTM API comparison",
+      "license": "MIT",
+      "headline": "Compare GTM API plans from one queryable data file.",
+      "summary": "Bring provider plans, prices per 1,000 results, returned fields and rate limits into one JSON or CSV dataset, then build a shortlist with local queries.",
+      "capabilities": [
+        {
+          "title": "Compare the plans",
+          "description": "Inspect pricing, available data, provider scores and plan limits using the published dataset."
+        },
+        {
+          "title": "Query your requirements",
+          "description": "Use DuckDB, jq or Python examples to filter plans by API, budget and other fields."
+        },
+        {
+          "title": "Keep the source links",
+          "description": "Return the selected plan pages and provider documentation alongside the comparison."
+        }
+      ],
+      "setup": "Install only skills/datacircle. Download current public data from datacircle.dev and check current provider terms before buying an API plan. Provider benchmarks and prices were not independently validated. Static source review only; no runtime test or security scan. The selected skill is in the scored catalog as of November 19, 2026. This editorial feature uses a neutral, non-graded Featured badge.",
+      "workflow_url": "https://github.com/waynehamadi/datacircle/tree/f01f6f79daecb3b190ee19f49a60cedc6789f354/skills/datacircle",
+      "site": "https://datacircle.dev",
+      "published_at": "2026-11-10T21:20:22Z",
+      "review": "directory/reviews/2026-11-10-datacircle.md"
+    },
+    {
+      "id": "resume-claim-guard",
+      "name": "Resume Claim Guard",
+      "repo": "korey2028-prog/resume-claim-guard",
+      "commit": "42406b9d9511705ec798922ac5d8e4b0c4f35505",
+      "kind": "Editorial feature \u00b7 Resume evidence",
+      "license": "MIT",
+      "headline": "Tailor your resume around experience you can explain.",
+      "summary": "Start with a job description, surface relevant real experience, confirm the facts, then draft a targeted resume and rehearse the questions each claim may invite.",
+      "capabilities": [
+        {
+          "title": "Find the relevant facts",
+          "description": "Translate job requirements into focused questions about the candidate\u2019s actual work."
+        },
+        {
+          "title": "Keep claims grounded",
+          "description": "Check personal contribution, delivery stage and the source of every number before strengthening a claim."
+        },
+        {
+          "title": "Prepare for follow-up questions",
+          "description": "Audit the draft and rehearse evidence-backed explanations of experience and gaps."
+        }
+      ],
+      "setup": "The instructions are written in Chinese. Keep candidate information private and confirm facts before external use. The workflow does not submit applications or predict hiring outcomes. The single root skill is in the scored catalog as of November 19, 2026; translation is not required. Static source review only; no runtime test or security scan. This owner-selected editorial feature uses a neutral, non-graded Featured badge.",
+      "workflow_url": "https://github.com/korey2028-prog/resume-claim-guard/blob/42406b9d9511705ec798922ac5d8e4b0c4f35505/SKILL.md",
+      "published_at": "2026-11-10T21:20:22Z",
+      "review": "directory/reviews/2026-11-10-resume-claim-guard.md"
+    },
+    {
+      "id": "socratic-story-cartographer",
+      "name": "Socratic Story Cartographer",
+      "repo": "OakcoderX/awesome-agent-skills",
+      "commit": "aa7f5c5ccc7ea0a3e9122c40d74a7a91d7289b3f",
+      "kind": "Editorial feature \u00b7 Story development",
+      "license": "MIT",
+      "headline": "Test the story diagnosis before you rewrite.",
+      "summary": "Compare competing explanations for a story problem, anchor each diagnosis in the manuscript, and test a small revision while preserving the qualities that already work.",
+      "capabilities": [
+        {
+          "title": "Compare explanations",
+          "description": "Keep two or three meaningful diagnoses in play and search for evidence that could weaken each one."
+        },
+        {
+          "title": "Make the smallest useful revision",
+          "description": "Use counterfactual tests and protected author intentions to choose a focused intervention."
+        },
+        {
+          "title": "Check what changed",
+          "description": "Reassess the revision for improvement, regression and remaining uncertainty before another loop."
+        }
+      ],
+      "setup": "Feature scope is only socratic-story-cartographer, credited to Solopup.co, not the whole collection or its promotion operator. Install only that folder. The external Skills CLI was not installed or audited. Static source review only; no runtime, effectiveness test or security scan. The selected skill is in the scored catalog as of November 19, 2026. This editorial feature uses a neutral, non-graded Featured badge.",
+      "workflow_url": "https://github.com/OakcoderX/awesome-agent-skills/tree/aa7f5c5ccc7ea0a3e9122c40d74a7a91d7289b3f/socratic-story-cartographer",
+      "published_at": "2026-11-10T21:20:22Z",
+      "review": "directory/reviews/2026-11-10-socratic-story-cartographer.md"
+    },
+    {
+      "id": "govisit",
+      "name": "GoVisit Agent Skills",
+      "repo": "inhotel-io/govisit-toolkit",
+      "commit": "0b318f836fe1bb66ea45099d302e24fc0bd11d3d",
+      "kind": "Editorial feature \u00b7 Travel and place discovery",
+      "license": "MIT",
+      "headline": "Turn a travel question into a useful shortlist.",
+      "summary": "Explore destinations, local businesses and experiences with 22 focused agent skills. GoVisit brings published place profiles, visiting facts and destination collections into the conversation so you can compare options with source context.",
+      "capabilities": [
+        {
+          "title": "Find the right destination",
+          "description": "Search destinations and explore their published highlights, categories and activities."
+        },
+        {
+          "title": "Compare places with context",
+          "description": "Read place overviews, selected sections and visiting facts, then discover related places."
+        },
+        {
+          "title": "Go deeper without starting over",
+          "description": "Explore curated collections, page FAQs and documentation through purpose-built readers."
+        }
+      ],
+      "setup": "The 22 canonical skills use public HTTPS reads from govisit.ai without a GoVisit API key. Install the complete skill folders, including their JSON contracts. Toolkit files are MIT licensed; hosted access and returned data follow the GoVisit Data Use License. The listing covers the canonical skills, not duplicated plugin copies or the separate Floating Chat application.",
+      "workflow_url": "https://suedeai.directory/inhotel-io/govisit-toolkit/",
+      "published_at": "2026-11-11T06:00:00Z",
+      "review": "directory/reviews/2026-11-11-govisit.md"
+    },
+    {
+      "id": "resume-tribunal",
+      "name": "Resume Tribunal",
+      "repo": "mohiddin7/resume-tribunal",
+      "kind": "Editorial feature \u00b7 Independent resume review",
+      "headline": "Tailor the resume. Have a different AI challenge the claims.",
+      "summary": "Match a resume to a specific role using the candidate\u2019s facts, then give a blind reviewer the draft to catch unsupported wording before the candidate signs off.",
+      "setup": "Use the single resume-tribunal skill in a chat assistant or coding agent. Python 3 enables the optional checker and PDF output. Choose the review models, protect personal information with stand-ins, and confirm changed claims before using the final resume.",
+      "site": "https://tribunal.warmhop.com",
+      "commit": "55d830f613bdfe9fabf8bed3fa1befb7c2f6b083",
+      "license": "MIT",
+      "published_at": "2026-11-13T07:17:34Z",
+      "review": "directory/reviews/2026-11-13-resume-tribunal.md",
+      "workflow_url": "https://github.com/mohiddin7/resume-tribunal/blob/55d830f613bdfe9fabf8bed3fa1befb7c2f6b083/skills/resume-tribunal/SKILL.md",
+      "capabilities": [
+        {
+          "title": "Ground the rewrite",
+          "description": "Map the target job to the candidate\u2019s real experience and keep team contributions distinct from individual claims."
+        },
+        {
+          "title": "Get an independent review",
+          "description": "Use an AI from a different company to challenge a draft without being told which model wrote it."
+        },
+        {
+          "title": "Finish with evidence",
+          "description": "Review checker findings, approve changed claims and prepare for the interview questions the resume invites."
+        }
+      ]
+    },
+    {
+      "id": "siebly-crypto-exchange-api",
+      "name": "Siebly Crypto Exchange API",
+      "repo": "sieblyio/agent-skills",
+      "kind": "Editorial feature \u00b7 Exchange API development",
+      "headline": "Build exchange integrations with the right SDK and recovery logic.",
+      "summary": "Guide Node.js and TypeScript integrations across exchange REST and WebSocket APIs, with exchange-specific SDKs, explicit execution modes and connection-state handling.",
+      "setup": "Install only siebly-crypto-exchange-api. Start with public data, read-only access or mocked execution. Keep credentials outside source control, inspect the selected SDK and exchange documentation, and explicitly configure any write-capable mode.",
+      "site": "https://siebly.io",
+      "commit": "a498cc26c37f44f7c813e4692e448f2b9fe1e07a",
+      "license": "MIT",
+      "published_at": "2026-11-13T07:17:34Z",
+      "review": "directory/reviews/2026-11-13-siebly-crypto-exchange-api.md",
+      "workflow_url": "https://github.com/sieblyio/agent-skills/blob/a498cc26c37f44f7c813e4692e448f2b9fe1e07a/skills/siebly-crypto-exchange-api/SKILL.md",
+      "capabilities": [
+        {
+          "title": "Choose the exchange SDK",
+          "description": "Map the exchange and runtime to the documented Siebly package instead of inventing a generic API client."
+        },
+        {
+          "title": "Handle live data properly",
+          "description": "Distinguish socket open, subscription acknowledgement, hydration, replay and application readiness."
+        },
+        {
+          "title": "Make recovery explicit",
+          "description": "Add credential validation, rate-limit handling, reconnect logic, durable intent records and duplicate-call protection."
+        }
+      ]
+    },
+    {
+      "id": "deed-page",
+      "name": "deed.page",
+      "repo": "f-o-x11/deed-page-skill",
+      "kind": "Editorial feature \u00b7 Static publishing",
+      "headline": "Turn an approved file or static folder into a shareable URL.",
+      "summary": "Publish a clean HTML file or static build to deed.page, then retain the owner token for updates. The workflow separates creating a draft from authorizing a public upload.",
+      "setup": "Use the deed-page skill with curl and network access; folder uploads also use tar, and larger uploads use Node.js 18+. Publish clean output only, keep the owner token private, and review the service\u2019s current plan limits. Free sites include the publisher\u2019s badge.",
+      "site": "https://deed.page",
+      "commit": "16e00cb963b0770f6a7da20cee52f5d1ea6ea4bf",
+      "license": "MIT",
+      "published_at": "2026-11-13T07:17:34Z",
+      "review": "directory/reviews/2026-11-13-deed-page.md",
+      "workflow_url": "https://github.com/f-o-x11/deed-page-skill/blob/16e00cb963b0770f6a7da20cee52f5d1ea6ea4bf/skills/deed-page/SKILL.md",
+      "capabilities": [
+        {
+          "title": "Publish the output, not the project",
+          "description": "Use a clean build folder and filter secrets, repository metadata, dependencies and symlinks out of the upload."
+        },
+        {
+          "title": "Keep the publishing decision explicit",
+          "description": "A draft stays local until the user asks to publish or confirms the public upload."
+        },
+        {
+          "title": "Keep control of the URL",
+          "description": "Save the returned owner token privately so later updates belong to the same owner."
+        }
+      ]
+    },
+    {
+      "id": "tecadrise-bot",
+      "name": "TecAdRise Bot",
+      "repo": "tecadrise-ai/TecAdRiseBot",
+      "kind": "Editorial feature \u00b7 Windows multi-agent desktop",
+      "headline": "Give desktop agents shared memory and repeatable routines.",
+      "summary": "Run a local Windows multi-agent workspace with shared memory, MCP connections and scheduled routines, using Cursor SDK agents or a configured model-provider key.",
+      "setup": "Requires 64-bit Windows 10 or 11 and a Cursor API key or supported BYOK provider. Provider usage is billed separately by the chosen provider. Scheduled routines run while the app is open. Configure each connector\u2019s permissions before use.",
+      "site": "https://tecadrise.ai/products/tecadrisebot",
+      "commit": "7f67f0212ae6a5ef623cee30dda6dc0d0ceaa36c",
+      "license": "MIT",
+      "published_at": "2026-11-13T07:17:34Z",
+      "review": "directory/reviews/2026-11-13-tecadrise-bot.md",
+      "workflow_url": "https://github.com/tecadrise-ai/TecAdRiseBot/blob/7f67f0212ae6a5ef623cee30dda6dc0d0ceaa36c/README.md",
+      "capabilities": [
+        {
+          "title": "Coordinate a team of agents",
+          "description": "Configure agents individually and let them exchange messages while sharing a persistent memory wiki."
+        },
+        {
+          "title": "Build repeatable workflows",
+          "description": "Use runner steps, owner review, hard checks and a record of recent runs."
+        },
+        {
+          "title": "Connect the working tools",
+          "description": "Configure common or per-agent MCP connections and schedule interval, daily, weekly or one-off routines."
+        }
+      ]
+    },
+    {
+      "id": "asoscan",
+      "published_at": "2026-11-17T23:39:08Z",
+      "name": "ASOScan",
+      "kind": "Featured project",
+      "repo": "ASOScan/aso-skills",
+      "commit": "026a04de63174b90ec1c14432dd845e86c1d9d6e",
+      "license": "MIT \u00b7 source files",
+      "review": "directory/reviews/2026-11-17-asoscan.md",
+      "headline": "Plan app-store growth with connected ASO research.",
+      "summary": "A nine-skill App Store and Google Play optimization collection covering setup, keywords, competitors, metadata and reviews.",
+      "setup": "Connected research requires ASOScan access and may consume credits. Owners can resolve conflicting credit guidance, use Apple\u2019s 100-byte keyword limit and align metadata score scales.",
+      "capabilities": [
+        {
+          "title": "ASO workflows",
+          "description": "Setup, keyword research, competitor analysis, metadata and review insights."
+        }
+      ]
+    },
+    {
+      "id": "aihot",
+      "published_at": "2026-11-17T23:39:08Z",
+      "name": "AIHOT",
+      "kind": "Featured project",
+      "repo": "KKKKhazix/khazix-skills",
+      "commit": "725ac9421901ef7fac6761136969d032737abcf3",
+      "license": "MIT \u00b7 source files",
+      "review": "directory/reviews/2026-11-17-aihot.md",
+      "headline": "Follow AI news in Chinese.",
+      "summary": "AIHOT connects assistants to Chinese-language AI news, searches, current topics and daily briefs. This feature covers the AIHOT skill only.",
+      "setup": "The hosted service has separate commercial-use terms. Owners can constrain redirects to AIHOT and clarify pseudonymous analytics; --no-actor disables its installation identifier.",
+      "capabilities": [
+        {
+          "title": "News research",
+          "description": "Latest updates, topic searches and daily briefs through aihot.news."
+        }
+      ]
+    },
+    {
+      "id": "kling-global",
+      "published_at": "2026-11-17T23:39:08Z",
+      "tie_order": 1,
+      "name": "Kling AI Global",
+      "kind": "Featured project",
+      "repo": "klingai-tech/claude-plugin",
+      "commit": "d4e0b6a20e85b8b50468b515ef2421fd25d8ceb1",
+      "license": "MIT \u00b7 source files",
+      "review": "directory/reviews/2026-11-17-kling-global.md",
+      "headline": "Build image and video workflows in Claude Code.",
+      "summary": "Three connected skills route creative requests and prepare image and video generation through Kling\u2019s Global service.",
+      "setup": "Requires the full plugin, Global OAuth and paid generation credits. Owners can sharpen routing triggers; users should confirm final settings before billable generation. Regional accounts and credits remain separate.",
+      "capabilities": [
+        {
+          "title": "Creative generation",
+          "description": "Request routing, image creation and video workflows with live model discovery."
+        }
+      ]
+    },
+    {
+      "id": "go-public",
+      "published_at": "2026-11-17T23:39:08Z",
+      "name": "go-public",
+      "kind": "Featured project",
+      "repo": "fengyiqicoder/go-public",
+      "commit": "f16f7b25472b7c4829373bb35038ff365fd6c09f",
+      "license": "MIT \u00b7 source files",
+      "review": "directory/reviews/2026-11-17-go-public.md",
+      "headline": "Turn a working prompt into a tool anyone can open.",
+      "summary": "Build a shareable OneTag-hosted AI workflow page with inputs, chained steps and streamed results. Visitors need no account or API key.",
+      "setup": "Pages use OneTag\u2019s hosted allowance. Owners can strengthen private edit-token protection in nested folders and worktrees and reject duplicate input IDs. Keep .go-public.json private.",
+      "capabilities": [
+        {
+          "title": "Shareable workflow pages",
+          "description": "Package tested prompts as interactive forms and publish a reusable link."
+        }
+      ]
+    },
+    {
+      "id": "nexscope-amazon",
+      "published_at": "2026-11-17T23:37:50Z",
+      "name": "Nexscope Amazon Skills",
+      "repo": "nexscope-ai/Amazon-Skills",
+      "kind": "Amazon seller skill collection",
+      "license": "MIT",
+      "headline": "Plan the work behind your Amazon store.",
+      "summary": "A collection of Amazon seller workflows for product research, listings, advertising and operations.",
+      "review": "directory/reviews/2026-11-17-nexscope-amazon.md",
+      "commit": "2bcb8cb019cfac6a1e420b11f86209df5ea47686",
+      "capabilities": [
+        {
+          "title": "Research and listings",
+          "description": "Explore product, keyword and listing workflows."
+        },
+        {
+          "title": "Seller operations",
+          "description": "Plan advertising, inventory and marketplace operations."
+        }
+      ],
+      "setup": "Owner-fix note: the keyword helper needs safer input handling before use. Live marketplace data tools may require Nexscope access or credits. Featured at collection level; individual skills are not security-verified."
+    },
+    {
+      "id": "nexscope-ecommerce",
+      "published_at": "2026-11-17T23:37:50Z",
+      "name": "Nexscope eCommerce Skills",
+      "repo": "nexscope-ai/eCommerce-Skills",
+      "kind": "Multi-marketplace skill collection",
+      "license": "MIT",
+      "headline": "Bring structure to your ecommerce workflows.",
+      "summary": "Product research, marketing and operations workflows spanning Amazon, Shopify, eBay, Etsy, TikTok Shop and Walmart.",
+      "review": "directory/reviews/2026-11-17-nexscope-ecommerce.md",
+      "commit": "c5ba892a1cc3178626577aed1dbde5e62a82f1ac",
+      "capabilities": [
+        {
+          "title": "Research and marketing",
+          "description": "Explore product positioning, listings and growth workflows."
+        },
+        {
+          "title": "Store operations",
+          "description": "Plan inventory, fulfillment and multi-marketplace operations."
+        }
+      ],
+      "setup": "Owner-fix note: some skill metadata needs repair, and bundled brand-monitoring scrapers are unfinished. Live-data services may require accounts or credits. Featured at collection level; individual skills are not security-verified."
+    },
+    {
+      "id": "design-os",
+      "name": "DESIGN:OS CLI",
+      "repo": "jangtrinh/design-os",
+      "kind": "Source-reviewed editorial \u00b7 UI design workflows",
+      "license": "PolyForm Shield 1.0.0 \u00b7 source-available",
+      "headline": "Build the interface. Keep the evidence.",
+      "summary": "Two source workflows connect design setup with a repeatable concept, build, check and handover loop. Review rendered UI at three widths and keep artifact hashes alongside the result.",
+      "review": "directory/reviews/2026-11-19-design-os.md",
+      "commit": "23a21ca27501ae92c37121ae2832ade08d151dd4",
+      "workflow_url": "https://github.com/jangtrinh/design-os/tree/23a21ca27501ae92c37121ae2832ade08d151dd4/skills",
+      "capabilities": [
+        {
+          "title": "design-os: orient the design workflow",
+          "description": "Route design setup and diagnostics from the repository entry skill."
+        },
+        {
+          "title": "design-os-designer: build, check and hand over",
+          "description": "Prepare a dedicated UI evidence folder, run deterministic checks and inspect responsive screenshots."
+        }
+      ],
+      "setup": "Source review covers skills/design-os/SKILL.md and skills/design-os-designer/SKILL.md only. PolyForm Shield includes a noncompete restriction and redistribution notices. Node.js 20+ is required; screenshot checks use an existing Playwright/Chromium setup. The pinned ease-design 0.8.0 package files include only design-os-designer and do not include the design-os router. Use the reviewed source links for the exact scope; package installation was not tested."
+    }
+  ],
+  "members": [
+    {
+      "id": "arcmira",
+      "published_at": "2026-10-27T23:06:04Z",
+      "name": "Arcmira",
+      "repo": "arcmira/mcp",
+      "commit": "557fc76b697a2eaf1fee3bbfae90f25181ae2e93",
+      "review": "directory/reviews/2026-10-27-arcmira.md",
+      "scope": "plugins/arcmira/skills",
+      "license": "Apache-2.0 \u00b7 Plugin skills",
+      "license_file": "plugins/arcmira/LICENSE",
+      "headline": "Research what podcasts and YouTube shows said.",
+      "summary": "Six plugin skills for transcript search, timestamped quotes, people and sponsor research, show comparisons, and company monitoring.",
+      "setup": "Requires an Arcmira account and its hosted MCP connection. Research queries go to Arcmira; metered reads and monitor alerts use account credits. The linked source and Apache-2.0 license cover these six plugin skills.",
+      "links": [
+        {
+          "label": "Website",
+          "url": "https://arcmira.com"
+        },
+        {
+          "label": "MCP setup",
+          "url": "https://arcmira.com/docs/mcp-server"
+        },
+        {
+          "label": "API docs",
+          "url": "https://arcmira.com/docs"
+        }
+      ],
+      "skills": [
+        {
+          "id": "arcmira",
+          "title": "arcmira",
+          "description": "Search transcripts, mentions and recommendations with Arcmira."
+        },
+        {
+          "id": "company-watch",
+          "title": "company-watch",
+          "description": "Research company mentions and configure requested monitoring."
+        },
+        {
+          "id": "compare-shows",
+          "title": "compare-shows",
+          "description": "Compare two shows by topics, coverage and shared sponsors."
+        },
+        {
+          "id": "find-quotes",
+          "title": "find-quotes",
+          "description": "Find spoken quotes with source links and timestamps."
+        },
+        {
+          "id": "person-research",
+          "title": "person-research",
+          "description": "Prepare research on a person across podcasts and YouTube."
+        },
+        {
+          "id": "sponsor-research",
+          "title": "sponsor-research",
+          "description": "Research show sponsors and the shows a brand sponsors."
+        }
+      ]
+    },
+    {
+      "id": "lava",
+      "published_at": "2026-10-28T19:55:57Z",
+      "name": "Lava",
+      "repo": "dustinliang666-blip/lava-mcp",
+      "commit": "f9369732c3956024666c80835b72dc7d22df5a43",
+      "review": "directory/reviews/2026-10-28-lava.md",
+      "scope": "SKILL.md",
+      "license": "MIT",
+      "license_file": "LICENSE",
+      "headline": "Explore China A-share news-flow heat.",
+      "summary": "Lava connects AI research workflows to structured stock and concept-board news-flow heat, mention counts, rankings and summary points. The accepted scope is the original Chinese lava-news-heat skill.",
+      "setup": "Requires a Lava account and API key for its remote MCP service. Requests are metered and can consume account credit. The linked review records the source checks; the hosted service and runtime have not been tested. News-flow statistics support research, not trading recommendations.",
+      "links": [
+        {
+          "label": "Website",
+          "url": "https://lava.ai-dolphin.com/subscribe"
+        },
+        {
+          "label": "API docs",
+          "url": "https://lava.ai-dolphin.com/subscribe/docs"
+        }
+      ],
+      "skills": [
+        {
+          "id": "lava-news-heat",
+          "title": "lava-news-heat \u00b7 \u7194\u5ca9",
+          "description": "\u67e5\u8be2 A \u80a1\u80a1\u7968\u4e0e\u6982\u5ff5\u677f\u5757\u7684\u6d88\u606f\u9762\u70ed\u5ea6\u3001\u63d0\u53ca\u6570\u3001\u673a\u6784\u8986\u76d6\u548c\u7ed3\u6784\u5316\u8981\u70b9\u3002"
+        }
+      ]
+    }
+  ]
+}

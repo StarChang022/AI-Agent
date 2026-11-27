@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'no install step: the build uses only Node built-ins'",
+  "buildCommand": "node scripts/build-vercel.mjs",
+  "outputDirectory": "dist/out",
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true, "has": [{ "type": "host", "value": "suedeai.directory" }] },
+    { "source": "/:path+/index.html", "destination": "/:path*/", "permanent": true, "has": [{ "type": "host", "value": "suedeai.directory" }] },
+    { "source": "/directory", "destination": "https://suedeai.directory/", "permanent": true },
+    { "source": "/directory/:path*", "destination": "https://suedeai.directory/:path*", "permanent": true }
+  ]
+}

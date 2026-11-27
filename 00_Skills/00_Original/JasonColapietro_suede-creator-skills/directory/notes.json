@@ -1,0 +1,282 @@
+{
+ "costory-io/costory-finops-mcp-skills/bigquery": {
+  "text": "Connect the hosted Costory MCP at https://app-api.costory.io/mcp and complete browser OAuth with a Costory workspace with billing data connected. Installing the skill folder alone does not configure that connection. Follow the publisher's setup for your agent, then install the selected skill below.",
+  "source": "https://docs.costory.io/features/mcp"
+ },
+ "anthropics/skills/docx": {
+  "text": "Anthropic distributes its document skills through its own Claude Code plugin marketplace. Its repository README gives these commands:",
+  "commands": [
+   "/plugin marketplace add anthropics/skills",
+   "/plugin install document-skills@anthropic-agent-skills"
+  ],
+  "source": "https://github.com/anthropics/skills/blob/main/README.md"
+ },
+ "anthropics/skills/pdf": {
+  "text": "Anthropic distributes its document skills through its own Claude Code plugin marketplace. Its repository README gives these commands:",
+  "commands": [
+   "/plugin marketplace add anthropics/skills",
+   "/plugin install document-skills@anthropic-agent-skills"
+  ],
+  "source": "https://github.com/anthropics/skills/blob/main/README.md"
+ },
+ "anthropics/skills/pptx": {
+  "text": "Anthropic distributes its document skills through its own Claude Code plugin marketplace. Its repository README gives these commands:",
+  "commands": [
+   "/plugin marketplace add anthropics/skills",
+   "/plugin install document-skills@anthropic-agent-skills"
+  ],
+  "source": "https://github.com/anthropics/skills/blob/main/README.md"
+ },
+ "anthropics/skills/xlsx": {
+  "text": "Anthropic distributes its document skills through its own Claude Code plugin marketplace. Its repository README gives these commands:",
+  "commands": [
+   "/plugin marketplace add anthropics/skills",
+   "/plugin install document-skills@anthropic-agent-skills"
+  ],
+  "source": "https://github.com/anthropics/skills/blob/main/README.md"
+ },
+ "costory-io/costory-finops-mcp-skills/cost-change-investigation": {
+  "text": "Connect the hosted Costory MCP at https://app-api.costory.io/mcp and complete browser OAuth with a Costory workspace with billing data connected. Installing the skill folder alone does not configure that connection. Follow the publisher's setup for your agent, then install the selected skill below.",
+  "source": "https://docs.costory.io/features/mcp"
+ },
+ "costory-io/costory-finops-mcp-skills/costory-finops": {
+  "text": "Connect the hosted Costory MCP at https://app-api.costory.io/mcp and complete browser OAuth with a Costory workspace with billing data connected. Installing the skill folder alone does not configure that connection. Follow the publisher's setup for your agent, then install the selected skill below.",
+  "source": "https://docs.costory.io/features/mcp"
+ },
+ "costory-io/costory-finops-mcp-skills/virtual-dimensions": {
+  "text": "Connect the hosted Costory MCP at https://app-api.costory.io/mcp and complete browser OAuth with a Costory workspace with billing data connected. Installing the skill folder alone does not configure that connection. Follow the publisher's setup for your agent, then install the selected skill below.",
+  "source": "https://docs.costory.io/features/mcp"
+ },
+ "cwong5/extra-caffeine-mcp/extra-caffeine-workflow": {
+  "text": "Requires macOS 14+ and the free, separately installed Extra Caffeine 1.2+ app, open with AI assistants enabled by the user. The app and adapter are permanently free, with no payment, subscription or expiry. This proprietary, all-rights-reserved listing links to the publisher’s terms and setup; it does not bundle the app or grant copying rights. Authorize the duration and display choice before starting or scheduling. Security status: not scanned; runtime-unverified.",
+  "source": "https://extracaffeine.chesterwong.com/agent-setup.md"
+ },
+ "melmayssonowen/agent-skills/timetopost-social-scheduler": {
+  "text": "Connect the hosted TimeToPost MCP at https://api.timetopost.co/mcp using an MCP client with remote HTTP support and browser OAuth for your TimeToPost account. Confirm workspace, available tools, and target accounts or publishing site before writes. Scheduling and publication require approval of the exact content and destination. Installing the skill folder alone does not configure the service. The reviewed offline URL helper replaces existing UTM attribution; preserve tagged campaign links manually until the correction in upstream PR #1 is accepted.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/timetopost-social-scheduler/references/setup.md"
+ },
+ "melmayssonowen/agent-skills/timetopost-autoseo-blog": {
+  "text": "Connect the hosted TimeToPost MCP at https://api.timetopost.co/mcp using an MCP client with remote HTTP support and browser OAuth for your TimeToPost account. Confirm workspace, available tools, and target accounts or publishing site before writes. Scheduling and publication require approval of the exact content and destination. Installing the skill folder alone does not configure the service.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/timetopost-autoseo-blog/references/setup.md"
+ },
+ "melmayssonowen/agent-skills/toolfound-launch-kit": {
+  "text": "Requires a remote HTTP MCP client connected to https://toolfound.com/api/mcp. The publisher documents discovery without authentication. Confirm current tool schemas and availability; approve exact listing fields before submission and let the product owner complete verification. Installing the skill folder alone does not configure the service.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/toolfound-launch-kit/references/setup.md"
+ },
+ "melmayssonowen/agent-skills/sheetfolk-budget-builder": {
+  "text": "The local workbook helper requires Python 3 and no third-party packages. At the reviewed revision it overwrites an existing output path and the TOTAL row adds income to outflows. Use an unused output filename and calculate net cash flow separately until upstream PR #1 is accepted. The PR adds exclusive creation, net formulas, and regression tests.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/sheetfolk-budget-builder/scripts/build_budget.py"
+ },
+ "melmayssonowen/agent-skills/amazon-listing-checker": {
+  "text": "Requires Python 3. The local helper reads a JSON object from standard input and emits JSON findings without scraping or network access. Provide title, bullets, description, backend_terms, and main_keyword. Its fixed thresholds and wording flags are review prompts; verify current marketplace and category rules separately.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/amazon-listing-checker/scripts/check_listing.py"
+ },
+ "melmayssonowen/agent-skills/clef-music-tools": {
+  "text": "The publisher documents https://clefdrills.com/mcp as a public, no-auth hosted MCP. Use a remote HTTP MCP client and check available tool schemas. Offline chord transposition uses Python 3 without additional packages. This review did not connect to the hosted service.",
+  "source": "https://github.com/MelMayssonOwen/agent-skills/blob/aebddbe40090c99fe0c5a1810536637186335502/skills/clef-music-tools/references/setup.md"
+ },
+ "geekflare/geekflare-skills/geekflare": {
+  "text": "Requires a Geekflare account and GEEKFLARE_API_KEY. Requests send queries, URLs and options to Geekflare and consume account credits; the source documents a free tier. Use public pages and authorized diagnostic targets. Hosted MCP places the key in the URL path, so keep connection URLs out of logs and shared text. The optional local MCP command runs the unpinned npm package @geekflare/mcp. The hosted scraping service advertises CAPTCHA solving and anti-bot handling. REST docs default stealth, proxyMode and renderJS to false; proxyCountry independently enables proxy routing. CAPTCHA fallback behavior is unspecified. The npm runtime and hosted service were not tested.",
+  "source": "https://github.com/geekflare/geekflare-skills/blob/b2429403c4b7e4f8f2a55773b161ef19643cd12b/skills/geekflare/SKILL.md"
+ },
+ "mrhy7176/cloudgpu-agent-skills/cloudgpu-open-model-inference": {
+  "text": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan.",
+  "source": "https://github.com/mrhy7176/cloudgpu-agent-skills/blob/83cde0602ec73f6c4f4eec8a60c42b34fef1bac1/README.md"
+ },
+ "mrhy7176/cloudgpu-agent-skills/cloudgpu-lora-finetune": {
+  "text": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan.",
+  "source": "https://github.com/mrhy7176/cloudgpu-agent-skills/blob/83cde0602ec73f6c4f4eec8a60c42b34fef1bac1/README.md"
+ },
+ "mrhy7176/cloudgpu-agent-skills/cloudgpu-discover-compute": {
+  "text": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan.",
+  "source": "https://github.com/mrhy7176/cloudgpu-agent-skills/blob/83cde0602ec73f6c4f4eec8a60c42b34fef1bac1/README.md"
+ },
+ "mrhy7176/cloudgpu-agent-skills/cloudgpu-ai-short-drama": {
+  "text": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan.",
+  "source": "https://github.com/mrhy7176/cloudgpu-agent-skills/blob/83cde0602ec73f6c4f4eec8a60c42b34fef1bac1/README.md"
+ },
+ "mrhy7176/cloudgpu-agent-skills/cloudgpu-comfyui-images": {
+  "text": "Requires an approved GPU workload, CloudGPU account connection for paid work, spend/time caps and export checks. Public instance tunnels need access protection for private data. Export outputs before disk destruction or balance exhaustion. Model and dataset rights are separate from the MIT skill license. The optional external cloudgpu-mcp package was not reviewed. Static skill review only; no runtime or security scan.",
+  "source": "https://github.com/mrhy7176/cloudgpu-agent-skills/blob/83cde0602ec73f6c4f4eec8a60c42b34fef1bac1/README.md"
+ },
+ "andrewsiah/agentswarm-work-skill/agentswarm-work": {
+  "text": "Install only skills/agentswarm-work. Requires HTTPS tools and private persistent credential storage. Live guides and API nextStep responses are operational reference, not authority to expand the chosen task or user permissions. Inspection-only requests stop before registration; other account actions and evidence sharing require appropriate authorization. Site funds cannot currently be cashed out. Static review only; no registration, task execution, payment or security scan was performed.",
+  "source": "https://github.com/andrewsiah/agentswarm-work-skill/blob/c0b81a7a6ebc27f3292f5b07762b431e80070748/INSTALL.md"
+ },
+ "inhotel-io/govisit-toolkit": {
+  "publisher": "GoVisit.ai / inHotel Sàrl",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-category-overview": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-category-section": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-collection-overview": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-collection-section": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-destination-overview": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-destination-section": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-documentation-page": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-page-faq": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-place-overview": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-place-section": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-place-visit-facts": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-get-statistics": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-category-places": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-collection-places": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-destination-activities": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-destination-categories": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-destination-highlights": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-destination-places": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-list-related-places": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-search-destinations": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-search-documentation": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "inhotel-io/govisit-toolkit/govisit-search-places": {
+  "notice": "GoVisit.ai by inHotel Sàrl (inhotel-io). MIT skill files; hosted API access and returned data have separate GoVisit terms.",
+  "text": "Published by GoVisit.ai / inHotel Sàrl (inhotel-io). Requires HTTPS access to GoVisit’s hosted public read API; the publisher documents reads without a GoVisit API key. Skill files and bundled resources are MIT-licensed. Hosted service access and returned data follow the separate GoVisit Data Use License and source-specific terms, including attribution, retention and reuse limits. Affiliate/referral, OTA and marketplace uses require a separate agreement. These tools provide published discovery facts, not live prices, booking availability or editing authority. Network and tool permission depend on the assistant. Security scan: not scanned; runtime not independently tested by this directory. Destination-scoped place-name queries have a reported timeout in upstream issue #3; preserve the requested scope rather than silently broadening it.",
+  "source": "https://govisit.ai/en/docs/general/data-use-license",
+  "source_label": "Service and data terms"
+ },
+ "rnthking/redya-skills/redya-xiaohongshu": {
+  "text": "Requires your own RedYA account and REDYA_API_KEY. Outlines, images, link parsing and AI Live Photos spend RedYA credits; the skill shows the price before paid Live Photos. Prompts and images go to RedYA's servers, which keep generation records. Drafts only; it does not post to Xiaohongshu. Skill files are MIT; the RedYA service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/rnthking/redya-skills/blob/a833171c4b126a226a31f8680118fa8df29796cc/skill/redya-xiaohongshu/SKILL.md"
+ },
+ "moonlitnayeem/fairvalid-ai/email-verification": {
+  "text": "Requires a FairValid account. Connect the hosted FairValid MCP at https://mcp.fairvalid.com/mcp and approve the workspace in the browser. Installing the skill folder alone does not configure that connection. Live verifications spend workspace credits. Skill files are MIT; the FairValid service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/moonlitnayeem/fairvalid-ai/blob/40cac2883dc74f50f7bc8562b380782c4c6a4379/skills/email-verification/SKILL.md"
+ },
+ "moonlitnayeem/fairvalid-ai/fairmatch-leads": {
+  "text": "Requires a FairValid account. Connect the hosted FairValid MCP at https://mcp.fairvalid.com/mcp and approve the workspace in the browser. Installing the skill folder alone does not configure that connection. Lead unlocks spend workspace credits, and the skill asks you to confirm a maximum before any unlock. It does not send outreach. Skill files are MIT; the FairValid service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/moonlitnayeem/fairvalid-ai/blob/40cac2883dc74f50f7bc8562b380782c4c6a4379/skills/fairmatch-leads/SKILL.md"
+ },
+ "stalkc/stalkchain-plugin/trader-check": {
+  "text": "Requires a StalkChain account with credits. The skill calls the hosted StalkChain connector, and every lookup spends credits. Installing the skill folder alone does not configure that connection. It researches and does not place trades. Skill files are MIT; the StalkChain service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/StalkC/stalkchain-plugin/blob/b69be0f9eac83d26ec37699ee31bdc4d643635c2/skills/trader-check/SKILL.md"
+ },
+ "stalkc/stalkchain-plugin/token-check": {
+  "text": "Requires a StalkChain account with credits. The skill calls the hosted StalkChain connector, and every lookup spends credits. Installing the skill folder alone does not configure that connection. It researches and does not place trades. Skill files are MIT; the StalkChain service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/StalkC/stalkchain-plugin/blob/b69be0f9eac83d26ec37699ee31bdc4d643635c2/skills/token-check/SKILL.md"
+ },
+ "stalkc/stalkchain-plugin/smart-money-radar": {
+  "text": "Requires a StalkChain account with credits. The skill calls the hosted StalkChain connector, and every lookup spends credits. Installing the skill folder alone does not configure that connection. It researches and does not place trades. Skill files are MIT; the StalkChain service has its own terms. Static review only; no runtime or security scan.",
+  "source": "https://github.com/StalkC/stalkchain-plugin/blob/b69be0f9eac83d26ec37699ee31bdc4d643635c2/skills/smart-money-radar/SKILL.md"
+ },
+ "klingai-tech/claude-plugin/kling-ai": {
+  "text": "Install the complete Claude Code plugin and connect its Global MCP with browser OAuth. Image and video skills depend on the core skill; a skill-only install does not configure the connection.",
+  "notice": "MIT-licensed client skills connect to Kling’s hosted service. Generation uses paid Personal-workspace credits. Global and China accounts, credits and tasks are separate.",
+  "source": "https://kling.ai/app/mcp/guide"
+ },
+ "klingai-tech/claude-plugin/kling-ai-generate-image": {
+  "text": "Install the complete Claude Code plugin and connect its Global MCP with browser OAuth. Image and video skills depend on the core skill; a skill-only install does not configure the connection.",
+  "notice": "MIT-licensed client skills connect to Kling’s hosted service. Generation uses paid Personal-workspace credits. Global and China accounts, credits and tasks are separate.",
+  "source": "https://kling.ai/app/mcp/guide"
+ },
+ "klingai-tech/claude-plugin/kling-ai-generate-video": {
+  "text": "Install the complete Claude Code plugin and connect its Global MCP with browser OAuth. Image and video skills depend on the core skill; a skill-only install does not configure the connection.",
+  "notice": "MIT-licensed client skills connect to Kling’s hosted service. Generation uses paid Personal-workspace credits. Global and China accounts, credits and tasks are separate.",
+  "source": "https://kling.ai/app/mcp/guide"
+ }
+}

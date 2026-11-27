@@ -1,0 +1,12 @@
+node_modules
+.env
+.DS_Store
+*.pyc
+.tmp/
+.cache/
+
+# Local agent session state.
+.claude/
+# Run outputs and input lists of real people (names, LinkedIn URLs, emails).
+# Never commit personal data to this public repo.
+skills/**/output/

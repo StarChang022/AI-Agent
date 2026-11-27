@@ -1,0 +1,89 @@
+import { auth } from "@/lib/server/auth";
+import type { Metadata } from "next";
+import { after } from "next/server";
+import Sidebar from "@/app/sidebar";
+import { noIndexRobots } from "@/app/seo";
+import AppDataPrefetch from "@/app/(app)/app-data-prefetch";
+import { SidebarCacheScope } from "@/app/use-sidebar-resource";
+import { WorkspaceTimeZoneProvider } from "@/app/workspace-time-zone";
+import { resolveActiveWorkspace, listOwnedWorkspaces } from "@/lib/server/active-workspace";
+import { entitlementsFor } from "@/lib/server/entitlements";
+import { backfillWorkspaceFavicons } from "@/lib/server/workspace-favicons";
+import { isLocalMode } from "@/lib/runtime-mode";
+import { workspaceDisplayName } from "@/lib/workspace-ownership";
+
+export const metadata: Metadata = {
+  robots: noIndexRobots,
+};
+
+// Shared shell for the authenticated app pages. Living in a layout (instead of
+// per-page) keeps the sidebar mounted across navigations, so only the content
+// pane swaps while the sidebar keeps its collapse state and animations.
+// Content pane uses M3 Pattern A fade-through between top-level routes.
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
+  if (!userId) {
+    await auth.protect({ unauthenticatedUrl: "/login" });
+  }
+
+  // Timezone for the workspace clock. The API nav item now shows on every
+  // plan; plans without API access land on the page with the keys section
+  // locked behind an upgrade prompt.
+  let timeZone: string | undefined;
+  let workspaces: Array<{ id: string; name: string; faviconUrl?: string }> = [];
+  let activeWorkspaceId = "";
+  let canCreateWorkspace = false;
+  if (userId) {
+    try {
+      const [workspace, owned] = await Promise.all([
+        resolveActiveWorkspace(userId),
+        listOwnedWorkspaces(userId),
+      ]);
+      timeZone = workspace.timezone;
+      activeWorkspaceId = workspace.id;
+      const entitlements = entitlementsFor(workspace);
+      // An AppSumo license caps workspaces by tier; hide the create button at the cap.
+      canCreateWorkspace =
+        entitlements.subscriptionActive && owned.length < entitlements.limits.workspaces;
+      workspaces = owned.map((item) => ({
+        id: item.id,
+        name: workspaceDisplayName(item),
+        faviconUrl: item.faviconUrl,
+      }));
+      const missingFavicons = owned.filter((item) => !item.faviconUrl);
+      if (missingFavicons.length) {
+        after(() => backfillWorkspaceFavicons(missingFavicons, 8));
+      }
+    } catch {
+      timeZone = undefined;
+    }
+  }
+
+  return (
+    <WorkspaceTimeZoneProvider timeZone={timeZone}>
+      <SidebarCacheScope userId={userId ?? ""} workspaceId={activeWorkspaceId}>
+        <div className="dashboard-shell app-compact flex h-screen max-w-full overflow-hidden overflow-x-hidden bg-[var(--md-sys-color-surface)] text-[var(--md-sys-color-on-surface)]">
+          <Sidebar
+            localMode={isLocalMode()}
+            showApi
+            workspaces={workspaces}
+            activeWorkspaceId={activeWorkspaceId}
+            canCreateWorkspace={canCreateWorkspace}
+          />
+          <main className="h-screen w-full min-w-0 flex-1 overflow-hidden">
+            {/* Mobile: 56px compact app bar; navigation stays in the drawer. */}
+            <section className="flex h-full w-full flex-col pt-14 md:pt-0">
+              <div className="min-h-0 flex-1">
+                <div className="h-full min-h-0">{children}</div>
+              </div>
+            </section>
+          </main>
+          {/* Rendered last so its effect runs after the current page's data hooks
+              have registered their requests, and mounted here (not per page) so it
+              warms the other pages once per app session rather than on every nav. */}
+          <AppDataPrefetch />
+        </div>
+      </SidebarCacheScope>
+    </WorkspaceTimeZoneProvider>
+  );
+}

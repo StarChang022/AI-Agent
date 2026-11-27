@@ -1,0 +1,663 @@
+name: clean
+# Fails the build if any personal name, contact info, or credential enters the skill
+# suite (see scripts/check_clean.sh), if any script locates itself with a CDPATH-unsafe
+# `cd "$(dirname "$0")"` (see scripts/check_cdpath_safe.sh), if a script under
+# `set -o pipefail` pipes into a consumer that exits early — `| head`, `| grep -q` — whose
+# status a large enough input flips (see scripts/check_pipefail_pipes.sh), if a concrete model name/tag creeps into
+# independent-review's pipeline files — that skill is model-agnostic and lets the
+# owner's own CLI config/signin choose the models (see scripts/check_model_agnostic.sh),
+# if a new file under the new-website templates isn't accounted for in any of
+# whats-new.sh's TEMPLATE_TRACKED/SITE_OWNED buckets or check_template_coverage.sh's own
+# SITE_SOURCE bucket (see scripts/check_template_coverage.sh) — landing in SITE_SOURCE is
+# a deliberate, reviewed "not drift-tracked" decision, not a pass-through for anything
+# unclassified — if a shell script under scripts/ is missing from package.sh's zip -r line or
+# REQUIRED, or dropped by one of its -x patterns, so the guards would name it inside the
+# unzipped zip but the zip would lack it (see scripts/check_package_scripts.sh and its test) —
+# if the starter's Node floor drifts from Astro's (its engines inside Astro's range, the
+# lockfile and the docs' phrases agreeing, .nvmrc and ci.yml on one major, the set of Node lines pinned: see scripts/check_node_floor.sh and
+# its test), or if a skill's frontmatter description exceeds the skill-spec hard
+# limit: limit values, the shrink-only allowlist for pre-existing overages, and the
+# warn-only SKILL.md line budget all live in scripts/check_skill_budgets.sh. It also runs
+# independent-review's own checks, in skills/independent-review/scripts/: whether a reviewer that
+# fails is reported rather than hidden (test_failed_tier_report.sh), whether a round past 3 names the
+# kind of finding that earned it and a kind earning two rounds running brings a cut
+# (test_round_checks.sh, in the same job), which reviewer output counts
+# as a review (test_looks_like_review.sh), whether SKILL.md's prompt matches the script's
+# (check_prompt_sync.sh), whether its Perl programs need no newer Perl than they declare
+# (check_perl_minimum.sh, with Perl::MinimumVersion from apt), and whether the claims sweep
+# sees the sentences a per-line grep misses (test_sweep_claims.sh). It also runs the check that neither installer clobbers a skill
+# someone pinned to another worktree of this repo (scripts/test_install_pin.sh), that whats-new.sh
+# marks a bundled skill the suite has removed and names the two ways out
+# (scripts/test_whats_new_removed_skill.sh), and the check
+# that the handoff zip's leak guard still fires on a leak too big for a pipe buffer
+# (scripts/test_package_leak.sh), and that the site template's pre-push hook gates, skips
+# and blocks the right pushes and is wired only where the site is the root of its repo,
+# by a line that holds no shell syntax (scripts/test_pre_push_hook.sh), that the site's verify
+# script reinstalls only on a changed package.json or lockfile and stops at the first red step
+# (scripts/test_verify.sh), and that the private-name check
+# runs in a linked worktree too and that CI's masked mode prints no scanned text
+# (scripts/test_clean_denylist.sh), and that the site's Claude Code
+# sync hook reports news, failures and retries correctly (scripts/test_git_stand_hook.sh), that
+# whats-new marks a frozen template file the site lacks as MISSING (scripts/test_whats_new.sh), that
+# each script listed in scripts/test_mktemp_guard.sh stops with an error when mktemp fails and leaves
+# the folder it ran from alone, with a new script that calls mktemp forced onto its list or its
+# exemptions, that a second make check is refused while one runs, a killed run fails and the
+# manager's next-in-line entry is honoured (scripts/test_check_lock.sh), and
+# that every text file checks out LF even where Git converts to CRLF
+# (scripts/check_lf_checkout.sh), simulated on Ubuntu and checked for real on a Windows runner
+# for the shell scripts, the site hook and the Makefile. And it runs the
+# search-console-insights unit and end-to-end tests (`make test`), which need `requests`,
+# the facts-check tests (`make test-facts`), which need nothing beyond python3, the
+# website-brand-kit tests (`make test-brand-kit`), which borrow `sharp` from an install of the
+# starter and need Pillow, the wordpress-inspector tests (`make test-wordpress-inventory`), which
+# need nothing beyond python3, the website-launch-check tests (`make test-launch-check`), which
+# need nothing beyond python3, the website-new-page tests (`make test-new-page`), which need
+# nothing beyond python3, the internal-link-audit tests (`make test-page-links`), which need
+# nothing beyond python3, the tests of the Antigravity release test (`make
+# test-agy-release`), which need python3, git, node and npm, and the
+# tests of the Cloudflare check and setup scripts (`make test-cloudflare-check`), which need
+# nothing beyond Node and git. And it
+# runs the tests of the `npm create croftweaver` installer (`make test-create`), on Linux,
+# macOS and Windows. The installer needs nothing beyond node; its tests also need git, and
+# zip and tar where the runner has them. And the tests of the Claude Code plugin
+# (`make test-plugin`), which need node, git and bash; release-tag.yml runs them again
+# when a release tag is pushed, with the tag to compare, before it moves the branch `stable`.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Why these triggers. Every push to a pull request branch used to start this workflow
+# twice, once for `push` and once for `pull_request`, and runs on old heads queued behind
+# new ones (on #165 they sat queued over an hour, then were cancelled before any step ran).
+# - `push` covers only main. A pull request branch runs through `pull_request` alone, which
+#   tests the branch merged into main. The two events carry different refs, so the
+#   concurrency group below could never have merged their runs into one.
+# - A pull request with merge conflicts gets no `pull_request` run until they are resolved,
+#   and a branch with no pull request gets none at all: run either by hand
+#   (workflow_dispatch).
+# - On a pull request or branch, a newer run cancels the one it supersedes. A re-run of an
+#   old run joins that same group, so it can cancel a newer run still going there.
+# - On main every commit gets its own group, so each merge keeps a result of its own.
+# - Groups are shared by every workflow in the repo; the workflow name in the group keeps
+#   clean and template-tests from cancelling each other.
+# template-tests.yml uses the same events and group expression, and points here. It runs
+# on every change too, and skips its test jobs when no tested path changed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-pii-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # The private-name list is gitignored, so CI has none of its own: it comes from the
+      # CLEAN_DENYLIST repo secret (`make push-denylist` sets it from the local list). GitHub
+      # gives no secrets to a pull request from a fork or from Dependabot, and a fork of this
+      # repo has a secret of its own or none; those skip the name check with a warning.
+      # Anywhere else a missing secret, or one that lists no names, fails the job: deleting
+      # it must not bring back the silent skip. Only this step sees the secret; the file it
+      # writes is gitignored and read by the next step. The secret holds the list
+      # base64-encoded on one line, after a marker line: the runner blanks every line of a
+      # secret wherever it occurs in the log, so a plain list would turn an entry inside an
+      # ordinary word into "cre***ials" and give it away; one base64 line never occurs in
+      # the log. The marker tells our list from text that merely decodes as base64.
+      - name: Write the private-name list from the CLEAN_DENYLIST secret
+        env:
+          CLEAN_DENYLIST: ${{ secrets.CLEAN_DENYLIST }}
+          NO_SECRETS: ${{ github.event.repository.fork || (github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.event.pull_request.user.login == 'dependabot[bot]')) }}
+        run: |
+          set -o pipefail
+          if [ -n "$CLEAN_DENYLIST" ]; then
+            bad=""; list=""
+            list="$(printf '%s' "$CLEAN_DENYLIST" | base64 --decode 2>/dev/null)" || bad=1
+            case "$list" in "# CLEAN_DENYLIST v1" | "# CLEAN_DENYLIST v1"$'\n'*) ;; *) bad=1 ;; esac
+            if [ -n "$bad" ]; then
+              echo "::error::The CLEAN_DENYLIST secret was not set by 'make push-denylist' (one base64 line, with its marker): run it again"
+              exit 1
+            fi
+            printf '%s\n' "$list" | tr -d '\r' > scripts/.clean-denylist
+            if ! grep -qvE '^[[:space:]]*(#|$)' scripts/.clean-denylist; then
+              echo "::error::The CLEAN_DENYLIST secret lists no names: run 'make push-denylist' in a checkout whose scripts/.clean-denylist does"
+              exit 1
+            fi
+          elif [ "$NO_SECRETS" = true ]; then
+            echo "::warning::No CLEAN_DENYLIST secret in a fork, or on a pull request from a fork or Dependabot: private names were not checked"
+          else
+            echo "::error::The CLEAN_DENYLIST secret is missing or empty: run 'make push-denylist' in a checkout that has scripts/.clean-denylist"
+            exit 1
+          fi
+      # This repo's CI logs are public, so no scanned text is printed, only counts.
+      - name: Scan skills for names / contact info / credentials
+        env:
+          CLEAN_MASK_NAMES: "1"
+        run: bash scripts/check_clean.sh
+  cdpath-safe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check every script locates itself CDPATH-safely
+        run: bash scripts/check_cdpath_safe.sh
+  pipefail-pipes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check no pipefail script pipes into an early-exit consumer
+        run: bash scripts/check_pipefail_pipes.sh
+  model-defaults:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check independent-review stays model-agnostic
+        run: bash scripts/check_model_agnostic.sh
+  template-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check every template file is accounted for (TEMPLATE_TRACKED/SITE_OWNED/SITE_SOURCE)
+        run: bash scripts/check_template_coverage.sh
+      - name: Check the guard fails on a template file left out of every bucket
+        run: bash scripts/test_template_coverage.sh
+  package-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check every shell script under scripts/ ships in the handoff zip
+        run: bash scripts/check_package_scripts.sh
+      - name: Check the guard fails on a script left out of package.sh
+        run: bash scripts/test_check_package_scripts.sh
+  node-floor:
+    runs-on: ubuntu-latest
+    env:
+      # A skip counts as a failure: without node the check would pass having checked nothing.
+      REQUIRE_NODE_FLOOR: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Check the starter's Node floor (engines inside Astro's, the lockfile and the docs agree)
+        run: bash scripts/check_node_floor.sh
+      - name: Check the guard fails on each way the floor can drift
+        run: bash scripts/test_node_floor.sh
+  starter-node-24:
+    # The starter's .nvmrc and ci.yml are on Node 26, but its engines still admit 24, and a site
+    # owner may run it. This installs, type-checks and builds the starter on 24, so a change that
+    # needs 26 fails here and not on a site.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Stop unless this really is Node 24
+        run: |
+          node -e 'process.exit(process.versions.node.split(".")[0] === "24" ? 0 : 1)' || { echo "::error::this job is meant to run Node 24, not $(node -v)"; exit 1; }
+      - name: Install, type-check and build the starter
+        run: |
+          cp -R skills/new-website/templates/astro "$RUNNER_TEMP/starter"
+          cd "$RUNNER_TEMP/starter"
+          npm ci --no-audit --no-fund
+          npm run check
+          npm run build
+  starter-node-22:
+    # The starter's engines also admit Node 22, the oldest line it supports. As the Node 24
+    # job above, plus the Playwright suite, because a break on 22 that only npm test shows would
+    # reach a site owner first.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          check-latest: true  # a cached older Node 22 may sit under the engines floor
+      - name: Stop unless this Node is inside the starter's engines range
+        # The 24 job checks the major only; here the minor and patch matter. check_node_floor.sh reads
+        # the range, so a new floor needs no edit here. It refuses a range it cannot read (exit 2).
+        run: |
+          r=$(node -p 'require("./skills/new-website/templates/astro/package.json").engines.node')
+          a=$(bash scripts/check_node_floor.sh --admits "$r" "$(node -p process.versions.node)") || { echo "::error::cannot judge $(node -v) against engines \"$r\": $a"; exit 1; }
+          [ "$a" = yes ] || { echo "::error::$(node -v) is outside the starter's engines \"$r\": raise Node, or remove this job if engines dropped Node 22"; exit 1; }
+      - name: Install, type-check, build and test the starter
+        run: |
+          cp -R skills/new-website/templates/astro "$RUNNER_TEMP/starter"
+          cd "$RUNNER_TEMP/starter"
+          npm ci --no-audit --no-fund
+          npm run check
+          npm run build
+          # The icons spec needs the icons setup makes: the site's name set, then the script's --setup.
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+          npx playwright install --with-deps chromium
+          npm test
+  skill-budgets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check per-skill size budgets (description limit + line budget)
+        run: bash scripts/check_skill_budgets.sh
+  review-reporting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check a failed reviewer is reported, not hidden behind exit 0
+        run: bash skills/independent-review/scripts/test_failed_tier_report.sh
+      - name: Check a Codex review run turns off the MCP servers it can name, and says so when it cannot
+        run: bash skills/independent-review/scripts/test_codex_mcp_off.sh
+      - name: Check the round checks refuse a round past 3 with no kind, and a kind earning two rounds running with no cut
+        run: bash skills/independent-review/scripts/test_round_checks.sh
+  review-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check which reviewer output independent-review counts as a review
+        run: bash skills/independent-review/scripts/test_looks_like_review.sh
+      - name: Check SKILL.md's reviewer prompt matches the script's
+        run: bash skills/independent-review/scripts/check_prompt_sync.sh
+  perl-minimum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Perl::MinimumVersion
+        run: sudo apt-get update -q && sudo apt-get install -y -q libperl-minimumversion-perl
+      - name: Check independent-review's Perl programs need no newer Perl than they declare
+        env:
+          REQUIRE_PERL_MINIMUM: "1"
+        run: bash skills/independent-review/scripts/check_perl_minimum.sh
+  claims-sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the claims sweep sees the sentences a per-line grep misses
+        run: bash skills/independent-review/scripts/test_sweep_claims.sh
+  install-pin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the installers keep a skill pinned to another worktree
+        run: bash scripts/test_install_pin.sh
+  whats-new-removed-skill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check whats-new says when a bundled skill was removed from the suite
+        run: bash scripts/test_whats_new_removed_skill.sh
+  package-leak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the handoff zip's leak guard catches a large leak
+        run: bash scripts/test_package_leak.sh
+  pre-push-hook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # The test's "prepare" cases need node and npm, and without them it skips those cases
+      # and still exits 0. A zip recipient gets that skip; this job must not, or it would stay
+      # green and test less. So it brings node, and stops if either is missing.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Check the site pre-push hook gates, skips and blocks the right pushes, and is wired only at a repo's root, by a line that holds no shell syntax
+        run: |
+          command -v node >/dev/null || { echo "::error::no node here: the test would skip its prepare cases"; exit 1; }
+          command -v npm >/dev/null || { echo "::error::no npm here: the test would skip its prepare cases"; exit 1; }
+          bash scripts/test_pre_push_hook.sh
+  clean-denylist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the private-name check runs in a linked worktree, CI's masked mode prints no scanned text, and the secret step and push-denylist refuse an empty list
+        run: bash scripts/test_clean_denylist.sh
+  git-stand-hook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Without node the test skips and exits 0; this job must not stay green untested.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Check the site's Claude Code sync hook reports news, failures and retries correctly
+        run: |
+          command -v node >/dev/null || { echo "::error::no node here: the test would skip"; exit 1; }
+          bash scripts/test_git_stand_hook.sh
+  whats-new:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check whats-new marks a frozen template file the site lacks as MISSING
+        run: bash scripts/test_whats_new.sh
+  buglog-rows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check docs/BUGLOG.md holds no row twice (union merges can keep both versions)
+        run: bash scripts/check_buglog_rows.sh
+      - name: Check the guard's rules, and that real merges append cleanly under .gitattributes
+        run: bash scripts/test_buglog_rows.sh
+  mktemp-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # A listed script that skips (no git, node or python3 on the machine) is not tested; this job
+      # must not stay green having tried fewer scripts, so REQUIRE_EVERY_SCRIPT=1 makes a skip a
+      # failure, as REQUIRE_PERL_MINIMUM does for the Perl check above.
+      - name: Check the scripts listed in test_mktemp_guard.sh stop with an error, and leave the folder they ran from alone, when mktemp fails
+        env:
+          REQUIRE_EVERY_SCRIPT: "1"
+        run: bash scripts/test_mktemp_guard.sh
+  check-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check a second make check is refused while one runs, a killed run fails, and the next-in-line entry is honoured
+        run: bash scripts/test_check_lock.sh
+  lf-checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check every text file checks out LF, even where Git converts to CRLF
+        run: bash scripts/check_lf_checkout.sh
+  # lf-checkout simulates a Windows checkout on Ubuntu; this is the real one. Git for Windows
+  # converts to CRLF by default, and the root .gitattributes must keep this repo's scripts, the
+  # site hook and the Makefile LF anyway. Node reads the bytes: a CR handed to grep through Git
+  # Bash flagged LF files as CRLF (template-tests.yml's verify-windows). A canary checked out by
+  # the same action must come out CRLF first, or the action never converted here and the job
+  # would pass whatever the rule says.
+  lf-checkout-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Convert to CRLF on checkout, as Git for Windows does by default
+        run: git config --global core.autocrlf true
+      - uses: actions/checkout@v7
+      # a7de280 is main just before #168: no .gitattributes anywhere, so nothing keeps it LF.
+      - name: Canary — the last commit without the rule, checked out by the same action
+        uses: actions/checkout@v7
+        with:
+          ref: a7de28013ced0df26a57614600ad4d4d9d288da4
+          path: canary
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: The canary's script came out CRLF, so this checkout converts
+        shell: bash
+        run: |
+          node -e '
+            if (!require("fs").readFileSync(process.argv[1]).includes(13)) {
+              console.log("::error::the canary came out LF: actions/checkout did not convert here, so the check below would prove nothing");
+              process.exit(1);
+            }
+            console.log("canary: a script with no .gitattributes rule came out CRLF");
+          ' canary/scripts/check_clean.sh
+      - name: This repo's shell scripts, the site hook and the Makefile checked out LF
+        shell: bash
+        run: |
+          git ls-files -z -- '*.sh' 'skills/new-website/templates/astro/scripts/hooks/*' Makefile \
+            >"$RUNNER_TEMP/lf-files"
+          node -e '
+            const fs = require("fs");
+            const files = fs.readFileSync(process.argv[1], "utf8").split("\0").filter(Boolean);
+            const sh = files.filter((f) => f.endsWith(".sh"));
+            const hook = files.some((f) => f.endsWith("/hooks/pre-push"));
+            const make = files.includes("Makefile");
+            // An empty or partial list would pass with nothing checked.
+            if (!sh.length || !hook || !make) {
+              console.log(`::error::too little to check: ${sh.length} .sh file(s), hook ${hook ? "found" : "missing"}, Makefile ${make ? "found" : "missing"}`);
+              process.exit(1);
+            }
+            const bad = files.filter((f) => fs.readFileSync(f).includes(13));
+            if (bad.length) { console.log("::error::checked out with CRLF line endings: " + bad.join(" ")); process.exit(1); }
+            console.log("line endings: LF in all " + sh.length + " .sh files, the site hook and the Makefile");
+          ' "$RUNNER_TEMP/lf-files"
+  search-console-insights-tests:
+    # 3.9 is macOS's stock python3, which SKILL.md's venv setup uses; 3.12-only syntax
+    # (e.g. reusing a quote inside an f-string) once broke the report there.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      # The full requirements, not only what the tests import: the 3.9 leg then fails
+      # when a floor in requirements.txt stops installing on macOS's stock python3.
+      - name: Install the skill's requirements (what SKILL.md's venv setup installs)
+        run: python -m pip install -r skills/search-console-insights/requirements.txt
+      - name: Run the tracker + AI-check tests (stub servers, no real API calls)
+        run: make test PYTHON=python
+  facts-check-tests:
+    # Standard library only, so nothing is installed: the job then also proves the script
+    # runs on a bare python3. 3.9 is macOS's stock python3.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the facts-check tests (stub site on 127.0.0.1, no real requests)
+        run: make test-facts PYTHON=python
+  website-brand-kit-tests:
+    # The intake is standard-library Python; 3.9 is macOS's stock python3. The tests that draw
+    # icons borrow `sharp` from an install of the starter, which is where a real site has it,
+    # and the share-card tests need Pillow, as the site's own `npm run og` does. REQUIRE_SHARP
+    # turns "skipped, no sharp" and "skipped, no Pillow" into failures: a job that tested less
+    # must not stay green.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: An install of the starter, to borrow its sharp from
+        run: |
+          cp -R skills/new-website/templates/astro "$RUNNER_TEMP/starter"
+          cd "$RUNNER_TEMP/starter"
+          npm ci --no-audit --no-fund
+          node -e "require('sharp')"
+      - name: Pillow, for the share cards
+        run: python -m pip install Pillow
+      - name: Run the website-brand-kit tests (no network; every site is a throwaway copy of the starter)
+        env:
+          REQUIRE_SHARP: "1"
+          BRAND_KIT_NODE_MODULES: ${{ runner.temp }}/starter/node_modules
+        run: make test-brand-kit PYTHON=python
+  wordpress-inventory-tests:
+    # Standard library only, as for the facts check. 3.9 is the oldest Python the scripts
+    # promise (the python3 a Mac ships with); the runner gets it from setup-python.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the wordpress-inspector tests (stub sites on 127.0.0.1, no real requests)
+        run: make test-wordpress-inventory PYTHON=python
+  launch-check-tests:
+    # Standard library only, as for the facts check; 3.9 is the oldest Python the scripts promise.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the website-launch-check tests (the report-page script, no network)
+        run: make test-launch-check PYTHON=python
+  new-page-tests:
+    # Standard library only, as for the facts check; 3.9 is the oldest Python the script promises.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the website-new-page tests (the page-text check, no network)
+        run: make test-new-page PYTHON=python
+  page-links-tests:
+    # Standard library only, as for the page-text check; 3.9 is the oldest Python the script promises.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the internal-link-audit tests (the new-page link check, no network)
+        run: make test-page-links PYTHON=python
+  agy-release-tests:
+    # The maintainer's Antigravity release test, run against a stub agy: no credits, no network.
+    # Standard library only, as for the facts check; npm runs a fixture site with no dependencies.
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.12"]
+    runs-on: ubuntu-24.04  # ubuntu-latest is now 26.04, where setup-python has no 3.9
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the Antigravity release-test tests (stub agy, fixture release)
+        env:
+          REQUIRE_AGY_TEST_TOOLS: "1"  # missing git, node or npm fails here instead of skipping
+        run: make test-agy-release PYTHON=python
+  cloudflare-check-tests:
+    # Node's standard library only, so nothing is installed. 18 is the oldest Node the scripts
+    # promise, 26 is the one the template pins and a site is built with; Windows runs the same
+    # files, since the scripts are started by a path there too. The check's tests make their
+    # own certificate with openssl, which bash on the Windows runner has; the setup script's
+    # tests make git repositories, and one of them waits out the script's 55-second deadline; the move script's tests also build a small site with npm.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, node: '18' }
+          - { os: ubuntu-latest, node: '20' }
+          - { os: ubuntu-latest, node: '22' }
+          - { os: ubuntu-latest, node: '24' }
+          - { os: ubuntu-latest, node: '26' }
+          - { os: windows-latest, node: '26' }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Run the Cloudflare check's, setup script's and move script's tests (stubs on 127.0.0.1, no real requests)
+        shell: bash
+        run: node --test skills/new-website/scripts/tests/cloudflare-check.test.mjs skills/new-website/scripts/tests/cloudflare-check-workers.test.mjs skills/new-website/scripts/tests/cloudflare-setup.test.mjs skills/new-website/scripts/tests/move-to-workers.test.mjs
+  create-croftweaver-tests:
+    # The installer calls no other program, so that it runs in a Windows terminal, where the
+    # shell installers need Git Bash or WSL. Only a run on Windows shows that, so it runs on
+    # all three systems with the site template's node, and once on the oldest node its
+    # package.json accepts. The tests themselves call git on every system (one zips the real
+    # skills with it), and zip and tar on Linux and macOS. An empty `node` leaves the choice
+    # to node-version-file. Each system reports for itself: with fail-fast, one failing
+    # cancels the others, and a cancelled job reads as failed.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [""]
+        include:
+          - os: ubuntu-latest
+            node: "22.12.0"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Run the create-croftweaver tests (stub of the release download on 127.0.0.1, no real requests)
+        working-directory: packages/create-croftweaver
+        run: node --test
+  plugin-tests:
+    # The plugin's two manifests, and the rule that lets the skills run from a plugin's
+    # folder: no skill sends the assistant to ~/.claude/skills/<name>/ for its files. One of
+    # the tests runs, in bash, the lines new-website gives the assistant to find the suite,
+    # another the lines website-permissions gives to copy the allowlist.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Run the plugin tests
+        run: make test-plugin
+  macos-stock-tools:
+    # Every job above runs on Ubuntu (bash 5, GNU awk/sed/tr). A zip recipient on a Mac runs
+    # the same guards under /bin/bash 3.2 and BSD tools, and v0.27's pre-release review found
+    # main unable to pass `make smoke` there (a heredoc bash 3.2 could not parse; BSD tr and
+    # awk stopping on UTF-8 bytes) with every job here green. The runner image also carries
+    # Homebrew's bash 5 and GNU tools, so pin the stock ones first on PATH and print what ran:
+    # a job that silently used bash 5 would pass for the wrong reason.
+    runs-on: macos-latest
+    env:
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+      # The Node-floor check and its test skip without node, and a skip here would pass having
+      # checked nothing: they get node explicitly (the image's own is not relied on) and fail on a skip.
+      REQUIRE_NODE_FLOOR: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Put macOS's own bash, awk, sed, tr and grep first on PATH
+        run: |
+          stock="$RUNNER_TEMP/stock-tools"; mkdir -p "$stock"
+          ln -s /bin/bash "$stock/bash"
+          for t in awk sed tr grep; do ln -s "/usr/bin/$t" "$stock/$t"; done
+          echo "$stock" >> "$GITHUB_PATH"
+      - name: Fail unless the stock tools and a UTF-8 locale are what the next step gets
+        run: |
+          for t in bash awk sed tr grep; do
+            got="$(command -v "$t")"; echo "$t -> $got"
+            [ "$got" = "$RUNNER_TEMP/stock-tools/$t" ] || { echo "$t is not the stock one"; exit 1; }
+          done
+          bash --version | head -1
+          case "$(bash -c 'echo $BASH_VERSION')" in 3.2.*) ;; *) echo "not bash 3.2"; exit 1 ;; esac
+          [ "$(locale charmap)" = UTF-8 ] || { echo "locale is not UTF-8"; exit 1; }
+      - name: Run every guard and build the handoff zip, as a Mac user would (make smoke)
+        run: make smoke
+      # A zip recipient runs `make check` in the unzipped folder, with no git history. Nothing
+      # ran it there, and it failed in the v0.27 zip (check_cdpath_safe.sh ran whats-new.sh,
+      # which needs a clone). Unzip outside the checkout, so no enclosing repo answers git.
+      - name: Run every guard inside the unzipped handoff zip, as a zip recipient would
+        run: |
+          unzip -q dist/croftweaver.zip -d "$RUNNER_TEMP/handoff"
+          cd "$RUNNER_TEMP/handoff" && make check

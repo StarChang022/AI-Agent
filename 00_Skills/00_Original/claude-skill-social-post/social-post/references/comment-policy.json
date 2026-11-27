@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "policy_version": 1,
+  "default_mode": "batch_confirm",
+  "live_browser_scan_enabled": true,
+  "live_browser_actuation_enabled": false,
+  "auto_classifications": [
+    "positive_reaction",
+    "gratitude",
+    "emoji_only"
+  ],
+  "review_required_classifications": [
+    "question",
+    "keyword_request",
+    "complaint",
+    "support",
+    "pricing",
+    "partnership",
+    "legal",
+    "security",
+    "privacy",
+    "harassment",
+    "sensitive",
+    "spam",
+    "unknown"
+  ],
+  "minimum_auto_confidence": 0.95,
+  "maximum_actions_per_run": 5,
+  "maximum_comments_per_scan": 50,
+  "maximum_browser_scan_request_ttl_seconds": 600,
+  "maximum_browser_scan_age_seconds": 300,
+  "maximum_browser_preflight_age_seconds": 60,
+  "maximum_browser_result_age_seconds": 300,
+  "maximum_browser_finish_capability_ttl_seconds": 300,
+  "maximum_browser_reconcile_capability_ttl_seconds": 86400,
+  "maximum_reply_characters": 500,
+  "allow_external_links_auto": false,
+  "allow_private_messages": false,
+  "allow_media_replies": false
+}

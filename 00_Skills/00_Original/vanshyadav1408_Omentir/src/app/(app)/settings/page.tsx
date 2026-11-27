@@ -1,0 +1,81 @@
+import { auth, currentUser } from "@/lib/server/auth";
+import SettingsView from "./settings-view";
+import {
+  deleteWorkspaceAction,
+  disconnectLinkedInAccountAction,
+  saveSettingsAction,
+  uploadProfileImageAction,
+} from "@/app/actions";
+import { resolveActiveWorkspace } from "@/lib/server/active-workspace";
+import { syncHostedWorkspaceBilling } from "@/lib/server/billing-sync";
+import { createPageMetadata } from "@/app/seo";
+import { isLocalMode } from "@/lib/runtime-mode";
+
+export const metadata = createPageMetadata({
+  title: "Settings - Omentir",
+  description: "Manage Omentir workspace settings, notification email, sending limits, and connected accounts.",
+  path: "/settings",
+  noIndex: true,
+});
+
+type SessionClaimsProfile = {
+  email?: string;
+  image_url?: string;
+  first_name?: string;
+  full_name?: string;
+  name?: string;
+  picture?: string;
+};
+
+function googleImageUrl(user: {
+  imageUrl?: string | null;
+  externalAccounts?: Array<{ provider: string; imageUrl?: string | null }>;
+} | null) {
+  const accounts = user?.externalAccounts || [];
+  const google = accounts.find(
+    (account) => account.provider === "google" || account.provider === "oauth_google",
+  );
+  return google?.imageUrl || user?.imageUrl || "";
+}
+
+export default async function SettingsPage() {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) {
+    await auth.protect();
+    throw new Error("Unauthorized");
+  }
+
+  const [loadedWorkspace, user] = await Promise.all([resolveActiveWorkspace(userId), currentUser()]);
+  const workspace = await syncHostedWorkspaceBilling(loadedWorkspace);
+  const profile = (sessionClaims || {}) as SessionClaimsProfile;
+  const userName =
+    user?.fullName ||
+    user?.firstName ||
+    profile.full_name ||
+    profile.name ||
+    profile.first_name ||
+    "User";
+  const userEmail =
+    user?.primaryEmailAddress?.emailAddress ||
+    profile.email ||
+    workspace.notificationEmail ||
+    "not set";
+  const imageUrl =
+    workspace.ownerImageUrl || googleImageUrl(user) || profile.image_url || profile.picture || "";
+
+  return (
+    <SettingsView
+      workspace={workspace}
+      linkedInAccounts={[]}
+      user={{ name: userName, email: userEmail, imageUrl }}
+      saveAction={saveSettingsAction}
+      uploadImageAction={uploadProfileImageAction}
+      disconnectAction={disconnectLinkedInAccountAction}
+      deleteWorkspaceAction={deleteWorkspaceAction}
+      localMode={isLocalMode()}
+      notificationsEnabled={
+        !isLocalMode() || Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM_EMAIL)
+      }
+    />
+  );
+}

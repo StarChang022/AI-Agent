@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How Agent Skills Are Scored and Listed | Suede</title>
+    <meta name="description" content="How the Suede Skills Directory grades agent skills: source lists, the Suede Skill Check, the 0–99 quality score, letter grades and listing rules.">
+    <meta name="keywords" content="agent skill quality check, SKILL.md best practices, agent skills specification, skill grading, Suede Skill Check">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <link rel="canonical" href="https://suedeai.directory/methodology/">
+    <link rel="icon" href="../../assets/favicon-64.png" type="image/png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Suede Skills Directory">
+    <meta property="og:title" content="How Agent Skills Are Scored and Listed | Suede">
+    <meta property="og:description" content="How the Suede Skills Directory grades agent skills: source lists, the Suede Skill Check, the 0–99 quality score, letter grades and listing rules.">
+    <meta property="og:url" content="https://skills.suedeai.ai/directory/methodology/">
+    <meta property="og:image" content="https://skills.suedeai.ai/assets/social/directory-card-v2.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@AISUEDE">
+    <meta name="twitter:title" content="How Agent Skills Are Scored and Listed | Suede">
+    <meta name="twitter:description" content="How the Suede Skills Directory grades agent skills: source lists, the Suede Skill Check, the 0–99 quality score, letter grades and listing rules.">
+    <meta name="twitter:image" content="https://skills.suedeai.ai/assets/social/directory-card-v2.png">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": "https://skills.suedeai.ai/directory/methodology/#page",
+        "name": "How Agent Skills Are Scored and Listed | Suede",
+        "headline": "How skills are listed and graded",
+        "description": "How the Suede Skills Directory grades agent skills: source lists, the Suede Skill Check, the 0–99 quality score, letter grades and listing rules.",
+        "url": "https://skills.suedeai.ai/directory/methodology/",
+        "dateModified": "2026-11-26",
+        "inLanguage": "en",
+        "isPartOf": {
+          "@type": "CollectionPage",
+          "@id": "https://skills.suedeai.ai/directory/#directory",
+          "name": "Suede Skills Directory",
+          "url": "https://skills.suedeai.ai/directory/"
+        },
+        "breadcrumb": {
+          "@id": "https://skills.suedeai.ai/directory/methodology/#breadcrumb"
+        },
+        "author": {
+          "@type": "Person",
+          "@id": "https://suedeai.ai/founder#person",
+          "name": "Jason Colapietro",
+          "url": "https://suedeai.ai/founder",
+          "jobTitle": "Founder and CEO, Suede",
+          "worksFor": {
+            "@id": "https://suedeai.ai/#organization"
+          },
+          "sameAs": [
+            "https://jasoncolapietro.com/",
+            "https://github.com/JasonColapietro",
+            "https://www.linkedin.com/in/jasoncolapietro",
+            "https://x.com/johnnysuede",
+            "https://www.crunchbase.com/person/jason-colapietro-d83e",
+            "https://apps.apple.com/us/developer/jason-colapietro/id1895958699",
+            "https://www.wikidata.org/wiki/Q140235755"
+          ]
+        },
+        "editor": {
+          "@id": "https://suedeai.ai/founder#person"
+        },
+        "publisher": {
+          "alternateName": [
+            "Suede Labs AI",
+            "Suede Labs",
+            "Suede AI"
+          ],
+          "parentOrganization": {
+            "@type": "Organization",
+            "@id": "https://jcinvestmentgroup.ventures/#organization",
+            "name": "JC Investment Group LLC",
+            "url": "https://jcinvestmentgroup.ventures/"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "138 Victorian Lane",
+            "addressLocality": "Jupiter",
+            "addressRegion": "FL",
+            "postalCode": "33458",
+            "addressCountry": "US"
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "@id": "https://suedeai.ai/terms#money-back-policy",
+            "name": "90-day money-back policy",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+            "merchantReturnDays": 90,
+            "returnFees": "https://schema.org/FreeReturn",
+            "refundType": "https://schema.org/FullRefund",
+            "merchantReturnLink": "https://suedeai.ai/terms#money-back-policy"
+          },
+          "@type": "Organization",
+          "@id": "https://suedeai.ai/#organization",
+          "name": "Suede",
+          "url": "https://suedeai.ai",
+          "logo": "https://skills.suedeai.ai/assets/suede-ai-logo-transparent.webp",
+          "founder": {
+            "@id": "https://suedeai.ai/founder#person"
+          },
+          "sameAs": [
+            "https://suedeai.org/",
+            "https://github.com/Suede-AI",
+            "https://x.com/AISUEDE",
+            "https://www.youtube.com/@aisuede",
+            "https://www.linkedin.com/company/suede-labs",
+            "https://www.crunchbase.com/organization/suede-labs-ai",
+            "https://www.wikidata.org/wiki/Q141169484"
+          ]
+        },
+        "about": {
+          "@type": "Thing",
+          "name": "Agent Skills",
+          "url": "https://agentskills.io/specification"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "@id": "https://skills.suedeai.ai/directory/methodology/#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Directory",
+            "item": "https://skills.suedeai.ai/directory/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Methodology",
+            "item": "https://skills.suedeai.ai/directory/methodology/"
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": "https://agents.suedeai.ai/#app",
+        "name": "Suede Agent Studio",
+        "url": "https://agents.suedeai.ai",
+        "sameAs": [
+          "https://suedeai.app/"
+        ],
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "publisher": {
+          "@id": "https://suedeai.ai/#organization"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "alternateName": [
+          "Suede SEO"
+        ],
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "138 Victorian Lane",
+          "addressLocality": "Jupiter",
+          "addressRegion": "FL",
+          "postalCode": "33458",
+          "addressCountry": "US"
+        },
+        "hasMerchantReturnPolicy": {
+          "@type": "MerchantReturnPolicy",
+          "@id": "https://suedeai.ai/terms#money-back-policy",
+          "name": "90-day money-back policy",
+          "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+          "merchantReturnDays": 90,
+          "returnFees": "https://schema.org/FreeReturn",
+          "refundType": "https://schema.org/FullRefund",
+          "merchantReturnLink": "https://suedeai.ai/terms#money-back-policy"
+        },
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "@id": "https://seo.suedeai.ai/#organization",
+        "name": "Suede SEO",
+        "url": "https://seo.suedeai.ai/",
+        "sameAs": [
+          "https://suedeai.agency/"
+        ],
+        "parentOrganization": {
+          "@id": "https://suedeai.ai/#organization"
+        }
+      }
+    </script>
+    <meta name="theme-color" content="#000000">
+    <link rel="preload" href="../../assets/fonts/geist-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../../assets/fonts/geist-mono-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="../../assets/fonts/pixelify-sans-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="../../assets/directory.css">
+    <script src="../../assets/directory.js" defer></script>
+    <link rel="alternate" type="application/rss+xml" title="Suede Skills Directory: new listings and guides" href="../feed.xml">
+</head>
+  <body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="nav">
+      <nav class="shell nav-inner" aria-label="Main navigation">
+        <a href="../" class="nav-logo" aria-label="Suede Skills Directory home">
+          <img src="../../assets/suede-ai-logo-transparent.webp" alt="Suede" width="28" height="28" onerror="this.style.display='none'">
+          <span class="nav-logo-wordmark">Suede <span>Directory</span></span>
+        </a>
+        <a class="gh-star gh-star--nav" href="https://github.com/JasonColapietro/suede-creator-skills" target="_blank" rel="noopener" data-gh-star aria-label="Star Suede Skills on GitHub, 121 stars"><svg class="gh-star-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg><span>Star</span><span class="gh-star-count">121</span></a>
+        <details class="nav-disclosure" open>
+      <summary class="nav-hamburger" aria-label="Open navigation menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </summary>
+      <div class="nav-links">
+          <a href="../" aria-current="page">Skills</a>
+          <a href="../top/">Top 100</a>
+          <a href="../new/">New</a>
+          <a href="../topics/">Topics</a>
+          <a href="../featured/">Featured Skills</a>
+          <a href="../agents/">Agents</a>
+          <a href="../stacks/">Stacks</a>
+          <a href="../trust/">Security</a>
+          <a href="../saved/" data-saved-link>Saved <span class="count-chip" data-saved-count hidden></span></a>
+          <a href="../submit/" class="nav-cta">List your skill</a>
+        </div>
+    </details>
+      </nav>
+    </header>
+    <nav class="kind-bar" aria-label="Directory catalogs">
+      <div class="shell kind-bar-inner">
+        <a href="../"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h4v1h-4zM5 0h4v1h-4zM0 1h4v1h-4zM5 1h4v1h-4zM0 2h4v1h-4zM5 2h4v1h-4zM0 4h4v1h-4zM5 4h4v1h-4zM0 5h4v1h-4zM5 5h4v1h-4zM0 6h4v1h-4zM5 6h4v1h-4zM0 8h4v1h-4zM5 8h4v1h-4zM0 9h4v1h-4zM5 9h4v1h-4zM0 10h4v1h-4zM5 10h4v1h-4z"/></svg><span class="kind-label" data-short="Skills">Skills</span><span class="count-chip">3,916</span></a>
+        <a href="../featured/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M5 0h2v1h-2zM5 1h2v1h-2zM4 2h4v1h-4zM4 3h4v1h-4zM0 4h12v1h-12zM1 5h10v1h-10zM2 6h8v1h-8zM3 7h6v1h-6zM3 8h2v1h-2zM7 8h2v1h-2zM2 9h2v1h-2zM8 9h2v1h-2zM1 10h1v1h-1zM10 10h1v1h-1z"/></svg><span class="kind-label" data-short="Featured">Featured Skills</span><span class="count-chip">37</span></a>
+        <a href="../agents/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M5 0h2v1h-2zM5 1h2v1h-2zM2 2h8v1h-8zM1 3h1v1h-1zM10 3h1v1h-1zM1 4h1v1h-1zM3 4h2v1h-2zM7 4h2v1h-2zM10 4h1v1h-1zM1 5h1v1h-1zM3 5h2v1h-2zM7 5h2v1h-2zM10 5h1v1h-1zM1 6h1v1h-1zM10 6h1v1h-1zM1 7h1v1h-1zM3 7h6v1h-6zM10 7h1v1h-1zM1 8h1v1h-1zM10 8h1v1h-1zM2 9h8v1h-8zM3 10h1v1h-1zM8 10h1v1h-1zM3 11h1v1h-1zM8 11h1v1h-1z"/></svg><span class="kind-label" data-short="Agents">AI agents</span><span class="count-chip">87</span></a>
+        <a href="../plugins/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M3 0h1v1h-1zM8 0h1v1h-1zM3 1h1v1h-1zM8 1h1v1h-1zM2 2h8v1h-8zM2 3h1v1h-1zM9 3h1v1h-1zM2 4h1v1h-1zM9 4h1v1h-1zM2 5h1v1h-1zM9 5h1v1h-1zM3 6h1v1h-1zM8 6h1v1h-1zM4 7h4v1h-4zM5 8h2v1h-2zM5 9h2v1h-2zM5 10h2v1h-2z"/></svg><span class="kind-label" data-short="Plugins">Plugins and mods</span><span class="count-chip">22</span></a>
+        <a href="../grok/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M6 0h4v1h-4zM5 1h1v1h-1zM4 2h1v1h-1zM3 3h1v1h-1zM2 4h7v1h-7zM7 5h1v1h-1zM6 6h1v1h-1zM5 7h1v1h-1zM4 8h1v1h-1zM3 9h1v1h-1zM2 10h1v1h-1z"/></svg><span class="kind-label" data-short="Grok">Grok bots</span><span class="count-chip">20</span></a>
+        <a href="../mcp-servers/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M0 0h12v1h-12zM0 1h1v1h-1zM11 1h1v1h-1zM0 2h1v1h-1zM2 2h2v1h-2zM9 2h1v1h-1zM11 2h1v1h-1zM0 3h12v1h-12zM0 4h1v1h-1zM11 4h1v1h-1zM0 5h1v1h-1zM2 5h2v1h-2zM9 5h1v1h-1zM11 5h1v1h-1zM0 6h12v1h-12zM0 7h1v1h-1zM11 7h1v1h-1zM0 8h1v1h-1zM2 8h2v1h-2zM9 8h1v1h-1zM11 8h1v1h-1zM0 9h12v1h-12z"/></svg><span class="kind-label" data-short="MCP">MCP servers</span><span class="count-chip">7</span></a>
+        <a href="../rules/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 0h10v1h-10zM0 1h1v1h-1zM11 1h1v1h-1zM0 2h1v1h-1zM3 2h5v1h-5zM11 2h1v1h-1zM0 3h1v1h-1zM11 3h1v1h-1zM0 4h1v1h-1zM3 4h7v1h-7zM11 4h1v1h-1zM0 5h1v1h-1zM11 5h1v1h-1zM0 6h1v1h-1zM3 6h5v1h-5zM11 6h1v1h-1zM0 7h1v1h-1zM11 7h1v1h-1zM0 8h1v1h-1zM3 8h7v1h-7zM11 8h1v1h-1zM0 9h1v1h-1zM11 9h1v1h-1zM1 10h10v1h-10z"/></svg><span class="kind-label" data-short="Rules">Rules and prompts</span><span class="count-chip">18</span></a>
+        <a href="../stacks/"><svg class="pix" viewBox="0 0 12 12" width="14" height="14" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M5 1h2v1h-2zM3 2h2v1h-2zM7 2h2v1h-2zM1 3h2v1h-2zM9 3h2v1h-2zM0 4h1v1h-1zM11 4h1v1h-1zM1 5h2v1h-2zM9 5h2v1h-2zM3 6h2v1h-2zM7 6h2v1h-2zM1 7h2v1h-2zM5 7h2v1h-2zM9 7h2v1h-2zM0 8h1v1h-1zM11 8h1v1h-1zM1 9h2v1h-2zM9 9h2v1h-2zM3 10h2v1h-2zM7 10h2v1h-2zM5 11h2v1h-2z"/></svg><span class="kind-label" data-short="Stacks">Stacks</span><span class="count-chip">10</span></a>
+      </div>
+    </nav>
+    <main id="main" tabindex="-1" class="shell directory">
+      <div class="eyebrow">Suede Skills Directory &middot; Method</div>
+      <h1>How skills are listed and graded</h1>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="../">Directory</a> <span class="crumb-sep" aria-hidden="true">/</span> <span aria-current="page">Methodology</span></nav>
+      <p class="lead">The directory lists public Agent Skills that pass a published, mechanical check. This page is the whole method: where skills come from, what is checked, what gets a page of its own, and how to change a listing.</p>
+      <p class="byline muted">Method written and maintained by <a href="https://suedeai.ai/founder" rel="author">Jason Colapietro</a>, Founder and CEO of <a href="https://suedeai.ai">Suede</a>. Figures on this page come from the <time datetime="2026-10-22">October 22, 2026</time> snapshot.</p>
+      <section class="panel" aria-labelledby="sources-title">
+        <h2 id="sources-title">Where the skills come from</h2>
+        <p>The directory reads the repositories cited by at least two of these 8 curated lists: <a href="https://github.com/BehiSecc/awesome-claude-skills" target="_blank" rel="noopener">BehiSecc/awesome-claude-skills</a>, <a href="https://github.com/ComposioHQ/awesome-claude-skills" target="_blank" rel="noopener">ComposioHQ/awesome-claude-skills</a>, <a href="https://github.com/VoltAgent/awesome-agent-skills" target="_blank" rel="noopener">VoltAgent/awesome-agent-skills</a>, <a href="https://github.com/heilcheng/awesome-agent-skills" target="_blank" rel="noopener">heilcheng/awesome-agent-skills</a>, <a href="https://github.com/hesreallyhim/awesome-claude-code" target="_blank" rel="noopener">hesreallyhim/awesome-claude-code</a>, <a href="https://github.com/karanb192/awesome-claude-skills" target="_blank" rel="noopener">karanb192/awesome-claude-skills</a>, <a href="https://github.com/skillmatic-ai/awesome-agent-skills" target="_blank" rel="noopener">skillmatic-ai/awesome-agent-skills</a>, <a href="https://github.com/travisvn/awesome-claude-skills" target="_blank" rel="noopener">travisvn/awesome-claude-skills</a>. It adds the official collections those lists name and repositories accepted through <a href="../submit/">listing requests</a>. Every SKILL.md in those repositories is read from the default branch, except in hidden folders and dependency or build folders (node_modules, vendor, dist, build), and nothing in them is executed. Accepted requests may name exact canonical skill folders, including a publisher’s hidden distribution folder; only those reviewed roots and skill names are included. System skills, unreviewed mirrors and fixtures remain excluded. This snapshot was taken on October 22, 2026.</p>
+      </section>
+      <section class="panel" aria-labelledby="check-title">
+        <h2 id="check-title">The Suede Skill Check</h2>
+        <p>Reviewed listings may also supply supplementary citations from independent curated collections. Each document is pinned to a commit, checked for a direct repository link and reverified on refresh. These citations use the same scoring rubric and do not expand the discovery lists above.</p>
+        <p>Every SKILL.md runs through a required frontmatter check and seven graded checks: five on the SKILL.md format, following the <a href="https://agentskills.io/specification" target="_blank" rel="noopener">Agent Skills format</a>, plus a declared license and a commit to the repository in the last year. These checks decide the listing. The quality score then measures how much each listed skill gives an agent to work with.</p>
+        <div class="table-wrap">
+          <table class="checks">
+            <thead><tr><th scope="col">Check</th><th scope="col">What passes</th><th scope="col">Listed skills passing</th></tr></thead>
+            <tbody>
+            <tr><td><code>frontmatter</code></td><td>Frontmatter parses and declares a name and a description</td><td>3,916 of 3,916</td></tr>
+            <tr><td><code>name_format</code></td><td>Name uses lowercase letters, digits and hyphens, 64 characters or fewer</td><td>3,916 of 3,916</td></tr>
+            <tr><td><code>name_matches_folder</code></td><td>Name matches the skill's folder name</td><td>3,800 of 3,916</td></tr>
+            <tr><td><code>description_length</code></td><td>Description is between 50 and 1,024 characters</td><td>3,907 of 3,916</td></tr>
+            <tr><td><code>description_trigger</code></td><td>Description says when an agent should use the skill</td><td>2,846 of 3,916</td></tr>
+            <tr><td><code>concise_body</code></td><td>SKILL.md body is 500 lines or fewer</td><td>3,813 of 3,916</td></tr>
+            <tr><td><code>license</code></td><td>A license is declared in the frontmatter or the repository</td><td>3,916 of 3,916</td></tr>
+            <tr><td><code>maintained</code></td><td>Repository has a commit in the last 12 months</td><td>3,916 of 3,916</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <h3 id="score">How the quality score is built</h3>
+        <p>The score adds whole points from eleven components, all read from published evidence: the SKILL.md frontmatter, description and body, the files in the skill folder, the repository’s last commit and the curated lists that cite it. The rubric totals 100 points.</p>
+        <div class="table-wrap">
+          <table class="checks">
+            <thead><tr><th scope="col">Component</th><th scope="col">Points</th><th scope="col">How the points are earned</th></tr></thead>
+            <tbody>
+            <tr><td>Structural checks</td><td>56</td><td>8 points for each of the seven graded checks</td></tr>
+            <tr><td>Description length</td><td>5</td><td>5 for 150–600 characters; 3 for 100–900; 1 for 50–1,024</td></tr>
+            <tr><td>Boundary clause</td><td>4</td><td>4 when the description says when not to use the skill (“Not for …”, “Do not use …”, “Use … instead”)</td></tr>
+            <tr><td>Example request</td><td>3</td><td>3 when the description quotes an example request (3–60 characters in quotation marks)</td></tr>
+            <tr><td>Instruction depth</td><td>7</td><td>7 for a SKILL.md body of 500–3,000 words; 4 for 250–4,500; 1 for 100 or more</td></tr>
+            <tr><td>Reference files</td><td>3</td><td>3 when the skill folder ships a references/, reference/ or docs/ folder</td></tr>
+            <tr><td>Bundled scripts</td><td>2</td><td>2 when the skill folder ships a scripts/ folder</td></tr>
+            <tr><td>Recent maintenance</td><td>9</td><td>9 for a repository commit within 30 days of the snapshot; 6 within 90; 3 within 180; 1 within 365</td></tr>
+            <tr><td>Curated-list citations</td><td>7</td><td>7 for a repository cited by four or more curated lists; 4 for three; 3 for two; 1 for one</td></tr>
+            <tr><td>Tool permissions declared</td><td>2</td><td>2 when the frontmatter declares allowed-tools</td></tr>
+            <tr><td>Compatibility declared</td><td>2</td><td>2 when the frontmatter declares compatibility</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The published score is the total, capped at 99. 100 is reserved: structural evidence can show that a skill is well formed, well described, documented and maintained, but it cannot prove a skill perfect, so the scale tops out at 99. All arithmetic uses whole numbers; nothing is rounded. Missing evidence earns zero points for its component. A source fetch failure is unscored and stops a refresh from replacing the published snapshot.</p>
+        <h3 id="grades">Grades in this snapshot</h3>
+        <div class="table-wrap">
+          <table class="checks">
+            <thead><tr><th scope="col">Grade</th><th scope="col">Score</th><th scope="col">Listed skills</th></tr></thead>
+            <tbody>
+            <tr><td><span class="grade grade-a">A</span></td><td>90–99</td><td>187</td></tr>
+            <tr><td><span class="grade grade-b">B</span></td><td>80–89</td><td>1,606</td></tr>
+            <tr><td><span class="grade grade-c">C</span></td><td>70–79</td><td>1,396</td></tr>
+            <tr><td><span class="grade grade-d">D</span></td><td>0–69</td><td>727</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Across 3,916 listed skills, the highest score is 95 and the median is 79. No listed skill scores 96–99, and 1,793 score 80–99 and carry the quality shields. Failed required frontmatter receives grade F and is not listed.</p>
+        <p>The score measures the recorded SKILL.md structure and description, instruction depth, bundled files, license declaration, maintenance and citation evidence. It does not measure runtime performance. Frontmatter is a separate required gate; a declared license and all listing-policy rules still apply.</p>
+        <h3>Security scan status is separate</h3>
+        <p>External directory skills are marked <b>not scanned</b>. The HOL/Cisco CI scanners run on Suede’s own repository; their results do not certify the external repositories listed here. The shields’ “Suede Certified” label refers to the published structural quality check. A security result needs its own per-skill scan evidence.</p>
+      </section>
+      <section class="panel" aria-labelledby="authors-title">
+        <h2 id="authors-title">Website and README badges for the feature offer</h2>
+        <p>Some listings also show a separately labeled owner editorial rating. It does not replace the reproducible Skill Check score, change its component totals, or establish badge verification.</p>
+        <p>Skills scoring 80–99 receive separate numeric and A/B shields, each linking to their actual Suede listing. Scores from 90–99 and grade A use gold; scores from 80–89 and grade B use cool metallic styling. The Suede S remains the main mark on both shields. Every listed skill, at any score, keeps its listing badge, and its existing <code>badge.svg</code> and <code>score.svg</code> links keep working.</p>
+        <p>Display the numeric or letter badge on your official website or in a repository or skill README. Link it to your Suede listing. Suede checks that the badge is visible and links to the right listing before activating a placement. An unverified request, no valid linked badge or failed fetch cannot activate promotion. Verification is checked again after a dataset refresh. Existing editorial full pages keep their separate rules.</p>
+        <p class="badge-offer" data-promotion-end="">Limited-time feature offer: Add either quality badge to your official website and link it to your Suede listing. A repository or skill README also qualifies. Send us the page URL or README path. Once Suede verifies the badge, skills scoring 80–99 can receive a featured placement while the offer is open. <a href="../submit/#badge-verification">Request badge verification</a>.</p>
+        <p><b>Scored below 80?</b> We welcome authors who want help improving their skills. Each full skill page lists its points by component. <a href="../submit/#improve">Send your repository and the points you want to raise</a>, then request a new review after updating the skill.</p>
+      </section>
+      <section class="panel" aria-labelledby="rules-title">
+        <h2 id="rules-title">Listing rules</h2>
+        <ul>
+          <li>The required frontmatter check, a declared license and at least six of the seven graded checks on the Suede Skill Check. Every listed skill shows its quality score and grade.</li>
+          <li>A license declared in the SKILL.md frontmatter or the repository. Every listing states it; 97% of listed skills use an open-source or open-content license, and pages for the rest flag the terms next to the license.</li>
+          <li>A description written mainly in English, so the directory's pages read consistently.</li>
+          <li>Templates, examples, drafts, test fixtures and folders named archive, deprecated, internal or prompts, or starting with an underscore, are skipped.</li>
+          <li>One listing per skill. A copy is the same skill name with a mostly matching description, or a description repeated word for word under another name. When copies appear in several repositories, the copy in the repository cited by the most lists keeps the listing.</li>
+          <li>Skills are not listed when they:
+            <ul>
+              <li>automate posting, messaging or account activity on a social platform (skills that draft posts or replies for a person to approve are listed);</li>
+              <li>work around a site's blocks, CAPTCHAs or official API;</li>
+              <li>have scraping a third-party site as their main job;</li>
+              <li>collect people's personal data by scraping a social network or map listings (skills that use licensed B2B data providers within their terms are listed).</li>
+            </ul>
+            A vendor's skills for its own service are listed under the second and third rules. A repository whose product is one of these behaviors is left out as a whole.
+          </li>
+          <li>Skills are also left out when their name or description trips the site's content filters: adult content, malware terms, jailbreaks outside a defensive context, the short list of terms the site's own public-copy guard rejects, and listing text that fails the site's public-privacy check (an email address, a phone number or a home-directory path). The exact terms are in <a href="https://github.com/JasonColapietro/suede-creator-skills/blob/main/scripts/directory/curate.py" target="_blank" rel="noopener">curate.py</a>. Removals at an author's request, and skills whose text matches the pack's reserved-text guard, are recorded with their reason in <a href="https://github.com/JasonColapietro/suede-creator-skills/blob/main/directory/exclusions.json" target="_blank" rel="noopener">exclusions.json</a>.</li>
+          <li>Suede's own skills are catalogued separately on this site and pass the same rules; a test in the repository checks every one of them against the policy.</li>
+        </ul>
+      </section>
+      <section class="panel" aria-labelledby="pages-title">
+        <h2 id="pages-title">Which skills get a full page</h2>
+        <p>Every listed skill appears in its category directory and on its repository's page. Skills that pass all seven graded checks get a page of their own once the directory's editors have written their one-sentence summary, up to twelve per repository, chosen by how much ships with the skill: reference files, scripts, assets and a structured SKILL.md. A skill keeps its page while it stays listed, so its README badge and link keep working. Each page carries the summary, a pre-install list of the scripts, commands, environment variables and network use found in the skill's files, install steps (or, where the license restricts copying, the publisher's terms), and a README badge. 768 skills have a full page in this snapshot. A repository whose single listed skill has a page is listed through that page.</p>
+      </section>
+      <section class="panel" aria-labelledby="cat-title">
+        <h2 id="cat-title">Categories</h2>
+        <p>Categories group skills by their main task, so you can compare alternatives side by side. Each skill sits in one of 16 categories, assigned from its name and description.</p>
+      </section>
+      <section class="panel" aria-labelledby="change-title">
+        <h2 id="change-title">Refreshes and changes</h2>
+        <p>Each refresh re-reads the source repositories, so quoted descriptions, file facts and check results follow the published SKILL.md. To request a listing, a correction or a removal, use the <a href="../submit/">listing request page</a>; requests are reviewed by hand.</p>
+      </section>
+      <section class="panel guide-links" aria-labelledby="guides-title">
+        <h2 id="guides-title">Guides for publishers and installers</h2>
+        <div class="links">
+          <a class="link-row" href="../guides/install-agent-skills/"><b>How to install agent skills in Claude Code, Codex and Cursor</b><span>Where Claude Code and Codex load skills, how to install from GitHub with one command, how plugin marketplaces work, and what to check before you install.</span></a>
+          <a class="link-row" href="../guides/skill-ai-visibility/"><b>How to get your agent skill found in search and cited by AI assistants</b><span>How skill publishers get picked by agents, found in search and cited by AI assistants: descriptions that trigger, READMEs that answer, listings and badges.</span></a>
+        </div>
+      </section>
+      <aside class="panel svc-cta" aria-labelledby="svc-title" data-services-cta="methodology">
+        <h2 class="svc-kicker" id="svc-title">From Suede, the publisher of this directory</h2>
+        <div class="svc-cards">
+          <div class="svc-card svc-lead" data-offer="search">
+            <h3>Get your business cited in AI answers and ranked in Google</h3>
+            <p>Suede runs AEO, GEO and SEO programs for businesses: technical audits, structured data, entity work and content built to be quoted by ChatGPT, Claude, Perplexity and Google AI Overviews.</p>
+            <p><a class="button" href="https://suedeai.agency/?utm_source=skills.suedeai.ai&amp;utm_medium=directory&amp;utm_campaign=directory-services&amp;utm_content=methodology" data-cta="search" target="_blank" rel="noopener">See AEO and SEO services</a></p>
+          </div>
+          <div class="svc-card" data-offer="agents">
+            <h3>Put a team of agents on your recurring work</h3>
+            <p>Agent Studio from Suede builds multi-agent automation for businesses. Bring a workflow your team repeats every week and we design the agents that run it.</p>
+            <p><a class="button secondary" href="https://suedeai.app/?utm_source=skills.suedeai.ai&amp;utm_medium=directory&amp;utm_campaign=directory-services&amp;utm_content=methodology" data-cta="agents" target="_blank" rel="noopener">Explore Agent Studio</a></p>
+          </div>
+        </div>
+      </aside>
+
+
+    </main>
+    <footer>
+      <div class="shell">
+        <p class="footer-note">The Suede Skill Check reads published SKILL.md files and the files beside them. It executes nothing.</p>
+        <div class="footer-star"><p>Star Suede Skills on GitHub so more builders find graded skills.</p><a class="gh-star gh-star--lg" href="https://github.com/JasonColapietro/suede-creator-skills" target="_blank" rel="noopener" data-gh-star aria-label="Star Suede Skills on GitHub, 121 stars"><svg class="gh-star-icon" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg><span>Star</span><span class="gh-star-count">121</span></a></div>
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <img src="../../assets/suede-ai-logo-transparent.webp" alt="Suede" width="24" height="24" onerror="this.style.display='none'">
+            <span>Built by <strong>Jason Colapietro</strong> / Suede</span>
+          </div>
+          <div class="footer-links">
+            <a href="../finder/">Find skills in your agent</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../state-of-agent-skills/">State of Agent Skills</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../rising/">Rising Skills</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../badges/">Skill badges</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../">Skills</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../top/">Top 100</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../new/">New</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../topics/">Topics</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../for/">By task</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../featured/">Featured projects</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../agents/">AI agents</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../mcp-servers/">MCP servers</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../plugins/">Plugins and mods</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../grok/">Grok bots</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../stacks/">Stacks</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../security/">Security</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../publishers/">Publishers</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../compare/">Compare</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../api/">API and data</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="./">How skills are listed</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../submit/">List your skill</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../feed.xml">RSS feed</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="../../skills/">Suede skills pack</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="https://suedeai.ai" target="_blank" rel="noopener">suedeai.ai</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="https://github.com/JasonColapietro/suede-creator-skills" target="_blank" rel="noopener">GitHub</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="https://suedeai.ai/privacy" target="_blank" rel="noopener">Privacy</a>
+            <span class="footer-divider" aria-hidden="true">|</span>
+            <a href="https://suedeai.ai/contact" target="_blank" rel="noopener">Contact</a>
+          </div>
+        </div>
+      </div>
+    <div class="trendshift-recognition" style="width:250px;max-width:100%;margin:24px auto;text-align:center"><p style="margin:0 0 8px;font-size:13px">Suede Skills on Trendshift</p><a href="https://trendshift.io/repositories/82031?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-82031" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/82031/daily?language=Python" alt="JasonColapietro%2Fsuede-creator-skills | Trendshift" width="250" height="55" loading="lazy" style="display:block;max-width:100%;height:auto"/></a></div>
+</footer>
+  <script>
+  // Mobile nav disclosure. The markup ships <details open> so a no-JS visit
+  // still reaches every link; this collapses it at mobile widths only and
+  // keeps the summary label in sync with the state.
+  (function () {
+    var box = document.querySelector('.nav-disclosure');
+    if (!box) return;
+    var summary = box.querySelector('summary');
+    var mq = window.matchMedia('(max-width: 768px)');
+    function collapseForViewport() { box.open = !mq.matches; }
+    function syncLabel() {
+      if (summary) summary.setAttribute('aria-label', box.open ? 'Close navigation menu' : 'Open navigation menu');
+    }
+    collapseForViewport();
+    syncLabel();
+    box.addEventListener('toggle', syncLabel);
+    if (mq.addEventListener) mq.addEventListener('change', collapseForViewport);
+    else if (mq.addListener) mq.addListener(collapseForViewport);
+    box.querySelectorAll('.nav-links a').forEach(function (link) {
+      link.addEventListener('click', function () { if (mq.matches) box.open = false; });
+    });
+  })();
+</script>
+  </body>
+</html>

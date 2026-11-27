@@ -1,0 +1,616 @@
+#!/usr/bin/env python3
+"""Schema and relationship validation for social-post structured outcomes."""
+
+from __future__ import annotations
+
+import copy
+from datetime import datetime
+from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
+from social_post_analysis import CONFIDENCE_VALUES, HEX_256, validate_post_analysis
+from social_primitives import PLATFORM_VALUES, parse_time
+
+
+EVIDENCE_VALUES = {"hypothesis", "emerging", "validated", "deprecated"}
+POST_SCHEMA_VERSIONS = frozenset({"1.0"})
+SNAPSHOT_SCHEMA_VERSIONS = frozenset({"1.0"})
+ACCOUNT_SNAPSHOT_SCHEMA_VERSIONS = frozenset({"1.0"})
+EXPERIMENT_SCHEMA_VERSIONS = frozenset({"1.0", "1.1"})
+CORRECTION_SCHEMA_VERSIONS = frozenset({"1.0"})
+SYNC_MODE_VALUES = frozenset({
+    "native_crosspost", "same_copy_manual", "platform_adapted", "single_platform",
+})
+MEASUREMENT_QUALIFIERS = {
+    "exact", "rounded", "lower_bound", "upper_bound", "visual_estimate", "not_reported",
+}
+CORRECTION_TARGETS = {
+    "post": ("post_id", {"post_id"}),
+    "snapshot": ("snapshot_id", {"snapshot_id", "post_id"}),
+    "account_snapshot": ("account_snapshot_id", {"account_snapshot_id", "platform"}),
+}
+
+
+def validate_schema_version(
+    record: dict[str, Any], label: str, supported: frozenset[str], errors: list[str],
+) -> bool:
+    """Reject explicitly unsupported schemas while accepting pre-versioned legacy rows."""
+    version = record.get("schema_version")
+    if version is None:
+        return True
+    if not isinstance(version, str) or version not in supported:
+        errors.append(f"{label}.schema_version must be one of {sorted(supported)}")
+        return False
+    return True
+
+
+def _localize_with_named_timezone(
+    parsed: datetime,
+    timezone_name: Any,
+    label: str,
+    errors: list[str],
+) -> datetime | None:
+    if not isinstance(timezone_name, str) or not timezone_name.strip():
+        errors.append(f"{label}.timezone must be a non-empty IANA timezone name")
+        return None
+    try:
+        zone = ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError):
+        errors.append(f"{label}.timezone is not a recognized IANA timezone: {timezone_name!r}")
+        return None
+    local = parsed.astimezone(zone)
+    if parsed.utcoffset() != local.utcoffset():
+        errors.append(
+            f"{label}.published_at UTC offset does not match timezone {timezone_name!r} "
+            f"at that instant"
+        )
+    return local
+
+
+def _validate_platform_publications(
+    post: dict[str, Any], label: str, platforms: Any, errors: list[str],
+) -> None:
+    publications = post.get("platform_publications")
+    if publications is None:
+        return
+    if not isinstance(publications, dict) or not publications:
+        errors.append(f"{label}.platform_publications must be a non-empty object")
+        return
+    publication_platforms = set(publications)
+    invalid_keys = publication_platforms.difference(PLATFORM_VALUES)
+    if invalid_keys:
+        errors.append(
+            f"{label}.platform_publications has invalid platform keys "
+            f"{sorted(map(repr, invalid_keys))}"
+        )
+    if isinstance(platforms, list) and all(isinstance(item, str) for item in platforms):
+        expected = set(platforms)
+        if publication_platforms != expected:
+            errors.append(
+                f"{label}.platform_publications keys must exactly match platforms {sorted(expected)}"
+            )
+    post_caption_digest = post.get("caption_sha256")
+    for platform, publication in publications.items():
+        item_label = f"{label}.platform_publications.{platform}"
+        if not isinstance(publication, dict):
+            errors.append(f"{item_label} must be an object")
+            continue
+        required = ("published_at", "timezone", "sync_mode", "caption_sha256", "media_sha256")
+        for key in required:
+            if key not in publication:
+                errors.append(f"{item_label} missing {key}")
+        try:
+            published = parse_time(publication.get("published_at", ""))
+        except ValueError:
+            errors.append(f"{item_label}.published_at must be ISO 8601 with a UTC offset")
+        else:
+            _localize_with_named_timezone(
+                published, publication.get("timezone"), item_label, errors,
+            )
+        sync_mode = publication.get("sync_mode")
+        if sync_mode not in SYNC_MODE_VALUES:
+            errors.append(f"{item_label}.sync_mode must be one of {sorted(SYNC_MODE_VALUES)}")
+        for digest_key in ("caption_sha256", "media_sha256"):
+            digest = publication.get(digest_key)
+            if not isinstance(digest, str) or not HEX_256.fullmatch(digest):
+                errors.append(f"{item_label}.{digest_key} must be a lowercase SHA-256 digest")
+        if (
+            sync_mode in {"native_crosspost", "same_copy_manual", "single_platform"}
+            and isinstance(post_caption_digest, str)
+            and publication.get("caption_sha256") != post_caption_digest
+        ):
+            errors.append(
+                f"{item_label}.caption_sha256 must match the post caption for sync_mode {sync_mode}"
+            )
+
+
+def non_negative_numbers(value: Any, path: str, errors: list[str]) -> None:
+    if isinstance(value, dict):
+        for key, child in value.items():
+            non_negative_numbers(child, f"{path}.{key}", errors)
+    elif value is None:
+        return
+    elif not isinstance(value, (int, float)) or isinstance(value, bool):
+        errors.append(f"{path} must be a number or null")
+    elif value < 0:
+        errors.append(f"{path} must be non-negative")
+
+
+def validate_percent_mapping(value: Any, path: str, errors: list[str]) -> list[float]:
+    if not isinstance(value, dict):
+        errors.append(f"{path} must be an object")
+        return []
+    values: list[float] = []
+    for key, child in value.items():
+        if child is None:
+            continue
+        if not isinstance(child, (int, float)) or isinstance(child, bool) or not 0 <= child <= 100:
+            errors.append(f"{path}.{key} must be a number from 0..100")
+        else:
+            values.append(float(child))
+    return values
+
+
+def validate_metric_qualifiers(record: dict[str, Any], label: str, errors: list[str]) -> None:
+    qualifiers = record.get("metric_qualifiers", {})
+    if not isinstance(qualifiers, dict):
+        errors.append(f"{label}.metric_qualifiers must be an object")
+        return
+    metrics = record.get("metrics") if isinstance(record.get("metrics"), dict) else {}
+    for metric, qualifier in qualifiers.items():
+        if "." in metric:
+            current: Any = record
+            for segment in metric.split("."):
+                if not isinstance(current, dict) or segment not in current:
+                    current = None
+                    break
+                current = current[segment]
+            if current is None:
+                errors.append(
+                    f"{label}.metric_qualifiers.{metric} references a missing dotted-path value"
+                )
+        elif metric not in metrics:
+            errors.append(f"{label}.metric_qualifiers.{metric} references a missing metric")
+        if qualifier not in MEASUREMENT_QUALIFIERS:
+            errors.append(
+                f"{label}.metric_qualifiers.{metric} must be one of {sorted(MEASUREMENT_QUALIFIERS)}"
+            )
+
+
+def _merge_changes(record: dict[str, Any], changes: dict[str, Any]) -> dict[str, Any]:
+    result = copy.deepcopy(record)
+    for key, value in changes.items():
+        if (
+            key != "evidence_sha256"
+            and isinstance(value, dict)
+            and isinstance(result.get(key), dict)
+        ):
+            result[key] = _merge_changes(result[key], value)
+        else:
+            result[key] = copy.deepcopy(value)
+    return result
+
+
+def materialize_corrections(
+    posts: list[dict[str, Any]],
+    snapshots: list[dict[str, Any]],
+    account_snapshots: list[dict[str, Any]],
+    corrections: list[dict[str, Any]],
+    errors: list[str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Apply append-only factual corrections while preserving the original ledgers."""
+    collections = {
+        "post": copy.deepcopy(posts),
+        "snapshot": copy.deepcopy(snapshots),
+        "account_snapshot": copy.deepcopy(account_snapshots),
+    }
+    indexes = {
+        kind: {row.get(id_key): index for index, row in enumerate(collections[kind])}
+        for kind, (id_key, _forbidden) in CORRECTION_TARGETS.items()
+    }
+    seen: set[str] = set()
+    for index, correction in enumerate(corrections, start=1):
+        label = f"corrections.jsonl:{index}"
+        if not validate_schema_version(
+            correction, label, CORRECTION_SCHEMA_VERSIONS, errors,
+        ):
+            continue
+        correction_id = correction.get("correction_id")
+        if not isinstance(correction_id, str) or not correction_id.strip():
+            errors.append(f"{label} correction_id must be a non-empty string")
+        elif correction_id in seen:
+            errors.append(f"{label} duplicate correction_id {correction_id}")
+        else:
+            seen.add(correction_id)
+        try:
+            parse_time(correction.get("recorded_at", ""))
+        except ValueError:
+            errors.append(f"{label} invalid recorded_at (ISO 8601 with offset required)")
+        kind = correction.get("target_type")
+        if kind not in CORRECTION_TARGETS:
+            errors.append(f"{label} target_type must be one of {sorted(CORRECTION_TARGETS)}")
+            continue
+        target_id = correction.get("target_id")
+        if target_id not in indexes[kind]:
+            errors.append(f"{label} references unknown {kind} {target_id}")
+            continue
+        changes = correction.get("changes")
+        if not isinstance(changes, dict) or not changes:
+            errors.append(f"{label} changes must be a non-empty object")
+            continue
+        forbidden = CORRECTION_TARGETS[kind][1].intersection(changes)
+        if forbidden:
+            errors.append(f"{label} cannot change identity fields {sorted(forbidden)}")
+            continue
+        row_index = indexes[kind][target_id]
+        collections[kind][row_index] = _merge_changes(collections[kind][row_index], changes)
+    return collections["post"], collections["snapshot"], collections["account_snapshot"]
+
+
+def _validate_post(post: dict[str, Any], label: str, post_ids: set[str], errors: list[str], warnings: list[str]) -> None:
+    from social_cohorts import media_family
+
+    if post.get("owner_scope", "own") != "own":
+        errors.append(f"{label} external records belong in the separate learning ledger, not own posts")
+    try:
+        family = media_family(post)
+        if "media_family" in post and family == "unknown":
+            errors.append(f"{label} media family conflicts with content type or surface")
+    except ValueError as exc:
+        errors.append(f"{label} {exc}")
+    validate_schema_version(post, label, POST_SCHEMA_VERSIONS, errors)
+    for key in ("post_id", "published_at", "platforms", "caption"):
+        if key not in post:
+            errors.append(f"{label} missing {key}")
+    post_id = post.get("post_id")
+    if not isinstance(post_id, str) or not post_id.strip():
+        errors.append(f"{label} post_id must be a non-empty string")
+    elif post_id in post_ids:
+        errors.append(f"{label} duplicate post_id {post_id}")
+    else:
+        post_ids.add(post_id)
+    published: datetime | None = None
+    try:
+        published = parse_time(post.get("published_at", ""))
+    except ValueError:
+        errors.append(f"{label} invalid published_at (ISO 8601 with offset required)")
+    platforms = post.get("platforms")
+    invalid_platforms = (
+        not isinstance(platforms, list) or not platforms
+        or any(not isinstance(item, str) or item not in PLATFORM_VALUES for item in platforms)
+        or len(set(platforms)) != len(platforms)
+    )
+    if invalid_platforms:
+        errors.append(f"{label} platforms must be a unique non-empty list from {sorted(PLATFORM_VALUES)}")
+    _validate_platform_publications(post, label, platforms, errors)
+    if post.get("published_at_confidence") not in (None, *CONFIDENCE_VALUES):
+        errors.append(f"{label} invalid published_at_confidence {post.get('published_at_confidence')}")
+    duration = post.get("duration_seconds")
+    if duration is not None and (
+        not isinstance(duration, (int, float)) or isinstance(duration, bool) or duration <= 0
+    ):
+        errors.append(f"{label} duration_seconds must be positive")
+    episode = post.get("episode_number")
+    if episode is not None and (not isinstance(episode, int) or isinstance(episode, bool) or episode < 1):
+        errors.append(f"{label} episode_number must be a positive integer")
+    if not isinstance(post.get("caption"), str):
+        errors.append(f"{label} caption must be a string")
+    analysis_published = published
+    requires_named_timezone = post.get("schema_version") in POST_SCHEMA_VERSIONS
+    if published is not None and (requires_named_timezone or "timezone" in post):
+        localized = _localize_with_named_timezone(
+            published, post.get("timezone"), label, errors,
+        )
+        if localized is not None:
+            analysis_published = localized
+    validate_post_analysis(post, label, analysis_published, errors, warnings)
+    content_type = str(post.get("content_type", "")).casefold()
+    if duration is None and any(token in content_type for token in ("reel", "video", "short")):
+        warnings.append(f"{label} video-like content has no duration_seconds")
+
+
+def validate_posts(posts: list[dict[str, Any]], errors: list[str], warnings: list[str]) -> dict[str, dict[str, Any]]:
+    post_ids: set[str] = set()
+    for index, post in enumerate(posts, start=1):
+        _validate_post(post, f"posts.jsonl:{index}", post_ids, errors, warnings)
+    return {
+        post["post_id"]: post
+        for post in posts
+        if isinstance(post.get("post_id"), str) and post.get("post_id")
+    }
+
+
+def _validate_breakdown(snapshot: dict[str, Any], post: dict[str, Any], label: str, errors: list[str], warnings: list[str]) -> None:
+    metrics = snapshot.get("metrics", {})
+    breakdown = snapshot.get("platform_breakdown", {})
+    if not isinstance(breakdown, dict):
+        errors.append(f"{label}.platform_breakdown must be an object")
+        return
+    expected_platforms = set(post.get("platforms", []))
+    for metric in ("plays", "likes", "comments"):
+        total = metrics.get(metric)
+        values = breakdown.get(metric)
+        if not isinstance(total, (int, float)) or isinstance(total, bool) or not isinstance(values, dict) or not values:
+            continue
+        numeric = {key: value for key, value in values.items() if isinstance(value, (int, float)) and not isinstance(value, bool)}
+        invalid = [value for value in values.values() if value is not None and (not isinstance(value, (int, float)) or isinstance(value, bool))]
+        if invalid or any(value < 0 for value in numeric.values()):
+            errors.append(f"{label} {metric} platform breakdown must contain non-negative numbers")
+            continue
+        subtotal = sum(numeric.values())
+        complete = bool(expected_platforms) and expected_platforms.issubset(numeric)
+        if complete and subtotal != total:
+            errors.append(f"{label} {metric} platform sum {subtotal} != total {total}")
+        elif not complete and subtotal > total:
+            errors.append(f"{label} partial {metric} platform sum {subtotal} exceeds total {total}")
+        elif not complete and subtotal != total:
+            warnings.append(f"{label} {metric} platform breakdown is partial; sum check not enforced")
+
+
+def _validate_audience(snapshot: dict[str, Any], label: str, errors: list[str], warnings: list[str]) -> None:
+    audience = snapshot.get("audience", {})
+    if not audience:
+        return
+    if not isinstance(audience, dict):
+        errors.append(f"{label}.audience must be an object")
+        return
+    followership = {
+        key: audience[key] for key in ("followers_percent", "non_followers_percent") if key in audience
+    }
+    follower_values = validate_percent_mapping(followership, f"{label}.audience.followership", errors)
+    if len(follower_values) == 2 and abs(sum(follower_values) - 100) > 1.5:
+        warnings.append(f"{label} follower audience percentages do not sum near 100%")
+    for group in ("gender_percent", "age_percent"):
+        if group not in audience:
+            continue
+        values = validate_percent_mapping(audience[group], f"{label}.audience.{group}", errors)
+        if values and abs(sum(values) - 100) > 1.5:
+            warnings.append(f"{label} {group} does not sum near 100%")
+    if "top_countries_percent" in audience:
+        validate_percent_mapping(
+            audience["top_countries_percent"], f"{label}.audience.top_countries_percent", errors,
+        )
+
+
+def _validate_snapshot_evidence(snapshot: dict[str, Any], label: str, errors: list[str]) -> None:
+    evidence = snapshot.get("evidence")
+    hashes = snapshot.get("evidence_sha256")
+    if evidence is not None and (
+        not isinstance(evidence, list)
+        or any(not isinstance(item, str) or not item.strip() for item in evidence)
+    ):
+        errors.append(f"{label}.evidence must be a list of non-empty strings")
+        return
+    if isinstance(evidence, list) and len(evidence) != len(set(evidence)):
+        errors.append(f"{label}.evidence paths must be unique")
+        return
+    if hashes is None:
+        return
+    if not isinstance(hashes, dict) or any(
+        not isinstance(path, str)
+        or not path.strip()
+        or not isinstance(digest, str)
+        or not HEX_256.fullmatch(digest)
+        for path, digest in hashes.items()
+    ):
+        errors.append(
+            f"{label}.evidence_sha256 must map evidence paths to lowercase SHA-256 digests"
+        )
+        return
+    if not isinstance(evidence, list) or set(hashes) != set(evidence):
+        errors.append(f"{label}.evidence_sha256 keys must exactly match evidence paths")
+
+
+def _validate_snapshot(
+    snapshot: dict[str, Any],
+    label: str,
+    posts_by_id: dict[str, dict[str, Any]],
+    snapshot_ids: set[str],
+    errors: list[str],
+    warnings: list[str],
+) -> str | None:
+    validate_schema_version(snapshot, label, SNAPSHOT_SCHEMA_VERSIONS, errors)
+    for key in ("snapshot_id", "post_id", "metrics"):
+        if key not in snapshot:
+            errors.append(f"{label} missing {key}")
+    snapshot_id = snapshot.get("snapshot_id")
+    if not isinstance(snapshot_id, str) or not snapshot_id.strip():
+        errors.append(f"{label} snapshot_id must be a non-empty string")
+    elif snapshot_id in snapshot_ids:
+        errors.append(f"{label} duplicate snapshot_id {snapshot_id}")
+    else:
+        snapshot_ids.add(snapshot_id)
+    post_id = snapshot.get("post_id")
+    if not isinstance(post_id, str) or not post_id.strip() or post_id not in posts_by_id:
+        errors.append(f"{label} references unknown post_id {post_id}")
+        return None
+    _validate_snapshot_evidence(snapshot, label, errors)
+    scope = snapshot.get("platform_scope") or "combined"
+    if scope != "combined" and scope not in posts_by_id[post_id].get("platforms", []):
+        errors.append(f"{label} platform_scope {scope} is not in the post platforms")
+    metrics = snapshot.get("metrics")
+    if not isinstance(metrics, dict):
+        errors.append(f"{label} metrics must be an object")
+        return post_id
+    non_negative_numbers(metrics, f"{label}.metrics", errors)
+    validate_metric_qualifiers(snapshot, label, errors)
+    validate_percent_mapping(snapshot.get("rates_reported", {}), f"{label}.rates_reported", errors)
+    _validate_breakdown(snapshot, posts_by_id[post_id], label, errors, warnings)
+    sources = validate_percent_mapping(snapshot.get("traffic_sources_percent", {}), f"{label}.traffic_sources_percent", errors)
+    if sources and sum(sources) > 101:
+        warnings.append(f"{label} traffic source percentages sum above 101%")
+    _validate_audience(snapshot, label, errors, warnings)
+    return post_id
+
+
+def validate_snapshots(
+    snapshots: list[dict[str, Any]],
+    posts_by_id: dict[str, dict[str, Any]],
+    errors: list[str],
+    warnings: list[str],
+) -> tuple[dict[str, dict[str, Any]], dict[tuple[str, str], dict[str, Any]]]:
+    snapshot_ids: set[str] = set()
+    latest_by_post: dict[str, dict[str, Any]] = {}
+    latest_by_platform: dict[tuple[str, str], dict[str, Any]] = {}
+    for index, snapshot in enumerate(snapshots, start=1):
+        identity = _validate_snapshot(
+            snapshot, f"insight_snapshots.jsonl:{index}", posts_by_id, snapshot_ids, errors, warnings,
+        )
+        if identity is None:
+            continue
+        post_id = identity
+        # Archive append order is a record ordering, never a screenshot clock.
+        latest_by_post[post_id] = snapshot
+        key = (post_id, snapshot.get("platform_scope") or "combined")
+        latest_by_platform[key] = snapshot
+    return latest_by_post, latest_by_platform
+
+
+def validate_account_snapshots(
+    snapshots: list[dict[str, Any]], errors: list[str], warnings: list[str],
+) -> dict[tuple[str, int, str | None], dict[str, Any]]:
+    """Validate rolling account-level insights without pretending they belong to a post."""
+    seen: set[str] = set()
+    latest: dict[tuple[str, int, str | None], dict[str, Any]] = {}
+    for index, snapshot in enumerate(snapshots, start=1):
+        label = f"account_snapshots.jsonl:{index}"
+        validate_schema_version(
+            snapshot, label, ACCOUNT_SNAPSHOT_SCHEMA_VERSIONS, errors,
+        )
+        for key in ("account_snapshot_id", "platform", "window_days", "metrics"):
+            if key not in snapshot:
+                errors.append(f"{label} missing {key}")
+        snapshot_id = snapshot.get("account_snapshot_id")
+        if not isinstance(snapshot_id, str) or not snapshot_id.strip():
+            errors.append(f"{label} account_snapshot_id must be a non-empty string")
+        elif snapshot_id in seen:
+            errors.append(f"{label} duplicate account_snapshot_id {snapshot_id}")
+        else:
+            seen.add(snapshot_id)
+        platform = snapshot.get("platform")
+        if platform not in PLATFORM_VALUES:
+            errors.append(f"{label} platform must be one of {sorted(PLATFORM_VALUES)}")
+        window_days = snapshot.get("window_days")
+        if not isinstance(window_days, int) or isinstance(window_days, bool) or window_days < 1:
+            errors.append(f"{label} window_days must be a positive integer")
+        measurement_surface = snapshot.get("measurement_surface")
+        if measurement_surface is not None and (
+            not isinstance(measurement_surface, str) or not measurement_surface.strip()
+        ):
+            errors.append(f"{label} measurement_surface must be a non-empty string or null")
+        _validate_snapshot_evidence(snapshot, label, errors)
+        metrics = snapshot.get("metrics")
+        if not isinstance(metrics, dict):
+            errors.append(f"{label} metrics must be an object")
+        else:
+            non_negative_numbers(metrics, f"{label}.metrics", errors)
+            validate_metric_qualifiers(snapshot, label, errors)
+        if (
+            platform in PLATFORM_VALUES
+            and isinstance(window_days, int)
+            and not isinstance(window_days, bool)
+            and window_days >= 1
+            and (measurement_surface is None or isinstance(measurement_surface, str))
+        ):
+            surface = measurement_surface.strip() if isinstance(measurement_surface, str) else None
+            key = (platform, window_days, surface)
+            latest[key] = snapshot
+    return latest
+
+
+def _validate_experiment_row(
+    experiment: dict[str, Any],
+    label: str,
+    post_ids: set[str],
+    known_rule_ids: set[str],
+    errors: list[str],
+    warnings: list[str],
+) -> tuple[str, int] | None:
+    validate_schema_version(experiment, label, EXPERIMENT_SCHEMA_VERSIONS, errors)
+    experiment_id = experiment.get("experiment_id")
+    if not isinstance(experiment_id, str) or not experiment_id.strip():
+        errors.append(f"{label} experiment_id must be a non-empty string")
+        return None
+    revision = experiment.get("revision", 1)
+    if not isinstance(revision, int) or isinstance(revision, bool) or revision < 1:
+        errors.append(f"{label} revision must be a positive integer")
+        return None
+    supersedes = experiment.get("supersedes_revision")
+    if revision > 1 and supersedes != revision - 1:
+        errors.append(f"{label} supersedes_revision must equal {revision - 1}")
+    experiment_posts = experiment.get("post_ids", [])
+    if not isinstance(experiment_posts, list) or not experiment_posts:
+        errors.append(f"{label} post_ids must be a non-empty list")
+        experiment_posts = []
+    for post_id in experiment_posts:
+        if not isinstance(post_id, str) or not post_id.strip() or post_id not in post_ids:
+            errors.append(f"{label} references unknown post_id {post_id}")
+    rule_ids = experiment.get("rule_ids", [])
+    if not isinstance(rule_ids, list) or any(not isinstance(rule_id, str) for rule_id in rule_ids):
+        errors.append(f"{label} rule_ids must be a list of strings")
+    elif known_rule_ids:
+        for rule_id in rule_ids:
+            if rule_id not in known_rule_ids:
+                errors.append(f"{label} references unknown rule_id {rule_id}")
+    evidence = experiment.get("evidence", {})
+    if not isinstance(evidence, dict):
+        errors.append(f"{label} evidence must be an object")
+        evidence = {}
+    status = evidence.get("status")
+    if status not in EVIDENCE_VALUES:
+        errors.append(f"{label} invalid evidence status {status}")
+    independent = experiment.get("independent_samples", evidence.get("independent_samples"))
+    if independent is not None and not isinstance(independent, (bool, int)):
+        errors.append(f"{label} independent_samples must be a boolean or non-negative integer")
+    elif isinstance(independent, int) and not isinstance(independent, bool) and independent < 0:
+        errors.append(f"{label} independent_samples must be non-negative")
+    elif isinstance(independent, int) and not isinstance(independent, bool) and independent > len(experiment_posts):
+        errors.append(f"{label} independent_samples exceeds post count")
+    if status == "validated":
+        if not (
+            isinstance(independent, int)
+            and not isinstance(independent, bool)
+            and independent >= 2
+        ):
+            errors.append(f"{label} validated evidence requires at least two independent samples")
+        variants = experiment.get("variants")
+        control = variants.get("control") if isinstance(variants, dict) else None
+        if not (
+            isinstance(variants, dict)
+            and len(variants) >= 2
+            and (
+                (isinstance(control, str) and bool(control.strip()))
+                or (isinstance(control, (dict, list)) and bool(control))
+            )
+        ):
+            errors.append(f"{label} validated evidence requires a non-empty variants.control")
+    return experiment_id, revision
+
+
+def validate_experiments(
+    experiments: list[dict[str, Any]],
+    post_ids: set[str],
+    known_rule_ids: set[str],
+    errors: list[str],
+    warnings: list[str],
+) -> dict[str, dict[str, Any]]:
+    revisions: dict[str, set[int]] = {}
+    latest: dict[str, dict[str, Any]] = {}
+    for index, experiment in enumerate(experiments, start=1):
+        identity = _validate_experiment_row(
+            experiment, f"experiments.jsonl:{index}", post_ids, known_rule_ids, errors, warnings,
+        )
+        if identity is None:
+            continue
+        experiment_id, revision = identity
+        seen = revisions.setdefault(experiment_id, set())
+        if revision in seen:
+            errors.append(f"experiments.jsonl:{index} duplicate experiment revision {experiment_id}@{revision}")
+        seen.add(revision)
+        if experiment_id not in latest or latest[experiment_id].get("revision", 1) < revision:
+            latest[experiment_id] = experiment
+    for experiment_id, values in revisions.items():
+        expected = set(range(1, max(values) + 1))
+        if values != expected:
+            errors.append(f"experiment {experiment_id} revisions must be contiguous from 1")
+    return latest

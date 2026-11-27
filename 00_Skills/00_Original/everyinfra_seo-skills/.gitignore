@@ -1,0 +1,43 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Local environment and secrets: never commit keys
+.env
+.env.*
+*.pem
+*.key
+
+# Logs, caches, dependencies
+*.log
+.intel-cron.log
+__pycache__/
+node_modules/
+
+# seo-suite 持续监控本地状态整体默认不入库(audit 05-§4:config secret/告警瞬时态防泄漏)。
+# commit-back 基线只进 seo-monitor-state 分支,不进 main(2026-10-24);
+# config.json/alerts.json/notify-state.json/gsc.csv 永不提交。
+.seo-monitor/
+.seo-monitor-*/
+.intel-state.json
+skills/seo-suite/.intel-state.json
+# research clones (never commit)
+claude-seo/
+.trend-state.json
+briefs/
+
+# 运行态产物不入库:脚本默认写 CWD(oracle_check → findings.json、site_crawl → crawl.json、
+# trend_watch → briefs/),intel-update 工单只进 issue。要入库的样例放 examples/ 或
+# tests/fixtures/ 并 `git add -f`。
+findings.json
+crawl.json
+.intel-update-task.md
+# 上面的 briefs/ 规则不该吞掉 trend-watch 的 commit-back 目录
+!.github/state/trend/briefs/
+
+# claude plugin eval 的运行结果(官方文档:results/ 不进 git)
+evals/results/

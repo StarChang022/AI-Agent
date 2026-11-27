@@ -1,0 +1,15 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "X API",
+      "description": "Use Xquik, the world's fastest and cheapest X Twitter scraper service with the most complete X data.",
+      "skills": ["x-twitter-scraper", "xquik-mcp"]
+    },
+    {
+      "title": "Social research",
+      "description": "Research X and other networks with cited sources.",
+      "skills": ["xquik-social-research"]
+    }
+  ]
+}

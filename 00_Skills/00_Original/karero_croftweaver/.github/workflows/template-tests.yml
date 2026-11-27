@@ -1,0 +1,1452 @@
+name: template-tests
+# Runs the scaffolded Astro template's own Playwright suite (every spec in its tests/
+# folder) against a production build, so a change to
+# the template can't silently ship a regression. In particular it exercises the seo.spec
+# indexability guard (open robots.txt + llms.txt present), which the repo's only other
+# workflow (`clean`, a PII/secrets scan) never touches. CI is set by Actions, so the
+# Playwright config starts its own preview server (no reuseExistingServer).
+#
+# It starts on every pull request and every push to main, but its test jobs run only when
+# a change touches the paths in the `changes` job below; otherwise they are skipped. The
+# last job, `template-tests-ok`, is the one check main's ruleset requires: a workflow left
+# out by a `paths:` filter never reports, and a required check that never reports blocks
+# every merge, while a job skipped by its `if:` counts as passed.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Same events and concurrency group expression as clean.yml; the reasons are written
+# there. The workflow name in the group keeps the two workflows' runs apart.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: skills/new-website/templates/astro
+
+jobs:
+  # Whether this change touches what the jobs below test. A run started by hand tests
+  # everything. On a pull request the change is the branch since it left main, as a
+  # `paths:` filter reads it; on main it is the push.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.paths.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: paths
+        working-directory: .
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          # --no-renames: a moved file counts at both its old and its new path, so moving a
+          # tested file out of these folders still runs the tests. core.quotePath=false: git
+          # lists an accented name as written, not quoted and escaped; a name it still quotes
+          # (one with a quote mark or a control character) runs the tests. A diff that fails
+          # stops this step, and the last job then fails too.
+          all=false files=
+          case "$EVENT" in
+            pull_request) files="$(git -c core.quotePath=false diff --no-renames --name-only "$PR_BASE...$PR_HEAD")" ;;
+            push)
+              # A push with no commit before it (a new branch) has nothing to compare with.
+              if [ -z "${PUSH_BEFORE//0/}" ]; then all=true; else files="$(git -c core.quotePath=false diff --no-renames --name-only "$PUSH_BEFORE" "$PUSH_AFTER")"; fi ;;
+            *) all=true ;;
+          esac
+          run=$all n=0
+          while IFS= read -r f; do
+            [ -n "$f" ] || continue
+            n=$((n + 1))
+            case "$f" in
+              # whats-new.sh: verify-windows runs the recovery command it prints.
+              skills/new-website/templates/astro/*|skills/new-website/scripts/tests/*|skills/website-scorecard/*|skills/website-contact-form/*|skills/website-hero-carousel/*|skills/website-brand-kit/*|skills/website-tagline/*|scripts/whats-new.sh|scripts/test_served_build.sh|.github/workflows/template-tests.yml) run=true ;;
+              \"*) run=true ;;
+            esac
+          done <<EOF
+          $files
+          EOF
+          echo "run=$run" >>"$GITHUB_OUTPUT"
+          if [ "$all" = true ]; then echo "$EVENT: nothing to compare with, so every test job runs"
+          else echo "$EVENT: $n changed path(s); template tests run: $run"; fi
+
+  playwright:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # The template's publish classifier. It needs no build, no browser and no
+      # network, so it runs first. In THIS repo it runs here,
+      # on the macOS leg of prepare-any-shell, and in verify-windows, whose pushes go through
+      # a copied site's pre-push hook (there its real-git half skips itself, on Git Bash). The
+      # copy wired into the template's own ci.yml and pre-push hook otherwise executes inside a
+      # scaffolded site, never here — so without these, a regression in scripts/ship.sh would
+      # reach recipients with CI green.
+      - name: Publish classifier (scripts/ship.sh)
+        env:
+          SHIP_TEST_TTY: 1
+        run: |
+          rc=0; bash tests/check_ship_push.sh > "$RUNNER_TEMP/ship-tty.log" 2>&1 || rc=$?
+          cat "$RUNNER_TEMP/ship-tty.log"; [ "$rc" = 0 ] || exit "$rc"
+          line="$(grep '^✓ ship push gate:' "$RUNNER_TEMP/ship-tty.log" || true)"
+          case "$line" in *"and the question on a fake terminal"*) ;; *) echo "✗ with SHIP_TEST_TTY=1 the ✓ line must name the question"; exit 1 ;; esac
+      # A site's own CI and pre-push gate run it without SHIP_TEST_TTY, so the question's cases
+      # skip there: the ✓ line must say so and must not name the question it skipped.
+      - name: Publish classifier as a site runs it (no SHIP_TEST_TTY)
+        run: |
+          bash tests/check_ship_push.sh > "$RUNNER_TEMP/ship-notty.log" 2>&1 || { cat "$RUNNER_TEMP/ship-notty.log"; exit 1; }
+          line="$(grep '^✓ ship push gate:' "$RUNNER_TEMP/ship-notty.log" || true)"
+          echo "$line"
+          case "$line" in *"skipped: SHIP_TEST_TTY is not set"*) ;; *) echo "✗ the ✓ line must say the question's cases were skipped (SHIP_TEST_TTY is not set)"; exit 1 ;; esac
+          case "$line" in *"question on a fake terminal"*) echo "✗ the ✓ line names the question, which did not run"; exit 1 ;; esac
+      - uses: actions/setup-node@v7
+        with:
+          # The template pins its Node version; build/test on the same one Cloudflare uses.
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Install dependencies
+        # The template's own package-lock.json IS committed (since 2026-07-09) — npm ci
+        # for a reproducible install against that lockfile. This exercises the same
+        # package.json/lockfile pinning as the "copy package.json and run npm install"
+        # alternate path in templates/astro/README.md (conceptually, not literally — that
+        # path runs `npm install`, this runs `npm ci`), NOT the primary npm-create-astro@latest
+        # onboarding flow real recipients follow — see docs/reviews/REVIEW-plan-2026-07-16-astro7-upgrade-r1.md
+        # for that known gap (tracked as a separate follow-up, not fixed by this change).
+        run: npm ci --no-audit --no-fund
+      # scripts/make-icons.mjs, on the install's own sharp: letters, colours, refusals and a run
+      # stopped at each step of the write. It runs the script as a program in copies of the starter.
+      - name: The icon script (skills/new-website/scripts/tests/make-icons.test.mjs)
+        run: MAKE_ICONS_NODE_MODULES="$PWD/node_modules" node --test ../../scripts/tests/make-icons.test.mjs
+      # scripts/build-marker.mjs refuses Astro's default icons: as a program on each variant of them,
+      # and through npm run verify, build, deploy:live and Wrangler in a copy of the starter. It
+      # runs after the icon script because it draws icons with it.
+      - name: The favicon guard (skills/new-website/scripts/tests/favicon-guard.test.mjs)
+        run: MAKE_ICONS_NODE_MODULES="$PWD/node_modules" node --test ../../scripts/tests/favicon-guard.test.mjs
+      # playwright.config.ts's cloud fallback: which browser a headless run launches, with the
+      # browser folders made by hand.
+      - name: The Playwright cloud fallback (skills/new-website/scripts/tests/playwright-config.test.mjs)
+        run: MAKE_ICONS_NODE_MODULES="$PWD/node_modules" node --test ../../scripts/tests/playwright-config.test.mjs
+      # The template is a subfolder of this repo, the way a site can sit inside a bigger
+      # repo. The install's "prepare" script must then leave this repo's git hooks alone:
+      # pointed at a scripts/hooks this repo does not have, git runs no hooks at all.
+      - name: The install left this repo's git hooks alone
+        run: |
+          v="$(git config --local --get core.hooksPath || true)"
+          [ -z "$v" ] || { echo "npm ci set core.hooksPath=$v in the enclosing repo"; exit 1; }
+      # Builds the site as Pages and as Workers Builds would, and reads the HTML. The starter
+      # ships with analytics off (USE_ANALYTICS = false): no tag in any build, the live ones
+      # included, and no analytics host in public/_headers. The full suite (the last step)
+      # builds once and never as the live site.
+      - name: Analytics off in every build, as shipped (src/config.ts)
+        run: bash tests/check_analytics_gate.sh
+      # The same builds with analytics switched on (USE_ANALYTICS = true, the host added
+      # to script-src and connect-src in public/_headers): the tag and the stub on the
+      # production build only. Both files are put back afterwards, so the steps below run
+      # on the default.
+      - name: Analytics switched on (src/config.ts and public/_headers changed for this step only)
+        run: |
+          # The host as the gate reads it: either quote, no trailing slash.
+          host="$(sed -nE "s/^[[:space:]]*scriptHost:[[:space:]]*['\"]([^'\"]*)['\"].*/\1/p" src/config.ts)"
+          host="${host%/}"
+          [ -n "$host" ] || { echo "no scriptHost: '<host>' line in src/config.ts that the gate can read"; exit 1; }
+          # The starter ships with analytics off; the step above tested that state.
+          grep -q "^export const USE_ANALYTICS = false;" src/config.ts || { echo "the starter must ship USE_ANALYTICS = false"; exit 1; }
+          sed -i "s/^export const USE_ANALYTICS = false;/export const USE_ANALYTICS = true;/" src/config.ts
+          grep -q "^export const USE_ANALYTICS = true;" src/config.ts
+          # The host as one more token at the end of script-src and connect-src, on the CSP
+          # line only. script-src-elem does not match: the name must be followed by a space.
+          # The gate below checks that the host is a whole token in both.
+          host="$host" perl -pi -e 'if (/^\s*Content-Security-Policy:/) { s/(\bscript-src [^;]*)/$1 $ENV{host}/; s/(\bconnect-src [^;]*)/$1 $ENV{host}/ }' public/_headers
+          npm run check
+          bash tests/check_analytics_gate.sh
+          bash tests/check_deploy.sh
+          git checkout -- src/config.ts public/_headers
+      # Analytics server mode left the starter with Pages Functions (a Worker runs none). A site
+      # that still sets it fails the build, with EmailLink's message, instead of shipping an email
+      # link that goes nowhere; the gate says it does not check that mode. A throwaway page
+      # carries the link; it and config.ts are put back afterwards.
+      - name: Server mode is refused at build time (src/config.ts switched for this step only)
+        run: |
+          page=src/pages/server-mode-check.astro
+          out="$RUNNER_TEMP/server-mode-check"
+          printf -- "---\nimport EmailLink from '../components/EmailLink.astro';\n---\n<EmailLink address=\"hello@example.com\" />\n" > "$page"
+          sed -i "s/^export const USE_ANALYTICS = false;/export const USE_ANALYTICS = true;/" src/config.ts
+          sed -i "s/^  scriptHost:/  mode: 'server',\n  scriptHost:/" src/config.ts
+          grep -q "^  mode: 'server'," src/config.ts || { echo "the mode line did not go in"; exit 1; }
+          if ./node_modules/.bin/astro build --outDir "$out" > "$out.log" 2>&1; then
+            echo "a site in server mode built; EmailLink.astro must refuse it"; exit 1
+          fi
+          grep -Fq "analytics server mode left the starter in 0.35" "$out.log" || { tail -n 20 "$out.log"; echo "the build failed, but not with EmailLink's message"; exit 1; }
+          rm "$page"
+          gate="$(bash tests/check_analytics_gate.sh)" || { printf '%s\n' "$gate"; echo "the gate must exit 0 in server mode"; exit 1; }
+          printf '%s\n' "$gate" | grep -Fq "server mode is Pages-only and left the starter in 0.35" || { printf '%s\n' "$gate"; echo "the gate did not say it skips server mode"; exit 1; }
+          git checkout -- src/config.ts
+      # The deploy command and the Worker's config, in a throwaway copy of the starter with its
+      # own git (--dry-run: no Wrangler, no login). Analytics off as shipped here; the step with
+      # analytics on runs it again. With wrangler.jsonc moved aside the starter is a Pages site:
+      # the new spec and the command check skip, say why, and pass.
+      - name: Deploy command, analytics off (tests/check_deploy.sh)
+        run: bash tests/check_deploy.sh
+      - name: A site with no Workers config skips the Worker checks
+        run: |
+          mv wrangler.jsonc "$RUNNER_TEMP/wrangler.jsonc.aside"
+          out="$(bash tests/check_deploy.sh)" || { printf '%s\n' "$out"; echo "check_deploy.sh must pass with no Workers config"; exit 1; }
+          printf '%s\n' "$out" | grep -Fq "this site is on Cloudflare Pages, so there is no deploy command to check. Skipped." || { printf '%s\n' "$out"; echo "check_deploy.sh did not say it skipped"; exit 1; }
+          mv "$RUNNER_TEMP/wrangler.jsonc.aside" wrangler.jsonc
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      # Email links on the live build as shipped: no tracker there, and a click still asks
+      # the browser to open the mail program. The suite below covers the preview build, with
+      # and without a stand-in tracker.
+      - name: Email links on the live build, analytics off as shipped
+        run: |
+          prod="$(sed -nE "s/^export const PROD_BRANCH = ['\"]([^'\"]*)['\"];?.*/\1/p" src/config.ts)"
+          [ -n "$prod" ] || { echo "no PROD_BRANCH line in src/config.ts"; exit 1; }
+          CF_PAGES_BRANCH="$prod" npx playwright test tests/email.spec.ts
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: Run template test suite
+        run: npm test
+      # The shipped orphan-exempt.txt lists nothing, so a green run alone cannot show that
+      # tests/orphans.spec.ts uses it. Add a page nothing links to: with its entry in the file
+      # the spec must pass; without the entry it must fail, naming the page.
+      # The files are put back afterwards.
+      - name: The orphan spec uses orphan-exempt.txt
+        run: |
+          cp src/pages/privacy.astro src/pages/ci-unlinked.astro
+          perl -pi -e "s|^  '/privacy',|  '/privacy',\n  '/ci-unlinked',|" tests/_helpers.ts
+          if ! grep -q "^  '/ci-unlinked'," tests/_helpers.ts; then echo "::error::the edit of tests/_helpers.ts did not apply"; exit 1; fi
+          printf '\n/ci-unlinked  # CI fixture\n' >> orphan-exempt.txt
+          CI= npx playwright test tests/orphans.spec.ts --reporter=line || { echo "::error::the entry in orphan-exempt.txt did not exempt the page"; exit 1; }
+          git checkout -- orphan-exempt.txt
+          if out="$(CI= npx playwright test tests/orphans.spec.ts --reporter=line 2>&1)"; then
+            printf '%s\n' "$out" | tail -n 6; echo "::error::the spec stayed green with an unlinked page and no entry"; exit 1
+          fi
+          printf '%s\n' "$out" | grep -Fq '/ci-unlinked' || { printf '%s\n' "$out" | tail -n 30; echo "::error::the failure does not name /ci-unlinked"; exit 1; }
+          git checkout -- tests/_helpers.ts
+          rm src/pages/ci-unlinked.astro
+      # tests/language-versions.spec.ts is green or skipped on the shipped starter, so a run alone
+      # cannot show that each rule still fires. First the starter itself: no page names a version,
+      # so the spec must skip and say why. Then fixture pages, a set of three (/ci-lv, /ci-lv-de,
+      # /ci-lv-fr) and a set of two (/ci-lv2, /ci-lv2-de): each case changes one thing and reads
+      # the JSON report of the spec's one test (status, error, warning annotations, stderr), so a
+      # test that fails or warns for another reason does not pass. Headings, images, an empty
+      # reason, a version left out of a set and an alternate that is no page must go red; numbers
+      # must only warn, and the warning must be printed as well as recorded. The fixtures and
+      # tests/_helpers.ts are put back afterwards. Of seo.spec.ts only the twin-page test runs on
+      # the fixtures: its per-page head test and its distinct-card test would fail for reasons of
+      # their own.
+      - name: The language versions spec fires on each rule
+        run: |
+          NO_SETS='No page names versions in other languages (hreflang), so there is nothing to compare'
+          check_js='
+            const fs = require("fs");
+            const [file, want, errParts, warnParts, notInErr, skipReason] = process.argv.slice(1);
+            const r = JSON.parse(fs.readFileSync(file, "utf8"));
+            const tests = [];
+            const walk = (s) => { (s.specs || []).forEach((sp) => tests.push(...sp.tests)); (s.suites || []).forEach(walk); };
+            r.suites.forEach(walk);
+            const bad = [];
+            if (tests.length !== 1) bad.push("expected one test, the report has " + tests.length);
+            const t = tests[0] || { status: "none", annotations: [], results: [] };
+            const results = t.results || [];
+            const err = results.map((x) => ((x.errors || []).map((e) => e.message).join("\n")) || (x.error && x.error.message) || "").join("\n");
+            const stderr = results.map((x) => (x.stderr || []).map((c) => c.text).join("")).join("\n");
+            const stdout = results.map((x) => (x.stdout || []).map((c) => c.text).join("")).join("\n");
+            const warns = (t.annotations || []).filter((a) => a.type === "warning").map((a) => a.description || "");
+            if (t.status !== want) bad.push("test status " + t.status + ", wanted " + want);
+            const parts = (s) => (s && s !== "-" ? s.split("|") : []);
+            for (const p of parts(errParts)) if (!err.includes(p)) bad.push("the error does not say " + JSON.stringify(p));
+            for (const p of parts(notInErr)) if (err.includes(p)) bad.push("the error says " + JSON.stringify(p));
+            if (warnParts === "none") {
+              if (warns.length || stderr.includes("⚠ language versions:")) bad.push("a number warning was recorded or printed");
+            } else if (warnParts && warnParts !== "-") {
+              if (!stderr.includes("⚠ language versions:")) bad.push("no ⚠ language versions: line on stderr");
+              for (const text of [warns.join("\n"), stderr]) {
+                if (!text.includes("Tell the site" + String.fromCharCode(39) + "s owner in plain words")) bad.push("a warning lacks the sentence that tells the owner");
+                for (const p of parts(warnParts)) if (!text.includes(p)) bad.push("a warning does not name " + JSON.stringify(p));
+              }
+              if (!warns.length) bad.push("no warning annotation");
+            }
+            if (skipReason) {
+              const skip = (t.annotations || []).find((a) => a.type === "skip");
+              if (!skip || skip.description !== skipReason) bad.push("the skip reason is " + JSON.stringify(skip && skip.description));
+              if (!stdout.includes(skipReason)) bad.push("the line was not printed");
+            }
+            if (bad.length) { console.log(bad.join("\n")); console.log("--- error:\n" + err.slice(0, 1500)); console.log("--- warnings:\n" + warns.join("\n---\n")); process.exit(1); }
+          '
+          lv_run() {   # lv_run <report file>: one run of the spec, JSON to the file
+            CI= npx playwright test tests/language-versions.spec.ts --reporter=json > "$1" || true
+          }
+          lv_check() { # lv_check <case> <status> <error parts, | apart> <warning parts, | apart or none> [not in error] [skip reason]
+            lv_run lv-case.json
+            node -e "$check_js" lv-case.json "$2" "$3" "$4" "${5:-}" "${6:-}" || { echo "::error::language versions, case \"$1\": see the lines above"; exit 1; }
+            echo "ok: $1"
+          }
+          # The starter itself, before any fixture is written: no versions, so skip and say why.
+          lv_run lv-skip.json
+          node -e "$check_js" lv-skip.json skipped - none "" "$NO_SETS" || { echo "::error::the spec did not skip, with its reason and its printed line, on a starter with no versions"; exit 1; }
+          echo "ok: a site with no versions skips and says why"
+          lv_alts() {  # lv_alts <x-default path> <path code>...
+            local d="$1" out=""; shift
+            while [ "$#" -ge 2 ]; do out="$out{ hreflang: '$2', href: '$1' }, "; shift 2; done
+            printf "[%s{ hreflang: 'x-default', href: '%s' }]" "$out" "$d"
+          }
+          lv_page() {  # lv_page <slug> <lang> <alternates> <body>
+            printf -- '---\nimport Base from "../layouts/Base.astro";\n---\n<Base lang="%s" title="CI language versions" description="Fixture page for the language versions spec" alternates={%s}>\n%s\n</Base>\n' "$2" "$3" "$4" > "src/pages/$1.astro"
+          }
+          perl -pi -e "s|^  '/privacy',|  '/privacy',\n  '/ci-lv',\n  '/ci-lv-de',\n  '/ci-lv-fr',\n  '/ci-lv2',\n  '/ci-lv2-de',|" tests/_helpers.ts
+          if ! grep -q "^  '/ci-lv2-de'," tests/_helpers.ts; then echo "::error::the edit of tests/_helpers.ts did not apply"; exit 1; fi
+          nnbsp="$(printf '\342\200\257')"   # U+202F, the narrow no-break space French writes in 1 200
+          H2B='<h2>Second</h2>'
+          IMG='<img src="/images/og/default.jpg" alt="Fixture" width="10" height="10">'
+          reset() {    # every case starts from versions in step, written in each language's way
+            en='<h1>Language versions</h1><h2>First</h2>'"$H2B"'<p>80 to 120 attendees, 1,200 in all, on 19 November 2026, 18:30</p>'
+            de='<h1>Sprachversionen</h1><h2>Erstens</h2>'"$H2B"'<p>80 bis 120 Teilnehmende, 1.200 insgesamt, am 19. November 2026, 18:30</p>'
+            fr='<h1>Versions linguistiques</h1><h2>Premier</h2>'"$H2B"'<p>80 à 120 participants, 1'"$nnbsp"'200 au total, le 19 novembre 2026, 18 h 30</p>'
+            en2='<h1>Second page</h1><h2>Only</h2><p>80 to 120 attendees</p>'
+            de2='<h1>Zweite Seite</h1><h2>Einziger</h2><p>80 bis 120 Teilnehmende</p>'
+            a_en="$(lv_alts /ci-lv /ci-lv en /ci-lv-de de /ci-lv-fr fr)"
+            a_de="$a_en"; a_fr="$a_en"
+            a_en2="$(lv_alts /ci-lv2 /ci-lv2 en /ci-lv2-de de)"; a_de2="$a_en2"
+          }
+          write_pages() {
+            lv_page ci-lv en "$a_en" "$en"; lv_page ci-lv-de de "$a_de" "$de"; lv_page ci-lv-fr fr "$a_fr" "$fr"
+            lv_page ci-lv2 en "$a_en2" "$en2"; lv_page ci-lv2-de de "$a_de2" "$de2"
+          }
+          # A case: reset, change what it changes, write the pages, run and read the report.
+          reset; write_pages
+          lv_check "versions in step, numbers written three ways" expected - none
+          reset; de='<h1>Sprachversionen</h1><h2>Erstens</h2>'"$H2B"'<p>80 to 120 attendees, 1,200 in all, on 19 November 2026, 18:30</p>'; write_pages
+          lv_check "versions in step, same numbers spelled the same" expected - none
+          reset; fr="${fr/"$H2B"/}"; write_pages
+          lv_check "an h2 missing on one of three versions" unexpected "/ci-lv-fr has 1 h2|/ci-lv has 2 h2|/ci-lv-de has 2 h2" none
+          reset; de="$de$IMG"; write_pages
+          lv_check "an image on one version only" unexpected "/ci-lv-de has 1|/ci-lv has 0" none
+          reset; de='<h1>Sprachversionen</h1><h2>Erstens</h2>'"$H2B"'<p>100 bis 150 Teilnehmende, 1.200 insgesamt, am 19. November 2026, 18:30</p>'; write_pages
+          lv_check "a number changed on one version" expected - "/ci-lv|/ci-lv-de|80|120|100|150"
+          reset; de="$de"'<section data-versions-exempt="German callers only"><h2>Anrufe</h2><p>089 1234567</p></section>'; write_pages
+          lv_check "text that belongs to one language, marked" expected - none
+          reset; de="$de"'<section><h2>Anrufe</h2><p>089 1234567</p></section>'; write_pages
+          lv_check "the same text unmarked" unexpected "/ci-lv-de has 3 h2|/ci-lv has 2 h2" "089|1234567"
+          reset; de="$de"'<section data-versions-exempt=""><h2>Anrufe</h2></section>'; write_pages
+          lv_check "a mark with no reason" unexpected "/ci-lv-de|data-versions-exempt with no reason" none "Headings differ"
+          reset; fr="${fr/"$H2B"/}"; de2='<h1>Zweite Seite</h1><h2>Einziger</h2><p>80 bis 150 Teilnehmende</p>'; write_pages
+          lv_check "a failing set beside a set that only warns" unexpected "/ci-lv-fr has 1 h2" "/ci-lv2|150" "/ci-lv2"
+          reset; a_de="$(lv_alts /ci-lv /ci-lv-de de /ci-lv en)"; a_fr="$(lv_alts /ci-lv /ci-lv-fr fr /ci-lv en)"; write_pages
+          lv_check "a version that leaves out another of its set" unexpected "/ci-lv-de leaves out /ci-lv-fr|/ci-lv-fr leaves out /ci-lv-de" none
+          # What seo.spec.ts already accepts there: every link is answered. The new spec is the guard.
+          CI= npx playwright test tests/seo.spec.ts -g "twin-page hreflang" --reporter=line || { echo "::error::seo.spec.ts failed on a set whose links are all answered, so this case no longer shows the gap the new spec closes"; exit 1; }
+          reset; a_en="$(lv_alts /ci-lv /ci-lv en /ci-lv-de de /ci-lv-fr fr /ci-lv-xx es)"; write_pages
+          lv_check "an alternate that is no PAGES route" unexpected "/ci-lv-xx" none
+          # No page names a set, but one names a page that does not exist, and one has an empty reason: red, not skipped.
+          reset; a_en="$(lv_alts /ci-lv /ci-lv-xx es)"; a_de='[]'; a_fr='[]'; a_en2='[]'; a_de2='[]'; write_pages
+          lv_check "a link to no page, with no set named" unexpected "/ci-lv-xx" none
+          reset; en2='<h1>Second page</h1><p data-versions-exempt="">80 to 120 attendees</p>'; a_en='[]'; a_de='[]'; a_fr='[]'; a_en2='[]'; a_de2='[]'; write_pages
+          lv_check "an empty reason, with no set named" unexpected "data-versions-exempt with no reason" none
+          git checkout -- tests/_helpers.ts
+          rm -f src/pages/ci-lv.astro src/pages/ci-lv-de.astro src/pages/ci-lv-fr.astro src/pages/ci-lv2.astro src/pages/ci-lv2-de.astro lv-skip.json lv-case.json
+      # The legal-page guard in tests/placeholders.spec.ts is green on the shipped starter,
+      # so a run alone cannot show that it still fires. Take the notice off /privacy while the
+      # page stays listed and no answer is recorded: its test must go red, and so must a
+      # kept notice on a page no longer listed. Record the answer in README.md: the same
+      # test must pass. The files are put back afterwards.
+      - name: The draft notice guard turns red without a recorded answer
+        run: |
+          t='privacy keeps its draft notice until the owner'
+          red() {   # red "<what was done>" "<part of the failure's wording>": the legal-page test must fail with its own message
+            if out="$(CI= npx playwright test tests/placeholders.spec.ts -g "$t" --reporter=line 2>&1)"; then
+              printf '%s\n' "$out" | tail -n 6; echo "::error::$1: the test stayed green"; exit 1
+            fi
+            printf '%s\n' "$out" | grep -Fq 'is a legal page with no recorded answer' || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the test failed, but not with the legal-page message"; exit 1; }
+            printf '%s\n' "$out" | grep -Fq "$2" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the failure does not say \"$2\""; exit 1; }
+          }
+          # Notice kept, page taken off the list: nothing now allows it to stay.
+          perl -pi -e "s|'/privacy', || if /^const UNFILLED_UNTIL_LAUNCH/" tests/placeholders.spec.ts
+          if grep -q "^const UNFILLED_UNTIL_LAUNCH.*'/privacy'" tests/placeholders.spec.ts; then echo "::error::the edit of UNFILLED_UNTIL_LAUNCH did not apply"; exit 1; fi
+          red "the notice kept on a page no longer listed" 'is not listed in UNFILLED_UNTIL_LAUNCH and shows its draft notice'
+          git checkout -- tests/placeholders.spec.ts
+          perl -0pi -e 's|\s*<p>\s*\[DRAFT NOTICE.*?</p>||s' src/pages/privacy.astro
+          if grep -q 'DRAFT NOTICE' src/pages/privacy.astro; then echo "::error::the edit of privacy.astro did not apply"; exit 1; fi
+          red "the notice taken off with no answer recorded" 'is listed in UNFILLED_UNTIL_LAUNCH and does not show its draft notice'
+          printf '\nlegal pages: own texts (2026-11-02)\n' >> README.md
+          CI= npx playwright test tests/placeholders.spec.ts -g "$t" --reporter=line || { echo "::error::a recorded answer did not turn the test green"; exit 1; }
+          git checkout -- src/pages/privacy.astro README.md
+      # tests/icons.spec.ts reads each icon link's address; a link moved to another host must not
+      # pass against the local file of the same name. Put the favicon.svg link on another host: the
+      # test for that file must go red. The file is put back afterwards.
+      - name: The icons spec fails on a favicon link on another host
+        run: |
+          perl -pi -e 's|href="/favicon.svg"|href="https://cdn.example.net/favicon.svg"|' src/layouts/Base.astro
+          if ! grep -q 'cdn.example.net/favicon.svg' src/layouts/Base.astro; then echo "::error::the edit of Base.astro did not apply"; exit 1; fi
+          if out="$(CI= npx playwright test tests/icons.spec.ts -g 'favicon.svg is linked' --reporter=line 2>&1)"; then
+            printf '%s\n' "$out" | tail -n 6; echo "::error::the test stayed green with the link on another host"; exit 1
+          fi
+          printf '%s\n' "$out" | grep -Fq 'https://cdn.example.net/favicon.svg' || { printf '%s\n' "$out" | tail -n 30; echo "::error::the test failed, but not on the moved link"; exit 1; }
+          git checkout -- src/layouts/Base.astro
+      # tests/positioning.spec.ts is green on the shipped starter (its POSITIONING map is empty),
+      # so a run alone cannot show which paragraph it reads as the intro. Declare a term for the
+      # home page on the <h1> surface only, then put an eyebrow <p> above the <h1>. The term in the
+      # eyebrow alone must go red: the intro is the <p> right after the <h1>. The same term in that
+      # <p> must pass, eyebrow or no. The files are put back afterwards.
+      - name: The positioning spec reads the paragraph right after the h1
+        run: |
+          perl -pi -e "s|^  // '/': \{ term: .*|  '/': { h1: ['zq-owned-term'] },|" tests/positioning.spec.ts
+          perl -pi -e 's|^    <h1>|    <p>zq-owned-term</p>\n    <h1>|' src/pages/index.astro
+          grep -q "^  '/': { h1: \['zq-owned-term'\] }," tests/positioning.spec.ts || { echo "::error::the edit of tests/positioning.spec.ts did not apply"; exit 1; }
+          grep -q '^    <p>zq-owned-term</p>$' src/pages/index.astro || { echo "::error::the edit of index.astro did not apply"; exit 1; }
+          if out="$(CI= npx playwright test tests/positioning.spec.ts -g 'carried on /' --reporter=line 2>&1)"; then
+            printf '%s\n' "$out" | tail -n 6; echo "::error::the term in an eyebrow above the h1 passed as the intro"; exit 1
+          fi
+          printf '%s\n' "$out" | grep -Fq '<h1>/intro needs "zq-owned-term"' || { printf '%s\n' "$out" | tail -n 30; echo "::error::the test failed, but not on the missing term"; exit 1; }
+          git checkout -- src/pages/index.astro
+          perl -pi -e 's|^    <h1>|    <p>An eyebrow</p>\n    <h1>|; s|This starter page exists|zq-owned-term is in this starter page, which exists|' src/pages/index.astro
+          grep -q 'zq-owned-term is in this starter page' src/pages/index.astro || { echo "::error::the edit of index.astro did not apply"; exit 1; }
+          CI= npx playwright test tests/positioning.spec.ts -g 'carried on /' --reporter=line || { echo "::error::the term in the paragraph right after the h1 did not pass"; exit 1; }
+          git checkout -- src/pages/index.astro tests/positioning.spec.ts
+      # The served-build spec in fixed setups: it must fail when the server sends another
+      # build's id (dist/ only names the cause), which a normal run never shows.
+      - name: The served-build spec fails on another build's id (scripts/test_served_build.sh)
+        run: bash ../../../../scripts/test_served_build.sh
+
+  # "prepare" runs on every `npm install`, through the shell npm hands scripts to: by default
+  # sh on Linux and macOS, cmd.exe on Windows. The line it used to be was sh syntax, and no
+  # check here ran it on Windows. So this runs a real install on all three: in a site that is
+  # the root of its repo, in one kept in a subfolder of a bigger repo, and in a folder with
+  # no repo around it, then reads back what git was told. The sites carry the starter's
+  # package.json without its packages: "prepare" needs none of them, and the install then
+  # takes a second.
+  prepare-any-shell:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: Three folders from the starter (a repo's root, a subfolder of a bigger repo, no repo)
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          T="$GITHUB_WORKSPACE/skills/new-website/templates/astro"
+          for site in root-site big/apps/site plain; do
+            mkdir -p "$site/scripts"
+            cp "$T/package.json" "$site/" && cp "$T/scripts/wire-hooks.mjs" "$site/scripts/"
+            (cd "$site" && npm pkg delete dependencies devDependencies)
+          done
+          git init -q root-site && git init -q big
+          # Which shell npm hands a script line to here, measured: cmd.exe puts its own path in
+          # place of %ComSpec%, sh prints the word as written. A Windows leg whose npm used sh
+          # would pass the checks below for the wrong reason.
+          mkdir probe && (cd probe && npm init -y >/dev/null && npm pkg set scripts.probe='echo %ComSpec%')
+          probe="$(cd probe && npm run --silent probe)"; echo "npm's script shell, given 'echo %ComSpec%', says: $probe"
+          case "$RUNNER_OS:$probe" in
+            Windows:*%*) echo "::error::on Windows npm did not hand the script to cmd.exe"; exit 1 ;;
+            Windows:*cmd.exe*|Linux:%ComSpec%|macOS:%ComSpec%) ;;
+            *) echo "::error::npm's script shell gave an answer this job does not know"; exit 1 ;;
+          esac
+      # The installs name no `shell:`, so each runs from the runner's default one: PowerShell
+      # on Windows.
+      - name: npm install in the site that is the root of its repo
+        working-directory: ${{ runner.temp }}/root-site
+        run: npm install --no-audit --no-fund
+      - name: npm install in the site kept in a subfolder
+        working-directory: ${{ runner.temp }}/big/apps/site
+        run: npm install --no-audit --no-fund
+      # A git hook that runs the install can hand it GIT_DIR; see scripts/wire-hooks.mjs.
+      - name: The same install, with the GIT_DIR a git hook hands down
+        working-directory: ${{ runner.temp }}/big/apps/site
+        env:
+          GIT_DIR: ${{ runner.temp }}/big/.git
+        run: npm install --no-audit --no-fund
+      - name: npm install in a folder with no repo around it
+        working-directory: ${{ runner.temp }}/plain
+        run: npm install --no-audit --no-fund
+      - name: The root site's hook is wired, the bigger repo's hooks are left alone
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          root="$(git -C root-site config --local --get core.hooksPath || true)"
+          big="$(git -C big config --local --get core.hooksPath || true)"
+          echo "root-site: core.hooksPath=${root:-unset}, big: core.hooksPath=${big:-unset}"
+          [ "$root" = scripts/hooks ] || { echo "::error::the install did not wire the site at its repo's root"; exit 1; }
+          [ -z "$big" ] || { echo "::error::an install in a subfolder set core.hooksPath=$big in the bigger repo"; exit 1; }
+      # scripts/ship.sh on the Mac's own bash 3.2, /bin/bash, the only place it is: there a stop
+      # noted as the push pipeline ends resets that pipeline's status (case S10 (e) of
+      # tests/check_ship_push.sh). The playwright job runs the same file on Linux, where the
+      # case skips, so without this step it would first run in a site's pre-push gate.
+      # SHIP_TEST_REQUIRE_BASH32 makes a skip of it fail here. /bin first on PATH, so every
+      # case runs ship.sh on that bash, as a Mac's `npm run ship` does without Homebrew's.
+      # The same for scripts/deploy.sh and its check: they run on the Mac's bash 3.2 as an
+      # owner's `npm run deploy:live` does. The check needs the starter's own install.
+      - name: Deploy command on the Mac's bash 3.2 (tests/check_deploy.sh)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          npm ci --no-audit --no-fund
+          PATH="/bin:$PATH"
+          echo "bash for every case: $(command -v bash), $(bash -c 'echo "$BASH_VERSION"')"
+          /bin/bash tests/check_deploy.sh
+      - name: Publish script on the Mac's bash 3.2 (tests/check_ship_push.sh)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          SHIP_TEST_REQUIRE_BASH32: 1
+          SHIP_TEST_TTY: 1
+        run: |
+          PATH="/bin:$PATH"
+          echo "bash for every case: $(command -v bash), $(bash -c 'echo "$BASH_VERSION"')"
+          /bin/bash tests/check_ship_push.sh
+
+  # scripts/verify.mjs has a Windows-only branch: started directly (the pre-push hook), it finds
+  # npm on PATH, which on Windows is npm.cmd, and Node starts a .cmd only through a shell; run as
+  # `npm run verify`, it takes npm's own entry from npm_execpath, here a C:\ path with
+  # backslashes. Nothing else exercises either. This builds a site from the starter at the root
+  # of its own repo, so the install wires the hook, and runs verify both ways, then pushes
+  # through the hook: a green change goes through, a tone violation is refused.
+  verify-windows:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter, at the root of its own repo, with a bare origin
+        shell: bash
+        run: |
+          S="$RUNNER_TEMP/site"
+          # Absolute: this workflow's default working-directory is the template folder.
+          cp -r "$GITHUB_WORKSPACE/skills/new-website/templates/astro" "$S"
+          # Git for Windows checks text out with CRLF. Its own bash runs a CRLF hook (this job
+          # passed on one before), but WSL's or a container's sh stops at the first `set -e`,
+          # so the template's .gitattributes keeps the hook and shell scripts LF.
+          file "$S/scripts/hooks/pre-push" "$S/tests/check_ship_push.sh" || true
+          # Node reads the bytes: a CR handed to grep through Git Bash flagged LF files as CRLF.
+          node -e '
+            const fs = require("fs"), path = require("path"), bad = [], seen = [];
+            (function walk(d) {
+              for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+                const p = path.join(d, e.name);
+                if (e.isDirectory()) { if (e.name !== "node_modules") walk(p); }
+                else if (e.name.endsWith(".sh") || p.endsWith(path.join("hooks", "pre-push"))) {
+                  seen.push(p); if (fs.readFileSync(p).includes(13)) bad.push(p);
+                }
+              }
+            })(process.argv[1]);
+            // A copy without the hook or any .sh would pass with nothing checked.
+            if (!seen.some((p) => p.endsWith("pre-push")) || !seen.some((p) => p.endsWith(".sh"))) {
+              console.log("::error::the copied site has no hook or no .sh to check"); process.exit(1);
+            }
+            if (bad.length) { console.log("::error::checked out with CRLF line endings: " + bad.join(" ")); process.exit(1); }
+            console.log("line endings: LF in the hook and all " + seen.filter((p) => p.endsWith(".sh")).length + " .sh files");
+          ' "$S"
+          cd "$S"
+          git init -q
+          git config user.name ci && git config user.email ci@example.invalid
+          git add -A && git commit -qm "site"
+          git init -q --bare "$RUNNER_TEMP/origin.git"
+          git remote add origin "$RUNNER_TEMP/origin.git"
+          git push -q origin HEAD:refs/heads/main
+      # The default shell, PowerShell, as a Windows user would run these.
+      - name: npm ci (its prepare script wires the pre-push hook)
+        working-directory: ${{ runner.temp }}/site
+        run: npm ci --no-audit --no-fund
+      - name: Playwright's browser
+        working-directory: ${{ runner.temp }}/site
+        run: npx playwright install chromium
+      # The site as setup leaves it, committed, and origin's main moved to that commit so the
+      # pushes below start from it. --no-verify: this push is the fixture, not what the hook tests.
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        shell: bash
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+          git add -A && git commit -qm "name and icons, as setup leaves them"
+          git push -q --no-verify origin HEAD:refs/heads/main
+      # VERIFY_TRACE=1 makes verify.mjs name the way it started npm, so each step can prove its branch.
+      - name: verify.mjs started directly (npm.cmd from PATH, through a shell; first run installs)
+        working-directory: ${{ runner.temp }}/site
+        shell: bash
+        env:
+          VERIFY_TRACE: '1'
+        run: |
+          node scripts/verify.mjs 2>&1 | tee verify1.log
+          grep -q "verify: npm from PATH (through a shell)" verify1.log
+          grep -q "verify: all green" verify1.log
+          # Node deprecates an args array with shell: true (DEP0190); verify.mjs passes one string.
+          if grep -q "DEP0190" verify1.log; then echo "::error::verify.mjs printed Node's DEP0190 warning"; exit 1; fi
+      - name: npm run verify (npm's own npm-cli.js under a C:\ path); the second run does not reinstall
+        working-directory: ${{ runner.temp }}/site
+        shell: bash
+        env:
+          VERIFY_TRACE: '1'
+        run: |
+          npm run verify 2>&1 | tee verify2.log
+          grep -q "verify: npm via npm_execpath (npm-cli.js)" verify2.log
+          grep -q "verify: all green" verify2.log
+          if grep -q "installing the exact packages" verify2.log; then echo "::error::the second run reinstalled"; exit 1; fi
+      - name: The pre-push hook runs verify (a green push goes through, a red one is refused)
+        working-directory: ${{ runner.temp }}/site
+        shell: bash
+        run: |
+          [ "$(git config --get core.hooksPath)" = scripts/hooks ] || { echo "::error::npm ci did not wire the hook"; exit 1; }
+          base="$(git rev-parse HEAD)"
+          git switch -q -c content/green
+          git commit -q --allow-empty -m "green"
+          git push origin content/green 2>&1 | tee push-green.log
+          grep -q "pre-push gate passed" push-green.log
+          git ls-remote --exit-code origin refs/heads/content/green >/dev/null
+          git switch -q -c content/red "$base"
+          sed -i 's/This starter page exists/This seamless starter page exists/' src/pages/index.astro
+          git diff --quiet && { echo "::error::the tone violation was not written"; exit 1; }
+          git commit -qam "red"
+          if git push origin content/red 2>&1 | tee push-red.log; then echo "::error::a push with a tone violation went through"; exit 1; fi
+          grep -q "verify: npm test failed" push-red.log
+          if git ls-remote --exit-code origin refs/heads/content/red >/dev/null; then echo "::error::the red branch reached origin"; exit 1; fi
+      # whats-new.sh tells a Windows working copy made before .gitattributes how to get LF copies
+      # back. Run that exact command (read from whats-new.sh, not retyped) in Git Bash: it needs
+      # `xargs -0` there, and paths with spaces.
+      - name: whats-new's CRLF recovery command works in Git Bash
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          line="$(grep -A1 'templates/astro/.gitattributes)' "$GITHUB_WORKSPACE/scripts/whats-new.sh" | tail -1 | sed 's/ ;;$//')"
+          cmd="$(bash -c "$line" | grep -o '`[^`]*`' | tr -d '`')"
+          case "$cmd" in "git ls-files "*) echo "command: $cmd" ;; *) echo "::error::no recovery command found in whats-new.sh"; exit 1 ;; esac
+          crs() { node -e 'let n = 0; for (const f of process.argv.slice(1)) if (require("fs").readFileSync(f).includes(13)) n++; console.log(n)' "$@"; }
+          mkdir crlf-fix && cd crlf-fix && git init -q && git config user.name ci && git config user.email ci@example.invalid
+          mkdir -p scripts/hooks tests "my dir"
+          printf '#!/bin/sh\nset -e\n' >scripts/hooks/pre-push; printf 'echo a\n' >tests/x.sh; printf 'echo b\n' >"my dir/sp ace.sh"
+          git -c core.autocrlf=false add -A && git -c core.autocrlf=false commit -qm lf
+          # A working copy as Git for Windows writes it by default: CRLF, with a clean status.
+          git config core.autocrlf true
+          git ls-files -z | xargs -0 rm -f && git checkout -- .
+          before="$(crs scripts/hooks/pre-push tests/x.sh "my dir/sp ace.sh")"
+          [ "$before" = 3 ] || { echo "::error::the setup did not produce CRLF copies ($before of 3)"; exit 1; }
+          cp "$GITHUB_WORKSPACE/skills/new-website/templates/astro/.gitattributes" . && git add .gitattributes && git commit -qm attrs
+          eval "$cmd"
+          after="$(crs scripts/hooks/pre-push tests/x.sh "my dir/sp ace.sh")"
+          [ "$after" = 0 ] || { echo "::error::$after file(s) still CRLF after the recovery command"; exit 1; }
+          echo "recovery command: 3 CRLF files, 0 after"
+
+  # The website-scorecard skill ships three files that live in a SITE, never in the
+  # starter, so the job above does not run them. This builds a site from the starter,
+  # installs the skill the way its SKILL.md §2 says, writes a card and runs the suite
+  # with it. A starter change that breaks those files (they lean on src/config.ts, the
+  # Base layout, the Playwright config and its JSON report) turns red here.
+  scorecard-skill:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter, with the skill installed
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site && cd site
+          K="$GITHUB_WORKSPACE/skills/website-scorecard/templates"
+          cp "$K/scorecard.mjs" scripts/ && cp "$K/Scorecard.astro" src/components/ && cp "$K/scorecard.spec.ts" tests/
+          npm pkg set scripts.scorecard="node scripts/scorecard.mjs"
+          sed -i "s|const PAGE = '';|const PAGE = '/';|" tests/scorecard.spec.ts
+          sed -i "s|^import { SITE } from '../config';|import { SITE } from '../config';\nimport Scorecard from '../components/Scorecard.astro';|" src/pages/index.astro
+          sed -i 's|^</Base>|  <div class="wrap"><Scorecard /></div>\n</Base>|' src/pages/index.astro
+          # One check per line: in "a && b" a failing a does not stop the step.
+          grep -q "const PAGE = '/';" tests/scorecard.spec.ts
+          grep -q '<Scorecard />' src/pages/index.astro
+          grep -q "import Scorecard" src/pages/index.astro
+          printf 'node_modules\ndist\n.astro\ntest-results\n' > .gitignore
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          git init -q && git config user.name ci && git config user.email ci@example.invalid
+          git add -A && git commit -q -m "a site with the scorecard skill"
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+          # The scorecard describes a commit, so the icons are committed too.
+          git add -A
+          git commit -q -m "icons"
+      - name: Type check, write the card, run the suite with it
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          npm run check
+          npm run scorecard
+          git add scorecard.json && git commit -q -m "scorecard"
+          npm run scorecard -- --lighthouse 90,91,92,93 --date 2026-01-01
+          git add scorecard.json && git commit -q -m "scores"
+          npm test
+          grep -q 'data-state="current"' dist/index.html
+      # The card's totals against Playwright's own summary, from a second run with another
+      # reporter: the script reads the JSON report, this reads the lines Playwright
+      # prints. So a change in the JSON report's shape that made the script miscount
+      # turns red here. The card leaves out its own spec, whose tests all sit that run out.
+      - name: The card's totals are Playwright's totals
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          out="$(SCORECARD_RUN=1 CI= npx playwright test --reporter=line 2>&1 | tail -n 8)"
+          echo "$out"
+          passed="$(printf '%s\n' "$out" | sed -n 's/^ *\([0-9][0-9]*\) passed.*/\1/p')"
+          skipped="$(printf '%s\n' "$out" | sed -n 's/^ *\([0-9][0-9]*\) skipped.*/\1/p')"
+          # How many tests the card's own spec has, asked of Playwright rather than counted
+          # in the source, so reformatting that file cannot change the answer.
+          own="$(npx playwright test tests/scorecard.spec.ts --list 2>&1 | sed -n 's/^Total: \([0-9][0-9]*\) tests\{0,1\} in .*/\1/p')"
+          node -e '
+            const card = JSON.parse(require("fs").readFileSync("scorecard.json", "utf8"));
+            const [passed, skipped, own] = process.argv.slice(1).map(Number);
+            const line = `card: ${card.passed} passed, ${card.skipped} skipped. Playwright: ${passed} passed, ${skipped} skipped, ${own} of them the tests of the card itself.`;
+            if (!(passed > 0) || !(own > 0) || card.passed !== passed || card.skipped !== skipped - own) { console.error("::error::" + line); process.exit(1); }
+            console.log("agree. " + line);
+          ' "$passed" "$skipped" "$own"
+      # The three ways a run has to be refused, each against a real Playwright report:
+      # the script's own arithmetic is pinned in its spec, this pins what Playwright
+      # hands it. Each case is committed (the script wants a clean tree), must make
+      # `npm run scorecard` fail, must leave scorecard.json alone, and is then undone.
+      - name: A red run writes no card
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          before="$(sha256sum scorecard.json)"
+          refused() {
+            git add -A && git commit -q -m "$1"
+            if npm run scorecard; then echo "::error::$1: the run was accepted"; exit 1; fi
+            [ "$(sha256sum scorecard.json)" = "$before" ] || { echo "::error::$1: scorecard.json changed"; exit 1; }
+            git reset -q --hard HEAD~1
+          }
+          printf 'this is not typescript (((\n' > tests/broken.spec.ts
+          refused "a spec file that cannot load"
+          sed -i '0,/^  test(/s//  test.only(/' tests/links.spec.ts && grep -q '^  test.only(' tests/links.spec.ts
+          refused "a stray test.only"
+          sed -i 's|<p>Contact:|<p>FIXME</p><p>Contact:|' src/pages/index.astro && grep -q 'FIXME' src/pages/index.astro
+          refused "a failing test"
+          [ -z "$(git status --porcelain)" ]
+
+  # The website-contact-form skill, like the scorecard, ships files that live in a SITE.
+  # This builds a site from the starter, installs the skill the way its SKILL.md §2 says
+  # (the component, its words, the script, the test, the form on a page), and runs the
+  # type check and the whole suite. A second form, in German, sits on the starter's
+  # German page with its own copy of the spec, so the German texts go through the tone
+  # rules and the page checks too. The German form carries fields of the page's own and
+  # a hint (the skill's "Adding fields"), with its own page spec, so a form with no slot
+  # used and one with all of them both run. No mail program opens: the spec reads the
+  # mailto: link the button asks the browser to open.
+  contact-form-skill:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter, with the skill installed
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site && cd site
+          # The German page is unrouted in the starter: swap it in on this English site by the
+          # steps in the header of src/pages/_impressum.astro (page, footer link, four lists, llms.txt).
+          mv src/pages/_impressum.astro src/pages/impressum.astro
+          perl -pi -e 's|^      <!-- (<a href="/impressum">Impressum</a>) -->|      $1|' src/layouts/Base.astro
+          perl -pi -e 's|^(  \x27/legal-notice\x27,.*)$|$1\n  \x27/impressum\x27,|' tests/_helpers.ts
+          perl -pi -e "s|'/legal-notice', '/manifest|'/legal-notice', '/impressum', '/manifest|" tests/placeholders.spec.ts
+          perl -pi -e "s|'/legal-notice'\]\)|'/legal-notice', '/impressum'])|" tests/seo.spec.ts tests/positioning.spec.ts
+          perl -pi -e 's|^(- \[Legal Notice\]\(https://example.com/legal-notice\).*)$|$1\n- [Impressum](https://example.com/impressum): Impressum.|' public/llms.txt
+          grep -q '^      <a href="/impressum">Impressum</a>' src/layouts/Base.astro
+          grep -q "^  '/impressum'," tests/_helpers.ts
+          grep -q "'/legal-notice', '/impressum', '/manifest.webmanifest'" tests/placeholders.spec.ts
+          grep -q "'/privacy', '/legal-notice', '/impressum'\])" tests/seo.spec.ts
+          grep -q "'/privacy', '/legal-notice', '/impressum'\])" tests/positioning.spec.ts
+          grep -q 'example.com/impressum' public/llms.txt
+          K="$GITHUB_WORKSPACE/skills/website-contact-form/templates"
+          mkdir -p public/js
+          cp "$K/mail-form.js" public/js/ && cp "$K/MailForm.astro" "$K/mail-form-text.ts" src/components/ && cp "$K/mail-form.spec.ts" tests/
+          sed -i "s|^const PAGE = '';|const PAGE = '/';|; s|^const TO = '';|const TO = 'hello@example.com';|; s|^const SUBJECT = '';|const SUBJECT = 'Project enquiry';|; s|^const GREETING = '';|const GREETING = 'Dear Ms Smith,';|" tests/mail-form.spec.ts
+          # The German form: a German page on an English site, with no lang of its own: it
+          # takes the page's, which Base.astro hands down (§2 step 3).
+          cp "$K/mail-form.spec.ts" tests/mail-form.de.spec.ts
+          sed -i "s|^const PAGE = '';|const PAGE = '/impressum';|; s|^const TO = '';|const TO = 'hello@example.com';|; s|^const SUBJECT = '';|const SUBJECT = 'Anfrage Bauvorhaben';|; s|^const GREETING = '';|const GREETING = 'Sehr geehrte Frau Muster,';|; s|^const ADDED: string\[\] = \[\];|const ADDED: string[] = ['Ein neues Projekt', 'Ort'];|" tests/mail-form.de.spec.ts
+          sed -i "s|^import { SITE } from '../config';|import { SITE } from '../config';\nimport MailForm from '../components/MailForm.astro';|" src/pages/impressum.astro src/pages/index.astro
+          # The German form with the skill's example: a choice, an optional field, a hint
+          # that follows the choice (styled as the skill says, by the page).
+          cat > form.de.astro <<'EOF'
+            <section class="wrap"><h2>Kontakt</h2>
+              <MailForm to="hello@example.com" subject="Anfrage Bauvorhaben" greeting="Sehr geehrte Frau Muster,">
+                <fieldset>
+                  <legend>Worum geht es? <span class="mail-form-optional">(optional)</span></legend>
+                  <label><input type="radio" name="art" id="art-neu" value="neu" /> Ein neues Projekt</label>
+                  <label><input type="radio" name="art" id="art-laufend" value="laufend" /> Ein laufendes Projekt</label>
+                </fieldset>
+                <p>
+                  <label for="ort">Ort</label> <span class="mail-form-optional" id="ort-optional">(optional)</span>
+                  <input id="ort" name="ort" type="text" maxlength="80" aria-describedby="ort-optional" />
+                </p>
+                <Fragment slot="hint"><span class="hint-any">Zum Beispiel: was geplant ist und wie weit.</span><span class="hint-neu">Zum Beispiel: was geplant ist und wann es losgehen soll.</span><span class="hint-laufend">Zum Beispiel: Stand des Projekts und was gebraucht wird.</span></Fragment>
+              </MailForm>
+            </section>
+            <style>
+              .hint-neu, .hint-laufend { display: none; }
+              :global(.mail-form):has(#art-neu:checked, #art-laufend:checked) .hint-any { display: none; }
+              :global(.mail-form):has(#art-neu:checked) .hint-neu { display: inline; }
+              :global(.mail-form):has(#art-laufend:checked) .hint-laufend { display: inline; }
+            </style>
+          EOF
+          awk 'FNR==NR { form = form $0 "\n"; next } /^<\/Base>/ { printf "%s", form } { print }' form.de.astro src/pages/impressum.astro > impressum.astro.new
+          mv impressum.astro.new src/pages/impressum.astro && rm form.de.astro
+          # The page's own spec, as the skill's "Adding fields" shows it, in German.
+          cat > tests/kontakt.de.spec.ts <<'EOF'
+          import { test, expect, type Page } from '@playwright/test';
+          import { TEXT } from '../src/components/mail-form-text';
+
+          const t = TEXT.de;
+          const greeting = 'Sehr geehrte Frau Muster,';
+          const form = (page: Page) => page.locator('form[data-mail-form]');
+          async function send(page: Page) {
+            const asked = page.waitForRequest((r) => r.url().startsWith('mailto:'), { timeout: 5000 });
+            await form(page).getByRole('button', { name: t.send, exact: true }).click();
+            const body = (await asked).url().split('?')[1].split('&').find((p) => p.startsWith('body='))!;
+            return decodeURIComponent(body.slice('body='.length));
+          }
+
+          test('kontakt — the choice and the place arrive under the message', async ({ page }) => {
+            await page.goto('/impressum');
+            await form(page).getByLabel('Ein laufendes Projekt', { exact: true }).check();
+            await form(page).getByLabel('Ort', { exact: true }).fill('München');
+            await form(page).getByLabel(t.message, { exact: true }).fill('Eine Bauleitung ab März.');
+            expect(await send(page)).toBe(`${greeting}\r\n\r\nEine Bauleitung ab März.\r\n\r\nEin laufendes Projekt\r\nOrt: München\r\n\r\n${t.signoff}`);
+          });
+
+          test('kontakt — with nothing chosen or added, the mail has no field line', async ({ page }) => {
+            await page.goto('/impressum');
+            await expect(form(page).locator('input[type=radio]:checked')).toHaveCount(0);
+            await form(page).getByLabel(t.message, { exact: true }).fill('Eine kurze Frage.');
+            expect(await send(page)).toBe(`${greeting}\r\n\r\nEine kurze Frage.\r\n\r\n${t.signoff}`);
+          });
+
+          test('kontakt — the hint follows the choice and is the description of the message box', async ({ page }) => {
+            await page.goto('/impressum');
+            const box = form(page).getByLabel(t.message, { exact: true });
+            await expect(box).toHaveAccessibleDescription('Zum Beispiel: was geplant ist und wie weit.');
+            await form(page).getByLabel('Ein neues Projekt', { exact: true }).check();
+            await expect(box).toHaveAccessibleDescription('Zum Beispiel: was geplant ist und wann es losgehen soll.');
+            await form(page).getByLabel('Ein laufendes Projekt', { exact: true }).check();
+            await expect(box).toHaveAccessibleDescription('Zum Beispiel: Stand des Projekts und was gebraucht wird.');
+          });
+
+          test('kontakt — a field in the slot takes the form\'s look', async ({ page }) => {
+            await page.goto('/impressum');
+            const place = form(page).getByLabel('Ort', { exact: true });
+            const message = form(page).getByLabel(t.message, { exact: true });
+            for (const property of ['border-top-style', 'border-radius', 'display']) {
+              expect(await place.evaluate((e, p) => getComputedStyle(e).getPropertyValue(p), property), property)
+                .toBe(await message.evaluate((e, p) => getComputedStyle(e).getPropertyValue(p), property));
+            }
+          });
+          EOF
+          sed -i 's|^</Base>|  <section class="wrap"><h2>Contact</h2><MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," /></section>\n</Base>|' src/pages/index.astro
+          # One check per line: in "a && b" a failing a does not stop the step.
+          grep -q "const PAGE = '/';" tests/mail-form.spec.ts
+          grep -q "const TO = 'hello@example.com';" tests/mail-form.spec.ts
+          grep -q "const SUBJECT = 'Project enquiry';" tests/mail-form.spec.ts
+          grep -q "const PAGE = '/impressum';" tests/mail-form.de.spec.ts
+          grep -q "const TO = 'hello@example.com';" tests/mail-form.de.spec.ts
+          grep -q "const SUBJECT = 'Anfrage Bauvorhaben';" tests/mail-form.de.spec.ts
+          grep -q "const GREETING = 'Dear Ms Smith,';" tests/mail-form.spec.ts
+          grep -q "const GREETING = 'Sehr geehrte Frau Muster,';" tests/mail-form.de.spec.ts
+          grep -q "const greeting = 'Sehr geehrte Frau Muster,';" tests/kontakt.de.spec.ts
+          grep -qF "const ADDED: string[] = ['Ein neues Projekt', 'Ort'];" tests/mail-form.de.spec.ts
+          grep -q '<MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," />' src/pages/index.astro
+          grep -q 'import MailForm' src/pages/index.astro
+          grep -q '<MailForm to="hello@example.com" subject="Anfrage Bauvorhaben" greeting="Sehr geehrte Frau Muster,">' src/pages/impressum.astro
+          grep -q 'id="ort" name="ort"' src/pages/impressum.astro
+          grep -q "import { TEXT } from '../src/components/mail-form-text';" tests/kontakt.de.spec.ts
+          grep -q 'import MailForm' src/pages/impressum.astro
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: Type check and the whole suite, with the form in place
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          npm run check
+          npm test
+      # A form without its subject or its greeting, without a language, or in a
+      # language it has no words for, must stop the build, not go out with a generic
+      # subject or greeting, or in English. Last step: it leaves the site broken on purpose.
+      - name: A form without a subject, without a greeting, without a language, or in a language with no texts, stops the build
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          cp src/pages/index.astro index.astro.keep
+          sed -i 's|<MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," />|<MailForm to="hello@example.com" greeting="Dear Ms Smith," />|' src/pages/index.astro
+          grep -q '<MailForm to="hello@example.com" greeting="Dear Ms Smith," />' src/pages/index.astro
+          if npm run build > build.log 2>&1; then cat build.log; echo '::error::a form without a subject was built'; exit 1; fi
+          grep -qF 'MailForm: pass subject="…"' build.log || { cat build.log; echo '::error::the build failed, but not on the missing subject'; exit 1; }
+          cp index.astro.keep src/pages/index.astro
+          # A form without its greeting.
+          sed -i 's|<MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," />|<MailForm to="hello@example.com" subject="Project enquiry" />|' src/pages/index.astro
+          grep -q '<MailForm to="hello@example.com" subject="Project enquiry" />' src/pages/index.astro
+          if npm run build > build.log 2>&1; then cat build.log; echo '::error::a form without a greeting was built'; exit 1; fi
+          grep -qF 'MailForm: pass greeting="…"' build.log || { cat build.log; echo '::error::the build failed, but not on the missing greeting'; exit 1; }
+          cp index.astro.keep src/pages/index.astro
+          # A page whose language never reaches the form (a Base.astro from an older starter).
+          cp src/layouts/Base.astro Base.astro.keep
+          sed -i 's|^Astro.locals.lang = lang;$||' src/layouts/Base.astro
+          if grep -q '^Astro.locals.lang = lang;$' src/layouts/Base.astro; then echo '::error::the Base.astro line was not removed'; exit 1; fi
+          if npm run build > build.log 2>&1; then cat build.log; echo '::error::a form with no language was built'; exit 1; fi
+          grep -qF 'MailForm: no language for this page' build.log || { cat build.log; echo '::error::the build failed, but not on the missing language'; exit 1; }
+          cp Base.astro.keep src/layouts/Base.astro
+          sed -i 's|<MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," />|<MailForm to="hello@example.com" subject="Project enquiry" greeting="Dear Ms Smith," lang="xx" />|' src/pages/index.astro
+          grep -q 'lang="xx"' src/pages/index.astro
+          if npm run build > build.log 2>&1; then cat build.log; echo '::error::a form in a language with no texts was built'; exit 1; fi
+          grep -q 'MailForm: no texts for the language "xx"' build.log || { cat build.log; echo '::error::the build failed, but not on the missing texts'; exit 1; }
+
+  # website-brand-kit puts colours and icons into a site and then runs the site's own
+  # `npm run build && npm test`. Its other tests (clean.yml, website-brand-kit-tests) stand
+  # a command in for those; this job is the one run that uses the real ones: green before,
+  # the install, green after, and the built site serving the new mark and colours. A starter
+  # change that the intake's edits no longer fit (global.css's three colour blocks, config.ts,
+  # the manifest, the share-card generator) turns red here.
+  brand-kit-skill:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: A site from the starter, installed, with Playwright's browser and Pillow
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site
+          cp "$GITHUB_WORKSPACE/skills/new-website/templates/.gitignore" site/.gitignore
+          cd site
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          python -m pip install Pillow
+      # The installer test below runs the generator only with a font installed; this checks the no-font stop.
+      - name: Share-card fonts (skills/new-website/scripts/tests/test_og_fonts.py)
+        working-directory: .
+        env:
+          OG_FONTS_REQUIRE_FONT: "1"
+        # A listed font, installed here rather than assumed from the runner image.
+        run: |
+          sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+          python skills/new-website/scripts/tests/test_og_fonts.py
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: Green before, the palette and the logo go in, green after, by the site's own tests
+        working-directory: .
+        shell: bash   # named, so the step runs with pipefail: a failing test run is not hidden by tee
+        env:
+          BRAND_KIT_E2E_SITE: ${{ runner.temp }}/site
+          BRAND_KIT_NODE_MODULES: ${{ runner.temp }}/site/node_modules
+          REQUIRE_SHARP: "1"
+        run: |
+          python -m unittest discover -v -s skills/website-brand-kit/scripts/tests -p 'test_e2e_site.py' 2>&1 | tee e2e.log
+          # One check per line. A skipped test is not a pass: the run must name it "ok".
+          grep -q 'test_scenario_8_.* ok$' e2e.log
+
+  # The website-tagline skill ships one test that lives in a SITE, never in the starter,
+  # so the jobs above do not run it. This builds a site from the starter and shows a
+  # tagline on its home page. The starter has no header, so the line sits under the
+  # page's <h1>: the test checks the element it is pointed at, wherever that is. The
+  # test then runs three ways: unconfigured (every test must sit out), on a correct site
+  # (green, with the whole suite), and on each mistake the test exists for (red, in the
+  # test that names the mistake). The edits use perl, not sed -i, so the same lines run
+  # unchanged on a Mac; \x27 is an apostrophe inside a single-quoted perl program.
+  tagline-skill:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter, with the test copied in and not configured
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site && cd site
+          cp "$GITHUB_WORKSPACE/skills/website-tagline/templates/tagline.spec.ts" tests/
+          # The test knows the starter's placeholder by heart. If the starter's value
+          # changes and the test's copy does not, the test would call a site with no
+          # tagline fine, so the two are compared here.
+          placeholder="$(sed -n "s/^ *tagline: '\(.*\)',\$/\1/p" src/config.ts)"
+          [ -n "$placeholder" ] || { echo "::error::no tagline value found in the starter's src/config.ts"; exit 1; }
+          grep -Fq "const PLACEHOLDER = '$placeholder';" tests/tagline.spec.ts || { echo "::error::the starter ships tagline '$placeholder'; tagline.spec.ts expects another placeholder"; exit 1; }
+          # The later steps take the value from here, so this job holds no third copy of it.
+          printf '%s' "$placeholder" > "$RUNNER_TEMP/placeholder"
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          # An unconfigured copy reports "not applicable": nothing passes, nothing fails.
+          out="$(CI= npx playwright test tests/tagline.spec.ts --reporter=line 2>&1)" || { printf '%s\n' "$out"; echo "::error::the unconfigured test did not exit 0"; exit 1; }
+          printf '%s\n' "$out" | tail -n 4
+          printf '%s\n' "$out" | grep -Eq '^ +[0-9]+ skipped' || { echo "::error::no test was skipped"; exit 1; }
+          if printf '%s\n' "$out" | grep -Eq '^ +[0-9]+ (passed|failed)'; then echo "::error::an unconfigured test passed or failed instead of sitting out"; exit 1; fi
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: The site shows a tagline that reads SITE.tagline; the test and the whole suite are green
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s|selector: '',|selector: '.tagline',|" tests/tagline.spec.ts
+          PLACEHOLDER="$(cat "$RUNNER_TEMP/placeholder")" perl -pi -e 's|tagline: \x27\Q$ENV{PLACEHOLDER}\E\x27,|tagline: \x27Your books done. Your evenings back.\x27,|' src/config.ts
+          # The two comment lines are decoys: the line inside a longer word is not a second
+          # copy, so the "typed once" test has to stay green with them in the file. The
+          # second is bordered by a digit and a letter from outside the basic plane, which
+          # take two places each in a string.
+          perl -pi -e 's|^(\s*)<h1>\{SITE\.name\}</h1>|$1<h1>{SITE.name}</h1>\n$1<!-- xYour books done. Your evenings back.x -->\n$1<!-- 𝟙Your books done. Your evenings back.𐐀 -->\n$1<p class="tagline">{SITE.tagline}</p>|' src/pages/index.astro
+          # One check per line: in "a && b" a failing a does not stop the step.
+          grep -q "selector: '.tagline'," tests/tagline.spec.ts
+          grep -q "tagline: 'Your books done. Your evenings back.'," src/config.ts
+          grep -q '<p class="tagline">{SITE.tagline}</p>' src/pages/index.astro
+          grep -q 'xYour books done. Your evenings back.x' src/pages/index.astro
+          grep -q '𝟙Your books done. Your evenings back.𐐀' src/pages/index.astro
+          cp src/pages/index.astro "$RUNNER_TEMP/index.good" && cp src/config.ts "$RUNNER_TEMP/config.good"
+          npm run check
+          npm test
+          out="$(CI= npx playwright test tests/tagline.spec.ts --reporter=line 2>&1)" || { printf '%s\n' "$out"; exit 1; }
+          printf '%s\n' "$out" | grep -Eq '^ +4 passed' || { printf '%s\n' "$out"; echo "::error::the four tagline tests did not all pass"; exit 1; }
+      # A guard that cannot fail guards nothing. Each case makes one mistake on the good
+      # site and must turn exactly one test red: the one whose name says what is wrong.
+      - name: Each mistake turns its own test red
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          # The reporter prints every test's name as it runs, passed or not. Only its
+          # numbered list of failures ("  1) [chromium] › tests/...") says which one failed.
+          failed_test_is() { printf '%s\n' "$1" | grep -E '^ +[0-9]+\) ' | grep -Fq "$2"; }
+          red() {   # red "<what was done>" "<part of the failing test's name>" ["<part of its message>"]
+            if out="$(CI= npx playwright test tests/tagline.spec.ts --reporter=line 2>&1)"; then
+              printf '%s\n' "$out" | tail -n 6; echo "::error::$1: the test stayed green"; exit 1
+            fi
+            printf '%s\n' "$out" | grep -Eq '^ +1 failed' || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: not exactly one test failed"; exit 1; }
+            failed_test_is "$out" "$2" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the failing test is not \"$2\""; exit 1; }
+            if [ -n "${3:-}" ]; then
+              printf '%s\n' "$out" | grep -Fq "$3" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the failure does not say \"$3\""; exit 1; }
+            fi
+            echo "red as expected ($2${3:+; $3}): $1"
+            last="$out"
+            cp "$RUNNER_TEMP/index.good" src/pages/index.astro && cp "$RUNNER_TEMP/config.good" src/config.ts
+          }
+          perl -pi -e 's|\{SITE\.tagline\}</p>|Your books done. Your evenings back.</p>|' src/pages/index.astro
+          grep -q '<p class="tagline">Your books done. Your evenings back.</p>' src/pages/index.astro
+          red "the line typed into the page as well" "the line is typed once"
+          # The name check itself, on that same run: it must refuse a test that passed.
+          if failed_test_is "$last" "is a paragraph, not a heading"; then echo "::error::the name check accepts a test that did not fail"; exit 1; fi
+          perl -pi -e 's|<p class="tagline">\{SITE\.tagline\}</p>|<h2 class="tagline">{SITE.tagline}</h2>|' src/pages/index.astro
+          grep -q '<h2 class="tagline">' src/pages/index.astro
+          red "the line set as a heading" "is a paragraph, not a heading"
+          perl -pi -e 's|\{SITE\.tagline\}</p>|Your books done.</p>|' src/pages/index.astro
+          grep -q '<p class="tagline">Your books done.</p>' src/pages/index.astro
+          red "another line on the page than in the config" "is SITE.tagline, word for word"
+          perl -pi -e 's|^(\s*)(<p class="tagline">\{SITE\.tagline\}</p>)|$1$2\n$1$2|' src/pages/index.astro
+          [ "$(grep -c '<p class="tagline">{SITE.tagline}</p>' src/pages/index.astro)" = 2 ]
+          red "the line shown twice" "is SITE.tagline, word for word"
+          # A copy written with an escaped apostrophe: the page shows the right line, and
+          # the source holds it a second time in a form a plain search would miss.
+          perl -pi -e 's|tagline: \x27Your books done. Your evenings back.\x27,|tagline: "Freelancers\x27 evenings back.",|' src/config.ts
+          grep -q "tagline: \"Freelancers' evenings back.\"," src/config.ts
+          perl -pi -e 's|^(import \{ SITE \} from \x27\.\./config\x27;)|$1\nconst again = \x27Freelancers\\\x27 evenings back.\x27;|; s|\{SITE\.tagline\}</p>|{again}</p>|' src/pages/index.astro
+          grep -Fq "const again = 'Freelancers\\' evenings back.';" src/pages/index.astro
+          grep -q '<p class="tagline">{again}</p>' src/pages/index.astro
+          red "the line typed again with an escaped apostrophe" "the line is typed once"
+          # The same, with the apostrophe as a character reference in the page, in a
+          # spelling with leading zeros that only a full decoder reads.
+          perl -pi -e 's|tagline: \x27Your books done. Your evenings back.\x27,|tagline: "Freelancers\x27 evenings back.",|' src/config.ts
+          grep -q "tagline: \"Freelancers' evenings back.\"," src/config.ts
+          perl -pi -e 's|\{SITE\.tagline\}</p>|Freelancers&#00000039; evenings back.</p>|' src/pages/index.astro
+          grep -q '<p class="tagline">Freelancers&#00000039; evenings back.</p>' src/pages/index.astro
+          red "the line typed again with a character reference" "the line is typed once"
+          PLACEHOLDER="$(cat "$RUNNER_TEMP/placeholder")" perl -pi -e 's|tagline: \x27Your books done. Your evenings back.\x27,|tagline: \x27$ENV{PLACEHOLDER}\x27,|' src/config.ts
+          grep -Fq "tagline: '$(cat "$RUNNER_TEMP/placeholder")'," src/config.ts
+          red "the starter's placeholder left in the config" "is a real line within the limits" "placeholder"
+          # Nine words in 31 characters, then six words in 67: each limit on its own.
+          perl -pi -e "s|tagline: 'Your books done. Your evenings back.',|tagline: 'We do it so you can get on now.',|" src/config.ts
+          grep -q "tagline: 'We do it so you can get on now.'," src/config.ts
+          red "a line of nine short words" "is a real line within the limits" "has 9 words"
+          perl -pi -e "s|tagline: 'Your books done. Your evenings back.',|tagline: 'Uncomplicated bookkeeping for independent professionals everywhere.',|" src/config.ts
+          grep -q "professionals everywhere.'," src/config.ts
+          red "a line of six long words" "is a real line within the limits" "has 67 characters"
+
+  # The website-hero-carousel skill ships files that live in a SITE, like the contact form. This
+  # builds a site from the starter, installs the skill the way its SKILL.md §2 says (the
+  # component, its words, the script, the test, the carousel on the home page with three
+  # generated photos: one pale, one dark, one in 4:3, two of them linked), and runs the type
+  # check and the whole suite. Three runs, so that every setting and the pairing the mid-fade
+  # assertions need are run: (button, instant), (dots, fade) and (button, fade). The photos are
+  # made here, not committed: the pale one is the worst case for white dots, so the contrast
+  # test can never pass only because the fixture was dark. Last step: a carousel that is
+  # missing something must stop the build.
+  hero-carousel-skill:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site && cd site
+          cp src/pages/index.astro "$RUNNER_TEMP/index.pristine.astro"
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          # three generated photos, not committed
+          mkdir -p src/assets
+          node --input-type=module -e "
+          import sharp from 'sharp';
+          const mk = (name, rgb, h = 1350) => sharp({ create: { width: 2400, height: h, channels: 3, background: rgb } }).jpeg({ quality: 80 }).toFile('src/assets/' + name);
+          await mk('hc-pale.jpg', { r: 244, g: 244, b: 240 });
+          await mk('hc-dark.jpg', { r: 24, g: 32, b: 40 });
+          await mk('hc-mid.jpg', { r: 120, g: 140, b: 130 }, 1800);
+          "
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: The skill installed, three times, each with the type check and the whole suite
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          K="$GITHUB_WORKSPACE/skills/website-hero-carousel/templates"
+          for cfg in "button instant" "dots fade" "button fade"; do
+            set -- $cfg; PAUSE=$1; SWAP=$2
+            echo "::group::pause $PAUSE, swap $SWAP"
+            rm -f tests/hero-carousel.spec.ts public/js/hero-carousel.js src/components/HeroCarousel.astro src/components/hero-carousel-text.ts
+            cp "$RUNNER_TEMP/index.pristine.astro" src/pages/index.astro
+            mkdir -p public/js
+            cp "$K/hero-carousel.js" public/js/ && cp "$K/HeroCarousel.astro" "$K/hero-carousel-text.ts" src/components/ && cp "$K/hero-carousel.spec.ts" tests/
+            sed -i "s|^const PAGE: string = '';|const PAGE: string = '/';|; s|^const PAUSE: string = '';|const PAUSE: string = '$PAUSE';|; s|^const SWAP: string = '';|const SWAP: string = '$SWAP';|" tests/hero-carousel.spec.ts
+            # One check per line: in "a && b" a failing a does not stop the step.
+            grep -q "const PAGE: string = '/';" tests/hero-carousel.spec.ts
+            grep -q "const PAUSE: string = '$PAUSE';" tests/hero-carousel.spec.ts
+            grep -q "const SWAP: string = '$SWAP';" tests/hero-carousel.spec.ts
+            sed -i "s|^import { SITE } from '../config';|import { SITE } from '../config';\nimport HeroCarousel from '../components/HeroCarousel.astro';\nimport pale from '../assets/hc-pale.jpg';\nimport dark from '../assets/hc-dark.jpg';\nimport mid from '../assets/hc-mid.jpg';|" src/pages/index.astro
+            sed -i "s|^<Base title={SITE.name}>|<Base title={SITE.name}>\n<HeroCarousel label=\"Photos of our work\" pause=\"$PAUSE\" swap=\"$SWAP\" slides={[{ image: pale, alt: 'A pale wall in daylight, seen straight on', label: 'Pale wall', href: '/privacy' }, { image: dark, alt: 'A dark room with no light on', label: 'Dark room', href: '/legal-notice' }, { image: mid, alt: 'A green-grey field under an even sky', label: 'Field' }]} />|" src/pages/index.astro
+            grep -q '<HeroCarousel ' src/pages/index.astro
+            grep -q 'import HeroCarousel' src/pages/index.astro
+            npm run check
+            npm test
+            echo "::endgroup::"
+          done
+      # A carousel with one slide, without a label, without alt text, with a setting it does not
+      # know, or in a language it has no words for, must stop the build, not go out wrong.
+      # Last step: it leaves the site broken on purpose.
+      - name: A carousel that is missing something stops the build
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          stops() { # $1 what was broken, $2 the sed that breaks it, $3 the message the build must give
+            cp "$RUNNER_TEMP/index.broken-base.astro" src/pages/index.astro
+            sed -i "$2" src/pages/index.astro
+            if cmp -s src/pages/index.astro "$RUNNER_TEMP/index.broken-base.astro"; then echo "::error::$1: the sed changed nothing"; exit 1; fi
+            if npm run build > build.log 2>&1; then cat build.log; echo "::error::$1: it was built"; exit 1; fi
+            grep -qF "$3" build.log || { cat build.log; echo "::error::$1: the build failed, but not on: $3"; exit 1; }
+          }
+          # the page with a working two-slide carousel, which each case then breaks
+          cp "$RUNNER_TEMP/index.pristine.astro" "$RUNNER_TEMP/index.broken-base.astro"
+          K="$GITHUB_WORKSPACE/skills/website-hero-carousel/templates"
+          cp "$K/HeroCarousel.astro" src/components/
+          cp "$K/hero-carousel-text.ts" src/components/
+          sed -i "s|^import { SITE } from '../config';|import { SITE } from '../config';\nimport HeroCarousel from '../components/HeroCarousel.astro';\nimport pale from '../assets/hc-pale.jpg';\nimport dark from '../assets/hc-dark.jpg';|" "$RUNNER_TEMP/index.broken-base.astro"
+          sed -i "s|^<Base title={SITE.name}>|<Base title={SITE.name}>\n<HeroCarousel label=\"Photos\" slides={[{ image: pale, alt: 'A pale wall in daylight, seen straight on', label: 'Pale wall' }, { image: dark, alt: 'A dark room with no light on', label: 'Dark room' }]} />|" "$RUNNER_TEMP/index.broken-base.astro"
+          stops "one slide" "s|, { image: dark, alt: 'A dark room with no light on', label: 'Dark room' }||" 'HeroCarousel: pass slides'
+          stops "no label" 's|label="Photos" ||' 'HeroCarousel: pass label'
+          stops "alt text missing" "s|alt: 'A pale wall in daylight, seen straight on'|alt: ''|" 'has no alt text of its own'
+          stops "a dot without a name" "s|, label: 'Dark room'||" 'has no label'
+          stops "an unknown pause setting" 's|label="Photos" |label="Photos" pause="never" |' 'pause is "button" or "dots"'
+          stops "an unknown swap setting" 's|label="Photos" |label="Photos" swap="slide" |' 'swap is "instant" or "fade"'
+          stops "an interval too short" 's|label="Photos" |label="Photos" intervalMs={500} |' 'intervalMs below 2000'
+          stops "a language with no texts" 's|label="Photos" |label="Photos" lang="xx" |' 'no texts for the language "xx"'
+
+  # tests/phone-images.spec.ts ships in the starter, which renders no raster image, so the
+  # starter suite alone proves nothing about it. This job adds a block of generated noise WebP
+  # images to the home page (noise, so an oversized file is well over the 4 KiB floor; flat ones
+  # stay under it) holding every case the test must pass, runs the test and the whole suite, then makes one mistake
+  # at a time and checks that this test, and only this test, turns red and says why.
+  phone-images-test:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: skills/new-website/templates/astro/.nvmrc
+          check-latest: true  # a cached older Node of that major is not enough: engines needs its security release
+      - name: A site from the starter, with images for every case the test must pass
+        working-directory: ${{ runner.temp }}
+        run: |
+          cp -R "$GITHUB_WORKSPACE/skills/new-website/templates/astro" site && cd site
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          # sharp comes with Astro (the hero-carousel job makes its photos the same way)
+          mkdir -p public/fx
+          node --input-type=module -e "
+          import sharp from 'sharp';
+          const noise = (name, w, h) => sharp({ create: { width: w, height: h, channels: 3, background: '#808080', noise: { type: 'gaussian', mean: 128, sigma: 60 } } }).webp({ quality: 80 }).toFile('public/fx/' + name);
+          const flat = (name, w, h) => sharp({ create: { width: w, height: h, channels: 3, background: '#4a6' } }).webp({ quality: 80 }).toFile('public/fx/' + name);
+          for (const n of ['right', 'swap', 'zero', 'layer1', 'layer2', 'desk', 'orphan', 'ghost', 'paren(1)', 'set1', 'set2', 'vis', 'calc', 'sd', 'none', 'mask', 'poster', 'border', 'fade', 'track', 'scroll', 'esc', 'dc', 'inl', 'cb', 'thin', 'margin']) await noise(n + '.webp', 600, 400);
+          await noise('list.webp', 40, 40);
+          await noise('pin.webp', 120, 80);
+          await noise('big.webp', 2000, 1333);
+          await noise('cover.webp', 1200, 800);
+          await noise('tile.webp', 2000, 2000);
+          await flat('flat.webp', 1000, 667);
+          await flat('hidden.webp', 600, 400);
+          await flat('wait.webp', 600, 400);
+          await flat('off.webp', 600, 400);
+          "
+          ls -l public/fx
+          # The small files must stay under the floor, or the cases that use them prove nothing.
+          for f in flat hidden wait off; do [ "$(wc -c < "public/fx/$f.webp")" -lt 4096 ] || { echo "::error::$f.webp is not under 4 KiB"; exit 1; }; done
+          [ "$(wc -c < public/fx/zero.webp)" -gt 4096 ] || { echo "::error::zero.webp is not over 4 KiB"; exit 1; }
+          [ "$(wc -c < public/fx/pin.webp)" -gt 4096 ] || { echo "::error::pin.webp is not over 4 KiB"; exit 1; }
+          [ "$(wc -c < public/fx/big.webp)" -gt 100000 ] || { echo "::error::big.webp is too small to be over the floor"; exit 1; }
+          # The green page, one block before </Base>: every case the test must pass. The page is long
+          # (smooth scrolling must not leave the end unseen) and grows 400 ms after its end is reached.
+          perl -0pi -e 's|</Base>|  <link slot="head" rel="preload" as="image" href="/fx/swap.webp" />
+            <link slot="head" rel="preload" as="image" href="/fx/desk.webp" media="(min-width: 720px)" />
+            <link slot="head" rel="preload" as="image" imagesrcset="/fx/desk.webp 600w" imagesizes="200px" media="(min-width: 720px)" />
+            <style>
+              .fx-cover { width: 200px; height: 400px; background: linear-gradient(#0003, #0003), url(/fx/cover.webp) center / cover no-repeat; }
+              .fx-layers { width: 200px; height: 133px; background-image: url(/fx/layer1.webp), url(/fx/layer2.webp); background-size: 100% auto, 100% auto; background-repeat: no-repeat; }
+              .fx-paren { width: 200px; height: 133px; background: url("/fx/paren(1).webp") center / 100% auto no-repeat; }
+              .fx-set { width: 200px; height: 133px; background-image: image-set(url(/fx/set1.webp) 1x, url(/fx/set2.webp) 2x); background-size: 100% auto; background-repeat: no-repeat; }
+              .fx-calc { width: 200px; height: 133px; background: url(/fx/calc.webp) center / calc(100% - 10px) auto no-repeat; }
+              .fx-tile { width: 200px; height: 200px; background: url(/fx/tile.webp) repeat; }
+              .fx-mask { width: 200px; height: 133px; background: #4a6; mask: url(/fx/mask.webp) center / 100% auto no-repeat; }
+              .fx-list { list-style-image: url(/fx/list.webp); }
+              .fx-border { width: 200px; height: 50px; border: 10px solid; border-image: url(/fx/border.webp) 30; }
+              .fx-spacer { height: 8000px; }
+              .fx-pb::before { content: ""; display: block; width: 100px; height: 100px; background: url(/fx/right.webp) center / 100% no-repeat; }
+              .fx-fade { display: grid; width: 200px; }
+              .fx-fade > div { grid-area: 1 / 1; opacity: 0; transition: opacity 1s; }
+              .fx-fade > div.on { opacity: 1; }
+              .fx-track { width: 200.3px; overflow-x: hidden; }
+              .fx-gallery { width: 200px; overflow-x: auto; }
+              .fx-track > div, .fx-gallery > div { display: flex; width: 400px; }
+              .fx-track img, .fx-gallery img, .fx-gallery span { flex: none; width: 200px; height: auto; }
+              .fx-shut, .fx-pin { overflow: hidden; height: 0; }
+              .fx-margin { overflow: clip; overflow-clip-margin: 20px; height: 0; }
+              .fx-dc { display: contents; }
+              .fx-dc::before { content: ""; display: block; width: 200px; height: 133px; background: url(/fx/dc.webp) center / 100% auto no-repeat; }
+              .fx-clipbox { width: 200px; overflow: clip; }
+              .fx-cb::before { content: ""; display: block; width: 200px; height: 133px; background: url(/fx/cb.webp) center / 100% auto no-repeat; }
+            </style>
+            <section class="wrap fx" data-grow="/fx/right.webp">
+              <img id="fx-swap" src="/fx/swap.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: auto" />
+              <img id="fx-hidden" src="/fx/hidden.webp" alt="" width="600" height="400" loading="eager" style="width: 0; height: 0" />
+              <img src="/fx/flat.webp" alt="" width="1000" height="667" loading="eager" style="width: 100px; height: auto" />
+              <div class="fx-cover"></div>
+              <div class="fx-layers"></div>
+              <div class="fx-paren"></div>
+              <div class="fx-set"></div>
+              <div class="fx-calc"></div>
+              <img src="/fx/calc.webp" alt="" width="600" height="400" loading="eager" style="width: 50px; height: auto" />
+              <img id="fx-vis" src="/fx/vis.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: auto" />
+              <img id="fx-sd" src="/fx/sd.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: 133px; object-fit: scale-down" />
+              <img src="/fx/none.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: 133px; object-fit: none" />
+              <video poster="/fx/poster.webp" style="width: 100px; height: 400px; object-fit: cover"></video>
+              <div class="fx-mask"></div>
+              <ul class="fx-list"><li>A list item</li></ul>
+              <div class="fx-border"></div>
+              <div class="fx-tile"></div>
+              <div class="fx-pb"></div>
+              <div class="fx-fade"><div class="on"><img src="/fx/fade.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: auto" /></div><div><img src="/fx/wait.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: auto" /></div></div>
+              <div class="fx-track"><div><img src="/fx/track.webp" alt="" width="600" height="400" loading="eager" /><img src="/fx/off.webp" alt="" width="600" height="400" loading="eager" /></div></div>
+              <div class="fx-gallery" tabindex="0" role="region" aria-label="Gallery"><div><span></span><img src="/fx/scroll.webp" alt="" width="600" height="400" loading="eager" /></div></div>
+              <div style="position: relative"><div class="fx-shut"><img src="/fx/esc.webp" alt="" width="600" height="400" loading="eager" style="position: absolute; top: 0; left: 0; width: 200px; height: auto" /></div></div>
+              <div class="fx-dc"></div>
+              <p><span style="overflow: hidden; font-size: 0"><img src="/fx/inl.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: auto" /></span></p>
+              <div class="fx-clipbox"><div class="fx-cb"></div></div>
+              <div style="overflow: hidden"><img src="/fx/thin.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: 0.5px; object-fit: cover" /></div>
+              <div class="fx-margin"><img src="/fx/margin.webp" alt="" width="600" height="400" loading="eager" style="display: block; width: 200px; height: auto" /></div>
+              <div class="fx-pin"><img src="/fx/pin.webp" alt="" width="120" height="80" loading="eager" style="position: fixed; left: 0; bottom: 0; width: 40px; height: auto" /></div>
+              <div class="fx-spacer"></div>
+              <img id="fx-low" src="/fx/right.webp" alt="" width="600" height="400" loading="lazy" style="width: 200px; height: auto" />
+            </section>
+            <script is:inline>
+              addEventListener("scroll", () => { document.getElementById("fx-swap").src = "/fx/right.webp"; }, { once: true });
+              const fxGrow = () => {
+                if (scrollY + innerHeight < document.documentElement.scrollHeight - 50) return;
+                removeEventListener("scroll", fxGrow);
+                setTimeout(() => {
+                const s = document.querySelector(".fx");
+                const gap = document.createElement("div"); gap.style.height = "8000px";
+                const img = Object.assign(document.createElement("img"), { src: s.dataset.grow, alt: "", width: 600, height: 400, loading: "lazy" });
+                img.style.width = "200px"; img.style.height = "auto";
+                s.append(gap, img);
+                }, 400);
+              };
+              addEventListener("scroll", fxGrow);
+            </script>
+          </Base>|' src/pages/index.astro
+          grep -q 'id="fx-low"' src/pages/index.astro
+          cp src/pages/index.astro "$RUNNER_TEMP/index.good"
+      - name: Icons, as setup makes them (SITE.name set, then scripts/make-icons.mjs --setup)
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          perl -pi -e "s/^  name: 'Example',/  name: 'Example Site',/" src/config.ts
+          grep -q "^  name: 'Example Site'," src/config.ts
+          node scripts/make-icons.mjs --setup
+      - name: Green, the test alone and then the whole suite
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          out="$(CI= npx playwright test tests/phone-images.spec.ts --reporter=line 2>&1)" || { printf '%s\n' "$out" | tail -n 40; echo "::error::the green page failed phone-images.spec.ts"; exit 1; }
+          line="$(grep -F 'phone images — /:' <<<"$out")" || { printf '%s\n' "$out" | tail -n 40; echo "::error::the home page printed no count"; exit 1; }
+          printf '%s\n' "$line"
+          # 26 files judged by width on / (calc, scale-down, none, mask, list marker, poster, a fade
+          # carousel's showing slide, a scroll gallery, an absolute and a fixed box escaping a clip, an
+          # image in a clip whose margin lets 20px show,
+          # pseudo-elements of a display: contents host and in a clip box, an image in an inline
+          # clipper, and an image 0.5px tall inside a clip box among them); the three small hidden ones (by
+          # size, a fade carousel's waiting slide, a slide clipped by its track) and the border image
+          # named, and nothing else.
+          [[ $line == *'phone images — /: 26 judged by width; hidden and under 4 KiB: /fx/hidden.webp, /fx/off.webp, /fx/wait.webp; not judged: /fx/border.webp (border-image-source)' ]] || { echo "::error::expected 26 judged by width on /, hidden.webp, off.webp and wait.webp under 4 KiB and border.webp not judged, nothing else"; exit 1; }
+          npm test
+      - name: Each mistake turns this test red
+        working-directory: ${{ runner.temp }}/site
+        run: |
+          failed_test_is() { local m; m="$(grep -E '^ +[0-9]+\) ' <<<"$1")" || return 1; [[ $m == *"$2"* ]]; }
+          # edit "<perl>" "<text the page must then hold>": one change, proved to have landed.
+          edit() { perl -pi -e "$1" src/pages/index.astro; grep -Fq "$2" src/pages/index.astro || { echo "::error::the edit to '$2' did not land"; exit 1; }; }
+          red() {   # red "<what was done>" "<what the message must say>"
+            if out="$(CI= npx playwright test tests/phone-images.spec.ts --reporter=line 2>&1)"; then
+              printf '%s\n' "$out" | tail -n 6; echo "::error::$1: the test stayed green"; exit 1
+            fi
+            grep -Eq '^ +1 failed' <<<"$out" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: not exactly one test failed"; exit 1; }
+            failed_test_is "$out" "phone images — / downloads" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the failing test is not the home page's"; exit 1; }
+            grep -Fq "$2" <<<"$out" || { printf '%s\n' "$out" | tail -n 30; echo "::error::$1: the failure does not say $2"; exit 1; }
+            echo "red as expected ($2): $1"
+            cp "$RUNNER_TEMP/index.good" src/pages/index.astro
+          }
+          # One change per case.
+          edit 's|id="fx-low" src="/fx/right.webp"|id="fx-low" src="/fx/big.webp"|' 'id="fx-low" src="/fx/big.webp"'
+          red "an oversized lazy image at the end of a long page" "/fx/big.webp is 2000px wide, shown at 200px"
+          edit 's|data-grow="/fx/right.webp"|data-grow="/fx/big.webp"|' 'data-grow="/fx/big.webp"'
+          red "an oversized image in content added late, once the end is reached" "/fx/big.webp is 2000px wide, shown at 200px"
+          edit 's|removeEventListener\("scroll", fxGrow\);|/* grows at every end */|' '/* grows at every end */'
+          red "a page that never stops growing" "/ did not settle at its end within 20 s"
+          edit 's|background: url\(/fx/right.webp\) center / 100% no-repeat|background: url(/fx/big.webp) center / 100% no-repeat|' 'height: 100px; background: url(/fx/big.webp) center / 100% no-repeat'
+          red "an oversized ::before background" "/fx/big.webp is 2000px wide, shown at 100px"
+          edit 's|center / 100% auto no-repeat; \}|0 0 / 50px auto no-repeat; }|' 'url("/fx/paren(1).webp") 0 0 / 50px auto no-repeat'
+          red "a background drawn at 50px by its background-size" "/fx/paren(1).webp is 600px wide, shown at 50px"
+          edit 's|id="fx-hidden" src="/fx/hidden.webp"|id="fx-hidden" src="/fx/zero.webp"|' 'id="fx-hidden" src="/fx/zero.webp"'
+          red "an image downloaded but hidden by its size" "/fx/zero.webp is downloaded but hidden at 412px"
+          edit 's|(id="fx-vis" [^>]*style="width: 200px; height: auto)"|$1; visibility: hidden"|' 'height: auto; visibility: hidden"'
+          red "an image downloaded but hidden by visibility" "/fx/vis.webp is downloaded but hidden at 412px"
+          edit 's|(id="fx-vis" [^>]*style="width: 200px; height: auto)"|$1; opacity: 0"|' 'height: auto; opacity: 0"'
+          red "an image downloaded but hidden by its own opacity" "/fx/vis.webp is downloaded but hidden at 412px"
+          edit 's|src="/fx/wait.webp"|src="/fx/zero.webp"|' '<div><img src="/fx/zero.webp"'
+          red "a fade carousel's waiting slide over the floor, hidden by its slide's opacity" "/fx/zero.webp is downloaded but hidden at 412px"
+          edit 's|src="/fx/off.webp"|src="/fx/zero.webp"|' '<img src="/fx/zero.webp" alt="" width="600" height="400" loading="eager" /></div></div>'
+          red "a slide over the floor, clipped out of sight by its track" "/fx/zero.webp is downloaded but hidden at 412px"
+          edit 's|\.fx-shut, \.fx-pin \{|.fx-shut { position: relative; }\n              .fx-shut, .fx-pin {|' '.fx-shut { position: relative; }'
+          red "an absolute image whose containing block is the clip box" "/fx/esc.webp is downloaded but hidden at 412px"
+          edit 's|\.fx-shut, \.fx-pin \{|.fx-shut { transform: translateX(0); }\n              .fx-shut, .fx-pin {|' '.fx-shut { transform: translateX(0); }'
+          red "an absolute image whose transformed clip box is its containing block" "/fx/esc.webp is downloaded but hidden at 412px"
+          edit 's|\.fx-shut, \.fx-pin \{|.fx-pin { translate: 0px; }\n              .fx-shut, .fx-pin {|' '.fx-pin { translate: 0px; }'
+          red "a fixed image whose translated clip box is its containing block" "/fx/pin.webp is downloaded but hidden at 412px"
+          edit 's|\.fx-dc::before \{ content|.fx-dc::before { opacity: 0; content|' '.fx-dc::before { opacity: 0; content'
+          red "a pseudo-element hidden by its own opacity" "/fx/dc.webp is downloaded but hidden at 412px"
+          edit 's|\.fx-clipbox \{ width: 200px; overflow: clip; \}|.fx-clipbox { width: 200px; height: 0; overflow: clip; }|' '.fx-clipbox { width: 200px; height: 0; overflow: clip; }'
+          red "a pseudo-element clipped away with its host" "/fx/cb.webp is downloaded but hidden at 412px"
+          edit 's|^(\s*)(<script is:inline>)$|$1$2\n$1const fxCv = Element.prototype.checkVisibility; Element.prototype.checkVisibility = function (o) { return fxCv.call(this, { visibilityProperty: !!o?.visibilityProperty }); };|' 'const fxCv = Element.prototype.checkVisibility;'
+          red "a browser whose checkVisibility ignores opacity" "does not read opacity; update Playwright"
+          edit 's|(<link slot="head" rel="preload" as="image" href="/fx/swap.webp" />)|$1<link slot="head" rel="preload" as="image" href="/fx/orphan.webp" />|' 'href="/fx/orphan.webp"'
+          red "an image preloaded and not shown" "/fx/orphan.webp is preloaded and downloaded"
+          edit 's|^(\s*)(<script is:inline>)$|$1$2\n$1new Image().src = "/fx/ghost.webp";|' 'new Image().src = "/fx/ghost.webp";'
+          red "an image a script loads and never shows" "/fx/ghost.webp was downloaded, but nothing on the page shows it"
+          edit 's|(<link slot="head" rel="preload" as="image" href="/fx/swap.webp" />)|$1<link slot="head" rel="preload" as="image" imagesrcset="/fx/orphan.webp 600w" imagesizes="200px" />|' 'imagesrcset="/fx/orphan.webp 600w" imagesizes="200px" />'
+          red "an image preloaded by imagesrcset and not shown" "/fx/orphan.webp is preloaded and downloaded"
+          edit 's|id="fx-sd" src="/fx/sd.webp"|id="fx-sd" src="/fx/big.webp"|' 'id="fx-sd" src="/fx/big.webp"'
+          red "an oversized image fitted by object-fit: scale-down" "/fx/big.webp is 2000px wide, shown at 200px"
+          edit 's|url\(/fx/calc.webp\) center / calc|url(/fx/big.webp) center / calc|' 'url(/fx/big.webp) center / calc(100% - 10px)'
+          red "an oversized background sized by calc()" "/fx/big.webp is 2000px wide, shown at 190px"
+          edit 's|url\(/fx/calc.webp\) center / calc|url(/fx/big.webp) center / calc|; s|(\.fx-spacer \{)|:global(body > div:last-of-type > div) { max-width: 60px; padding: 0 30px; }\n              $1|' ':global(body > div:last-of-type > div) { max-width: 60px'
+          red "the same, with site CSS that would squeeze the sizing probe" "/fx/big.webp is 2000px wide, shown at 190px"
+          edit 's|url\(/fx/calc.webp\) center / calc|url(/fx/big.webp) center / calc|; s|\.fx-calc \{ width: 200px;|.fx-calc { width: 200px; border: 20px solid;|' '.fx-calc { width: 200px; border: 20px solid; height: 133px; background: url(/fx/big.webp)'
+          red "the same on a bordered box: % sizes refer to the padding box" "/fx/big.webp is 2000px wide, shown at 150px"
+          edit 's|mask: url\(/fx/mask.webp\)|mask: url(/fx/big.webp)|' 'mask: url(/fx/big.webp)'
+          red "an oversized mask image" "/fx/big.webp is 2000px wide, shown at 200px"
+          edit 's|<img src="/fx/none.webp"|<img src="/fx/big.webp"|' '<img src="/fx/big.webp" alt="" width="600" height="400" loading="eager" style="width: 200px; height: 133px; object-fit: none"'
+          red "an oversized image cropped by object-fit: none" "/fx/big.webp is 2000px wide, shown at 200px"
+          edit 's|; object-fit: cover"></video>|"></video>|' 'style="width: 100px; height: 400px"></video>'
+          red "a poster drawn smaller once its video is not object-fit: cover" "/fx/poster.webp is 600px wide, shown at 100px"
+
+  # The one check main's ruleset requires from this workflow. It passes when every job
+  # above passed (the change touched their paths) or every job was skipped (it did not),
+  # and fails on anything else: a failure, a cancel, a skip where a run was due.
+  template-tests-ok:
+    needs: [changes, playwright, prepare-any-shell, verify-windows, scorecard-skill, contact-form-skill, hero-carousel-skill, brand-kit-skill, tagline-skill, phone-images-test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - working-directory: .
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          RUN: ${{ needs.changes.outputs.run }}
+          RESULTS: ${{ needs.playwright.result }} ${{ needs.prepare-any-shell.result }} ${{ needs.verify-windows.result }} ${{ needs.scorecard-skill.result }} ${{ needs.contact-form-skill.result }} ${{ needs.hero-carousel-skill.result }} ${{ needs.brand-kit-skill.result }} ${{ needs.tagline-skill.result }} ${{ needs.phone-images-test.result }}
+        run: |
+          echo "changes: $CHANGES, run: $RUN; playwright, prepare-any-shell, verify-windows, scorecard-skill, contact-form-skill, hero-carousel-skill, brand-kit-skill, tagline-skill, phone-images-test: $RESULTS"
+          [ "$CHANGES" = success ] || { echo "::error::the changes job did not succeed"; exit 1; }
+          case "$RUN" in
+            true) want=success ;;
+            false) want=skipped ;;
+            *) echo "::error::the changes job gave run='$RUN', neither true nor false"; exit 1 ;;
+          esac
+          # one word per job named in RESULTS above (nine): a loop over the words would pass over an empty one unseen
+          set -- $RESULTS
+          [ "$#" -eq 9 ] || { echo "::error::expected 9 job results, got $#: '$RESULTS'"; exit 1; }
+          for r in "$@"; do
+            [ "$r" = "$want" ] || { echo "::error::a job ended '$r' where '$want' was due"; exit 1; }
+          done
+          echo "template tests: every job $want"

@@ -1,0 +1,150 @@
+{
+  "$schema": "../auditor-prompt-contract-index.schema.json",
+  "contract_count": 8,
+  "contract_schema": {
+    "path": "references/auditor-prompt-contract.schema.json",
+    "sha256": "d89d2a70acd84d661e2ac3daf12e82edee9658b9b90acc87ab947dfe61f1589f"
+  },
+  "contracts": [
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "TALE",
+      "ref": "references/prompt-contracts/narrative-quality-auditor.json",
+      "sha256": "b07db1b3c3bbe228067a91e5a2cbd4e35c194658c0b954c64f17972c5a0942a9",
+      "skill": "narrative-quality-auditor",
+      "skill_sha256": "1ab81ad5e107e5077bf648274ff842e8e335e8c0f79edc8ed71726c5e44d76b7",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "CORE-EEAT",
+      "ref": "references/prompt-contracts/content-quality-auditor.json",
+      "sha256": "c503fd4236edf2f831172a50c8631f94e1b9d23f057f58cbd0fb01fd81ea2c52",
+      "skill": "content-quality-auditor",
+      "skill_sha256": "24d7edeaf3692404b19e3b87d9605a2f9281e9ebe2145591fc4c99e0974de08c",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "CITE",
+      "ref": "references/prompt-contracts/domain-authority-auditor.json",
+      "sha256": "bb0d4e4955f8b21e4f32ac24687c1a193b264bb3f46539f534f26d10a296248d",
+      "skill": "domain-authority-auditor",
+      "skill_sha256": "388ab8f02061e9c2eb8b5b6f0aa34bdec5249552036c230ed1f4ecbd76ab0e7c",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "ECHO",
+      "ref": "references/prompt-contracts/social-quality-auditor.json",
+      "sha256": "62b6e67f195c65c4c77a5bad54626cfb891635eb6adda662499e4ca3fd8cb540",
+      "skill": "social-quality-auditor",
+      "skill_sha256": "c0a4570c7ecb3907534ab84d94f6d03eb8e9518723ec489835a947908e48e9eb",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "SEND",
+      "ref": "references/prompt-contracts/email-quality-auditor.json",
+      "sha256": "84e55268906ab730ed833742ea438c5bb8bdb40d3bf8b1a16c106cdca8b6de82",
+      "skill": "email-quality-auditor",
+      "skill_sha256": "a6f9d0f6a71bd0869fcf33746c7d17961118cb37c88318d4320b5e4ee1e67e90",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "ROAS",
+      "ref": "references/prompt-contracts/ad-account-auditor.json",
+      "sha256": "f6dcf711a99ff575f465cf2bc1941074dd53751151341ae202da65e298bc8279",
+      "skill": "ad-account-auditor",
+      "skill_sha256": "5d88c328f84739b220cd3afd500c27ab2c3e831ccc99870d6d0690bb5656a484",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "STAR",
+      "ref": "references/prompt-contracts/creator-content-auditor.json",
+      "sha256": "00e75ded4e1d0bf317787270e86d1b102db1b553133ef3d12bc91533c8d6d4cd",
+      "skill": "creator-content-auditor",
+      "skill_sha256": "7116d24f50e8afb62e43e83fdfbd2b589bb3874e51331e2757d501fed6d99adb",
+      "skill_version": "20.2.0"
+    },
+    {
+      "evaluation_variant_count": 5,
+      "evaluation_variant_ids": [
+        "complete",
+        "missing-evidence",
+        "single-veto",
+        "multi-veto",
+        "persistence-authority"
+      ],
+      "framework": "RAMP",
+      "ref": "references/prompt-contracts/launch-readiness-auditor.json",
+      "sha256": "40041fac1945e14ffe02a0d295965310595fbb623788a0d37c1d32ac64f5fec8",
+      "skill": "launch-readiness-auditor",
+      "skill_sha256": "c9799704814239a6a6b7863a777240078014955462c0088565ca269e05c8e117",
+      "skill_version": "20.2.0"
+    }
+  ],
+  "framework_catalog": {
+    "path": "references/framework-catalog.json",
+    "sha256": "931ac8f66f96d211ec704713f88f5a98d15250659e83c9fffc6c71987d37ba68",
+    "version": "20.2.0"
+  },
+  "schema_version": "1.0",
+  "source_catalog": {
+    "path": "references/system-catalog.json",
+    "sha256": "d9320294ffb04ef5e90bc6763637483361114a77f8ed6e4542cc2d5cd95b2d1a",
+    "version": "20.2.0"
+  },
+  "variant_count": 40
+}

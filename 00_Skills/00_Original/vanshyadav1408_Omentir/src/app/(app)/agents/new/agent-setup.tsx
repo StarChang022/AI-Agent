@@ -1,0 +1,3048 @@
+"use client";
+
+import { unwrapAction, type ActionFailure } from "@/lib/action-result";
+import { findLinkedInSearchLeadsAction } from "@/app/actions";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import type { FormEvent } from "react";
+import LogoMark from "@/app/logo-mark";
+import AiLoadingOverlay from "@/app/ai-loading-overlay";
+import MobileHeaderPortal from "@/app/mobile-header-portal";
+import { SelectField, type SelectOption } from "@/app/ui/select";
+import { useWorkspaceTimeZone } from "@/app/workspace-time-zone";
+import { TextAreaField, TextField } from "@/app/ui/text-field";
+import { normalizeSchedulingLink } from "@/lib/scheduling-link";
+import {
+  LINKEDIN_CSV_MAX_BYTES,
+  decodeCsvBytes,
+  parseLinkedInLeadCsv,
+} from "@/lib/linkedin-csv";
+import {
+  AGENT_STARTED_STORAGE_KEY,
+  isNextNavigationError,
+  markAgentStartedNotice,
+  useToast,
+  userFacingError,
+  type AgentStartedKind,
+} from "@/app/toast";
+import {
+  agentFormOutreachDefaults,
+  type AgentMessageTone,
+} from "@/lib/agent-setup-defaults";
+import type { Agent, CampaignReplyHandling, CampaignStep, SendWindow } from "@/lib/server/types";
+import {
+  INDUSTRY_SUGGESTIONS,
+  KEYWORD_SUGGESTIONS,
+  LOCATION_SUGGESTIONS,
+  TITLE_SUGGESTIONS,
+} from "./suggestions";
+
+type CompanyProfile = {
+  companyName: string;
+  description: string;
+  industry: string;
+  companySize: string;
+  painPointsText: string;
+  websiteUrl?: string;
+  pricingDetails?: string;
+  schedulingLink?: string;
+};
+
+type AgentSetupDraft = {
+  agentName: string;
+  groupName: string;
+  titles: string[];
+  industries: string[];
+  locations: string[];
+  keywords: string[];
+  prompt: string;
+  signalKeywords: string[];
+  competitorUrls: string[];
+  founderUrls: string[];
+  campaignGoal: "warm" | "demo";
+  messageTone: AgentMessageTone;
+  connectionNote: string;
+  firstMessage: string;
+  followUpMessage: string;
+};
+
+type PreparedAgent = {
+  agentId: string;
+  groupName: string;
+};
+
+type AgentSetupProps = {
+  // Launches return the agent so setup can open its page; edits redirect to
+  // Agents on the server and return nothing.
+  createAgent: (formData: FormData) => Promise<void | { agentId: string } | ActionFailure>;
+  prepareAgent: (formData: FormData) => Promise<PreparedAgent | ActionFailure>;
+  draftSetup: () => Promise<AgentSetupDraft | ActionFailure>;
+  saveProductProfile?: (
+    formData: FormData,
+  ) => Promise<void | { ok: true } | { ok: false; error: string } | ActionFailure>;
+  profile?: CompanyProfile | null;
+  initialAgent?: Agent | null;
+  // The window the agent's existing campaign is already sending in. Lives on
+  // the campaign, not the agent, so it has to be passed in separately.
+  initialSendWindow?: SendWindow;
+  // Same split as sendWindow: stored campaign tone on edit, new-agent default otherwise.
+  initialMessageTone?: string;
+  // True only when a campaign already exists. Resume-at-plan-limit reuses an
+  // agent row with no campaign; that is first-time outreach and must not use
+  // the edit fallbacks (always / professional).
+  hasExistingCampaign?: boolean;
+  // Saved campaign steps on edit, so the sequence opens with the real messages.
+  initialSteps?: CampaignStep[];
+  // Sender rotation of the existing campaign, main account included.
+  initialSenderAccountIds?: string[];
+  initialReplyHandling?: CampaignReplyHandling;
+  initialBookingLink?: string;
+  linkedInAccounts?: { id: string; displayName: string; accountId: string; avatarUrl?: string }[];
+  setupMode?: boolean;
+  // Leads-only agents stop after the Leads step: the agent discovers and
+  // scores leads into its group but no campaign is created, so the user
+  // contacts leads manually from the Leads section.
+  leadsOnly?: boolean;
+  outreachOnly?: boolean;
+  // Steal customers: scan competitor post comments and AI-outreach those people
+  // with post+comment context. No manual message templates.
+  stealCustomers?: boolean;
+  // Workspace IANA timezone, shown next to the send-window picker so the user
+  // knows whose 9am they are choosing.
+  timezone?: string;
+};
+
+// Name plus the hours it means, nothing else: three cards each carrying a third
+// line of explanation dominated the step, and the hours already say what the
+// explanation said. The paragraph above the picker covers the rest.
+//
+// Both parts live in `label` rather than label + `description`, because the
+// closed field is pinned to 56px with 24px of vertical padding - two stacked
+// lines are 42px of content in a 32px box, so they would spill into the notched
+// outline. One line at 16px fits, and the open menu matches it.
+const SEND_WINDOW_OPTIONS: SelectOption[] = [
+  { value: "business", label: "Business hours · Mon-Fri, 9am - 6pm" },
+  { value: "extended", label: "Extended hours · Every day, 7am - 10pm" },
+  { value: "always", label: "Around the clock · 24/7" },
+];
+
+type StepKey = "icp" | "competitors" | "leads" | "campaign" | "review";
+type SeqKind = "connect" | "message" | "follow";
+
+type SeqAction = {
+  id: string;
+  kind: SeqKind;
+  title: string;
+  enabled: boolean;
+  mode: "ai" | "manual";
+  manualMessage: string;
+  // A/B test: variant B text for a manual message. Empty means no test.
+  variantMessage?: string;
+  aiPrompt: string;
+  goal: string;
+  tone: string;
+  waitValue: number;
+  waitUnit: "minutes" | "hours" | "days";
+  includeNote?: boolean;
+};
+
+// Mixed on purpose: an all-executive default quietly teaches every new agent to
+// hunt only for CEOs and VPs, when the person who feels the problem daily is
+// usually a manager or an individual contributor.
+const initialTitles = [
+  "Marketing Manager",
+  "Account Executive",
+  "Content Creator",
+  "Social Media Manager",
+  "Operations Manager",
+  "Sales Development Representative",
+  "Founder",
+  "Head of Growth",
+];
+const initialIndustries = ["SaaS", "Software Development", "Marketing Services", "AI / ML", "IT Services"];
+const initialLocations = ["United States", "Canada", "United Kingdom", "Australia"];
+const initialKeywords = ["B2B", "Growth", "Sales", "Revenue", "Outbound", "Pipeline", "Go to market"];
+const initialSignalKeywords = ["hiring sales", "hiring growth", "outbound", "pipeline", "looking for a tool"];
+
+function ProgressCheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function linkedInAccountOptions(
+  accounts: { id: string; displayName: string; accountId: string; avatarUrl?: string }[],
+): SelectOption[] {
+  return accounts.map((account) => {
+    const label = account.displayName || account.accountId || "LinkedIn account";
+    return {
+      value: account.id,
+      label,
+      imageUrl: account.avatarUrl,
+      imageFallback: label,
+    };
+  });
+}
+
+function TextInput({
+  value,
+  onChange,
+  name,
+  placeholder,
+  required,
+  label,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  name: string;
+  placeholder: string;
+  required?: boolean;
+  label?: string;
+}) {
+  return (
+    <TextField
+      name={name}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      required={required}
+      label={label}
+      placeholder={placeholder}
+    />
+  );
+}
+
+/**
+ * Multi-value field: one standard TextField + plain list below (no nested tag box).
+ * Optional suggestions dropdown for ICP fields.
+ */
+function MultiValueField({
+  label,
+  name,
+  values,
+  setValues,
+  placeholder,
+  suggestions,
+}: {
+  label: string;
+  name: string;
+  values: string[];
+  setValues: (values: string[]) => void;
+  placeholder: string;
+  suggestions?: string[];
+}) {
+  const [draft, setDraft] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+
+  function addValue(raw?: string) {
+    const next = (raw ?? draft).trim();
+    if (!next || values.some((value) => value.toLowerCase() === next.toLowerCase())) {
+      if (!raw) setDraft("");
+      return;
+    }
+    setValues([...values, next]);
+    setDraft("");
+    setHighlight(0);
+  }
+
+  const filtered = (() => {
+    if (!suggestions || !focused) return [] as string[];
+    const lowerSelected = new Set(values.map((value) => value.toLowerCase()));
+    const query = draft.trim().toLowerCase();
+    const pool = suggestions.filter((item) => !lowerSelected.has(item.toLowerCase()));
+    const matched = query
+      ? pool.filter((item) => item.toLowerCase().includes(query))
+      : pool;
+    return matched.slice(0, 10);
+  })();
+
+  return (
+    <div className="grid gap-2">
+      {values.map((value) => (
+        <input key={value} type="hidden" name={name} value={value} />
+      ))}
+      {/* Suggestions anchor to the input only, not below selected value pills. */}
+      <div className="relative">
+        <TextField
+          label={label}
+          name={`${name}Draft`}
+          value={draft}
+          onChange={(event) => {
+            setDraft(event.target.value);
+            setHighlight(0);
+          }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => {
+            // Commit typed text when leaving; delay so suggestion mousedown can run first.
+            setTimeout(() => {
+              addValue();
+              setFocused(false);
+            }, 120);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              if (filtered.length > 0) {
+                addValue(filtered[Math.min(highlight, filtered.length - 1)]);
+              } else {
+                addValue();
+              }
+            } else if (event.key === "ArrowDown") {
+              if (filtered.length === 0) return;
+              event.preventDefault();
+              setHighlight((current) => (current + 1) % filtered.length);
+            } else if (event.key === "ArrowUp") {
+              if (filtered.length === 0) return;
+              event.preventDefault();
+              setHighlight((current) => (current - 1 + filtered.length) % filtered.length);
+            } else if (event.key === "Escape") {
+              setFocused(false);
+            }
+          }}
+          placeholder={placeholder}
+        />
+        {filtered.length > 0 ? (
+          <ul
+            className="m3-menu m3-menu-enter m3-menu--origin-top m3-menu--compact absolute left-0 right-0 top-full z-50 mt-1"
+            role="listbox"
+          >
+            {filtered.map((option, idx) => (
+              <li key={option}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={idx === highlight}
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    addValue(option);
+                  }}
+                  onMouseEnter={() => setHighlight(idx)}
+                  className={`m3-menu-item ${idx === highlight ? "bg-[var(--md-sys-menu-hover)]" : ""}`}
+                >
+                  <span className="m3-menu-item__label truncate">{option}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+      {values.length > 0 ? (
+        <div className="flex flex-wrap gap-2" role="list" aria-label={`${label} selected`}>
+          {values.map((value) => (
+            <span
+              key={value}
+              role="listitem"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-zinc-100 py-1 pl-3 pr-1.5 text-[12px] font-medium leading-4 text-zinc-800"
+            >
+              <span className="min-w-0 truncate">{value}</span>
+              <button
+                type="button"
+                onClick={() => setValues(values.filter((item) => item !== value))}
+                className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-900"
+                aria-label={`Remove ${value}`}
+              >
+                <span className="text-[14px] leading-none" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function seqUid() {
+  return Math.random().toString(36).slice(2, 9);
+}
+
+function makeSeqAction(kind: SeqKind): SeqAction {
+  if (kind === "connect")
+    return {
+      id: seqUid(),
+      kind,
+      title: "Connect request",
+      enabled: true,
+      mode: "ai",
+      // No {{leadReason}} in manual defaults: it never renders as prose, so a
+      // note or message containing it is dropped or rewritten by AI at send.
+      manualMessage:
+        "Hi {{firstName}}, came across what {{company}} is working on and thought it made sense to connect.",
+      aiPrompt:
+        "Write a short, friendly connection note that references {{leadReason}} and {{company}}. Under 280 characters.",
+      goal: "Open the door",
+      tone: "Friendly & professional",
+      waitValue: 0,
+      waitUnit: "days",
+      includeNote: true,
+    };
+  if (kind === "message")
+    return {
+      id: seqUid(),
+      kind,
+      title: "First message",
+      enabled: true,
+      mode: "ai",
+      manualMessage:
+        "Hi {{firstName}},\nI came across what {{company}} is working on. Worth a quick 15-min chat next week?",
+      aiPrompt:
+        "Write a friendly first message referencing {{signalSource}} and {{leadReason}}. End with a clear ask. Under 300 characters.",
+      goal: "Book a meeting",
+      tone: "Professional & friendly",
+      waitValue: 1,
+      waitUnit: "days",
+    };
+  return {
+    id: seqUid(),
+    kind,
+    title: "Follow-up",
+    enabled: true,
+    mode: "ai",
+    manualMessage:
+      "Quick follow-up, {{firstName}}. Thought this was worth sending again.",
+    aiPrompt:
+      "Write a brief polite follow-up referencing {{signalSource}}. Under 280 characters.",
+    goal: "Re-engage",
+    tone: "Polite & low-pressure",
+    waitValue: 18,
+    waitUnit: "hours",
+  };
+}
+
+// Rebuilds the manual sequence from a saved campaign so editing an agent shows
+// the messages it actually sends. Null for AI-written sequences (no message has
+// a template), which keep the editor defaults.
+function seqActionsFromSteps(steps: CampaignStep[] | undefined): SeqAction[] | null {
+  if (!steps?.some((step) => step.type === "message" && step.messageTemplate.trim())) return null;
+  const connect = makeSeqAction("connect");
+  const connectStep = steps.find((step) => step.type === "connect");
+  if (connectStep?.type === "connect" && connectStep.includeNote && connectStep.noteTemplate.trim()) {
+    connect.mode = "manual";
+    connect.manualMessage = connectStep.noteTemplate;
+  }
+  const messages: SeqAction[] = [];
+  steps.forEach((step, index) => {
+    if (step.type !== "message" || !step.messageTemplate.trim()) return;
+    const before = steps[index - 1];
+    const minutes = before?.type === "wait" ? before.delayMinutes : 0;
+    const waitUnit = minutes % 1440 === 0 ? "days" : minutes % 60 === 0 ? "hours" : "minutes";
+    messages.push({
+      ...makeSeqAction(messages.length ? "follow" : "message"),
+      mode: "manual",
+      manualMessage: step.messageTemplate,
+      variantMessage: step.variantTemplate || "",
+      waitUnit,
+      waitValue: waitUnit === "days" ? minutes / 1440 : waitUnit === "hours" ? minutes / 60 : minutes,
+    });
+  });
+  return [connect, ...messages];
+}
+
+function SeqIconRich({ kind, colorClass }: { kind: SeqKind; colorClass: string }) {
+  if (kind === "connect") {
+    return (
+      <svg
+        className={`h-5 w-5 ${colorClass}`}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="19" y1="8" x2="19" y2="14" />
+        <line x1="22" y1="11" x2="16" y2="11" />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      className={`h-5 w-5 ${colorClass}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+function CompanyInfoCard({
+  companyName,
+  industry,
+  description,
+  onEdit,
+}: {
+  companyName: string;
+  industry: string;
+  description: string;
+  onEdit: () => void;
+}) {
+  const summary =
+    [companyName, industry].filter(Boolean).join(" - ") || "No company info yet";
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white">
+      <div className="flex flex-col gap-3 border-b border-zinc-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+            >
+              Company Information
+            </span>
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="rounded-full bg-[#fff5f6] px-2 py-0.5 text-[11px] font-semibold text-[#e85e6b]"
+            >
+              Account-level
+            </span>
+          </div>
+          <p className="mt-1 truncate text-[13px] font-medium leading-5 text-zinc-700">
+            {summary}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onEdit}
+          style={{ fontFamily: "var(--font-varta)" }}
+          className="inline-flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 self-start rounded-md border border-[#e85e6b] bg-white px-3 text-[13px] font-semibold text-[#e85e6b] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:bg-[#fff5f6] hover:text-[#ba3871] sm:self-center"
+        >
+          <span
+            className="material-symbols-outlined text-[18px]! font-light leading-none"
+            aria-hidden="true"
+          >
+            edit
+          </span>
+          <span className="translate-y-[1px] leading-none">Edit</span>
+        </button>
+      </div>
+      <div className="flex items-start gap-3 bg-[#fff5f6] px-4 py-3.5">
+        <span className="mt-0.5 text-[#e85e6b]">
+          <svg
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polygon points="12 2 15 8 22 9 17 14 18 21 12 17 6 21 7 14 2 9 9 8 12 2" />
+          </svg>
+        </span>
+        <p className="text-[13px] font-light leading-5 text-[#ba3871]">
+          {description
+            ? description.length > 200
+              ? description.slice(0, 200) + "..."
+              : description
+            : "Add a company description to help AI personalize messages. You can edit it at the workspace level or just for your account."}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const COMPANY_INDUSTRY_OPTIONS = [
+  "Software Development & SaaS",
+  "Marketing & Advertising",
+  "Financial Services",
+  "Healthcare & Life Sciences",
+  "E-commerce & Retail",
+  "Education & EdTech",
+  "Real Estate & Construction",
+  "Manufacturing & Logistics",
+  "Media & Entertainment",
+  "Professional Services",
+  "Hospitality & Travel",
+  "Other",
+];
+
+const COMPANY_SIZE_OPTIONS = [
+  "1 - 10 employees",
+  "11 - 50 employees",
+  "51 - 200 employees",
+  "201 - 500 employees",
+  "501 - 1,000 employees",
+  "1,001 - 5,000 employees",
+  "5,000+ employees",
+];
+
+function CompanyEditModal({
+  open,
+  saving,
+  analyzing,
+  analyzeError,
+  values,
+  setValues,
+  onSubmit,
+  onAnalyze,
+  onClose,
+}: {
+  open: boolean;
+  saving: boolean;
+  analyzing: boolean;
+  analyzeError?: string;
+  values: {
+    companyName: string;
+    description: string;
+    industry: string;
+    companySize: string;
+    painPointsText: string;
+    websiteUrl: string;
+  };
+  setValues: {
+    setCompanyName: (v: string) => void;
+    setCompanyDescription: (v: string) => void;
+    setCompanyIndustry: (v: string) => void;
+    setCompanySize: (v: string) => void;
+    setCompanyPainPoints: (v: string) => void;
+    setWebsiteUrl: (v: string) => void;
+  };
+  onSubmit: () => void;
+  onAnalyze: () => void;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+  // While AI Analyse runs, parent shows AiLoadingOverlay; hide this tall edit
+  // sheet so the wait UI is only the compact card (esp. on mobile).
+  if (analyzing) return null;
+  const isWorking = saving || analyzing;
+
+  return (
+    <div
+      className="m3-dialog-scrim z-50"
+      role="presentation"
+      onClick={() => !isWorking && onClose()}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="agent-edit-company-title"
+        className="m3-dialog-surface flex max-h-[90vh] flex-col overflow-hidden !p-0"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!isWorking) onSubmit();
+          }}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
+        <div className="flex items-center justify-between border-b border-[var(--md-sys-color-outline-variant)] px-6 py-4">
+          <div>
+            <h3 id="agent-edit-company-title" className="m3-dialog-title text-[17px]">
+              Edit company info
+            </h3>
+            <p className="mt-0.5 text-[12px] font-medium text-[var(--md-sys-color-on-surface-variant)]">
+              These details help AI personalize outreach.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isWorking}
+            aria-label="Close"
+            className="ms-icon-button text-[var(--md-sys-color-on-surface-variant)] disabled:opacity-50"
+          >
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
+          <div className="grid gap-1.5">
+            <div className="flex flex-row items-start gap-2">
+              <TextField
+                className="min-w-0 flex-1"
+                label="Website"
+                value={values.websiteUrl || ""}
+                onChange={(event) => setValues.setWebsiteUrl(event.target.value)}
+                placeholder="acme.com"
+                error={analyzeError || undefined}
+              />
+              {/* mt-2 = outlined field top pad so button lines up with the 40px shell */}
+              <button
+                type="button"
+                onClick={onAnalyze}
+                disabled={isWorking || !values.websiteUrl.trim()}
+                className="m3-btn m3-btn-filled mt-2 h-10 shrink-0 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {analyzing ? "Analysing..." : "AI Analyse"}
+              </button>
+            </div>
+          </div>
+
+          <TextField
+            label="Company name"
+            value={values.companyName}
+            onChange={(event) => setValues.setCompanyName(event.target.value)}
+          />
+          <TextAreaField
+            label="Description"
+            value={values.description}
+            onChange={(event) => setValues.setCompanyDescription(event.target.value)}
+            rows={4}
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <SelectField
+              label="Industry"
+              options={COMPANY_INDUSTRY_OPTIONS}
+              value={values.industry}
+              onChange={setValues.setCompanyIndustry}
+              placeholder="Select industry"
+            />
+            <SelectField
+              label="Company size"
+              options={COMPANY_SIZE_OPTIONS}
+              value={values.companySize}
+              onChange={setValues.setCompanySize}
+              placeholder="Select size"
+            />
+          </div>
+          <TextAreaField
+            label="Pain points"
+            value={values.painPointsText}
+            onChange={(event) => setValues.setCompanyPainPoints(event.target.value)}
+            rows={3}
+          />
+        </div>
+
+        <div className="m3-dialog-actions border-t border-[var(--md-sys-color-outline-variant)] px-6 py-3.5 !mt-0">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isWorking}
+            className="m3-dialog-btn m3-dialog-btn--text"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isWorking}
+            aria-busy={isWorking}
+            className="m3-dialog-btn m3-dialog-btn--filled"
+          >
+            {saving ? <span className="m3-dialog-btn__spinner" aria-hidden /> : null}
+            {saving ? "Saving" : "Save"}
+          </button>
+        </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+export default function AgentSetup({
+  createAgent,
+  prepareAgent,
+  draftSetup,
+  saveProductProfile,
+  profile,
+  initialAgent,
+  initialSendWindow,
+  initialMessageTone,
+  hasExistingCampaign = false,
+  initialSteps,
+  initialReplyHandling,
+  initialBookingLink,
+  linkedInAccounts = [],
+  initialSenderAccountIds,
+  setupMode = false,
+  leadsOnly = false,
+  outreachOnly = false,
+  stealCustomers: stealCustomersProp = false,
+  timezone = "",
+}: AgentSetupProps) {
+  const isEditing = Boolean(initialAgent);
+  const stealCustomers =
+    stealCustomersProp || initialAgent?.mode === "steal_customers";
+  const router = useRouter();
+  const { showAgentStarted, showError, showSuccess } = useToast();
+  const agentStartedKind: AgentStartedKind = outreachOnly
+    ? "outreach_only"
+    : stealCustomers
+      ? "steal_customers"
+      : leadsOnly
+        ? "leads_only"
+        : "full";
+  const agentStartedLabel = () =>
+    name.trim() ||
+    groupName.trim() ||
+    (stealCustomers
+      ? "Steal Customers"
+      : outreachOnly
+        ? "Outreach agent"
+        : leadsOnly
+          ? "Leads agent"
+          : "Your agent");
+  // Workspaces that have never saved a zone still get a real name here, from
+  // the same detection the rest of the app formats its times with.
+  const workspaceTimeZone = useWorkspaceTimeZone();
+  const sendWindowTimeZone = timezone || workspaceTimeZone;
+  const [step, setStep] = useState<StepKey>(
+    outreachOnly ? "leads" : stealCustomers ? "competitors" : "icp",
+  );
+  const [pending, startTransition] = useTransition();
+  const [drafting, setDrafting] = useState(false);
+  const [draftError, setDraftError] = useState("");
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveryError, setDiscoveryError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [preparedAgent, setPreparedAgent] = useState<PreparedAgent | null>(null);
+  const [preparedAgentId, setPreparedAgentId] = useState("");
+  const [csvContents, setCsvContents] = useState("");
+  const [csvFileName, setCsvFileName] = useState("");
+  // A pasted LinkedIn search fills csvContents with its results, so the rest
+  // of the import (review, launch) is the CSV path unchanged.
+  const [searchLink, setSearchLink] = useState("");
+  const [searchingLink, setSearchingLink] = useState(false);
+  const [csvFromSearch, setCsvFromSearch] = useState(false);
+  const csvImport = useMemo(() => {
+    if (!outreachOnly || !csvContents.trim()) return { leads: 0, skipped: 0 };
+    try {
+      const parsed = parseLinkedInLeadCsv(csvContents);
+      return { leads: parsed.leads.length, skipped: parsed.skipped };
+    } catch {
+      return { leads: 0, skipped: 0 };
+    }
+  }, [csvContents, outreachOnly]);
+  const [name, setName] = useState(
+    initialAgent?.name || (stealCustomers ? "Steal Customers" : "New Agent"),
+  );
+  const [groupName, setGroupName] = useState(initialAgent?.targetGroupName || "");
+  const [linkedInAccountId, setLinkedInAccountId] = useState(
+    initialAgent?.linkedInAccountId || linkedInAccounts[0]?.id || "",
+  );
+  // Extra accounts this agent's outreach rotates through, besides the main one.
+  const [extraSenderIds, setExtraSenderIds] = useState<string[]>(
+    () => initialSenderAccountIds?.filter((id) => id !== (initialAgent?.linkedInAccountId || "")) ?? [],
+  );
+  const linkedInAccountSelectOptions = useMemo(
+    () => linkedInAccountOptions(linkedInAccounts),
+    [linkedInAccounts],
+  );
+  // Steal customers always uses AI outreach: messages need post+comment context
+  // the user cannot paste into a static template.
+  const [outreachMode, setOutreachMode] = useState<"automatic" | "manual">(() =>
+    !stealCustomers && seqActionsFromSteps(initialSteps) ? "manual" : "automatic",
+  );
+  const outreachDefaults = agentFormOutreachDefaults({
+    storedSendWindow: initialSendWindow,
+    storedMessageTone: initialMessageTone,
+    hasExistingCampaign,
+  });
+  // Extended hours is the default for NEW agents (every day 7am-10pm), including
+  // resume-at-plan-limit where an agent row exists but no campaign does. An
+  // existing campaign opens on the window it is actually sending in - campaigns
+  // created before the picker have none stored, so they show (and keep) "always"
+  // until their owner changes it. Saving this form now writes the window back,
+  // so treating resume as edit would silently launch 24/7.
+  const [sendWindow, setSendWindow] = useState<SendWindow>(outreachDefaults.sendWindow);
+  const [replyHandling, setReplyHandling] = useState<
+    "handoff" | "ai_until_interest" | "ai_until_booked"
+  >(() => {
+    if (initialReplyHandling === "handoff") return "handoff";
+    if (initialReplyHandling === "ai_until_booked") return "ai_until_booked";
+    if (initialReplyHandling === "ai_until_interest" || initialReplyHandling === "ai") {
+      return "ai_until_interest";
+    }
+    // New agents run AI outreach until a meeting is booked. Existing agents
+    // with no stored value keep the old implicit default so a save does not
+    // change how they already behave.
+    return initialAgent ? "ai_until_interest" : "ai_until_booked";
+  });
+  const [bookingLink, setBookingLink] = useState(
+    initialBookingLink || profile?.schedulingLink || "",
+  );
+  // Manual outreach always hands the conversation over on the first reply (the
+  // user writes every message, so the AI must not answer for them). This only
+  // decides whether that hand-off arrives as an email.
+  const [notifyOnReply, setNotifyOnReply] = useState(true);
+  const [campaignGoal, setCampaignGoal] = useState<"warm" | "demo">(
+    initialAgent ? "warm" : "demo",
+  );
+  // Conversational is the default for NEW agents and for resume-at-plan-limit
+  // (no campaign yet). Existing campaigns keep their stored tone; campaigns
+  // with none stored keep professional, which is the voice Gemini already uses
+  // when messageTone is missing.
+  const [messageTone, setMessageTone] = useState<AgentMessageTone>(outreachDefaults.messageTone);
+  const [excludeFirstDegree, setExcludeFirstDegree] = useState(true);
+  const [prompt, setPrompt] = useState(initialAgent?.prompt || "");
+  const [titles, setTitles] = useState<string[]>(initialAgent?.filters.titles ?? []);
+  const [industries, setIndustries] = useState<string[]>(initialAgent?.filters.industries ?? []);
+  const [locations, setLocations] = useState<string[]>(initialAgent?.filters.locations ?? []);
+  const [keywords, setKeywords] = useState<string[]>(initialAgent?.filters.keywords ?? []);
+  const [signalKeywords, setSignalKeywords] = useState<string[]>(initialAgent?.signalSources?.keywords ?? []);
+  const [competitorUrls, setCompetitorUrls] = useState<string[]>(initialAgent?.signalSources?.competitorUrls || []);
+  const [founderUrls, setFounderUrls] = useState<string[]>(initialAgent?.signalSources?.founderUrls || []);
+  const [actions, setActions] = useState<SeqAction[]>(() =>
+    (!stealCustomers && seqActionsFromSteps(initialSteps)) || [
+      makeSeqAction("connect"),
+      makeSeqAction("message"),
+      makeSeqAction("follow"),
+    ],
+  );
+
+  // Company profile (editable inline via modal)
+  const [companyName, setCompanyName] = useState(profile?.companyName ?? "");
+  const [companyDescription, setCompanyDescription] = useState(profile?.description ?? "");
+  const [companyIndustry, setCompanyIndustry] = useState(profile?.industry ?? "");
+  const [companySize, setCompanySize] = useState(profile?.companySize ?? "");
+  const [companyPainPoints, setCompanyPainPoints] = useState(profile?.painPointsText ?? "");
+  const [companyWebsiteUrl, setCompanyWebsiteUrl] = useState(profile?.websiteUrl ?? "");
+  const [companyModalOpen, setCompanyModalOpen] = useState(false);
+  const [companySaving, startCompanySaving] = useTransition();
+  const [analyzingCompany, startAnalyzingCompany] = useTransition();
+  const [companyAnalyzeError, setCompanyAnalyzeError] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setCompanyName(profile.companyName ?? "");
+      setCompanyDescription(profile.description ?? "");
+      setCompanyIndustry(profile.industry ?? "");
+      setCompanySize(profile.companySize ?? "");
+      setCompanyPainPoints(profile.painPointsText ?? "");
+      setCompanyWebsiteUrl(profile.websiteUrl ?? "");
+      if (!initialBookingLink) setBookingLink(profile.schedulingLink ?? "");
+    }
+  }, [initialBookingLink, profile]);
+
+  function handleCompanyAnalyze() {
+    const normalized = companyWebsiteUrl.trim();
+    if (!normalized) return;
+    setCompanyAnalyzeError("");
+    startAnalyzingCompany(async () => {
+      try {
+        const response = await fetch("/api/website-analysis", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ websiteUrl: normalized }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || "Could not fetch this website.");
+        }
+        setCompanyName(payload.companyName || "");
+        setCompanyDescription(payload.productOverview || "");
+        setCompanyIndustry(payload.industry || "");
+        setCompanySize(payload.companySize || "");
+        setCompanyPainPoints(payload.painPointsText || "");
+      } catch (error) {
+        setCompanyAnalyzeError(userFacingError(error, "Website analysis failed."));
+      }
+    });
+  }
+
+  // Edit step modal
+  const [editStepId, setEditStepId] = useState<string | null>(null);
+  const [editStepMode, setEditStepMode] = useState<"manual" | "ai">("manual");
+  const [editStepMessage, setEditStepMessage] = useState("");
+  const [editStepWait, setEditStepWait] = useState(1);
+  const [editStepWaitUnit, setEditStepWaitUnit] = useState<"hours" | "days">("days");
+  const [editStepIncludeNote, setEditStepIncludeNote] = useState(true);
+  const [editStepVariantOn, setEditStepVariantOn] = useState(false);
+  const [editStepVariant, setEditStepVariant] = useState("");
+
+  // Inline wait-time editor between sequence blocks
+  const [editWaitId, setEditWaitId] = useState<string | null>(null);
+
+  const [setupStepError, setSetupStepError] = useState("");
+
+  const steps = useMemo(() => {
+    if (outreachOnly) {
+      return [
+        ["leads", "1", "CSV", "Upload LinkedIn profiles"],
+        ["campaign", "2", "Outreach", "Message & sequence"],
+        ["review", "3", "Review", "Launch your agent"],
+      ] as const;
+    }
+    if (stealCustomers) {
+      return [
+        ["competitors", "1", "Competitors", "Whose posts to watch"],
+        ["leads", "2", "Leads", "Lead group and account"],
+        ["campaign", "3", "Outreach", "AI sequence only"],
+        ["review", "4", "Review", "Launch your agent"],
+      ] as const;
+    }
+    if (leadsOnly) {
+      return [
+        ["icp", "1", "ICP", "Define your ideal customer profile"],
+        ["leads", "2", "Leads", "Set filters & scoring"],
+      ] as const;
+    }
+    return [
+      ["icp", "1", "ICP", "Define your ideal customer profile"],
+      ["leads", "2", "Leads", "Set filters & scoring"],
+      ["campaign", "3", "Outreach", "Message & sequence"],
+      ["review", "4", "Review", "Launch your agent"],
+    ] as const;
+  }, [leadsOnly, outreachOnly, stealCustomers]);
+
+  // The step whose Continue button launches the agent instead of advancing.
+  const finalStep: StepKey = leadsOnly ? "leads" : "review";
+
+  const stepIndex = steps.findIndex(([key]) => key === step);
+  const [displayStepIndex, setDisplayStepIndex] = useState(stepIndex);
+
+  useEffect(() => {
+    if (displayStepIndex === stepIndex) return;
+
+    let nextRaf = 0;
+    const firstRaf = requestAnimationFrame(() => {
+      nextRaf = requestAnimationFrame(() => setDisplayStepIndex(stepIndex));
+    });
+    return () => {
+      cancelAnimationFrame(firstRaf);
+      cancelAnimationFrame(nextRaf);
+    };
+  }, [displayStepIndex, stepIndex]);
+
+  // Steal customers forces AI outreach; never leave a stale manual mode on.
+  useEffect(() => {
+    if (stealCustomers) setOutreachMode("automatic");
+  }, [stealCustomers]);
+
+  const setupIcpComplete =
+    stealCustomers ||
+    outreachOnly ||
+    (titles.length > 0 &&
+      industries.length > 0 &&
+      locations.length > 0 &&
+      keywords.length > 0 &&
+      prompt.trim().length > 0);
+
+  const setupCompetitorsComplete =
+    competitorUrls.length > 0 || founderUrls.length > 0;
+
+  function previousStep(value: StepKey): StepKey {
+    if (outreachOnly && value === "campaign") return "leads";
+    if (value === "review") return "campaign";
+    if (value === "campaign") return "leads";
+    if (value === "leads") return stealCustomers ? "competitors" : "icp";
+    // Steal customers starts at competitors; there is no ICP step.
+    if (value === "competitors") return "competitors";
+    return "icp";
+  }
+  function nextStep(value: StepKey): StepKey {
+    if (value === "icp") return "leads";
+    if (value === "competitors") return "leads";
+    if (value === "leads") return "campaign";
+    return "review";
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (step !== "review") {
+      if (step === "icp" && !setupIcpComplete) {
+        setSetupStepError("Complete each field on this step to continue.");
+        return;
+      }
+      if (step === "competitors" && !setupCompetitorsComplete) {
+        setSetupStepError("Add at least one competitor LinkedIn URL to continue.");
+        return;
+      }
+      setSetupStepError("");
+      if (step === "leads") {
+        if (!groupName.trim()) {
+          setDiscoveryError("Name your lead group to continue.");
+          return;
+        }
+        if (outreachOnly) {
+          try {
+            parseLinkedInLeadCsv(csvContents);
+          } catch (error) {
+            setDiscoveryError(
+              error instanceof Error
+                ? error.message
+                : "Choose a CSV file with LinkedIn profiles to continue.",
+            );
+            return;
+          }
+        }
+        // Step headers allow jumping, so re-check required setup here.
+        if (!outreachOnly && !stealCustomers && !setupIcpComplete) {
+          setDiscoveryError(
+            "Fill every ICP field (job titles, industries, locations, keywords, and the lead description) before discovering leads.",
+          );
+          setStep("icp");
+          return;
+        }
+        if (stealCustomers && !setupCompetitorsComplete) {
+          setDiscoveryError("Add at least one competitor LinkedIn URL before continuing.");
+          setStep("competitors");
+          return;
+        }
+        // Full outreach setup is only persisted from the final Launch action.
+        // Creating the agent here used to strand users at their plan limit if
+        // they refreshed or left before the campaign step was submitted.
+        if (isEditing || !leadsOnly) {
+          setStep("campaign");
+          return;
+        }
+        if (preparedAgent?.groupName === groupName.trim()) {
+          // Client navigation keeps ToastProvider mounted, so show immediately.
+          showAgentStarted(agentStartedLabel(), "leads_only");
+          router.replace(`/agents/${preparedAgent.agentId}`);
+          return;
+        }
+        const formData = new FormData(event.currentTarget);
+        // Leads-only forces signals mode even if a stale hidden field is present.
+        formData.set("mode", "signals");
+        setDiscoveryError("");
+        setDiscovering(true);
+        try {
+          const result = unwrapAction(await prepareAgent(formData));
+          setPreparedAgent(result);
+          setPreparedAgentId(result.agentId);
+          // Leads-only agents are complete once prepared: the agent and its
+          // lead group exist and discovery is scheduled - no campaign step.
+          showAgentStarted(agentStartedLabel(), "leads_only");
+          router.replace(`/agents/${result.agentId}`);
+        } catch (error) {
+          // Production delivers a completed setup redirect as React #441.
+          // That is navigation, not a failed prepare.
+          if (isNextNavigationError(error)) {
+            router.replace("/agents");
+            return;
+          }
+          setDiscoveryError(
+            userFacingError(error, "Lead discovery failed."),
+          );
+        } finally {
+          setDiscovering(false);
+        }
+        return;
+      }
+      if (step === "campaign" && !groupName.trim()) {
+        setStep("leads");
+        return;
+      }
+      if (
+        step === "campaign" &&
+        (stealCustomers || outreachMode === "automatic") &&
+        replyHandling === "ai_until_booked" &&
+        !normalizeSchedulingLink(bookingLink) &&
+        !normalizeSchedulingLink(profile?.schedulingLink || "")
+      ) {
+        setSetupStepError(
+          "Add a demo booking link in Workspace, or paste one here.",
+        );
+        return;
+      }
+      setStep(nextStep(step));
+      return;
+    }
+    const formData = new FormData(event.currentTarget);
+    // Always force mode on submit. A stale/missing hidden field previously
+    // sent mode=signals for Steal Customers, which then failed the classic ICP
+    // assert (job titles / industries / locations) with empty filters.
+    if (outreachOnly) {
+      try {
+        parseLinkedInLeadCsv(csvContents);
+      } catch (error) {
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : "Choose a CSV file with LinkedIn profiles before launching.",
+        );
+        setStep("leads");
+        return;
+      }
+      formData.set("mode", "outreach");
+    } else if (stealCustomers) formData.set("mode", "steal_customers");
+    else formData.set("mode", "signals");
+    if (!stealCustomers && !setupIcpComplete) {
+      setSubmitError(
+        "Fill every ICP field (job titles, industries, locations, keywords, and the lead description) before launching the agent.",
+      );
+      setStep("icp");
+      return;
+    }
+    if (stealCustomers && !setupCompetitorsComplete) {
+      setSubmitError("Add at least one competitor LinkedIn URL before launching.");
+      setStep("competitors");
+      return;
+    }
+    if (
+      !stealCustomers &&
+      outreachMode === "manual" &&
+      !formData.get("firstMessage") &&
+      !formData.get("secondMessage") &&
+      !formData.get("thirdMessage")
+    ) {
+      setSubmitError(
+        "Add at least one message to your outreach sequence before launching the agent.",
+      );
+      return;
+    }
+    if (
+      (stealCustomers || outreachMode === "automatic") &&
+      replyHandling === "ai_until_booked" &&
+      !normalizeSchedulingLink(bookingLink) &&
+      !normalizeSchedulingLink(profile?.schedulingLink || "")
+    ) {
+      setSubmitError(
+        "Add a demo booking link in Workspace, or paste one here.",
+      );
+      setStep("campaign");
+      return;
+    }
+    setSubmitError("");
+    startTransition(async () => {
+      try {
+        // Survives navigation to the agent's page or Agents (full, steal,
+        // outreach, edit).
+        markAgentStartedNotice(agentStartedLabel(), agentStartedKind);
+        const result = unwrapAction(await createAgent(formData));
+        // A launch lands on the agent it just created. An edit has no result:
+        // its server action redirects to Agents, and this replace covers cases
+        // where that redirect is swallowed.
+        router.replace(result ? `/agents/${result.agentId}` : "/agents");
+      } catch (error) {
+        if (isNextNavigationError(error)) {
+          // Server redirect already targets /agents. Production hides that
+          // throw as minified React #441; treat it as a completed launch.
+          router.replace("/agents");
+          const digest =
+            typeof error === "object" && error !== null && "digest" in error
+              ? String((error as { digest?: unknown }).digest || "")
+              : "";
+          if (digest.startsWith("NEXT_REDIRECT")) throw error;
+          return;
+        }
+        try {
+          window.sessionStorage.removeItem(AGENT_STARTED_STORAGE_KEY);
+        } catch {
+          // ignore
+        }
+        setSubmitError(userFacingError(error, "Agent launch failed."));
+      }
+    });
+  }
+
+  function handleCompanySave() {
+    if (!saveProductProfile) {
+      setCompanyModalOpen(false);
+      return;
+    }
+    const formData = new FormData();
+    formData.set("companyName", companyName);
+    formData.set("description", companyDescription);
+    formData.set("industry", companyIndustry);
+    formData.set("companySize", companySize);
+    formData.set("painPointsText", companyPainPoints);
+    formData.set("websiteUrl", companyWebsiteUrl);
+    startCompanySaving(async () => {
+      try {
+        const result = unwrapAction(await saveProductProfile(formData));
+        if (result && typeof result === "object" && result.ok === false) {
+          showError(result.error);
+          return;
+        }
+        setCompanyModalOpen(false);
+        showSuccess("Saved.");
+      } catch (error) {
+        // The profile write returns instead of throwing on validation. A #441
+        // here is the follow-up page render, not a rejected save.
+        if (isNextNavigationError(error)) {
+          setCompanyModalOpen(false);
+          showSuccess("Saved.");
+          return;
+        }
+        showError(userFacingError(error, "Could not save. Try again."));
+      }
+    });
+  }
+
+  function applyDraft() {
+    setDraftError("");
+    setDrafting(true);
+    void (async () => {
+      try {
+        const draft = unwrapAction(await draftSetup());
+        setName(draft.agentName || "New Agent");
+        setGroupName(draft.groupName);
+        setTitles(draft.titles.length ? draft.titles : initialTitles);
+        setIndustries(draft.industries.length ? draft.industries : initialIndustries);
+        setLocations(draft.locations.length ? draft.locations : initialLocations);
+        setKeywords(draft.keywords.length ? draft.keywords : initialKeywords);
+        setPrompt(draft.prompt);
+        if (stealCustomers) {
+          setCompetitorUrls(draft.competitorUrls);
+          setFounderUrls(draft.founderUrls);
+          setOutreachMode("automatic");
+        } else {
+          setSignalKeywords(
+            draft.signalKeywords.length ? draft.signalKeywords : initialSignalKeywords,
+          );
+          setCompetitorUrls([]);
+          setFounderUrls([]);
+          setOutreachMode("manual");
+          setActions((current) => {
+            const [connect, message, follow] = current.length >= 3
+              ? current
+              : [makeSeqAction("connect"), makeSeqAction("message"), makeSeqAction("follow")];
+            return [
+              {
+                ...connect,
+                enabled: true,
+                mode: "manual",
+                manualMessage: draft.connectionNote,
+                includeNote: true,
+              },
+              {
+                ...message,
+                enabled: true,
+                mode: "manual",
+                manualMessage: draft.firstMessage,
+              },
+              {
+                ...follow,
+                enabled: true,
+                mode: "manual",
+                manualMessage: draft.followUpMessage,
+              },
+            ];
+          });
+        }
+        setCampaignGoal(draft.campaignGoal);
+        setMessageTone(draft.messageTone);
+      } catch (error) {
+        setDraftError(userFacingError(error, "Could not fill the setup automatically. Try again, or fill it in yourself."));
+      } finally {
+        setDrafting(false);
+      }
+    })();
+  }
+
+  function renderStepContent() {
+    if (step === "icp")
+      return (
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="text-[20px] font-semibold tracking-tight text-zinc-950"
+              >
+                Define your ideal customer profile
+              </h2>
+              <p className="mt-1 text-[14px] font-medium text-zinc-700">
+                Tell us who your perfect customers are so Omentir can find the right people.
+              </p>
+              {draftError ? (
+                <p className="mt-2 text-[12px] font-light text-red-600">{draftError}</p>
+              ) : null}
+              {setupStepError ? (
+                <p className="mt-2 text-[12px] font-light text-red-600">{setupStepError}</p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={applyDraft}
+              disabled={drafting}
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 self-start rounded-md bg-[#ba3871] px-3 text-[13px] font-semibold leading-none text-white shadow-[0_10px_25px_rgba(255,255,255,0.12)] transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:self-center"
+            >
+              <span className="translate-y-px">{drafting ? "Filling..." : "Fill with AI"}</span>
+            </button>
+          </div>
+          <MultiValueField label="Target job titles" name="titles" values={titles} setValues={setTitles} placeholder="e.g. Sales Manager" suggestions={TITLE_SUGGESTIONS} />
+          <MultiValueField label="Target industries" name="industries" values={industries} setValues={setIndustries} placeholder="e.g. Marketing" suggestions={INDUSTRY_SUGGESTIONS} />
+          <MultiValueField label="Target locations" name="locations" values={locations} setValues={setLocations} placeholder="e.g. United States" suggestions={LOCATION_SUGGESTIONS} />
+          <MultiValueField label="Mandatory keywords" name="keywords" values={keywords} setValues={setKeywords} placeholder="e.g. B2B" suggestions={KEYWORD_SUGGESTIONS} />
+          <TextAreaField
+            name="prompt"
+            label="Describe the leads you want"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            rows={4}
+            placeholder="Describe the exact leads this agent should find."
+          />
+        </div>
+      );
+
+    if (step === "competitors")
+      return (
+        <div className="flex flex-col gap-6">
+          <div>
+            <h2
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[20px] font-semibold tracking-tight text-zinc-950"
+            >
+              Competitors To Watch
+            </h2>
+            <p className="mt-1 text-[14px] font-medium text-zinc-700">
+              Omentir scans posts from these LinkedIn pages, reads comments, and
+              AI-reaches out to people who are likely to buy your product.
+            </p>
+            {setupStepError ? (
+              <p className="mt-2 text-[12px] font-light text-red-600">{setupStepError}</p>
+            ) : null}
+          </div>
+          <p className="text-[13px] font-medium leading-5 text-zinc-600">
+            Buyer fit uses your company profile in{" "}
+            <Link
+              href="/workspace"
+              className="font-semibold text-zinc-900 underline decoration-zinc-400 underline-offset-2 hover:text-zinc-950"
+            >
+              Workspace
+            </Link>
+            . Description, use cases, pain points, and keywords there decide who
+            among commenters is likely to buy. Keep that workspace page current so
+            similar-product posts and comments are ranked correctly. No separate
+            ICP is required for this agent.
+          </p>
+          <MultiValueField
+            label="Competitor LinkedIn URLs"
+            name="competitorUrls"
+            values={competitorUrls}
+            setValues={setCompetitorUrls}
+            placeholder="https://linkedin.com/company/competitor"
+          />
+          <MultiValueField
+            label="Competitor Founder / Employee Profiles (Optional)"
+            name="founderUrls"
+            values={founderUrls}
+            setValues={setFounderUrls}
+            placeholder="https://linkedin.com/in/employee-or-founder"
+          />
+          <p className="text-[12px] font-medium leading-5 text-zinc-600">
+            Add competitor company pages (and optionally specific founder or
+            employee profiles). Omentir finds employees at those companies, scans
+            their posts and company posts, then turns people who comment into
+            customer leads. Each lead keeps the post URL, what the post was about,
+            and what they commented.
+          </p>
+        </div>
+      );
+
+    if (step === "leads")
+      return (
+        <div className="flex flex-col gap-6">
+          <div>
+            <h2
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[20px] font-semibold tracking-tight text-zinc-950"
+            >
+              {outreachOnly ? "Upload LinkedIn profiles" : "Set filters & scoring"}
+            </h2>
+            <p className="mt-1 text-[14px] font-medium text-zinc-700">
+              {outreachOnly
+                ? "Upload a CSV or paste a LinkedIn search link with the people you want to contact. Importing does not send messages."
+                : stealCustomers
+                  ? "Name the lead group for people found in competitor comments."
+                  : "Choose where qualified leads should go and how strict the agent should be."}
+            </p>
+          </div>
+          <TextInput
+            label="New lead group name"
+            value={groupName}
+            onChange={(value) => {
+              setGroupName(value);
+              setPreparedAgent(null);
+              setDiscoveryError("");
+            }}
+            name="leadGroupNameVisible"
+            placeholder={
+              stealCustomers ? "e.g. Competitor commenters" : "e.g. High-intent SaaS leaders"
+            }
+            required
+          />
+          {outreachOnly ? (
+            <label className="grid cursor-pointer gap-2 rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 hover:border-[#ba3871]">
+              <span className="text-[14px] font-semibold text-zinc-900">LinkedIn profiles CSV</span>
+              <span className="text-[13px] leading-5 text-zinc-600">
+                Each row needs a LinkedIn profile URL (linkedin.com/in/...). Name, title, company, and location are optional. Up to 500 unique profiles.
+              </span>
+              <input
+                type="file"
+                accept=".csv,.tsv,text/csv,text/tab-separated-values"
+                className="text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-[#ba3871] file:px-3 file:py-2 file:font-semibold file:text-white"
+                onChange={async (event) => {
+                  const input = event.currentTarget;
+                  const file = input.files?.[0];
+                  setDiscoveryError("");
+                  setCsvFromSearch(false);
+                  if (!file) {
+                    setCsvContents("");
+                    setCsvFileName("");
+                    return;
+                  }
+                  if (file.size > LINKEDIN_CSV_MAX_BYTES) {
+                    setCsvContents("");
+                    setCsvFileName("");
+                    setDiscoveryError("CSV files must be smaller than 1 MB.");
+                    input.value = "";
+                    return;
+                  }
+                  try {
+                    const text = decodeCsvBytes(new Uint8Array(await file.arrayBuffer()));
+                    parseLinkedInLeadCsv(text);
+                    setCsvFileName(file.name);
+                    setCsvContents(text);
+                  } catch (error) {
+                    setCsvContents("");
+                    setCsvFileName("");
+                    setDiscoveryError(
+                      error instanceof Error ? error.message : "Could not read this CSV.",
+                    );
+                    input.value = "";
+                  }
+                }}
+              />
+              {csvFileName && csvImport.leads ? (
+                <span className="text-[12px] font-medium text-emerald-700">
+                  Ready: {csvImport.leads} profile{csvImport.leads === 1 ? "" : "s"} from {csvFileName}
+                  {csvImport.skipped
+                    ? `. Skipped ${csvImport.skipped} row${csvImport.skipped === 1 ? "" : "s"} that were not person profile URLs.`
+                    : ""}
+                </span>
+              ) : null}
+            </label>
+          ) : null}
+          {outreachOnly ? (
+            <div className="grid gap-2 rounded-md border border-zinc-200 bg-white p-5">
+              <span className="text-[14px] font-semibold text-zinc-900">Or paste a LinkedIn search link</span>
+              <span className="text-[13px] leading-5 text-zinc-600">
+                Run a people search on LinkedIn with any filters, copy the link from your browser and paste it here. Omentir imports up to 100 people from it using your connected LinkedIn account.
+              </span>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="url"
+                  value={searchLink}
+                  onChange={(event) => setSearchLink(event.target.value)}
+                  placeholder="https://www.linkedin.com/search/results/people/?keywords=..."
+                  className="min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-3 py-2 text-[14px] text-zinc-900 outline-none focus:border-[#ba3871]"
+                />
+                <button
+                  type="button"
+                  disabled={searchingLink || !searchLink.trim()}
+                  onClick={async () => {
+                    setDiscoveryError("");
+                    setSearchingLink(true);
+                    try {
+                      const result = unwrapAction(await findLinkedInSearchLeadsAction(searchLink));
+                      setCsvContents(result.csv);
+                      setCsvFileName("LinkedIn search");
+                      setCsvFromSearch(true);
+                    } catch (error) {
+                      setDiscoveryError(
+                        error instanceof Error ? error.message : "Could not run that LinkedIn search.",
+                      );
+                    } finally {
+                      setSearchingLink(false);
+                    }
+                  }}
+                  className="rounded-md bg-[#ba3871] px-4 py-2 text-[14px] font-semibold text-white disabled:opacity-50"
+                >
+                  {searchingLink ? "Searching..." : "Load people"}
+                </button>
+              </div>
+              {searchingLink ? (
+                <span className="text-[12px] font-medium text-zinc-600">
+                  Reading up to 10 result pages on LinkedIn. This can take a minute.
+                </span>
+              ) : null}
+              {csvFromSearch && csvImport.leads ? (
+                <span className="text-[12px] font-medium text-emerald-700">
+                  Ready: {csvImport.leads} profile{csvImport.leads === 1 ? "" : "s"} from your LinkedIn search
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+          {/* Setup no longer asks for a discovery hour: the agent starts the
+              moment it is created and keeps that time daily. Existing agents
+              stay on the hour they were given, so this promise is only true
+              for new ones. */}
+          {!outreachOnly && !isEditing ? (
+            <p className="text-[13px] leading-5 text-zinc-600">
+              This agent starts finding leads as soon as you create it, then looks for new
+              ones every day at that same time.
+            </p>
+          ) : null}
+          {discoveryError ? (
+            <p className="text-[13px] font-light text-red-600">{discoveryError}</p>
+          ) : null}
+        </div>
+      );
+
+    if (step === "campaign") return renderCampaignStep();
+    return renderReviewStep();
+  }
+
+  function renderReviewStep() {
+    const goalLabel =
+      campaignGoal === "warm"
+        ? "Start conversations with warm prospects"
+        : "Book qualified sales calls/demos";
+    const toneLabel =
+      messageTone === "professional"
+        ? "Professional"
+        : messageTone === "conversational"
+          ? "Conversational"
+          : "Direct";
+
+    return (
+      <div className="flex flex-col gap-5">
+        <div>
+          <h2
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[24px] font-semibold tracking-tight text-zinc-950"
+          >
+            Review your agent
+          </h2>
+          <p className="mt-1 text-[14px] font-medium text-zinc-700">
+            Take a quick look and stay in control at every step.
+          </p>
+          {submitError ? (
+            <p className="mt-2 text-[13px] font-light text-red-600">{submitError}</p>
+          ) : null}
+        </div>
+
+        {/* Always-in-control banner */}
+        <div className="flex items-start gap-3 rounded-md border border-[#f6c6d3] bg-[#fff5f6] px-4 py-3.5">
+          <span className="mt-0.5 text-[#e85e6b]">
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </span>
+          <p
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[13px] font-semibold text-[#ba3871]"
+          >
+            You&apos;re always in control.{" "}
+            <span className="font-light">
+              You can pause or readjust your agent at any time.
+            </span>
+          </p>
+        </div>
+
+        {outreachOnly ? (
+          <div className="rounded-md border border-zinc-200 bg-white p-5">
+            <div
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+            >
+              Imported list
+            </div>
+            <div className="mt-3 grid gap-2 text-[14px] leading-6 text-zinc-700">
+              <p>
+                <span className="font-semibold text-zinc-900">Source: </span>
+                {csvFileName || "Nothing imported yet"}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">People to contact: </span>
+                {csvImport.leads || 0}
+              </p>
+              {csvImport.skipped ? (
+                <p className="text-[13px] font-medium text-zinc-600">
+                  {csvImport.skipped} row{csvImport.skipped === 1 ? "" : "s"} skipped because they
+                  were not LinkedIn person profile URLs.
+                </p>
+              ) : null}
+              <p className="text-[13px] font-medium text-zinc-600">
+                This agent messages the people you imported. It does not find new leads.
+              </p>
+            </div>
+          </div>
+        ) : stealCustomers ? (
+          <div className="rounded-md border border-zinc-200 bg-white p-5">
+            <div
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+            >
+              Steal Customers
+            </div>
+            <div className="mt-3 grid gap-2 text-[14px] leading-6 text-zinc-700">
+              <p>
+                Scans competitor post comments and AI-reaches out with post +
+                comment context. Likely buyers are judged from{" "}
+                <Link href="/workspace" className="font-semibold text-[#ba3871] underline">
+                  Workspace
+                </Link>
+                , not a separate ICP form.
+              </p>
+              {competitorUrls.length ? (
+                <p>
+                  <span className="font-semibold text-zinc-900">Competitor Pages: </span>
+                  {competitorUrls.length} URL(s)
+                </p>
+              ) : null}
+              {founderUrls.length ? (
+                <p>
+                  <span className="font-semibold text-zinc-900">
+                    Founder / Employee Profiles:{" "}
+                  </span>
+                  {founderUrls.length} URL(s)
+                </p>
+              ) : null}
+              <p>
+                <span className="font-semibold text-zinc-900">Product context: </span>
+                {companyName || profile?.companyName || "From Workspace"}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-md border border-zinc-200 bg-white p-5">
+            <div
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+            >
+              Targeting
+            </div>
+            <div className="mt-3 grid gap-2 text-[14px] leading-6 text-zinc-700">
+              <p>
+                <span className="font-semibold text-zinc-900">Job roles: </span>
+                {titles.join(", ") || "-"}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">Industries: </span>
+                {industries.join(", ") || "-"}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">Location: </span>
+                {locations.join(", ") || "-"}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">Company size: </span>
+                {keywords.length ? keywords.join(", ") : "-"}
+              </p>
+              <p className="text-[13px] font-medium text-zinc-600">Match level: High precision</p>
+            </div>
+          </div>
+        )}
+
+        {/* OUTREACH */}
+        <div className="rounded-md border border-zinc-200 bg-white p-5">
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+          >
+            Outreach
+          </div>
+          <div className="mt-3 grid gap-2 text-[14px] leading-6 text-zinc-700">
+            <p>
+              {stealCustomers || outreachMode === "automatic"
+                ? "AI-generated sequence"
+                : "Manual sequence"}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">Goal: </span>
+              {goalLabel}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">Tone: </span>
+              {toneLabel}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">Steps: </span>
+              {actions.filter((a) => a.enabled).length} ({" "}
+              {actions
+                .filter((a) => a.enabled)
+                .map((a) =>
+                  a.kind === "connect" ? "Connect" : a.kind === "message" ? "Message" : "Follow-up",
+                )
+                .join(" - ")}{" "}
+              )
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">First-degree connections: </span>
+              {excludeFirstDegree ? "Excluded" : "Included"}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">When a lead replies: </span>
+              {outreachMode === "manual" || replyHandling === "handoff"
+                ? "Stop and hand the conversation to you"
+                : replyHandling === "ai_until_booked"
+                  ? "AI continues until the meeting is booked"
+                  : "AI continues until qualified interest"}
+            </p>
+          </div>
+        </div>
+
+        {/* What happens after launch */}
+        <div className="rounded-md border border-[#f6c6d3] bg-[#fff5f6] px-5 py-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[#e85e6b]">-&gt;</span>
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="text-[14px] font-semibold text-[#ba3871]"
+            >
+              What will happen after launch
+            </span>
+          </div>
+          <ul className="mt-2 grid gap-1.5 text-[13px] font-light text-[#ba3871]">
+            <li>
+              {outreachOnly
+                ? "Outreach starts on the people in your CSV. This agent does not find new leads."
+                : stealCustomers
+                  ? "New leads will come from people commenting under competitor posts."
+                  : "New leads will be added continuously from automatic sources."}
+            </li>
+            <li>You can pause your agent anytime, edit sources, targeting, and outreach.</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  function renderCampaignStep() {
+    return (
+      <div className="flex flex-col gap-6">
+        <div>
+          <h2
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[20px] font-semibold tracking-tight text-zinc-950"
+          >
+            Outreach settings
+          </h2>
+          <p className="mt-1 text-[14px] font-medium text-zinc-700">
+            {stealCustomers
+              ? "AI writes every message using the lead profile plus the competitor post and their comment. Manual templates are not available here."
+              : outreachMode === "automatic"
+                ? "Fine-tune how AI crafts and sends your messages."
+                : "Build the LinkedIn sequence your agent will run."}
+          </p>
+        </div>
+
+        {/* Send window. Sits at the top of outreach settings because it governs
+            every other choice below it: the sequence's waits, the daily caps
+            and the drip are all expressed inside these hours. */}
+        <div>
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+          >
+            When should outreach go out?
+          </div>
+          <p className="mt-1 text-[13px] font-medium text-zinc-700">
+            Interpreted in each lead&apos;s own timezone, read from their profile location, so nobody
+            is messaged at 3am local. Leads whose location we can&apos;t place fall back to your
+            workspace timezone{sendWindowTimeZone ? ` (${sendWindowTimeZone})` : ""}. Messages that
+            come due outside these hours wait for the next opening instead of sending overnight.
+          </p>
+          {/* A dropdown, not three cards: one field at the same height as every
+              other control on this step, and the choice stays legible when
+              closed because the hours travel with the name. */}
+          <SelectField
+            label="Send window"
+            className="mt-3"
+            options={SEND_WINDOW_OPTIONS}
+            value={sendWindow}
+            // A send window is always set, so there is no empty row to offer.
+            clearable={false}
+            onChange={(value) => setSendWindow(value as SendWindow)}
+          />
+        </div>
+
+        <SelectField
+          label="LinkedIn account"
+          options={linkedInAccountSelectOptions}
+          value={linkedInAccountId}
+          onChange={setLinkedInAccountId}
+          placeholder="Select LinkedIn account"
+        />
+
+        {linkedInAccounts.length > 1 ? (
+          <div className="rounded-md border border-zinc-200 bg-white p-4">
+            <div style={{ fontFamily: "var(--font-varta)" }} className="text-[14px] font-semibold text-zinc-950">
+              Also send from
+            </div>
+            <p className="mt-1 text-[13px] font-medium text-zinc-700">
+              New leads are split across the accounts you tick here and the one above. Each lead gets the invite and every message from the same account, and each account keeps its own daily limits.
+            </p>
+            <div className="mt-3 grid gap-2">
+              {linkedInAccounts
+                .filter((account) => account.id !== linkedInAccountId)
+                .map((account) => {
+                  const on = extraSenderIds.includes(account.id);
+                  return (
+                    <label key={account.id} className="flex cursor-pointer items-center gap-2 text-[14px] text-zinc-900">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() =>
+                          setExtraSenderIds((current) =>
+                            on ? current.filter((id) => id !== account.id) : [...current, account.id],
+                          )
+                        }
+                      />
+                      {account.displayName || "LinkedIn account"}
+                    </label>
+                  );
+                })}
+            </div>
+          </div>
+        ) : null}
+
+        {/* AI / Manual selector — steal customers is AI-only */}
+        {!stealCustomers ? (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setOutreachMode("automatic")}
+              className={
+                "relative rounded-md border p-5 text-left transition " +
+                (outreachMode === "automatic"
+                  ? "border-[#e85e6b] bg-[#fff5f6]"
+                  : "border-zinc-200 bg-white hover:bg-zinc-50")
+              }
+            >
+              <span className="recommended-badge absolute -top-2.5 left-1/2 -translate-x-1/2">
+                Recommended
+              </span>
+              <div style={{ fontFamily: "var(--font-varta)" }} className="text-[15px] font-semibold text-zinc-950">
+                AI writes outreach
+              </div>
+              <div className="mt-1 text-[13px] font-medium text-zinc-700">Generate messages from lead context.</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setOutreachMode("manual")}
+              className={
+                "rounded-md border p-5 text-left transition " +
+                (outreachMode === "manual"
+                  ? "border-[#e85e6b] bg-[#fff5f6]"
+                  : "border-zinc-200 bg-white hover:bg-zinc-50")
+              }
+            >
+              <div style={{ fontFamily: "var(--font-varta)" }} className="text-[15px] font-semibold text-zinc-950">
+                Manual messages
+              </div>
+              <div className="mt-1 text-[13px] font-medium text-zinc-700">Use exact messages you write.</div>
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-md border border-[#f6c6d3] bg-[#fff5f6] px-4 py-3.5 text-[13px] font-medium text-[#ba3871]">
+            AI outreach only. Each message uses the commenter&apos;s profile plus the
+            competitor post and their comment. Manual sequences cannot carry that context.
+          </div>
+        )}
+
+        {!stealCustomers && outreachMode === "manual" ? (
+          renderOutreachSequence()
+        ) : (
+          <>
+        {/* Company info card - used by AI to personalize messages */}
+        <CompanyInfoCard
+          companyName={companyName}
+          industry={companyIndustry}
+          description={companyDescription}
+          onEdit={() => setCompanyModalOpen(true)}
+        />
+
+        <input type="hidden" name="campaignGoal" value={campaignGoal} />
+        <input type="hidden" name="messageTone" value={messageTone} />
+
+        {/* Campaign Goal */}
+        <div className="rounded-md border border-zinc-200 bg-white p-5">
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+          >
+            Campaign Goal
+          </div>
+          <div className="mt-4 grid gap-2.5">
+            {(
+              [
+                {
+                  id: "warm",
+                  title: "Start conversations with warm prospects",
+                  desc: "Build relationships through personalized conversations",
+                },
+                {
+                  id: "demo",
+                  title: "Book qualified sales calls/demos",
+                  desc: "Direct approach to schedule meetings",
+                },
+              ] as const
+            ).map((option) => {
+              const active = campaignGoal === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setCampaignGoal(option.id)}
+                  className={
+                    "flex items-start gap-3 rounded-md border px-4 py-3.5 text-left transition " +
+                    (active
+                      ? "border-[#e85e6b] bg-[#fff5f6]"
+                      : "border-zinc-200 bg-white hover:bg-zinc-50")
+                  }
+                >
+                  <span
+                    className={
+                      "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition " +
+                      (active ? "border-[#e85e6b]" : "border-zinc-300")
+                    }
+                  >
+                    {active ? <span className="h-2.5 w-2.5 rounded-full bg-[#e85e6b]" /> : null}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span
+                      style={{ fontFamily: "var(--font-varta)" }}
+                      className="block text-[14px] font-semibold text-zinc-950"
+                    >
+                      {option.title}
+                    </span>
+                    <span className="mt-0.5 block text-[13px] font-medium text-zinc-700">
+                      {option.desc}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Conversation handling - who takes over once a lead replies */}
+        <div className="rounded-md border border-zinc-200 bg-white p-5">
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+          >
+            When a lead replies
+          </div>
+          <div className="mt-4 grid gap-2.5">
+            {(
+              [
+                {
+                  id: "handoff",
+                  title: "Stop after the first reply",
+                  desc: "Omentir stops the sequence and hands the conversation to you as soon as the lead replies.",
+                },
+                {
+                  id: "ai_until_interest",
+                  title: "Continue until interest",
+                  desc: "Omentir answers ordinary replies and hands the conversation to you when qualified interest is detected.",
+                },
+                {
+                  id: "ai_until_booked",
+                  title: "Continue until booked",
+                  desc: "Omentir answers questions, shares your scheduling link once qualified interest is detected, and stops after the lead confirms a meeting.",
+                  recommended: true,
+                },
+              ] as const
+            ).map((option) => {
+              const active = replyHandling === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setReplyHandling(option.id)}
+                  className={
+                    "flex items-start gap-3 rounded-md border px-4 py-3.5 text-left transition " +
+                    (active
+                      ? "border-[#e85e6b] bg-[#fff5f6]"
+                      : "border-zinc-200 bg-white hover:bg-zinc-50")
+                  }
+                >
+                  <span
+                    className={
+                      "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition " +
+                      (active ? "border-[#e85e6b]" : "border-zinc-300")
+                    }
+                  >
+                    {active ? <span className="h-2.5 w-2.5 rounded-full bg-[#e85e6b]" /> : null}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span
+                        style={{ fontFamily: "var(--font-varta)" }}
+                        className="text-[14px] font-semibold text-zinc-950"
+                      >
+                        {option.title}
+                      </span>
+                      {"recommended" in option && option.recommended ? (
+                        <span className="recommended-badge">Recommended</span>
+                      ) : null}
+                    </span>
+                    <span className="mt-0.5 block text-[13px] font-medium text-zinc-700">
+                      {option.desc}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {replyHandling === "ai_until_booked" ? (
+          <div className="rounded-md border border-zinc-200 bg-white p-5">
+            <TextField
+              label="Demo booking link"
+              value={bookingLink}
+              onChange={(event) => setBookingLink(event.target.value)}
+              placeholder="https://cal.com/your-name/intro"
+              supportingText={
+                profile?.schedulingLink
+                  ? "Defaults from Workspace. Override only if this agent should use a different calendar."
+                  : "Add this here, or save a demo booking link in Workspace for all until-booked agents."
+              }
+              required={!normalizeSchedulingLink(profile?.schedulingLink || "")}
+            />
+          </div>
+        ) : null}
+
+        {/* Message Tone */}
+        <div className="rounded-md border border-zinc-200 bg-white p-5">
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[12px] font-bold uppercase tracking-wider text-zinc-900"
+          >
+            Message Tone
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+            {(
+              [
+                { id: "professional", title: "Professional", desc: "Formal, polished" },
+                { id: "conversational", title: "Conversational", desc: "Friendly, casual" },
+                { id: "direct", title: "Direct", desc: "Bold, confident" },
+              ] as const
+            ).map((option) => {
+              const active = messageTone === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setMessageTone(option.id)}
+                  className={
+                    "rounded-md border px-4 py-4 text-center transition " +
+                    (active
+                      ? "border-[#e85e6b] bg-[#fff5f6]"
+                      : "border-zinc-200 bg-white hover:bg-zinc-50")
+                  }
+                >
+                  <div
+                    style={{ fontFamily: "var(--font-varta)" }}
+                    className="text-[15px] font-semibold text-zinc-950"
+                  >
+                    {option.title}
+                  </div>
+                  <div className="mt-1 text-[13px] font-medium text-zinc-700">{option.desc}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Skip first-degree connections */}
+        <input type="hidden" name="excludeFirstDegree" value={excludeFirstDegree ? "on" : ""} />
+        <button
+          type="button"
+          onClick={() => setExcludeFirstDegree((v) => !v)}
+          className="flex w-full items-start gap-3 rounded-md border border-zinc-200 bg-white p-4 text-left transition hover:bg-zinc-50"
+        >
+          <span
+            className={
+              "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md transition " +
+              (excludeFirstDegree ? "bg-[#ffe8ea] text-[#e85e6b]" : "border border-zinc-300 bg-white")
+            }
+          >
+            {excludeFirstDegree ? (
+              <svg
+                className="h-3 w-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : null}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="block text-[14px] font-semibold text-zinc-950"
+            >
+              Automatically exclude first degree connections from your campaign
+            </span>
+            <span className="mt-0.5 block text-[13px] font-medium text-zinc-700">
+              Skip people you&apos;re already connected with on LinkedIn.
+            </span>
+          </span>
+        </button>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  function openEditStep(action: SeqAction) {
+    setEditStepId(action.id);
+    setEditStepMode("manual");
+    setEditStepMessage(action.manualMessage);
+    setEditStepWait(action.waitValue);
+    setEditStepWaitUnit(action.waitUnit === "minutes" ? "hours" : action.waitUnit);
+    setEditStepIncludeNote(action.includeNote !== false);
+    setEditStepVariantOn(Boolean(action.variantMessage?.trim()));
+    setEditStepVariant(action.variantMessage || "");
+  }
+
+  function saveEditStep() {
+    setActions(
+      actions.map((a) =>
+        a.id === editStepId
+          ? {
+              ...a,
+              mode: editStepMode,
+              manualMessage: editStepMessage,
+              waitValue: editStepWait,
+              waitUnit: editStepWaitUnit,
+              includeNote: editStepIncludeNote,
+              variantMessage:
+                a.kind !== "connect" && editStepVariantOn ? editStepVariant.trim() : "",
+            }
+          : a,
+      ),
+    );
+    setEditStepId(null);
+  }
+
+  function renderOutreachSequence() {
+    const enabledActions = actions.filter((a) => a.enabled);
+    const editingAction = actions.find((a) => a.id === editStepId) ?? null;
+
+    const TOKENS = ["{{firstName}}", "{{lastName}}", "{{company}}"];
+
+    return (
+      <div className="flex flex-col gap-5">
+        {/* Stats row */}
+        <div className="grid grid-cols-[32px_1fr] gap-3">
+          <div />
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="inline-flex h-7 items-center gap-1.5 rounded-full border border-zinc-900 bg-white px-3 text-[12px] font-semibold leading-none text-zinc-700"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e85e6b]" />
+              <span className="translate-y-px">{enabledActions.length} steps</span>
+            </span>
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="inline-flex h-7 items-center gap-1.5 rounded-full border border-zinc-900 bg-white px-3 text-[12px] font-semibold leading-none text-zinc-700"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-zinc-300" />
+              <span className="translate-y-px">0 leads</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Sequence list */}
+        <div className="relative grid gap-5">
+          <span
+            aria-hidden
+            className="absolute left-[15px] top-8 bottom-12 w-px bg-gradient-to-b from-zinc-200 via-zinc-200 to-transparent"
+          />
+
+          {enabledActions.map((action, index) => {
+            const isConnect = action.kind === "connect";
+            const showWait = index > 0;
+            const messagePreview = action.manualMessage
+              ? action.manualMessage.length > 80
+                ? action.manualMessage.slice(0, 80) + "..."
+                : action.manualMessage
+              : null;
+
+            return (
+              <div key={action.id} className="grid grid-cols-[32px_1fr] items-start gap-3">
+                <span
+                  style={{ fontFamily: "var(--font-varta)" }}
+                  className="z-10 mt-1 grid h-8 w-8 place-items-center rounded-full bg-[#ffe8ea] text-[13px] font-bold text-[#e85e6b] shadow-[0_4px_12px_rgba(232,94,107,0.18)]"
+                >
+                  <span className="translate-y-px">{index + 1}</span>
+                </span>
+
+                <div className="flex flex-col gap-2">
+                  {showWait ? (
+                    <div className="flex items-center gap-1">
+                      <div
+                        style={{ fontFamily: "var(--font-varta)" }}
+                        className="inline-flex h-6 w-fit items-center gap-1 rounded-full border border-dashed border-[#f6c6d3] bg-[#fff5f6] px-2 text-[11px] font-semibold leading-none text-[#ba3871]"
+                      >
+                        <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span className="translate-y-[1px] leading-none">
+                          {action.waitValue} {action.waitValue === 1 ? action.waitUnit.slice(0, -1) : action.waitUnit} after
+                        </span>
+                      </div>
+                      {editWaitId === action.id ? (
+                        <>
+                          <input
+                            type="number"
+                            min={1}
+                            autoFocus
+                            value={action.waitValue}
+                            onChange={(e) => setActions(actions.map((a) => a.id === action.id ? { ...a, waitValue: Math.max(1, Number(e.target.value)) } : a))}
+                            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); setEditWaitId(null); } }}
+                            className="h-6 w-12 rounded-md border border-zinc-300 bg-white text-center text-[12px] font-medium text-zinc-700 outline-none focus:border-zinc-900 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          />
+                          <select
+                            value={action.waitUnit === "days" ? "days" : "hours"}
+                            onChange={(e) => setActions(actions.map((a) => a.id === action.id ? { ...a, waitUnit: e.target.value as "hours" | "days" } : a))}
+                            className="h-6 cursor-pointer rounded-md border border-zinc-300 bg-white px-1 text-[12px] font-medium text-zinc-700 outline-none focus:border-zinc-900"
+                          >
+                            <option value="hours">hours</option>
+                            <option value="days">days</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => setEditWaitId(null)}
+                            aria-label="Done editing wait time"
+                            className="grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded text-[#16a34a] hover:bg-zinc-100"
+                          >
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditWaitId(action.id)}
+                          aria-label="Edit wait time"
+                          className="grid h-6 w-6 shrink-0 cursor-pointer place-items-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                        >
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="rounded-lg border border-zinc-200 bg-white p-4">
+                    <div className="flex items-start gap-3">
+                      <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${isConnect ? "bg-[#ede7ff]" : "bg-[#dbeafe]"}`}>
+                        <SeqIconRich kind={action.kind} colorClass={isConnect ? "text-[#7c5dff]" : "text-[#3b82f6]"} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div style={{ fontFamily: "var(--font-varta)" }} className="text-[15px] font-semibold leading-tight text-zinc-950">
+                          {isConnect ? "Connection request" : "Send Message"}
+                        </div>
+                        <div className="mt-0.5 text-[12px] font-medium text-zinc-700">Step {index + 1}</div>
+                      </div>
+                      {!isConnect && (
+                        <button
+                          type="button"
+                          onClick={() => setActions(actions.filter((a) => a.id !== action.id))}
+                          aria-label="Remove step"
+                          className="grid h-7 w-7 cursor-pointer place-items-center rounded text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                        >
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {isConnect ? (
+                      <>
+                        <div className="mt-3 flex items-center justify-between rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2">
+                          <span style={{ fontFamily: "var(--font-varta)" }} className="text-[12px] font-semibold text-zinc-700">Include invitation note</span>
+                          <button
+                            type="button"
+                            onClick={() => setActions(actions.map((a) => a.id === action.id ? { ...a, includeNote: !a.includeNote } : a))}
+                            className={`relative h-5 w-9 cursor-pointer rounded-full transition-colors ${action.includeNote ? "bg-[#7c5dff]" : "bg-zinc-300"}`}
+                          >
+                            <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all ${action.includeNote ? "left-4" : "left-0.5"}`} />
+                          </button>
+                        </div>
+                        <p className="mt-2 text-[13px] italic font-medium text-zinc-700">
+                          {action.mode !== "ai" && action.includeNote && action.manualMessage
+                            ? `"${messagePreview}"`
+                            : "No note attached"}
+                        </p>
+                      </>
+                    ) : (
+                      <div className="mt-3 rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2.5">
+                        <p className="text-[13px] italic leading-5 font-medium text-zinc-700">
+                          {action.variantMessage?.trim() ? <span className="mr-1 not-italic font-semibold text-zinc-900">A:</span> : null}
+                          {messagePreview ? `"${messagePreview}"` : <span className="not-italic font-medium text-zinc-600">No message written yet.</span>}
+                        </p>
+                        {action.variantMessage?.trim() ? (
+                          <p className="mt-1.5 text-[13px] italic leading-5 font-medium text-zinc-700">
+                            <span className="mr-1 not-italic font-semibold text-zinc-900">B:</span>
+                            {`"${action.variantMessage.length > 80 ? action.variantMessage.slice(0, 80) + "..." : action.variantMessage}"`}
+                          </p>
+                        ) : null}
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex items-center justify-between border-t border-zinc-100 pt-3 text-[12px]">
+                      {isConnect ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-700">
+                          <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                          0 accepted
+                        </span>
+                      ) : <span />}
+                      <div className="flex items-center gap-3 font-medium text-zinc-700">
+                        <span className="inline-flex items-center gap-1">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                          </svg>
+                          0 contact(s)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => openEditStep(action)}
+                          style={{ fontFamily: "var(--font-varta)" }}
+                          className="inline-flex h-7 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-zinc-300 bg-white px-2.5 font-semibold leading-none text-zinc-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:bg-zinc-100 hover:text-zinc-950"
+                        >
+                          <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                          </svg>
+                          <span className="translate-y-[1px] leading-none">Edit</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Add step */}
+          <div className="grid grid-cols-[32px_1fr] items-center gap-3">
+            <span className="z-10 grid h-8 w-8 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-500">
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const next = makeSeqAction("message");
+                setActions([...actions, next]);
+                openEditStep(next);
+              }}
+              className="flex items-center gap-3 rounded-lg border border-dashed border-zinc-300 bg-white p-4 text-left transition hover:border-zinc-400 hover:bg-zinc-50"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-zinc-100 text-zinc-700">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
+              <div>
+                <div style={{ fontFamily: "var(--font-varta)" }} className="text-[14px] font-semibold text-zinc-950">Add a step</div>
+                <div className="text-[12px] font-medium text-zinc-700">Message, invitation, profile visit...</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-zinc-200 bg-white p-4">
+          <div className="text-[12px] font-bold uppercase tracking-wider text-zinc-900">
+            When a lead replies
+          </div>
+          <p className="mt-2 text-[14px] font-semibold text-zinc-950">
+            Stop after the first reply
+          </p>
+          <p className="mt-1 text-[13px] font-medium text-zinc-700">
+            Omentir blocks every remaining sequence message so you can take over the conversation.
+          </p>
+        </div>
+
+        {/* Manual outreach always stops at the first reply, so the only thing
+            left to choose is whether the hand-off reaches the user by email. */}
+        <button
+          type="button"
+          onClick={() => setNotifyOnReply((value) => !value)}
+          className="flex w-full items-start gap-3 rounded-md border border-zinc-200 bg-white p-4 text-left transition hover:bg-zinc-50"
+        >
+          <span
+            className={
+              "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md transition " +
+              (notifyOnReply ? "bg-[#ffe8ea] text-[#e85e6b]" : "border border-zinc-300 bg-white")
+            }
+          >
+            {notifyOnReply ? (
+              <svg
+                className="h-3 w-3"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : null}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="block text-[14px] font-semibold text-zinc-950"
+            >
+              Email me when a lead replies
+            </span>
+            <span className="mt-0.5 block text-[13px] font-medium text-zinc-700">
+              Your sequence stops at the first reply either way, so you write every message
+              yourself. Turn this off if you would rather catch replies in LinkedIn.
+            </span>
+          </span>
+        </button>
+
+        {/* -- Edit Campaign Step modal -- */}
+        {editStepId && editingAction ? (
+          <div
+            className="m3-dialog-scrim z-50"
+            role="presentation"
+            onClick={() => setEditStepId(null)}
+          >
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="agent-edit-step-title"
+              className="m3-dialog-surface flex max-h-[90vh] flex-col overflow-hidden !p-0"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between border-b border-[var(--md-sys-color-outline-variant)] px-6 py-4">
+                <h3 id="agent-edit-step-title" className="m3-dialog-title text-[17px]">
+                  Edit campaign step
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setEditStepId(null)}
+                  aria-label="Close"
+                  className="ms-icon-button text-[var(--md-sys-color-on-surface-variant)]"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 py-5">
+                {/* Include note toggle - only for connect step in manual mode */}
+                {editingAction.kind === "connect" && editStepMode === "manual" ? (
+                  <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+                    <div>
+                      <div style={{ fontFamily: "var(--font-varta)" }} className="text-[14px] font-semibold text-zinc-950">Include note with invitation</div>
+                      <div className="text-[12px] font-medium text-zinc-700">Add a personalised note to your connection request</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditStepIncludeNote((v) => !v)}
+                      className={"relative h-5 w-9 cursor-pointer rounded-full " + (editStepIncludeNote ? "bg-[#e85e6b]" : "bg-zinc-300")}
+                    >
+                      <span className={"absolute top-0.5 h-4 w-4 rounded-full bg-white transition " + (editStepIncludeNote ? "left-4" : "left-0.5")} />
+                    </button>
+                  </div>
+                ) : null}
+
+                {/* Message content - shown when manual (and note enabled for connect) */}
+                {(editStepMode === "manual" && (editingAction.kind !== "connect" || editStepIncludeNote)) ? (
+                  <div className="flex flex-col gap-3">
+                    <TextAreaField
+                      label="Message Content"
+                      value={editStepMessage}
+                      onChange={(e) => setEditStepMessage(e.target.value)}
+                      rows={6}
+                      placeholder="Write your message here..."
+                    />
+                    {/* Token chips */}
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5">
+                      <span style={{ fontFamily: "var(--font-varta)" }} className="text-[12px] font-bold text-zinc-700">Insert:</span>
+                      {TOKENS.map((token) => (
+                        <button
+                          key={token}
+                          type="button"
+                          onClick={() => setEditStepMessage((m) => m + token)}
+                          style={{ fontFamily: "var(--font-varta)" }}
+                          className="inline-flex h-7 cursor-pointer items-center justify-center rounded-full border border-zinc-300 bg-white px-2.5 text-[12px] font-medium text-zinc-700 shadow-sm hover:bg-zinc-100"
+                        >
+                          <span className="translate-y-[1px] leading-none">
+                            {token.replace(/[{}]/g, "").replace("firstName", "FirstName").replace("lastName", "LastName").replace("company", "Company")}
+                          </span>
+                        </button>
+                      ))}
+                      <span className="ml-auto text-[12px] font-medium text-zinc-600">{editStepMessage.length}/1900</span>
+                    </div>
+                    {editingAction.kind !== "connect" ? (
+                      <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 px-4 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div style={{ fontFamily: "var(--font-varta)" }} className="text-[14px] font-semibold text-zinc-950">A/B test this message</div>
+                            <div className="text-[12px] font-medium text-zinc-700">Half your leads get version A above, half get version B. Reply rates for each show on the agent page.</div>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label="A/B test this message"
+                            onClick={() => setEditStepVariantOn((v) => !v)}
+                            className={"relative h-5 w-9 shrink-0 cursor-pointer rounded-full " + (editStepVariantOn ? "bg-[#e85e6b]" : "bg-zinc-300")}
+                          >
+                            <span className={"absolute top-0.5 h-4 w-4 rounded-full bg-white transition " + (editStepVariantOn ? "left-4" : "left-0.5")} />
+                          </button>
+                        </div>
+                        {editStepVariantOn ? (
+                          <TextAreaField
+                            label="Version B"
+                            value={editStepVariant}
+                            onChange={(e) => setEditStepVariant(e.target.value)}
+                            rows={5}
+                            placeholder="Write a different version of this message..."
+                          />
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {/* Wait time - only for non-first steps */}
+                {editingAction.kind !== "connect" ? (
+                  <div className="flex items-center gap-3">
+                    <span style={{ fontFamily: "var(--font-varta)" }} className="text-[13px] font-semibold text-zinc-900">Wait</span>
+                    <TextField
+                      type="number"
+                      min={1}
+                      value={editStepWait}
+                      onChange={(e) => setEditStepWait(Math.max(1, Number(e.target.value)))}
+                      label="Wait"
+                      className="w-28"
+                    />
+                    <SelectField
+                      options={[{ value: "hours", label: "hours" }, { value: "days", label: "days" }]}
+                      value={editStepWaitUnit}
+                      onChange={(v) => setEditStepWaitUnit(v as "hours" | "days")}
+                      placeholder="hours"
+                      className="w-32"
+                    />
+                    <span style={{ fontFamily: "var(--font-varta)" }} className="text-[13px] font-medium text-zinc-700">after previous step</span>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Modal footer */}
+              <div className="m3-dialog-actions border-t border-[var(--md-sys-color-outline-variant)] px-6 py-3.5 !mt-0">
+                <button
+                  type="button"
+                  onClick={() => setEditStepId(null)}
+                  className="m3-dialog-btn m3-dialog-btn--text"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveEditStep}
+                  className="m3-dialog-btn m3-dialog-btn--filled"
+                >
+                  Save step
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  const enabledActions = actions.filter((action) => action.enabled);
+  const connectAction = enabledActions.find((action) => action.kind === "connect");
+  const messageActions = enabledActions.filter((action) => action.kind !== "connect");
+  const firstMessageAction = messageActions[0];
+  const secondMessageAction = messageActions[1];
+  const thirdMessageAction = messageActions[2];
+  const waitAsMinutes = (action: SeqAction | undefined, fallback: number) => {
+    if (!action) return fallback;
+    if (action.waitUnit === "days") return action.waitValue * 24 * 60;
+    if (action.waitUnit === "hours") return action.waitValue * 60;
+    return action.waitValue;
+  };
+  const waitAsHours = (action: SeqAction | undefined, fallback: number) => {
+    if (!action) return fallback;
+    if (action.waitUnit === "days") return action.waitValue * 24;
+    if (action.waitUnit === "minutes") return Math.max(1, Math.round(action.waitValue / 60));
+    return action.waitValue;
+  };
+
+  const mobileContinueLabel = discovering
+    ? leadsOnly
+      ? "Launching..."
+      : "Finding..."
+    : pending
+      ? step === finalStep
+        ? "Launching..."
+        : "Creating..."
+      : step === finalStep
+        ? "Launch"
+        : "Continue";
+
+  return (
+    <div className="app-x flex h-full min-h-0 min-w-0 flex-col gap-2 md:mr-0.5 md:pb-3">
+      <form
+        id="agent-setup-form"
+        onSubmit={handleSubmit}
+        className="flex h-full min-h-0 min-w-0 flex-1 flex-col gap-2"
+      >
+      <AiLoadingOverlay
+        open={drafting}
+        title="Finding your ideal customer profile with AI"
+        note="Usually takes 20 seconds"
+      />
+      <AiLoadingOverlay
+        open={discovering}
+        title="Preparing lead discovery"
+        note="Usually takes a few seconds"
+      />
+      <AiLoadingOverlay
+        open={analyzingCompany}
+        title="Analysing your website with AI"
+        note="Usually takes 20 seconds"
+      />
+      <input type="hidden" name="agentId" value={initialAgent?.id || ""} />
+      <input type="hidden" name="linkedInAccountId" value={linkedInAccountId} />
+      {linkedInAccounts.length > 1 ? <input type="hidden" name="senderRotationShown" value="on" /> : null}
+      {extraSenderIds
+        .filter((id) => id !== linkedInAccountId && linkedInAccounts.some((account) => account.id === id))
+        .map((id) => (
+          <input key={`sender-${id}`} type="hidden" name="senderAccountIds" value={id} />
+        ))}
+      <input type="hidden" name="name" value={name} />
+      <input type="hidden" name="groupName" value={groupName} />
+      <input type="hidden" name="groupId" value="__new__" />
+      <input type="hidden" name="newGroupName" value={groupName} />
+      <input type="hidden" name="preparedAgentId" value={preparedAgentId} />
+      {outreachOnly ? <textarea hidden name="csvContents" value={csvContents} readOnly /> : null}
+      {outreachOnly && csvFromSearch ? <input type="hidden" name="importSource" value="search" /> : null}
+      <input type="hidden" name="prompt" value={prompt} />
+      {titles.map((value) => <input key={`title-${value}`} type="hidden" name="titles" value={value} />)}
+      {industries.map((value) => <input key={`industry-${value}`} type="hidden" name="industries" value={value} />)}
+      {locations.map((value) => <input key={`location-${value}`} type="hidden" name="locations" value={value} />)}
+      {keywords.map((value) => <input key={`keyword-${value}`} type="hidden" name="keywords" value={value} />)}
+      {!stealCustomers
+        ? signalKeywords.map((value) => (
+            <input key={`signal-${value}`} type="hidden" name="signalKeywords" value={value} />
+          ))
+        : null}
+      {stealCustomers
+        ? competitorUrls.map((value) => (
+            <input key={`competitor-${value}`} type="hidden" name="competitorUrls" value={value} />
+          ))
+        : null}
+      {stealCustomers
+        ? founderUrls.map((value) => (
+            <input key={`founder-${value}`} type="hidden" name="founderUrls" value={value} />
+          ))
+        : null}
+      <input
+        type="hidden"
+        name="connectionNote"
+        value={
+          connectAction?.mode === "ai" || connectAction?.includeNote === false
+            ? ""
+            : connectAction?.manualMessage || ""
+        }
+      />
+      <input type="hidden" name="afterApprovalMinutes" value={waitAsMinutes(firstMessageAction, 15)} />
+      <input type="hidden" name="firstMessage" value={firstMessageAction?.manualMessage || ""} />
+      <input type="hidden" name="secondWaitHours" value={waitAsHours(secondMessageAction, 18)} />
+      <input type="hidden" name="secondMessage" value={secondMessageAction?.manualMessage || ""} />
+      <input type="hidden" name="thirdWaitHours" value={waitAsHours(thirdMessageAction, 30)} />
+      <input type="hidden" name="thirdMessage" value={thirdMessageAction?.manualMessage || ""} />
+      <input type="hidden" name="firstMessageB" value={firstMessageAction?.variantMessage || ""} />
+      <input type="hidden" name="secondMessageB" value={secondMessageAction?.variantMessage || ""} />
+      <input type="hidden" name="thirdMessageB" value={thirdMessageAction?.variantMessage || ""} />
+      {stealCustomers || outreachMode === "automatic" ? (
+        <input type="hidden" name="aiDefaultOutreach" value="on" />
+      ) : (
+        <input type="hidden" name="manualDefaultOutreach" value="on" />
+      )}
+      {/* Both modes must submit this: without it a manual campaign fell through
+          to "ai" and the AI answered replies for a user who wrote every word of
+          the sequence himself. */}
+      <input
+        type="hidden"
+        name="replyHandling"
+        value={!stealCustomers && outreachMode === "manual" ? "handoff" : replyHandling}
+      />
+      <input
+        type="hidden"
+        name="bookingLink"
+        value={
+          (stealCustomers || outreachMode === "automatic") && replyHandling === "ai_until_booked"
+            ? bookingLink
+            : ""
+        }
+      />
+      <input
+        type="hidden"
+        name="notifyOnReply"
+        value={!stealCustomers && outreachMode === "manual" && !notifyOnReply ? "off" : "on"}
+      />
+      <input type="hidden" name="sendWindow" value={sendWindow} />
+      <input
+        type="hidden"
+        name="mode"
+        value={
+          outreachOnly ? "outreach" : stealCustomers ? "steal_customers" : "signals"
+        }
+      />
+
+      {!setupMode ? (
+        <>
+          {/* Mobile app bar: Continue / Launch on the right so users can advance
+              without scrolling to the card footer. Portaled so fixed position is
+              not trapped by page enter/fade transforms. Laptop header unchanged. */}
+          <MobileHeaderPortal>
+            <div className="pointer-events-none fixed inset-x-0 top-0 z-[92] flex h-14 items-center justify-end px-2 md:hidden">
+              <button
+                type="submit"
+                form="agent-setup-form"
+                disabled={pending || discovering}
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="pointer-events-auto m3-btn m3-btn-filled h-8 px-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="translate-y-px leading-none">{mobileContinueLabel}</span>
+              </button>
+            </div>
+          </MobileHeaderPortal>
+
+          {/* Header - same theme as other pages (desktop / laptop only) */}
+          <div className="hidden shrink-0 flex-col items-start justify-between gap-3 pt-6 md:flex md:flex-row md:items-center">
+            <div className="min-w-0">
+              <h1
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="flex min-w-0 items-center gap-2 text-2xl font-semibold leading-none tracking-tight text-[var(--md-sys-color-on-surface)]"
+              >
+                <span
+                  className="material-symbols-outlined shrink-0 text-[20px]! font-light leading-none text-zinc-500"
+                  aria-hidden="true"
+                >
+                  edit
+                </span>
+                <span className="inline-grid min-w-0 max-w-full">
+                  <span aria-hidden="true" className="invisible col-start-1 row-start-1 whitespace-pre">
+                    {`${name} `}
+                  </span>
+                  <span aria-hidden="true" className="invisible col-start-1 row-start-1 whitespace-pre">
+                    {"New Agent "}
+                  </span>
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    className="col-start-1 row-start-1 w-full min-w-0 border-0 bg-transparent shadow-none outline-none"
+                    aria-label="Agent name"
+                  />
+                </span>
+              </h1>
+            </div>
+
+            <div className="flex w-full shrink-0 items-center justify-end gap-2 sm:w-auto">
+              <Link
+                href="/agents"
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="flex h-8 cursor-pointer items-center px-3 text-[13px] font-semibold text-zinc-700 hover:text-zinc-900"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={pending || discovering}
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-[#ba3871] px-4 text-[13px] font-semibold text-white shadow-[0_12px_35px_rgba(255,255,255,0.12)] transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="translate-y-px leading-none">{discovering
+                  ? leadsOnly
+                    ? "Launching..."
+                    : "Finding leads..."
+                  : pending
+                    ? step === finalStep
+                      ? "Launching..."
+                      : "Creating..."
+                    : step === finalStep
+                      ? "Launch agent"
+                      : "Continue"}</span>
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="shrink-0 pt-3">
+          <div className="flex h-10 items-center gap-3">
+            <LogoMark className="h-10 w-10" />
+            <div
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="flex h-10 translate-y-px items-center gap-2 text-[28px] font-semibold leading-[40px] tracking-tight text-zinc-950"
+            >
+              <span>Omentir</span>
+              <span className="text-zinc-600">Setup</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step indicator */}
+      <div className={"flex shrink-0 flex-nowrap items-center gap-3 overflow-x-auto py-1 sm:flex-wrap sm:justify-center sm:gap-5 " + (setupMode ? "mt-5" : "mt-4 mb-1.5 sm:mt-0 sm:mb-0")}>
+        {steps.map(([key, number, title], index) => {
+          const active = index === displayStepIndex;
+          const isPast = index < displayStepIndex;
+          const filled = isPast || active;
+          const actualActive = step === key;
+          // Steps ahead of the current one are locked: moving forward must go
+          // through Continue so each step's validation runs.
+          const locked = setupMode ? !actualActive : index > stepIndex;
+          return (
+            <div key={key} className="flex items-center gap-3 sm:gap-5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (!discovering && !locked) setStep(key);
+                }}
+                disabled={discovering || locked}
+                className="flex shrink-0 cursor-pointer items-center gap-2.5 disabled:cursor-not-allowed"
+              >
+                <span
+                  style={{ fontFamily: "var(--font-varta)" }}
+                  className={
+                    "grid h-9 w-9 place-items-center rounded-full text-[14px] font-semibold transition-colors duration-300 delay-500 " +
+                    (filled
+                      ? "bg-[#ba3871] text-white"
+                      : "border border-zinc-300 bg-white text-zinc-400")
+                  }
+                >
+                  {isPast ? <ProgressCheckIcon /> : number}
+                </span>
+                <span
+                  style={{ fontFamily: "var(--font-varta)" }}
+                  className={
+                    "text-[15px] transition-colors duration-300 delay-500 " +
+                    (active
+                      ? "font-semibold text-zinc-900"
+                      : filled
+                        ? "font-medium text-zinc-600"
+                        : "text-zinc-400")
+                  }
+                >
+                  {title}
+                </span>
+              </button>
+              {index < steps.length - 1 ? (
+                <span className="relative h-0.5 w-8 shrink-0 overflow-hidden rounded-full bg-zinc-200 sm:h-[3px] sm:w-16">
+                  <span
+                    className={
+                      "absolute inset-y-0 left-0 rounded-full bg-[#ba3871] transition-[width] duration-700 ease-out " +
+                      (isPast ? "w-full" : "w-0")
+                    }
+                  />
+                </span>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Centered single card */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <section className="mx-auto w-full max-w-3xl rounded-2xl border border-zinc-200 bg-white p-4 sm:p-10">
+          {renderStepContent()}
+
+          {/* Card footer */}
+          <div className={"mt-8 flex items-center gap-3 border-t border-zinc-100 pt-5 " + (!setupMode && step !== "icp" ? "justify-between" : "justify-end")}>
+            {!setupMode && step !== "icp" ? (
+              <button
+                type="button"
+                onClick={() => setStep(previousStep(step))}
+                disabled={discovering}
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="flex h-10 cursor-pointer items-center justify-center gap-1 rounded-md border border-zinc-200 bg-white px-4 text-[13px] font-medium leading-none text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Back
+              </button>
+            ) : null}
+            <button
+              type="submit"
+              disabled={pending || discovering}
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="inline-flex h-10 cursor-pointer items-center justify-center gap-1 rounded-md bg-[#ba3871] px-5 text-[13px] font-semibold leading-none text-white shadow-[0_12px_35px_rgba(255,255,255,0.12)] transition hover:brightness-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <span className="translate-y-px leading-none">{discovering
+                ? leadsOnly
+                  ? "Launching..."
+                  : "Finding leads..."
+                : pending
+                  ? "Creating..."
+                  : step === finalStep
+                    ? "Launch agent"
+                    : "Continue"}</span>
+            </button>
+          </div>
+        </section>
+      </div>
+      </form>
+      <CompanyEditModal
+          open={companyModalOpen}
+          saving={companySaving}
+          analyzing={analyzingCompany}
+          analyzeError={companyAnalyzeError}
+          values={{
+            companyName,
+            description: companyDescription,
+            industry: companyIndustry,
+            companySize,
+            painPointsText: companyPainPoints,
+            websiteUrl: companyWebsiteUrl,
+          }}
+          setValues={{
+            setCompanyName,
+            setCompanyDescription,
+            setCompanyIndustry,
+            setCompanySize,
+            setCompanyPainPoints,
+            setWebsiteUrl: setCompanyWebsiteUrl,
+          }}
+          onSubmit={handleCompanySave}
+          onAnalyze={handleCompanyAnalyze}
+          onClose={() => setCompanyModalOpen(false)}
+        />
+    </div>
+  );
+}

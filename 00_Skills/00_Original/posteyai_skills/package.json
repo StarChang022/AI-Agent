@@ -1,0 +1,13 @@
+{
+  "name": "agent-skills",
+  "private": true,
+  "type": "commonjs",
+  "contributors": [
+    "Rahul Adhikari"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check:server-card": "node scripts/check-server-card.js"
+  },
+  "devDependencies": {}
+}

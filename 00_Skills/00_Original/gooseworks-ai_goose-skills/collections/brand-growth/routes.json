@@ -1,0 +1,118 @@
+{
+  "$comment": "DERIVED by scripts/build-router.js from skills/entry/gooseworks/routes.json, the single source for GooseWorks routing. Do not hand-edit.",
+  "source": {
+    "file": "skills/entry/gooseworks/routes.json"
+  },
+  "route_table_version": 2,
+  "$comment_entry_skills": "Installed into every agent by `gooseworks install`; they are the entry points into this collection, not members of it.",
+  "entry_skills": [
+    "goose-ads",
+    "goose-product-photos",
+    "goose-video",
+    "goose-video-local",
+    "gooseworks",
+    "make-custom-video"
+  ],
+  "brand_growth_routes": [
+    {
+      "job": "Grow the brand, get more customers or sales, or not sure where to start",
+      "skills": [
+        "where-to-start"
+      ]
+    },
+    {
+      "job": "Market size, trends, brand watch and launch positioning",
+      "skills": [
+        "research-market"
+      ]
+    },
+    {
+      "job": "Competitor research, battlecards, landing-page tools and post engagers",
+      "skills": [
+        "research-competitors"
+      ]
+    },
+    {
+      "job": "Who buys and why; prospect lists, lead enrichment and work contacts",
+      "skills": [
+        "research-audience"
+      ]
+    },
+    {
+      "job": "Cold email and LinkedIn drafts, replies and an import file; you send",
+      "skills": [
+        "write-outreach"
+      ]
+    },
+    {
+      "job": "A campaign plan from a launch, budget or date",
+      "skills": [
+        "plan-campaign"
+      ]
+    },
+    {
+      "job": "New static image ads",
+      "skills": [
+        "make-static-ads"
+      ]
+    },
+    {
+      "job": "Launch, scale or pause paid ads",
+      "skills": [
+        "run-paid-campaigns"
+      ]
+    },
+    {
+      "job": "What worked; performance reports",
+      "skills": [
+        "analyze-performance"
+      ]
+    },
+    {
+      "job": "Subscriber email flows and broadcast drafts; you send",
+      "skills": [
+        "email-lifecycle"
+      ]
+    },
+    {
+      "job": "SEO audits, metrics, keyword gaps, topic clusters, page-set plans and AI visibility",
+      "skills": [
+        "improve-search-visibility"
+      ]
+    },
+    {
+      "job": "Influencers and UGC creators",
+      "skills": [
+        "work-with-creators"
+      ]
+    },
+    {
+      "job": "Posts, articles, newsletters and one or more content briefs",
+      "skills": [
+        "make-content"
+      ]
+    },
+    {
+      "job": "Organic social research, posts, voices, calendar and drafts",
+      "skills": [
+        "run-organic-social"
+      ]
+    }
+  ],
+  "brand_growth_skills": [
+    "analyze-performance",
+    "email-lifecycle",
+    "improve-search-visibility",
+    "make-content",
+    "make-static-ads",
+    "plan-campaign",
+    "research-audience",
+    "research-competitors",
+    "research-market",
+    "run-organic-social",
+    "run-paid-campaigns",
+    "where-to-start",
+    "work-with-creators",
+    "write-outreach"
+  ]
+}

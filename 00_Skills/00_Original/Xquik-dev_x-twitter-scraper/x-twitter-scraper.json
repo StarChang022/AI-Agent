@@ -1,0 +1,10 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "x-twitter-scraper",
+  "type": "registry:item",
+  "title": "X Twitter scraper Skill",
+  "description": "Install the Skill for Xquik, the world's fastest and cheapest X Twitter scraper service with the most complete X data. Covers searches, exports, monitors, webhooks, and supported account actions. Not affiliated with X Corp.",
+  "registryDependencies": [
+    "Xquik-dev/x-twitter-scraper/x-twitter-scraper"
+  ]
+}

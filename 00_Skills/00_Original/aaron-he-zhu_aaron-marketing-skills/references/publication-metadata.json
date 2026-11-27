@@ -1,0 +1,367 @@
+{
+  "schema_version": "1.0",
+  "plugin": {
+    "id": "aaron-marketing",
+    "name": "aaron-marketing",
+    "display_name": "Aaron Marketing Skills",
+    "description": "120 marketing skills and 8 commands as an AI marketing staff — one plugin, portable skills on 70+ hosts, or an 8-bot team — and as a four-layer operating system: Narrative strategy; SEO/GEO, Organic Social, Email, Paid Ads, and Influencer channels; Product Launch orchestration; and a Protocol layer with seven append-only truth registries plus non-canonical working memory. Eight typed advisory frameworks (TALE, CORE-EEAT, CITE, STAR, ECHO, SEND, ROAS, RAMP) use machine-checkable auditor artifacts and immutable standalone runtime contracts. Keyless-first and zero-dependency.",
+    "author": {
+      "name": "Aaron He Zhu",
+      "email": "hello@zhuhe.io",
+      "url": "https://github.com/aaron-he-zhu"
+    },
+    "homepage": "https://github.com/aaron-he-zhu/aaron-marketing-skills",
+    "repository": "https://github.com/aaron-he-zhu/aaron-marketing-skills",
+    "license": "Apache-2.0",
+    "keywords": [
+      "seo",
+      "geo",
+      "content-optimization",
+      "search-engine-optimization",
+      "generative-engine-optimization",
+      "ai-citation",
+      "core-eeat",
+      "cite-framework",
+      "star-benchmark",
+      "keyword-research",
+      "technical-seo",
+      "content-writing",
+      "schema-markup",
+      "rank-tracking",
+      "backlink-analysis",
+      "influencer-marketing",
+      "creator-marketing",
+      "impact-framework",
+      "campaign-roi",
+      "ugc",
+      "email-marketing",
+      "email-deliverability",
+      "lifecycle-marketing",
+      "marketing-automation",
+      "send-framework",
+      "product-launch",
+      "go-to-market",
+      "launch-marketing",
+      "product-hunt",
+      "ramp-framework",
+      "social-media-marketing",
+      "organic-social",
+      "community-management",
+      "social-selling",
+      "employee-advocacy",
+      "dark-social",
+      "echo-framework",
+      "brand-narrative",
+      "brand-messaging",
+      "brand-positioning",
+      "brand-voice",
+      "messaging-framework",
+      "tale-framework"
+    ],
+    "marketplace": {
+      "name": "aaron",
+      "category": "marketing",
+      "source": "./",
+      "commands": "./commands/",
+      "tags": [
+        "seo",
+        "geo",
+        "content-optimization",
+        "search-engine-optimization",
+        "generative-engine-optimization",
+        "ai-citation",
+        "core-eeat",
+        "cite-framework",
+        "star-benchmark",
+        "keyword-research",
+        "content-writing",
+        "technical-seo",
+        "schema-markup",
+        "rank-tracking",
+        "backlink-analysis",
+        "influencer-marketing",
+        "creator-marketing",
+        "impact-framework",
+        "campaign-roi",
+        "ugc",
+        "email-marketing",
+        "email-deliverability",
+        "lifecycle-marketing",
+        "marketing-automation",
+        "send-framework",
+        "product-launch",
+        "go-to-market",
+        "launch-marketing",
+        "product-hunt",
+        "ramp-framework",
+        "social-media-marketing",
+        "organic-social",
+        "community-management",
+        "social-selling",
+        "employee-advocacy",
+        "dark-social",
+        "echo-framework",
+        "brand-narrative",
+        "brand-messaging",
+        "brand-positioning",
+        "brand-voice",
+        "messaging-framework",
+        "tale-framework"
+      ]
+    }
+  },
+  "github_about": {
+    "comment": "SSOT for the GitHub repo About (sidebar description + topics). NOT read by GitHub directly — projected onto the repo by scripts/sync-about.sh (owner-run, --live), verified weekly by .github/workflows/about-drift.yml, and its leading skill count is checked against the tree by scripts/check-versions.sh. Edit here when the skill/discipline/gate counts change; the description MUST start with the current skill count so check-versions can parse it.",
+    "description": "120 marketing skills as an AI marketing staff — plugin, portable skills, or an 8-bot team across 7 disciplines (narrative, SEO/GEO, social, email, paid, influencer, launch) on one contract, with 8 auditor gates: TALE · CORE-EEAT · CITE · ECHO · SEND · ROAS · STAR · RAMP.",
+    "topics": [
+      "agent-skills",
+      "ai-staff",
+      "grok",
+      "hermes",
+      "marketing",
+      "seo",
+      "geo",
+      "generative-engine-optimization",
+      "content-optimization",
+      "influencer-marketing",
+      "aaron-marketing",
+      "paid-advertising",
+      "roas",
+      "email-marketing",
+      "marketing-automation",
+      "product-launch",
+      "social-media-marketing",
+      "organic-social",
+      "brand-messaging",
+      "brand-narrative"
+    ]
+  },
+  "skills_sh": {
+    "schema": "https://skills.sh/schemas/skills.sh.schema.json",
+    "not_grouped": "bottom",
+    "groupings": [
+      {
+        "catalog_key": "narrative",
+        "title": "Brand Narrative · TALE (16) — trace → architect → land → evaluate",
+        "description": "L1 strategy: trace positioning truth, architect the message/voice/story canon, land it across surfaces, then evaluate separate truth, system, and effectiveness profiles. narrative-quality-auditor never averages those unlike constructs."
+      },
+      {
+        "catalog_key": "seo-geo",
+        "title": "SEO/GEO · SITE · CORE-EEAT+CITE (16) — survey → implement → tune → evaluate",
+        "description": "Search and generative-engine optimization: keyword/SERP/gap research, content and citation readiness, markup/page plays, CORE-EEAT and CITE auditor gates, then rank, performance, and off-site monitoring."
+      },
+      {
+        "catalog_key": "social",
+        "title": "Social · ECHO (16) — explore → craft → host → observe",
+        "description": "Organic social: channel/voice discovery, platform-native planning and creative, inbox/crisis operations, then listening and measurement. social-quality-auditor runs one asset-gate or program-maturity profile per unit, never a mixed composite."
+      },
+      {
+        "catalog_key": "email",
+        "title": "Email · SEND (16) — setup → engage → nurture → deliver",
+        "description": "Email across promotional, retention, cold-outbound, and newsletter profiles: sender/list setup, creative/rendering, lifecycle journeys, the email-quality-auditor gate, experiments, and provider-level placement monitoring."
+      },
+      {
+        "catalog_key": "ad",
+        "title": "Paid ads · ROAS (16) — research → orchestrate → activate → scale",
+        "description": "Paid media across direct-response, prospecting, and incremental-profit profiles: structure/audiences/queries/feed, creative/tests/bids/landing, the ad-account-auditor gate, then attribution, pacing, fatigue, and causal readback."
+      },
+      {
+        "catalog_key": "influencer",
+        "title": "Influencer marketing · STAR (16) — scout → target → activate → report",
+        "description": "Creator campaigns end to end: audience and creator discovery, planning/briefs/budgets, outreach and the STAR content gate, contracts/amplification, then post-click, ROI, and reporting evidence."
+      },
+      {
+        "catalog_key": "launch",
+        "title": "Launch · RAMP (16) — research → assemble → mobilize → prove",
+        "description": "Product launch orchestration: positioning/tier/window/access, assets/pricing/enablement, then separate preflight, execution, and outcome profiles around launch operations, monitoring, feedback, retro, and momentum."
+      },
+      {
+        "catalog_key": "protocol",
+        "title": "Protocol layer (8) — shared truth registries & memory",
+        "description": "Seven sole-writer registries backed by append-only event streams and rebuildable projections, plus non-canonical HOT/WARM/COLD working memory. Other skills propose; registry owners authorize canonical mutations."
+      }
+    ]
+  },
+  "markdown_surfaces": [
+    {
+      "path": "README.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.de.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.es.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.fr.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.it.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.ja.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.ko.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.pt.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.zh.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "docs/README.zh-Hant.md",
+      "marker": "version-badge",
+      "template": "  <a href=\"https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md\"><img src=\"https://img.shields.io/badge/version-{bundle_version}-orange\" alt=\"Version\"></a>"
+    },
+    {
+      "path": "README.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](VERSIONS.md)** — per-skill versions + changelog (current bundle: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.de.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — Versionen pro Skill + Changelog (aktuelles Bundle: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.es.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — versiones por skill + changelog (bundle actual: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.fr.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — versions par skill + changelog (bundle actuel : `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.it.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — versioni per skill + changelog (bundle attuale: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.ja.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** —— スキルごとのバージョン + changelog（現在のバンドル：`{bundle_version}`）。"
+    },
+    {
+      "path": "docs/README.ko.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — 스킬별 버전 + changelog(현재 번들: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.pt.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** — versões por skill + changelog (bundle atual: `{bundle_version}`)."
+    },
+    {
+      "path": "docs/README.zh.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** —— 各技能版本 + 变更日志（当前包：`{bundle_version}`）。"
+    },
+    {
+      "path": "docs/README.zh-Hant.md",
+      "marker": "current-bundle",
+      "template": "- **[VERSIONS.md](../VERSIONS.md)** —— 各技能版本 + 變更日誌（目前套件：`{bundle_version}`）。"
+    },
+    {
+      "path": "CLAUDE.md",
+      "marker": "current-bundle",
+      "template": "Current bundle version: `{bundle_version}` (see [VERSIONS.md](https://github.com/aaron-he-zhu/aaron-marketing-skills/blob/main/VERSIONS.md))."
+    },
+    {
+      "path": "AGENTS.md",
+      "marker": "current-bundle",
+      "template": "- **Current bundle**: {bundle_version}"
+    },
+    {
+      "path": "SECURITY.md",
+      "marker": "supported-major",
+      "template": "| Version | Supported |\n|---------|-----------|\n| {bundle_major}.x    | Yes (current line) |\n| < {bundle_major}    | No        |"
+    },
+    {
+      "path": "README.md",
+      "marker": "portable-install",
+      "template": "| Host | Install |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` then `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ hosts](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent Plugins v1 clients · Portable Lite** | Download `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` from the [v{bundle_version} release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), unpack it, and install the extracted plugin directory |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | Generate, then install: Hermes = `profile install`; Grok = semi-manual cards. See [AI Staff](#ai-staff--8-named-bots) |\n| **[SkillHub.cn](https://skillhub.cn) (中文社区)** | `skillhub install <frontmatter-slug>` |\n| **Any host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/agent-compatibility.md",
+      "marker": "portable-install",
+      "template": "| Route | Command | Serves |\n|-------|---------|--------|\n| **Claude Code plugin** (full suite) | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` → `/plugin install aaron-marketing@aaron` | skills + commands + hooks + memory + connectors + shared references |\n| **Any other agent** (project) | `npx skills add aaron-he-zhu/aaron-marketing-skills` | skills, installed to `.agents/skills/` + your agent's own dir |\n| **Any other agent** (global) | `npx skills add aaron-he-zhu/aaron-marketing-skills -g` | same, user-wide |\n| **Single skill** | `npx skills add aaron-he-zhu/aaron-marketing-skills -s keyword-research` | one skill folder |\n| **Force one agent** | `… -a codex` / `-a cursor` / `-a opencode` … | one host only |\n| **Agent Plugins v1 · Portable Lite** | Download `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` from the [v{bundle_version} release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), unpack it, and select the extracted plugin directory in the client | 120 strict static Skills; no `mcp.json`, commands, hooks, connectors, or repository runtime |"
+    },
+    {
+      "path": "docs/registry-submissions.md",
+      "marker": "portable-install",
+      "template": "**Repo**: <https://github.com/aaron-he-zhu/aaron-marketing-skills> · Apache-2.0 · v20.2.0 · 120 skills + 8 commands\n**Install (universal)**: `npx skills add aaron-he-zhu/aaron-marketing-skills` — 70+ hosts (Codex, Cursor, OpenCode, Antigravity, Gemini CLI, Copilot CLI, OpenClaw, Hermes, …)\n**Install (Claude Code plugin, full suite)**: `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` → `/plugin install aaron-marketing@aaron`\n**Install (Agent Plugins v1, Portable Lite)**: download `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` from the [v{bundle_version} release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), unpack it, and install/load the extracted plugin directory — 120/120 strict static Agent Skills; no `mcp.json`, commands, hooks, connectors, or repository runtime ([package boundary](agent-plugins-v1.md))\n**Live registry pages**: [skills.sh](https://skills.sh/aaron-he-zhu/aaron-marketing-skills) · ClawHub (`@aaron-he-zhu/<skill>`) · SkillHub.cn (frontmatter slugs: `<skill>` when owned, otherwise `aaron-<skill>`)\n**Topics/tags**: marketing, seo, geo, influencer-marketing, paid-ads, email-marketing, organic-social, product-launch, go-to-market, brand-narrative, brand-messaging, agent-skills, ai-staff, grok, hermes, skill-md"
+    },
+    {
+      "path": "SECURITY.md",
+      "marker": "portable-install",
+      "template": "The release asset\n`aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` is a generated,\nstatic Skills package. It contains the 120 strict `SKILL.md` projections and\nonly their reachable static references. It does **not** contain commands, hooks,\nconnector helpers, controllers, scoring/state runtimes, other executable\nrepository scripts, or `mcp.json`. Installing it therefore registers no MCP\nserver, starts no process, makes no network request, writes no persistent state,\nand grants no credential, tool, mutation, or execution authority. Any client\ntool use still requires that client's separate configuration and the user's\nrequest-specific authorization. See the exact [Portable Lite package and\ncapability boundary](docs/agent-plugins-v1.md)."
+    },
+    {
+      "path": "docs/README.de.md",
+      "marker": "portable-install",
+      "template": "| Host | Installation |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` dann `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ Hosts](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent-Plugins-v1-Clients · Portable Lite** | Lade `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` aus dem [v{bundle_version}-Release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}) herunter, entpacke es und installiere das enthaltene Plugin-Verzeichnis |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | 8-Bot-Roster erzeugen: `python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 Spezialisten + `aaron-chief`. Siehe [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn) (chinesische Community)** | `skillhub install <frontmatter-slug>` (z. B. `keyword-research`) |\n| **Beliebiger Host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.es.md",
+      "marker": "portable-install",
+      "template": "| Host | Instalación |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` y luego `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [más de 70 hosts](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Clientes Agent Plugins v1 · Portable Lite** | Descarga `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` de la [versión v{bundle_version}](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), descomprímelo e instala el directorio del plugin extraído |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | Genera el roster de 8 bots: `python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 especialistas + `aaron-chief`. Ver [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn) (comunidad china)** | `skillhub install <frontmatter-slug>` (p. ej. `keyword-research`) |\n| **Cualquier host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.fr.md",
+      "marker": "portable-install",
+      "template": "| Host | Installation |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` puis `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ hosts](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Clients Agent Plugins v1 · Portable Lite** | Téléchargez `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` depuis la [release v{bundle_version}](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), décompressez-le puis installez le répertoire du plugin extrait |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | Générez le roster 8 bots : `python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 spécialistes + `aaron-chief`. Voir [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn) (communauté chinoise)** | `skillhub install <frontmatter-slug>` (p. ex. `keyword-research`) |\n| **N'importe quel host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.it.md",
+      "marker": "portable-install",
+      "template": "| Host | Installazione |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` poi `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ host](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Client Agent Plugins v1 · Portable Lite** | Scarica `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` dalla [release v{bundle_version}](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), estrailo e installa la directory del plugin estratta |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | Genera il roster da 8 bot: `python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 specialisti + `aaron-chief`. Vedi [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn) (community cinese)** | `skillhub install <frontmatter-slug>` (es. `keyword-research`) |\n| **Qualsiasi host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.ja.md",
+      "marker": "portable-install",
+      "template": "| ホスト | インストール |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` の後に `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ ホスト](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent Plugins v1 クライアント · Portable Lite** | [v{bundle_version} リリース](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version})から `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` をダウンロードして展開し、抽出されたプラグインディレクトリをインストール |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | 8 ボットの名簿を生成：`python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 専門家 + `aaron-chief`。[AI Staff](#ai-staff) を参照 |\n| **[SkillHub.cn](https://skillhub.cn)（中国語コミュニティ）** | `skillhub install <frontmatter-slug>`（例：`keyword-research`） |\n| **任意のホスト** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.ko.md",
+      "marker": "portable-install",
+      "template": "| 호스트 | 설치 |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` 후 `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ 호스트](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent Plugins v1 클라이언트 · Portable Lite** | [v{bundle_version} 릴리스](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version})에서 `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz`를 내려받아 압축을 풀고 추출된 플러그인 디렉터리를 설치 |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | 8봇 명단 생성: `python3 scripts/generate-bot-projections.py --output <private-dir>` — 전문가 7명 + `aaron-chief`. [AI Staff](#ai-staff) 참고 |\n| **[SkillHub.cn](https://skillhub.cn)(중국어 커뮤니티)** | `skillhub install <frontmatter-slug>`(예: `keyword-research`) |\n| **임의의 호스트** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.pt.md",
+      "marker": "portable-install",
+      "template": "| Host | Instalação |\n|------|---------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` e depois `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ hosts](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Clientes Agent Plugins v1 · Portable Lite** | Baixe `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz` da [release v{bundle_version}](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version}), extraia-o e instale o diretório de plugin extraído |\n| **Grok Bot · Hermes Bot Mode (AI Staff)** | Gera o roster de 8 bots: `python3 scripts/generate-bot-projections.py --output <private-dir>` — 7 especialistas + `aaron-chief`. Ver [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn) (comunidade chinesa)** | `skillhub install <frontmatter-slug>` (ex.: `keyword-research`) |\n| **Qualquer host** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.zh-Hant.md",
+      "marker": "portable-install",
+      "template": "| 宿主 | 安裝 |\n|------|------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` 然後 `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ 宿主](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent Plugins v1 客戶端 · Portable Lite** | 從 [v{bundle_version} Release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version})下載 `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz`，解壓後安裝其中的外掛目錄 |\n| **Grok Bot · Hermes Bot Mode（AI Staff）** | 產生 8-bot 花名冊：`python3 scripts/generate-bot-projections.py --output <private-dir>` —— 7 個專科 + `aaron-chief`。見 [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn)（中文社群）** | `skillhub install <frontmatter-slug>`（如 `keyword-research`） |\n| **任意宿主** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    },
+    {
+      "path": "docs/README.zh.md",
+      "marker": "portable-install",
+      "template": "| 宿主 | 安装 |\n|------|------|\n| **Claude Code** | `/plugin marketplace add aaron-he-zhu/aaron-marketing-skills` 然后 `/plugin install aaron-marketing@aaron` |\n| **Codex · Cursor · OpenCode · Antigravity · Gemini CLI · Copilot CLI · OpenClaw · Hermes · [70+ 宿主](https://github.com/vercel-labs/skills#supported-agents)** | `npx skills add aaron-he-zhu/aaron-marketing-skills` |\n| **Agent Plugins v1 客户端 · Portable Lite** | 从 [v{bundle_version} Release](https://github.com/aaron-he-zhu/aaron-marketing-skills/releases/tag/v{bundle_version})下载 `aaron-marketing-skills-{bundle_version}-agent-plugin-v1-lite.tar.gz`，解压后安装其中的插件目录 |\n| **Grok Bot · Hermes Bot Mode（AI Staff）** | 生成 8-bot 花名册：`python3 scripts/generate-bot-projections.py --output <private-dir>` —— 7 个专科 + `aaron-chief`。见 [AI Staff](#ai-staff) |\n| **[SkillHub.cn](https://skillhub.cn)(中文社区)** | `skillhub install <frontmatter-slug>`(如 `keyword-research`) |\n| **任意宿主** | `git clone https://github.com/aaron-he-zhu/aaron-marketing-skills` |"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+import { auth } from "@/lib/server/auth";
+import { redirect } from "next/navigation";
+import ApiKeysView from "./api-keys-view";
+import { createAgentApiKeyAction, revokeAgentApiKeyAction } from "@/app/actions";
+import { resolveActiveWorkspace } from "@/lib/server/active-workspace";
+import { hasActiveSubscription } from "@/lib/server/subscription";
+import { planHasApiAccess } from "@/lib/plan-limits";
+import { createPageMetadata } from "@/app/seo";
+
+export const metadata = createPageMetadata({
+  title: "Assistants - Omentir",
+  description: "See which AI assistants are connected to Omentir, connect a new one, or disconnect one.",
+  path: "/api-keys",
+  noIndex: true,
+});
+
+export default async function ApiKeysPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    await auth.protect();
+    throw new Error("Unauthorized");
+  }
+
+  const workspace = await resolveActiveWorkspace(userId);
+  if (!hasActiveSubscription(workspace)) {
+    redirect("/upgrade");
+  }
+
+  // Plans without API access see the page rather than a redirect: the keys
+  // section renders locked behind an upgrade prompt so the feature is visible
+  // instead of silently missing. createAgentApiKey still refuses on the server.
+  return (
+    <ApiKeysView
+      agentApiKeys={[]}
+      locked={!planHasApiAccess(workspace.billing?.plan)}
+      createAgentApiKeyAction={createAgentApiKeyAction}
+      revokeAgentApiKeyAction={revokeAgentApiKeyAction}
+    />
+  );
+}

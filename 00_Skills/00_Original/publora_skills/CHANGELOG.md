@@ -1,0 +1,247 @@
+# Changelog
+
+All notable changes to the Publora skills. This project follows
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html), read as described in
+[CONTRIBUTING.md](CONTRIBUTING.md): MAJOR when an agent built on the previous
+version would now do the wrong thing, MINOR for a new skill or tool, PATCH for a
+corrected fact.
+
+## [Unreleased]
+
+### Added
+
+- **OpenCode setup in the README.** A row in the Install table and an
+  [OpenCode](README.md#opencode) section: the `opencode.json` entry,
+  `opencode mcp auth publora`, and `npx skills add publora/skills -a opencode`.
+
+### Fixed
+
+- **The Claude directory refused the plugin package.** Its check needs the
+  README to say in plain words what the server's tools can do. The README now has
+  a [What the server's tools can do](README.md#what-the-servers-tools-can-do)
+  section: which tools publish or send, which delete, which change access on
+  Company accounts, and that none make payments.
+- **Tool counts in the README.** The server now exposes 21 personal tools,
+  73 in total: `linkedin_company_lookup` resolves a LinkedIn company page to
+  its organization URN and mention token. The badge, the *How it works* count
+  and the LinkedIn list now include it.
+- **The Claude directory refused the plugin.** The plugin was the whole
+  repository, so a submission carried `scripts/*.py` and `requirements-dev.txt`,
+  which the directory accepts only from verified organizations. The Claude
+  marketplace now installs the generated package
+  `.claude-marketplace/publora-skills/`: manifest, `.mcp.json`, skills, assets and
+  docs only. Submit that folder to the directory. `sync_codex_marketplace.py` is
+  now `sync_plugin_packages.py` and regenerates both packages; CI also fails when
+  a package is missing a newly added file.
+
+- **The README listed workspace (managed-user) administration as REST only.**
+  That legacy API is no longer documented. Agency client work uses the
+  `company_*` tools; the README now links the
+  [Agency quickstart](https://docs.publora.com/guides/agency-quickstart) and
+  states that these skills cover personal posts only.
+- **The README said clients list 49 `company_*` tools.** They list 52:
+  read-only `company_get_linkedin_page_posts_batch`,
+  `company_list_linkedin_page_post_comments` and
+  `company_list_linkedin_page_post_reactions` (LinkedIn Company Page posts by ID,
+  comments and reactions, publora.com#871 and #877) bring the total to 72.
+- **The README said clients list 48 `company_*` tools.** They list 49:
+  `company_list_linkedin_page_posts` (read-only LinkedIn Company Page reshare
+  sources, publora.com#831) brings the total to 69.
+- **The README said clients list 13 `company_*` tools.** Since 2026-10-23 the
+  hosted server exposes 48 separate Company operations instead of 13
+  action-based tools, so clients list 68 tools in total.
+- **The README said clients list 12 `company_*` tools.** They list 13:
+  `company_webhooks` (Agency Workspace post-published/failed webhooks) has been
+  on the hosted server since 2026-10-22.
+
+## [1.1.1] - 2026-10-12
+
+### Fixed
+
+- **The Claude directory listing showed a broken privacy link and no support
+  link.** With no `privacyPolicyUrl` in the manifest, the directory took a REST
+  API address from the README as the privacy policy. The manifest now sets the
+  four listing links: documentation, support, privacy policy and terms of
+  service. Claude Code ignores these fields; only the directory reads them.
+- **The 1.1.0 changelog named the icon's file path**, which the directory's
+  validator holds for review in case something runs the image. The entry now
+  describes the icon without the path.
+
+## [1.1.0] - 2026-10-12
+
+### Added
+
+- **The plugin now brings the Publora MCP server with it.** `.mcp.json` points at
+  `https://mcp.publora.com/mcp` (Streamable HTTP, OAuth sign-in, no key in the
+  file), the same server as the Claude directory connector, so a user who has
+  both sees one set of tools. Installing `publora-skills` in Claude, Cowork or
+  Claude Code now gives the skills and the tools they call in one step.
+- **The plugin has an icon.** The Publora bird on dark, a 1024×1024 PNG,
+  declared by `icon` in the plugin manifest for the plugin's listing in the
+  Claude directory.
+
+### Fixed
+
+- **The setup steps contradicted the bundled server.** All nine skills told the
+  user to get an API key and add `https://mcp.publora.com` by hand, while the
+  plugin already connects `https://mcp.publora.com/mcp` with OAuth. A user who
+  followed them ended up with a second copy of the server. The connect step now
+  starts with "Publora tools already available: nothing to set up", then OAuth
+  by URL, and keeps the API-key header for agents that cannot sign in with
+  OAuth. The API key step says it is only needed for those agents and for the
+  REST fallback. The skills now give `/mcp`, the address the plugin and the
+  Claude directory listing use. Both addresses still work, but an existing
+  manual connection without `/mcp` is separate from the plugin in Claude. The
+  skills and README now explain how to keep the intended account and either
+  update the old entry in its current scope or switch to the bundled connection.
+
+- **LinkedIn and Instagram skill descriptions contained invalid YAML.** Quote
+  the descriptions so their colons are parsed as text, including in the generated
+  Codex package. The static check now parses frontmatter with PyYAML, and CI runs
+  regression tests for malformed YAML and parsed field validation.
+- **The package promised an approval step it does not implement.** README,
+  plugin listings and the security policy now describe drafts and scheduling
+  without guaranteeing a preview or confirmation before every publication.
+  Confirmation behavior depends on the agent and client running the skills.
+
+- **`threads-post` said multi-part threading was disabled.** It has been live
+  since 2026-09-14 (`supportsThreading: true`): content over 500 characters is
+  split into a connected chain, `---` lines set the breaks, and a chain needs
+  `threads_manage_replies`. An agent following the skill split long posts into
+  unconnected separate posts. The description, limits, restrictions, example,
+  troubleshooting and the README row now describe chains; `social-post` names
+  Threads alongside X as a platform that splits long content.
+- **The README said the MCP server has 16 tools.** It has 18: `post_stats` and
+  `profile_stats` (engagement counts for Mastodon and Bluesky) were missing from
+  the list and the badge.
+- **The README said the MCP server has 18 tools.** It has 20: `attach_media`
+  (since 2026-09-28) and `account_context` (plan, quotas and schedule horizon,
+  since 2026-10-01) were missing from the list and the badge. The README also
+  names the 12 `company_*` tools clients list for Agency client work, and
+  `social-post` points cross-posts and batches at `account_context`.
+- **The README claimed `platformSettings` is REST only.** The MCP `create_post`
+  and `update_post` tools accept it too.
+- **Install led Claude users to API keys and config files.** Publora has been in
+  the Claude connectors directory since 2026-09-22; the README now starts there,
+  Claude Code signs in with OAuth, and the Claude Desktop row no longer copies a
+  config path.
+
+### Changed
+
+- **Plugin version is now 1.1.0.** The Claude and Codex manifests and the Claude
+  marketplace entry use the same version, so existing marketplace installations
+  can receive the bundled server and corrected skills instead of retaining the
+  cached 1.0.0 package. A git tag alone does not update the manifest version.
+- `claude.ai` joins the allowed link hosts (the directory listing) and the link
+  checker's skip list, since it answers scripted requests with 403.
+
+## [1.0.3] - 2026-09-12
+
+### Fixed
+
+- **`bluesky-post` documented `altTexts` on `create_post`.** No such parameter
+  exists. The platform doc is explicit that the value is not processed and that
+  the media model never persists an `alt` property, and `platformSettings`
+  rejects Bluesky with `400 PLATFORM_SETTING_UNKNOWN`, so alt text cannot be set
+  through the API at all. It was promised in the description, the parameter
+  list, an example and a best practice. Found by the parameter check below on
+  its first run.
+
+### Added
+
+- **`check_mcp_drift.py` now verifies parameters, not just tool names.** Every
+  fix in 1.0.2 passed the old check clean: it asked whether a tool exists and
+  never whether its documented parameters do. It now compares each against the
+  tool's `inputSchema` and reports required parameters a skill never mentions.
+- **`check_platform_limits.py`** compares stated character limits, image counts
+  and video-only claims against `GET /api/v1/platform-limits`, which is
+  generated rather than hand-written. It checks only what parses unambiguously:
+  a check that cries wolf on prose is one people learn to skip.
+- **`post_stats` and `profile_stats`** documented in `bluesky-post`. Both are
+  live tools that no skill mentioned, returning engagement counters and follower
+  counts for Bluesky and Mastodon.
+
+## [1.0.2] - 2026-09-12
+
+### Fixed
+
+Eight factual claims that contradicted the API, each verified against the live
+`tools/list` schema or `publora-api-docs` rather than against prose.
+
+- **`linkedin_create_reshare` named the wrong required parameter.** The skill
+  said `postedId`; the tool requires `parent`. Every reshare an agent attempted
+  from these instructions failed validation. Optional `visibility` added.
+- **`linkedin_list_mentionables` named parameters it does not have.** It takes
+  `q` and `limit` and requires neither; there is no `platformId`.
+- **`platformSettings` is available through MCP.** Five skills said it was REST
+  only, so agents abandoned MCP for no reason.
+- **TikTok is not video-only.** It takes image carousels of up to 35 JPEG, PNG
+  or WebP images at 20 MB each. Agents were refusing valid carousel requests.
+- **Instagram is not JPEG-only.** JPEG, PNG and WebP all work, WebP converted
+  before publishing. Animated GIF, BMP and TIFF are what get rejected.
+- **Video ceilings.** YouTube 256 GB and Facebook 2 GB, not 512 MB. That figure
+  belongs to the dashboard's `/media/process-video` multipart endpoint and has
+  nothing to do with presigned API or MCP uploads.
+- **LinkedIn images** are gated at 36,152,320 pixels with a 50 MB ceiling, not
+  5 MB.
+- **`showCaptionAboveMedia` is rejected.** Sending it returns
+  `400 PLATFORM_SETTING_UNKNOWN`; removed, with a note saying why.
+
+### Known gap
+
+`check_mcp_drift.py` verifies that documented tools exist. It passes clean on
+every item above: a correctly named tool with invented parameters, a capability
+denied, a limit off by three orders of magnitude. Extending it to compare
+parameter names against each tool's `inputSchema` would catch the first two
+mechanically; the rest want `GET /api/v1/platform-limits` as a source of truth.
+
+## [1.0.0] - 2026-09-08
+
+First tagged release. The skills had been shipping without versions since March,
+so users had no way to tell what they were running or what had changed.
+
+### Fixed
+
+- **Pricing removed from every skill.** The repo quoted Pro at $2.99 and a
+  Premium plan that no longer exists. Prices now live only on
+  [publora.com/pricing](https://publora.com/pricing), linked rather than copied.
+- **Four MCP tools that did not exist.** `linkedin_post_stats`,
+  `linkedin_account_stats`, `linkedin_followers` and `linkedin_profile_summary`
+  were documented in `linkedin-analytics` but absent from the server. LinkedIn
+  analytics is now documented as REST only.
+- **Claude Desktop config path.** Every skill pointed at
+  `~/.claude/claude_desktop_config.json`, which is not where the config lives.
+- **`scheduledTime` documented as required.** It is optional; omitting it creates
+  a draft.
+- **Threads contradicted itself**, describing auto-threading in detail and then
+  stating that multi-part threads are disabled. They are disabled.
+- **Platform limit drift**: X video 2:00 to 2:20 (140s), Bluesky image ~1 MB to
+  exactly 2,000,000 bytes, Threads video 500 MB to 1 GB, Threads carousel 2-10 to
+  2-20 images.
+
+### Added
+
+- **`mediaUrls`** documented in every posting skill: up to 10 public https URLs
+  attached before validation, so media and scheduling take one call.
+- **`complete_media`** and **`list_connections`** added to every tool list.
+- **`linkedin_create_reshare`** and **`linkedin_list_mentionables`**, two real
+  tools no skill had ever mentioned.
+- **CI**: `verify.yml` checks frontmatter, price literals, stale paths and link
+  hosts on every pull request; `drift.yml` compares documented tools against the
+  live `tools/list` every Monday.
+- **Install paths**: Claude Code and Codex plugin manifests, alongside the
+  existing `npx skills add`.
+- README rewritten around when to use each skill, the 16 MCP tools, and a FAQ.
+- `CONTRIBUTING.md` with the rules that keep facts from drifting again.
+
+### Changed
+
+- All nine `description` fields rewritten as triggers (150-300 characters,
+  platform named, "Not for X" sentinel). This is the field agents and directories
+  match on; they were 75-113 characters of prose.
+
+[Unreleased]: https://github.com/publora/skills/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/publora/skills/releases/tag/v1.1.0
+[1.0.3]: https://github.com/publora/skills/releases/tag/v1.0.3
+[1.0.2]: https://github.com/publora/skills/releases/tag/v1.0.2
+[1.0.0]: https://github.com/publora/skills/releases/tag/v1.0.0

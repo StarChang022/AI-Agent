@@ -1,0 +1,1930 @@
+"use server";
+
+import { auth, currentUser } from "@/lib/server/auth";
+import { revalidatePath } from "next/cache";
+import { cookies, headers } from "next/headers";
+import { after } from "next/server";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { normalizeInviteWithdrawAfterDays } from "@/lib/linkedin-health";
+import { buildCampaignSteps } from "@/lib/server/campaign-sequence";
+import {
+  createAgent,
+  createAgentApiKey,
+  getConversation,
+  createCampaign,
+  createOrGetGroup,
+  createOwnedWorkspace,
+  deleteOwnedWorkspace,
+  listWorkspacesForOwner,
+  recordManualActionSlot,
+  completeConversationManualFollowUp,
+  consumeDailyQuota,
+  deleteAgent,
+  deleteGroup,
+  disconnectLinkedInAccount,
+  enrollGroupInCampaign,
+  ensureWorkspace,
+  findOwnedWorkspace,
+  getAgent,
+  getLinkedInAccount,
+  listLinkedInAccounts,
+  getLinkedInAccountForWorkspace,
+  getProductProfile,
+  listCampaigns,
+  listLeads,
+  pauseAgent,
+  setAgentLeadsOnly,
+  resumeAgent,
+  revokeAgentApiKey,
+  setAverageTicketSize,
+  setSendWindowForGroup,
+  updateAgent,
+  updateCampaign,
+  updateWorkspaceIdentity,
+  updateWorkspaceOnboarding,
+  updateWorkspaceNotificationEmail,
+  updateWorkspaceOwnerImage,
+  updateWorkspaceSettings,
+  updateWorkspaceTimezone,
+  upsertProductProfile,
+  upsertLead,
+  stopLeadOutreach,
+} from "@/lib/server/data";
+import { parseAgentMessageTone } from "@/lib/agent-setup-defaults";
+import { buildLinkedInLeadCsv, parseLinkedInLeadCsv } from "@/lib/linkedin-csv";
+import { parseLinkedInSearchUrl } from "@/lib/server/linkedin-own/web-search";
+import { isAnonymousLinkedInProfile } from "@/lib/server/outreach-rules";
+import { normalizeLinkedInProfileUrl } from "@/lib/server/firebase";
+import {
+  INVALID_SCHEDULING_LINK_MESSAGE,
+  normalizeSchedulingLink,
+  resolveBookingLink,
+  shouldSyncCampaignBookingLink,
+} from "@/lib/scheduling-link";
+import { sendNewSignupNotification } from "@/lib/server/email";
+import { capturePostHogEvent } from "@/lib/posthog-server";
+import {
+  ONBOARDING_SURVEY_SENT_EVENT,
+  onboardingSurveySentProperties,
+} from "@/lib/posthog-onboarding";
+import { executeScheduledActionNow } from "@/lib/server/automation";
+import { getLeadOutreach, saveScheduledMessageEdit } from "@/lib/server/scheduled-actions";
+import { analyzeWebsiteOrSearch, draftAgentSetupWithGemini } from "@/lib/server/gemini";
+import { hasActiveSubscription, requireActiveSubscription } from "@/lib/server/subscription";
+import {
+  APPSUMO_CLAIM_COOKIE,
+  APPSUMO_REDEEM_PATH,
+  attachAppSumoLicense,
+} from "@/lib/server/appsumo";
+import {
+  linkedInChatBelongsToAccount,
+  searchLinkedInProfilesByUrl,
+  sendLinkedInChatMessage,
+} from "@/lib/server/linkedin";
+import { forgetLinkedInSession } from "@/lib/server/linkedin-accounts";
+import { addExclusions, listExclusions, removeExclusion } from "@/lib/server/blacklist";
+import { BLOCKABLE_COUNTRIES, parseCountryExclusion, parseExclusionInput } from "@/lib/exclusions";
+import type { CampaignReplyHandling, CampaignStep, ProductProfile, SendWindow } from "@/lib/server/types";
+import { isLocalMode } from "@/lib/runtime-mode";
+import {
+  productProfileIsReadyForSteal,
+  targetingFromProductProfile,
+} from "@/lib/steal-customers-targeting";
+import {
+  resolveActiveWorkspace,
+  setActiveWorkspaceCookie,
+} from "@/lib/server/active-workspace";
+import { resolveWebsiteFavicon } from "@/lib/server/website-favicon";
+import { withActionErrors } from "@/lib/server/action-errors";
+import { buildLeadsCsv } from "@/lib/leads-csv";
+import { resolveTimeZone } from "@/lib/time-zone";
+import {
+  cachedLeadPreviews,
+  invalidateWorkspaceLists,
+} from "@/lib/server/workspace-list-cache";
+import { findReplyLead, type ReplyLead } from "@/lib/overview-summary";
+
+async function requireWorkspace() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const workspace = await resolveActiveWorkspace(userId);
+  // currentUser() is a Clerk API round trip and the email write is a Firestore
+  // write, both on the critical path of every single action. The address only
+  // needs capturing once, so skip both once the workspace has one. A workspace
+  // that never got an email (older signups) still backfills on the next action.
+  if (workspace.notificationEmail) return workspace;
+
+  const user = await currentUser();
+  const email =
+    user?.primaryEmailAddress?.emailAddress || user?.emailAddresses[0]?.emailAddress || "";
+  await updateWorkspaceNotificationEmail(workspace.id, email);
+  return { ...workspace, notificationEmail: email || workspace.notificationEmail };
+}
+
+function hostnameFromWebsite(websiteUrl: string) {
+  try {
+    const withProtocol = /^https?:\/\//i.test(websiteUrl) ? websiteUrl : `https://${websiteUrl}`;
+    return new URL(withProtocol).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function emptyProductProfileFields(
+  websiteUrl = "",
+  companyName = "",
+): Omit<ProductProfile, "id" | "workspaceId" | "createdAt" | "updatedAt"> {
+  return {
+    websiteUrl,
+    description: "",
+    companyName,
+    industry: "",
+    companySize: "",
+    painPointsText: "",
+    pricingDetails: "",
+    schedulingLink: "",
+    keyFeatures: [],
+    socialProof: [],
+    linkedInCompanyPage: "",
+    useCases: [],
+    targetBuyers: [],
+    buyerTitles: [],
+    roleVocabulary: [],
+    industries: [],
+    companySizes: [],
+    painPoints: [],
+    keywords: [],
+    preferredLocations: [],
+  };
+}
+
+function refreshWorkspaceIdentity(
+  workspaceId: string,
+  profile: { websiteUrl?: string; companyName?: string },
+) {
+  after(async () => {
+    try {
+      const websiteUrl = profile.websiteUrl?.trim();
+      const faviconUrl = websiteUrl ? await resolveWebsiteFavicon(websiteUrl) : null;
+      await updateWorkspaceIdentity(workspaceId, {
+        name: profile.companyName,
+        faviconUrl: faviconUrl || undefined,
+      });
+    } catch (error) {
+      console.error("Failed to refresh workspace favicon", error);
+    }
+  });
+}
+
+function revalidateWorkspacePages() {
+  revalidatePath("/workspace");
+  revalidatePath("/my-product");
+  revalidatePath("/overview");
+  revalidatePath("/agents");
+  revalidatePath("/", "layout");
+}
+
+async function switchWorkspaceActionImpl(workspaceId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const workspace = await findOwnedWorkspace(userId, workspaceId.trim());
+  if (!workspace) throw new Error("Workspace not found.");
+  await setActiveWorkspaceCookie(workspace.id);
+  revalidateWorkspacePages();
+}
+
+export async function switchWorkspaceAction(...args: Parameters<typeof switchWorkspaceActionImpl>) {
+  return withActionErrors(() => switchWorkspaceActionImpl(...args));
+}
+
+async function createWorkspaceActionImpl(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const primary = await ensureWorkspace(userId);
+  requireActiveSubscription(primary);
+
+  const websiteUrl = String(formData.get("websiteUrl") || "").trim();
+  if (!websiteUrl) throw new Error("Enter the landing page URL for this workspace.");
+
+  const typedName = String(formData.get("name") || "").trim();
+  const name = typedName || hostnameFromWebsite(websiteUrl) || "Workspace";
+  const faviconUrl = await resolveWebsiteFavicon(websiteUrl);
+  const workspace = await createOwnedWorkspace(userId, {
+    name,
+    faviconUrl: faviconUrl || undefined,
+  });
+  await upsertProductProfile(
+    workspace.id,
+    emptyProductProfileFields(websiteUrl, typedName || name),
+    null,
+  );
+  await setActiveWorkspaceCookie(workspace.id);
+  revalidateWorkspacePages();
+  redirect("/workspace");
+}
+
+export async function createWorkspaceAction(...args: Parameters<typeof createWorkspaceActionImpl>) {
+  return withActionErrors(() => createWorkspaceActionImpl(...args));
+}
+
+async function deleteWorkspaceActionImpl(workspaceId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const id = workspaceId.trim();
+  if (!id) throw new Error("Workspace not found.");
+  const current = await resolveActiveWorkspace(userId);
+  await deleteOwnedWorkspace(userId, id);
+  if (current.id === id) {
+    const remaining = await listWorkspacesForOwner(userId);
+    const next = remaining.find((workspace) => workspace.id !== id) || remaining[0];
+    await setActiveWorkspaceCookie(next?.id || userId);
+  }
+  revalidateWorkspacePages();
+  redirect("/workspace");
+}
+
+export async function deleteWorkspaceAction(...args: Parameters<typeof deleteWorkspaceActionImpl>) {
+  return withActionErrors(() => deleteWorkspaceActionImpl(...args));
+}
+
+// Form action on /appsumo/redeem. Every outcome is a redirect back to a page
+// that explains it, so there is no ActionFailure to return.
+export async function activateAppSumoLicenseAction() {
+  const { userId } = await auth();
+  if (!userId) redirect(`/login?next=${encodeURIComponent(APPSUMO_REDEEM_PATH)}`);
+
+  const cookieStore = await cookies();
+  const user = await currentUser();
+  let result: Awaited<ReturnType<typeof attachAppSumoLicense>>;
+  try {
+    result = await attachAppSumoLicense({
+      cookieValue: cookieStore.get(APPSUMO_CLAIM_COOKIE)?.value,
+      userId,
+      email: user?.primaryEmailAddress?.emailAddress,
+    });
+  } catch (error) {
+    // The claim is still valid, so the buyer can press the button again.
+    console.error("[appsumo redeem] attaching the license failed:", error);
+    redirect(`${APPSUMO_REDEEM_PATH}?error=failed`);
+  }
+
+  if (!result.ok) {
+    // Keep the claim only where another login could still use it.
+    if (result.reason !== "has_license") cookieStore.delete(APPSUMO_CLAIM_COOKIE);
+    redirect(`${APPSUMO_REDEEM_PATH}?error=${result.reason}`);
+  }
+
+  cookieStore.delete(APPSUMO_CLAIM_COOKIE);
+  revalidatePath("/", "layout");
+  // Onboarding sends an account that already finished setup on to Overview.
+  redirect("/onboarding");
+}
+
+function splitList(value: FormDataEntryValue | null) {
+  return String(value || "")
+    .split(/[\n,]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function listFromForm(
+  formData: FormData,
+  name: string,
+  currentValue: string[] | undefined,
+) {
+  if (!formData.has(name)) return currentValue || [];
+  return formData.getAll(name).flatMap((value) => splitList(value));
+}
+
+function stringFromForm(
+  formData: FormData,
+  name: string,
+  currentValue: string | undefined,
+) {
+  return formData.has(name) ? String(formData.get(name) || "").trim() : currentValue || "";
+}
+
+// Parses a non-negative money amount from the form, ignoring currency symbols
+// and separators. Falls back to the current value when the field is absent or
+// empty so an unrelated save never clears a previously set amount.
+function numberFromForm(
+  formData: FormData,
+  name: string,
+  currentValue: number | undefined,
+) {
+  if (!formData.has(name)) return currentValue;
+  const raw = String(formData.get(name) || "").replace(/[^0-9.]/g, "");
+  if (!raw) return currentValue;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.round(parsed) : currentValue;
+}
+
+function revalidateWorkspaceDataPages() {
+  revalidatePath("/overview");
+  revalidatePath("/agents");
+  revalidatePath("/campaigns");
+}
+
+async function assertCampaignCanRun(
+  workspaceId: string,
+  groupId: string,
+  steps: CampaignStep[],
+  options: { requireLeads?: boolean; linkedInAccountId?: string } = {},
+) {
+  const requireLeads = options.requireLeads ?? true;
+  const [account, leads, profile] = await Promise.all([
+    getLinkedInAccountForWorkspace(workspaceId, options.linkedInAccountId, {
+      fallbackToDefault: true,
+    }),
+    groupId ? listLeads(workspaceId, groupId) : Promise.resolve([]),
+    getProductProfile(workspaceId),
+  ]);
+
+  if (!account) throw new Error("Connect LinkedIn before starting a campaign.");
+  if (!groupId) throw new Error("Choose a lead group before starting a campaign.");
+  if (requireLeads && !leads.length) throw new Error("Add leads before starting a campaign.");
+
+  const usesAiMessages = steps.some((step) => step.type === "message" && !step.messageTemplate.trim());
+  if (usesAiMessages && !(profile?.description || profile?.painPointsText)) {
+    throw new Error("Add your product profile before starting AI-message campaigns.");
+  }
+}
+
+// Sender rotation picked on the setup form: the main account plus any extra
+// accounts ticked under it. Every one must be connected in this workspace.
+// Fewer than two means no rotation, stored as an empty list.
+async function senderAccountIdsFromForm(
+  workspaceId: string,
+  formData: FormData,
+  primaryId: string | undefined,
+) {
+  const ids = [
+    ...new Set(
+      [primaryId || "", ...formData.getAll("senderAccountIds").map((value) => String(value))]
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
+  ];
+  if (ids.length < 2) return [];
+  for (const id of ids) {
+    if (!(await getLinkedInAccountForWorkspace(workspaceId, id))) {
+      throw new Error("One of the LinkedIn accounts picked to send from is not connected.");
+    }
+  }
+  return ids;
+}
+
+async function requireSelectedLinkedInAccount(workspaceId: string, formData: FormData) {
+  const linkedInAccountId = String(formData.get("linkedInAccountId") || "").trim();
+  const account = await getLinkedInAccountForWorkspace(workspaceId, linkedInAccountId);
+  if (!account) throw new Error("Choose a connected LinkedIn account.");
+  return account;
+}
+
+function firstHeaderValue(value: string | null) {
+  return value?.split(",")[0]?.trim() || "";
+}
+
+function decodeHeaderValue(value: string) {
+  if (!value) return "";
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+// Proxies often hand over IPv4 addresses in IPv6-mapped ("::ffff:1.2.3.4")
+// or "ip:port" form; normalize so public/private detection and the geo
+// lookup see a plain address.
+function normalizeIpAddress(value: string | null | undefined) {
+  let ip = (value || "").trim();
+  if (!ip) return "";
+  ip = ip.replace(/^::ffff:/i, "");
+  const ipv4WithPort = ip.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+  if (ipv4WithPort) ip = ipv4WithPort[1];
+  return ip;
+}
+
+function isPublicIpAddress(value: string) {
+  const ip = value.trim();
+  if (!ip || ip === "Unknown") return false;
+
+  const ipv4Parts = ip.split(".").map((part) => Number(part));
+  if (ipv4Parts.length === 4 && ipv4Parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
+    const [first, second] = ipv4Parts;
+    return !(
+      first === 10 ||
+      first === 127 ||
+      first === 0 ||
+      (first === 172 && second >= 16 && second <= 31) ||
+      (first === 192 && second === 168) ||
+      (first === 169 && second === 254)
+    );
+  }
+
+  return ip.includes(":") && !ip.startsWith("::1") && !ip.toLowerCase().startsWith("fe80:");
+}
+
+async function fetchJsonWithTimeout<T>(url: string, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+    if (!response.ok) return null;
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function lookupIpLocation(ipAddress: string) {
+  if (!isPublicIpAddress(ipAddress)) return "";
+
+  const ipwho = await fetchJsonWithTimeout<{
+    success?: boolean;
+    country?: string;
+    region?: string;
+    city?: string;
+  }>(`https://ipwho.is/${encodeURIComponent(ipAddress)}?fields=success,country,region,city`, 2500);
+
+  if (ipwho && ipwho.success !== false) {
+    const location = [ipwho.city, ipwho.region, ipwho.country].filter(Boolean).join(", ");
+    if (location) return location;
+  }
+
+  const geojs = await fetchJsonWithTimeout<{
+    city?: string;
+    region?: string;
+    country?: string;
+  }>(`https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ipAddress)}.json`, 2500);
+
+  if (geojs) {
+    return [geojs.city, geojs.region, geojs.country].filter(Boolean).join(", ");
+  }
+
+  return "";
+}
+
+function requestHeaderLocation(headersList: Headers) {
+  const city = decodeHeaderValue(headersList.get("x-vercel-ip-city") || "");
+  const region = decodeHeaderValue(headersList.get("x-vercel-ip-country-region") || "");
+  const country = decodeHeaderValue(headersList.get("x-vercel-ip-country") || "");
+  return [city, region, country].filter(Boolean).join(", ");
+}
+
+async function requestLocation(headersList: Headers, ipAddress: string) {
+  const resolvedLocation = await lookupIpLocation(ipAddress);
+  if (resolvedLocation) return resolvedLocation;
+
+  const headerLocation = requestHeaderLocation(headersList);
+  return headerLocation ? `${headerLocation} (edge header fallback)` : "Unknown";
+}
+
+function requestIpAddress(headersList: Headers) {
+  // Gather every candidate, then prefer the first *public* address. This
+  // skips private/loopback hops that proxies prepend to X-Forwarded-For and
+  // ignores spoofed client-supplied entries that geolocate nowhere.
+  const candidates = [
+    headersList.get("cf-connecting-ip"),
+    headersList.get("true-client-ip"),
+    headersList.get("x-real-ip"),
+    firstHeaderValue(headersList.get("x-vercel-forwarded-for")),
+    ...(headersList.get("x-forwarded-for")?.split(",") ?? []),
+    headersList.get("x-client-ip"),
+  ]
+    .map(normalizeIpAddress)
+    .filter(Boolean);
+
+  return candidates.find(isPublicIpAddress) || candidates[0] || "Unknown";
+}
+
+function parseDeviceType(userAgent: string) {
+  if (/bot|crawler|spider|crawling/i.test(userAgent)) return "Bot";
+  if (/ipad|tablet|kindle|silk/i.test(userAgent)) return "Tablet";
+  if (/mobile|iphone|ipod|android/i.test(userAgent)) return "Mobile";
+  return userAgent ? "Desktop" : "Unknown";
+}
+
+function parseOs(userAgent: string) {
+  if (/windows nt/i.test(userAgent)) return "Windows";
+  if (/android/i.test(userAgent)) return "Android";
+  if (/iphone|ipad|ipod/i.test(userAgent)) return "iOS";
+  if (/mac os x|macintosh/i.test(userAgent)) return "macOS";
+  if (/cros/i.test(userAgent)) return "ChromeOS";
+  if (/linux/i.test(userAgent)) return "Linux";
+  return "Unknown";
+}
+
+function parseBrowser(userAgent: string) {
+  if (/edg\//i.test(userAgent)) return "Microsoft Edge";
+  if (/opr\//i.test(userAgent)) return "Opera";
+  if (/firefox\//i.test(userAgent)) return "Firefox";
+  if (/chrome\//i.test(userAgent) || /crios\//i.test(userAgent)) return "Chrome";
+  if (/safari\//i.test(userAgent)) return "Safari";
+  return "Unknown";
+}
+
+function formatUtcTime(date = new Date()) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "UTC",
+    dateStyle: "medium",
+    timeStyle: "long",
+  }).format(date);
+}
+
+async function analyzeWebsiteActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const websiteUrl = String(formData.get("websiteUrl") || "").trim();
+
+  if (!websiteUrl) throw new Error("Website URL is required.");
+
+  let analyzed = false;
+  try {
+    const analysis = await analyzeWebsiteOrSearch(websiteUrl);
+    const existing = await getProductProfile(workspace.id);
+    await upsertProductProfile(workspace.id, {
+      websiteUrl,
+      description: analysis.productOverview,
+      companyName: analysis.companyName,
+      industry: analysis.industry,
+      companySize: analysis.companySize,
+      painPointsText: analysis.painPointsText,
+      pricingDetails: analysis.pricingDetails,
+      schedulingLink: existing?.schedulingLink || "",
+      keyFeatures: analysis.keyFeatures,
+      socialProof: analysis.socialProof,
+      linkedInCompanyPage: existing?.linkedInCompanyPage || "",
+      useCases: analysis.useCases,
+      targetBuyers: analysis.targetBuyers,
+      buyerTitles: analysis.buyerTitles,
+      roleVocabulary: analysis.roleVocabulary,
+      industries: analysis.industries,
+      companySizes: analysis.companySizes,
+      painPoints: analysis.painPoints,
+      keywords: analysis.keywords,
+      preferredLocations: analysis.preferredLocations,
+      averageTicketSize: existing?.averageTicketSize,
+    });
+    refreshWorkspaceIdentity(workspace.id, {
+      websiteUrl,
+      companyName: analysis.companyName,
+    });
+    analyzed = true;
+  } catch (error) {
+    // Keep the previous profile when re-analysis fails, but tell the caller.
+    console.error(
+      "[analyzeWebsiteAction] analysis failed:",
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  revalidatePath("/workspace");
+  revalidatePath("/my-product");
+  revalidatePath("/overview");
+  return { analyzed };
+}
+
+export async function analyzeWebsiteAction(...args: Parameters<typeof analyzeWebsiteActionImpl>) {
+  return withActionErrors(() => analyzeWebsiteActionImpl(...args));
+}
+
+async function completeOnboardingQuestionsActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const websiteUrl = String(formData.get("websiteUrl") || "").trim();
+  const onboarding = {
+    source: String(formData.get("source") || "").trim(),
+    role: String(formData.get("role") || "").trim(),
+    companySize: String(formData.get("companySize") || "").trim(),
+    goal: String(formData.get("goal") || "").trim(),
+  };
+  if (!onboarding.source || !onboarding.role || !onboarding.companySize || !onboarding.goal) {
+    throw new Error("Please fill in every question.");
+  }
+
+  const surveySubmissionId =
+    String(formData.get("surveySubmissionId") || "").trim() || workspace.ownerId;
+
+  await updateWorkspaceOnboarding(workspace.id, onboarding);
+
+  if (!isLocalMode()) {
+    // Capture must finish before redirect. Email and geo lookup used to run
+    // in this request and the form never reached PostHog Surveys.
+    const headersList = await headers();
+    const userAgent = headersList.get("user-agent") || "";
+    const ipAddress = requestIpAddress(headersList);
+    const profile = await getProductProfile(workspace.id);
+    const resolvedWebsite = websiteUrl || profile?.websiteUrl || "";
+    const surveyProperties = onboardingSurveySentProperties(onboarding, surveySubmissionId, {
+      websiteUrl: resolvedWebsite,
+    });
+    await capturePostHogEvent({
+      event: ONBOARDING_SURVEY_SENT_EVENT,
+      distinctId: workspace.ownerId,
+      insertId: `onboarding_survey:${surveySubmissionId}`,
+      properties: {
+        ...surveyProperties,
+        ...(ipAddress !== "Unknown" ? { $ip: ipAddress } : {}),
+        ...(userAgent ? { $raw_user_agent: userAgent } : {}),
+      },
+    });
+
+    after(async () => {
+      try {
+        const user = await currentUser();
+        const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
+        const email =
+          user?.primaryEmailAddress?.emailAddress || user?.emailAddresses[0]?.emailAddress || "";
+        const location = await requestLocation(headersList, ipAddress);
+        const mail = await sendNewSignupNotification({
+          userId: workspace.ownerId,
+          name: name || "Unknown",
+          email: email || workspace.notificationEmail || "Unknown",
+          websiteUrl: resolvedWebsite,
+          location,
+          ipAddress,
+          deviceType: parseDeviceType(userAgent),
+          os: parseOs(userAgent),
+          browser: parseBrowser(userAgent),
+          answers: onboarding,
+          signedUpAtUtc: formatUtcTime(),
+        });
+        if ("skipped" in mail && mail.skipped) {
+          console.error("Skipped new signup notification", mail.reason);
+        }
+      } catch (error) {
+        console.error("Failed to send new signup notification", error);
+      }
+    });
+  }
+
+  revalidatePath("/onboarding");
+
+  if (websiteUrl) {
+    await analyzeWebsiteActionImpl(formData);
+    redirect("/onboarding");
+  }
+
+  redirect("/onboarding");
+}
+
+export async function completeOnboardingQuestionsAction(...args: Parameters<typeof completeOnboardingQuestionsActionImpl>) {
+  return withActionErrors(() => completeOnboardingQuestionsActionImpl(...args));
+}
+
+async function completeSelfHostedOnboardingActionImpl() {
+  if (!isLocalMode()) throw new Error("Self-hosted onboarding is unavailable in hosted mode.");
+  const workspace = await requireWorkspace();
+  await updateWorkspaceOnboarding(workspace.id, {
+    source: "Self-hosted",
+    role: "",
+    companySize: "",
+    goal: "",
+  });
+  revalidatePath("/onboarding");
+  return { ok: true };
+}
+
+export async function completeSelfHostedOnboardingAction(...args: Parameters<typeof completeSelfHostedOnboardingActionImpl>) {
+  return withActionErrors(() => completeSelfHostedOnboardingActionImpl(...args));
+}
+
+export type SaveProductProfileResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+async function saveProductProfileActionImpl(
+  formData: FormData,
+): Promise<SaveProductProfileResult> {
+  const workspace = await requireWorkspace();
+  const currentProfile = await getProductProfile(workspace.id);
+  const rawSchedulingLink = stringFromForm(
+    formData,
+    "schedulingLink",
+    currentProfile?.schedulingLink,
+  );
+  const schedulingLink = normalizeSchedulingLink(rawSchedulingLink);
+  if (schedulingLink === null) {
+    // Return, do not throw. A thrown server action is the Oops page, which is
+    // what blocked new users on the booking-link setup step.
+    return { ok: false, error: INVALID_SCHEDULING_LINK_MESSAGE };
+  }
+
+  await upsertProductProfile(workspace.id, {
+    websiteUrl: stringFromForm(formData, "websiteUrl", currentProfile?.websiteUrl),
+    description: stringFromForm(formData, "description", currentProfile?.description),
+    companyName: stringFromForm(formData, "companyName", currentProfile?.companyName),
+    industry: stringFromForm(formData, "industry", currentProfile?.industry),
+    companySize: stringFromForm(formData, "companySize", currentProfile?.companySize),
+    painPointsText: stringFromForm(
+      formData,
+      "painPointsText",
+      currentProfile?.painPointsText,
+    ),
+    pricingDetails: stringFromForm(
+      formData,
+      "pricingDetails",
+      currentProfile?.pricingDetails,
+    ),
+    schedulingLink,
+    keyFeatures: listFromForm(formData, "keyFeatures", currentProfile?.keyFeatures),
+    socialProof: listFromForm(formData, "socialProof", currentProfile?.socialProof),
+    linkedInCompanyPage: stringFromForm(
+      formData,
+      "linkedInCompanyPage",
+      currentProfile?.linkedInCompanyPage,
+    ),
+    useCases: listFromForm(formData, "useCases", currentProfile?.useCases),
+    targetBuyers: listFromForm(formData, "targetBuyers", currentProfile?.targetBuyers),
+    buyerTitles: listFromForm(formData, "buyerTitles", currentProfile?.buyerTitles),
+    roleVocabulary: listFromForm(formData, "roleVocabulary", currentProfile?.roleVocabulary),
+    industries: listFromForm(formData, "industries", currentProfile?.industries),
+    companySizes: listFromForm(formData, "companySizes", currentProfile?.companySizes),
+    painPoints: listFromForm(formData, "painPoints", currentProfile?.painPoints),
+    keywords: listFromForm(formData, "keywords", currentProfile?.keywords),
+    preferredLocations: listFromForm(
+      formData,
+      "preferredLocations",
+      currentProfile?.preferredLocations,
+    ),
+    averageTicketSize: numberFromForm(
+      formData,
+      "averageTicketSize",
+      currentProfile?.averageTicketSize,
+    ),
+  }, currentProfile);
+
+  refreshWorkspaceIdentity(workspace.id, {
+    websiteUrl: stringFromForm(formData, "websiteUrl", currentProfile?.websiteUrl),
+    companyName: stringFromForm(formData, "companyName", currentProfile?.companyName),
+  });
+
+  // Copy the new workspace booking URL onto until-booked campaigns that have no link
+  // yet, or that still have the previous workspace URL. Per-agent overrides stay.
+  if (schedulingLink) {
+    try {
+      const campaigns = await listCampaigns(workspace.id);
+      await Promise.all(
+        campaigns
+          .filter((campaign) =>
+            shouldSyncCampaignBookingLink({
+              replyHandling: campaign.replyHandling,
+              campaignBookingLink: campaign.bookingLink,
+              previousWorkspaceLink: currentProfile?.schedulingLink,
+              nextWorkspaceLink: schedulingLink,
+            }),
+          )
+          .map((campaign) =>
+            updateCampaign(workspace.id, campaign.id, { bookingLink: schedulingLink }),
+          ),
+      );
+    } catch (error) {
+      console.error("Failed to copy booking link onto until-booked campaigns", error);
+    }
+  }
+
+  revalidatePath("/workspace");
+  revalidatePath("/my-product");
+  revalidatePath("/overview");
+  revalidatePath("/agents");
+  return { ok: true };
+}
+
+export async function saveProductProfileAction(...args: Parameters<typeof saveProductProfileActionImpl>) {
+  return withActionErrors(() => saveProductProfileActionImpl(...args));
+}
+
+// Used by the Overview "Set deal size" modal to set the average ticket size in
+// isolation without touching the rest of the product profile.
+async function setAverageTicketSizeActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const value = numberFromForm(formData, "averageTicketSize", undefined);
+  if (value === undefined) return;
+  await setAverageTicketSize(workspace.id, value);
+  revalidatePath("/overview");
+  revalidatePath("/workspace");
+  revalidatePath("/my-product");
+}
+
+export async function setAverageTicketSizeAction(...args: Parameters<typeof setAverageTicketSizeActionImpl>) {
+  return withActionErrors(() => setAverageTicketSizeActionImpl(...args));
+}
+
+async function continueWithProductProfileActionImpl(formData: FormData) {
+  const result = await saveProductProfileActionImpl(formData);
+  if (!result.ok) return;
+  redirect("/onboarding");
+}
+
+export async function continueWithProductProfileAction(...args: Parameters<typeof continueWithProductProfileActionImpl>) {
+  return withActionErrors(() => continueWithProductProfileActionImpl(...args));
+}
+
+async function saveSettingsActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const schema = z.object({
+    dailyInviteLimit: z.coerce.number().int().min(1).max(100),
+    dailyMessageLimit: z.coerce.number().int().min(1).max(200),
+    firstMessageDelayMinutes: z.coerce.number().int().min(5).max(10080),
+    aiFollowUpDelayMinutes: z.coerce.number().int().min(0).max(10080),
+    aiFollowUpEnabled: z.boolean(),
+    dailyDigestEmailEnabled: z.boolean(),
+    dailyDigestHour: z.coerce.number().int().min(0).max(23),
+    inviteWithdrawAfterDays: z.unknown().transform(normalizeInviteWithdrawAfterDays),
+  });
+
+  const parsed = schema.parse({
+    dailyInviteLimit: formData.get("dailyInviteLimit"),
+    dailyMessageLimit: formData.get("dailyMessageLimit"),
+    firstMessageDelayMinutes: formData.get("firstMessageDelayMinutes"),
+    aiFollowUpDelayMinutes: formData.get("aiFollowUpDelayMinutes"),
+    aiFollowUpEnabled: formData.get("aiFollowUpEnabled") === "on",
+    dailyDigestEmailEnabled:
+      formData.get("dailyDigestEmailEnabled") === "on" && hasActiveSubscription(workspace),
+    dailyDigestHour: formData.get("dailyDigestHour"),
+    inviteWithdrawAfterDays: formData.get("inviteWithdrawAfterDays"),
+  });
+
+  const timezone = String(formData.get("timezone") || "").trim();
+
+  await Promise.all([
+    updateWorkspaceSettings(workspace.id, parsed),
+    // Blank means the form was submitted without the picker (or with an
+    // unchanged value) - leave whatever is stored alone.
+    timezone && timezone !== workspace.timezone
+      ? updateWorkspaceTimezone(workspace.id, timezone)
+      : Promise.resolve(),
+  ]);
+  revalidatePath("/settings");
+  // Times on every other page are rendered in this zone too.
+  revalidatePath("/actions");
+  revalidatePath("/leads");
+}
+
+export async function saveSettingsAction(...args: Parameters<typeof saveSettingsActionImpl>) {
+  return withActionErrors(() => saveSettingsActionImpl(...args));
+}
+
+// Saved on its own, the moment the switch is flipped: turning outreach off
+// must not wait for someone to press Save.
+async function setOutreachPausedActionImpl(paused: boolean) {
+  const workspace = await requireWorkspace();
+  await updateWorkspaceSettings(workspace.id, { outreachPaused: paused === true });
+  revalidatePath("/settings");
+  revalidatePath("/agents");
+  revalidatePath("/actions");
+  return { outreachPaused: paused === true };
+}
+
+export async function setOutreachPausedAction(...args: Parameters<typeof setOutreachPausedActionImpl>) {
+  return withActionErrors(() => setOutreachPausedActionImpl(...args));
+}
+
+const PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+const LOCAL_PROFILE_IMAGE_MAX_CHARS = 900_000;
+
+async function uploadProfileImageActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const file = formData.get("image");
+  const blob =
+    file instanceof Blob
+      ? file
+      : file && typeof file === "object" && "arrayBuffer" in file && "size" in file
+        ? (file as Blob)
+        : null;
+  if (!blob || blob.size === 0) {
+    throw new Error("Choose an image to upload.");
+  }
+  if (blob.size > PROFILE_IMAGE_MAX_BYTES) {
+    throw new Error("Image must be under 2 MB.");
+  }
+  if (blob.type && !blob.type.startsWith("image/")) {
+    throw new Error("Use a PNG, JPEG, GIF, or WebP image.");
+  }
+
+  if (isLocalMode()) {
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const mime = blob.type || "image/jpeg";
+    const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
+    if (dataUrl.length > LOCAL_PROFILE_IMAGE_MAX_CHARS) {
+      throw new Error("Image is too large. Try a smaller photo.");
+    }
+    await updateWorkspaceOwnerImage(workspace.id, dataUrl);
+  } else {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+    const { clerkClient } = await import("@clerk/nextjs/server");
+    const clerk = await clerkClient();
+    await clerk.users.updateUserProfileImage(userId, { file: blob });
+  }
+  revalidatePath("/settings");
+}
+
+export async function uploadProfileImageAction(...args: Parameters<typeof uploadProfileImageActionImpl>) {
+  return withActionErrors(() => uploadProfileImageActionImpl(...args));
+}
+
+// Called once by the app shell for workspaces that have never had a zone
+// stored, so the schedule the server computes matches the clock the user reads.
+// An explicit choice in Settings always wins: this only fills a blank.
+async function saveWorkspaceTimeZoneActionImpl(timezone: string) {
+  const workspace = await requireWorkspace();
+  if (workspace.timezone) return;
+  await updateWorkspaceTimezone(workspace.id, String(timezone || "").trim());
+  revalidatePath("/actions");
+  revalidatePath("/leads");
+}
+
+export async function saveWorkspaceTimeZoneAction(...args: Parameters<typeof saveWorkspaceTimeZoneActionImpl>) {
+  return withActionErrors(() => saveWorkspaceTimeZoneActionImpl(...args));
+}
+
+async function runScheduledActionNowActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const enrollmentId = String(formData.get("enrollmentId") || "").trim();
+  if (!enrollmentId) throw new Error("Scheduled action id is required.");
+
+  const result = await executeScheduledActionNow(workspace.id, enrollmentId);
+  invalidateWorkspaceLists(workspace.id);
+  revalidatePath("/actions");
+  revalidatePath("/agents");
+  revalidatePath("/leads");
+  return { result };
+}
+
+export async function runScheduledActionNowAction(...args: Parameters<typeof runScheduledActionNowActionImpl>) {
+  return withActionErrors(() => runScheduledActionNowActionImpl(...args));
+}
+
+async function saveScheduledMessageActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const enrollmentId = String(formData.get("enrollmentId") || "").trim();
+  const stepId = String(formData.get("stepId") || "").trim();
+  // Empty body resets the step to the agent's template or AI.
+  const body = String(formData.get("body") || "").trim();
+  if (!enrollmentId || !stepId) throw new Error("Scheduled message id is required.");
+  if (body.length > 1900) throw new Error("Message is too long.");
+  await saveScheduledMessageEdit(workspace.id, enrollmentId, stepId, body);
+  revalidatePath("/actions");
+  revalidatePath("/agents");
+  revalidatePath("/leads");
+}
+
+export async function saveScheduledMessageAction(...args: Parameters<typeof saveScheduledMessageActionImpl>) {
+  return withActionErrors(() => saveScheduledMessageActionImpl(...args));
+}
+
+async function getLeadOutreachActionImpl(leadId: string) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  return getLeadOutreach(workspace.id, String(leadId || "").trim());
+}
+
+// The messages sent to a lead and their replies, oldest first, for the /leads
+// panel's conversation view.
+async function getLeadConversationActionImpl(leadId: string) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const conversation = await getConversation(workspace.id, String(leadId || "").trim());
+  return [...(conversation?.messages || [])]
+    .filter((message) => message.body.trim())
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map(({ id, direction, senderName, body, createdAt }) => ({ id, direction, senderName, body, createdAt }));
+}
+
+export async function getLeadConversationAction(...args: Parameters<typeof getLeadConversationActionImpl>) {
+  return withActionErrors(() => getLeadConversationActionImpl(...args));
+}
+
+export async function getLeadOutreachAction(...args: Parameters<typeof getLeadOutreachActionImpl>) {
+  return withActionErrors(() => getLeadOutreachActionImpl(...args));
+}
+
+// The Leads list carries no summary or score reasons (they were ~40% of its
+// payload), so the CSV reads the group's full leads here. The browser passes
+// its display zone so "Added" dates match what the page shows.
+async function exportLeadGroupCsvActionImpl(groupId: string, timeZone: string) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const id = String(groupId || "").trim();
+  if (!id) throw new Error("Lead group is required.");
+  const leads = await listLeads(workspace.id, id);
+  return { count: leads.length, csv: buildLeadsCsv(leads, resolveTimeZone(timeZone)) };
+}
+
+export async function exportLeadGroupCsvAction(...args: Parameters<typeof exportLeadGroupCsvActionImpl>) {
+  return withActionErrors(() => exportLeadGroupCsvActionImpl(...args));
+}
+
+// Overview's Replies card shows the lead behind each unread inbox thread. The
+// page no longer has every lead, so the match runs here against the cached
+// workspace list. Answers line up with `threads` by index (null = no lead).
+async function matchReplyLeadsActionImpl(
+  threads: Array<{ profileUrl?: string; profileName?: string }>,
+): Promise<Array<ReplyLead | null>> {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  if (!Array.isArray(threads) || !threads.length) return [];
+  const leads = await cachedLeadPreviews(workspace.id);
+  return threads.slice(0, 200).map((thread) =>
+    findReplyLead(leads, {
+      profileUrl: typeof thread?.profileUrl === "string" ? thread.profileUrl : undefined,
+      profileName: typeof thread?.profileName === "string" ? thread.profileName : undefined,
+    }),
+  );
+}
+
+export async function matchReplyLeadsAction(...args: Parameters<typeof matchReplyLeadsActionImpl>) {
+  return withActionErrors(() => matchReplyLeadsActionImpl(...args));
+}
+
+async function stopLeadOutreachActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const leadId = String(formData.get("leadId") || "").trim();
+  if (!leadId) throw new Error("Lead id is required.");
+
+  await stopLeadOutreach(workspace.id, leadId);
+  invalidateWorkspaceLists(workspace.id);
+  revalidatePath("/actions");
+  revalidatePath("/agents");
+  revalidatePath("/leads");
+  revalidatePath("/overview");
+}
+
+export async function stopLeadOutreachAction(...args: Parameters<typeof stopLeadOutreachActionImpl>) {
+  return withActionErrors(() => stopLeadOutreachActionImpl(...args));
+}
+
+async function createAgentApiKeyActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  // createAgentApiKey also enforces planHasApiAccess; this keeps the action
+  // surface honest if that gate ever moves.
+  const label = String(formData.get("label") || "AI agent").trim();
+  const { token } = await createAgentApiKey(workspace.id, label);
+  revalidatePath("/api-keys");
+  return token;
+}
+
+export async function createAgentApiKeyAction(...args: Parameters<typeof createAgentApiKeyActionImpl>) {
+  return withActionErrors(() => createAgentApiKeyActionImpl(...args));
+}
+
+async function revokeAgentApiKeyActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const keyId = String(formData.get("keyId") || "").trim();
+  if (!keyId) throw new Error("Agent token id is required.");
+  await revokeAgentApiKey(workspace.id, keyId);
+  revalidatePath("/api-keys");
+}
+
+export async function revokeAgentApiKeyAction(...args: Parameters<typeof revokeAgentApiKeyActionImpl>) {
+  return withActionErrors(() => revokeAgentApiKeyActionImpl(...args));
+}
+
+async function disconnectLinkedInAccountActionImpl(formData?: FormData) {
+  const workspace = await requireWorkspace();
+  const linkedInAccountId = String(formData?.get("linkedInAccountId") || "").trim();
+  const account = await getLinkedInAccountForWorkspace(
+    workspace.id,
+    linkedInAccountId || undefined,
+  );
+  if (!account) return;
+
+  // Delete the stored session first so a local "disconnected" record never
+  // hides a still-live LinkedIn connection.
+  await forgetLinkedInSession(account);
+  await disconnectLinkedInAccount(workspace.id, account.id);
+  revalidatePath("/settings");
+  revalidatePath("/connect");
+  revalidatePath("/overview");
+}
+
+export async function disconnectLinkedInAccountAction(...args: Parameters<typeof disconnectLinkedInAccountActionImpl>) {
+  return withActionErrors(() => disconnectLinkedInAccountActionImpl(...args));
+}
+
+function parseAgentMode(rawMode: string): "prompt" | "filters" | "signals" | "outreach" | "steal_customers" {
+  if (
+    rawMode === "prompt" ||
+    rawMode === "filters" ||
+    rawMode === "outreach" ||
+    rawMode === "steal_customers" ||
+    rawMode === "signals"
+  ) {
+    return rawMode;
+  }
+  // Default discovery agents (Only Lead / Leads + outreach) use people-engine
+  // title search without the steal-customers competitor flow.
+  return "signals";
+}
+
+// Classic lead-finder forms never submit competitor/founder URLs. Steal always
+// does. Infer mode from that so a missing/stale mode field cannot run Steal
+// Customers through the classic ICP assert (job titles / industries / locations).
+function resolveAgentModeFromForm(formData: FormData) {
+  const competitorUrls = listFromForm(formData, "competitorUrls", []);
+  const founderUrls = listFromForm(formData, "founderUrls", []);
+  const parsed = parseAgentMode(String(formData.get("mode") || ""));
+  if (parsed === "outreach") return { mode: parsed, competitorUrls, founderUrls };
+  if (competitorUrls.length || founderUrls.length || parsed === "steal_customers") {
+    return { mode: "steal_customers" as const, competitorUrls, founderUrls };
+  }
+  return { mode: parsed, competitorUrls, founderUrls };
+}
+
+async function createAgentFromForm(
+  workspace: Awaited<ReturnType<typeof requireWorkspace>>,
+  formData: FormData,
+) {
+  const groupName = String(formData.get("groupName") || "").trim();
+  const { mode, competitorUrls, founderUrls } = resolveAgentModeFromForm(formData);
+
+  if (!groupName) throw new Error("Group name is required.");
+  if (mode === "steal_customers" && !competitorUrls.length && !founderUrls.length) {
+    throw new Error("Add at least one competitor LinkedIn URL for Steal Customers.");
+  }
+  const account = await requireSelectedLinkedInAccount(workspace.id, formData);
+
+  // Steal customers has no ICP step: My Product defines who is likely to buy.
+  if (mode === "steal_customers") {
+    const productProfile = await getProductProfile(workspace.id);
+    if (!productProfileIsReadyForSteal(productProfile)) {
+      throw new Error(
+        "Set up Workspace (company name, description, or pain points) before creating a Steal Customers agent.",
+      );
+    }
+    const targeting = targetingFromProductProfile(productProfile);
+    return createAgent(workspace.id, {
+      name: String(formData.get("name") || groupName).trim(),
+      mode: "steal_customers",
+      prompt: targeting.prompt,
+      filters: targeting.filters,
+      signalSources: {
+        competitorUrls,
+        founderUrls,
+        keywords: [],
+      },
+      linkedInAccountId: account.id,
+      targetGroupName: groupName,
+    });
+  }
+
+  return createAgent(workspace.id, {
+    name: String(formData.get("name") || groupName).trim(),
+    mode,
+    prompt: String(formData.get("prompt") || "").trim(),
+    filters: {
+      titles: listFromForm(formData, "titles", []),
+      industries: listFromForm(formData, "industries", []),
+      locations: listFromForm(formData, "locations", []),
+      keywords: listFromForm(formData, "keywords", []),
+    },
+    signalSources: {
+      competitorUrls: [],
+      founderUrls: [],
+      keywords: listFromForm(formData, "signalKeywords", []),
+    },
+    linkedInAccountId: account.id,
+    targetGroupName: groupName,
+  });
+}
+
+async function createAgentForSetupActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const agent = await createAgentFromForm(workspace, formData);
+
+  revalidateWorkspaceDataPages();
+  return { agentId: agent.id, groupId: agent.targetGroupId };
+}
+
+export async function createAgentForSetupAction(...args: Parameters<typeof createAgentForSetupActionImpl>) {
+  return withActionErrors(() => createAgentForSetupActionImpl(...args));
+}
+
+async function importLinkedInCsvLeadsActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const agentId = String(formData.get("agentId") || "").trim();
+  const groupId = String(formData.get("groupId") || "").trim();
+  const agent = agentId ? await getAgent(workspace.id, agentId) : null;
+  if (!agent || agent.targetGroupId !== groupId || agent.mode !== "outreach") {
+    throw new Error("Outreach agent not found.");
+  }
+  const { leads } = parseLinkedInLeadCsv(String(formData.get("csvContents") || ""));
+  const reason =
+    formData.get("importSource") === "search"
+      ? "Imported by the user from a LinkedIn search"
+      : "Imported by the user from CSV";
+  const existingLeads = await listLeads(workspace.id, undefined, 5000);
+  const existingByUrl = new Map(
+    existingLeads.map((lead) => [normalizeLinkedInProfileUrl(lead.linkedInUrl), lead]),
+  );
+  for (const lead of leads) {
+    const existing = existingByUrl.get(normalizeLinkedInProfileUrl(lead.linkedInUrl));
+    await upsertLead(workspace.id, groupId, {
+      ...lead,
+      // A person may already belong to another agent. Preserve that source so
+      // pausing this campaign never changes the ownership of existing outreach.
+      sourceAgentId: existing?.sourceAgentId || agent.id,
+      fitScore: 100,
+      scoreReasons: [reason],
+      summary: `${reason.replace("Imported by the user", "Imported")} for outreach.`,
+      leadReason: reason,
+      outreachStatus: "new",
+    });
+  }
+  invalidateWorkspaceLists(workspace.id);
+  revalidatePath("/leads");
+  return { imported: leads.length };
+}
+
+export async function importLinkedInCsvLeadsAction(...args: Parameters<typeof importLinkedInCsvLeadsActionImpl>) {
+  return withActionErrors(() => importLinkedInCsvLeadsActionImpl(...args));
+}
+
+// One search page holds 10 people and each page is a LinkedIn page load on
+// the user's own account, so an import stops at 10 pages.
+const SEARCH_IMPORT_LIMIT = 100;
+
+// Runs a LinkedIn people search the user copied from their browser and returns
+// the people as CSV text for the outreach import step. Nothing is saved here:
+// the people are only imported when the agent launches, like an uploaded CSV.
+async function findLinkedInSearchLeadsActionImpl(rawUrl: string) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const url = String(rawUrl || "").trim();
+  const parsed = parseLinkedInSearchUrl(url);
+  if (parsed?.kind === "search" && !parsed.pageUrl) {
+    // Sales Navigator runs on its own search API, which this client does not
+    // call yet. Running its keywords as a normal search would import people
+    // the user never filtered for.
+    throw new Error(
+      "Sales Navigator links are not supported yet. Run the same search on linkedin.com/search and paste that link.",
+    );
+  }
+  if (!parsed || parsed.kind !== "search" || parsed.resultType !== "PEOPLE") {
+    throw new Error(
+      "Paste a LinkedIn people search link. It looks like linkedin.com/search/results/people/?keywords=...",
+    );
+  }
+  const account = await getLinkedInAccount(workspace.id);
+  if (!account) throw new Error("Connect a LinkedIn account in Settings first. The search runs on it.");
+  const profiles = await searchLinkedInProfilesByUrl({
+    accountId: account.accountId,
+    url: parsed.pageUrl!,
+    limit: SEARCH_IMPORT_LIMIT,
+  });
+  const leads = profiles
+    .filter((profile) => profile.linkedInUrl && !isAnonymousLinkedInProfile(profile))
+    .map((profile) => ({
+      linkedInUrl: profile.linkedInUrl,
+      name: profile.name,
+      title: profile.title,
+      company: profile.company,
+      location: profile.location,
+    }));
+  if (!leads.length) {
+    throw new Error(
+      "That search returned nobody Omentir can contact. Check the link opens results on LinkedIn, or try a broader search.",
+    );
+  }
+  const csv = buildLinkedInLeadCsv(leads);
+  // Drops anything the CSV path would refuse, so the count shown is the count imported.
+  return { csv, count: parseLinkedInLeadCsv(csv).leads.length, limit: SEARCH_IMPORT_LIMIT };
+}
+
+export async function findLinkedInSearchLeadsAction(...args: Parameters<typeof findLinkedInSearchLeadsActionImpl>) {
+  return withActionErrors(() => findLinkedInSearchLeadsActionImpl(...args));
+}
+
+async function updateAgentFromForm(
+  workspace: Awaited<ReturnType<typeof requireWorkspace>>,
+  formData: FormData,
+) {
+  const agentId = String(formData.get("agentId") || "").trim();
+  const groupName = String(formData.get("groupName") || "").trim();
+  const { mode, competitorUrls, founderUrls } = resolveAgentModeFromForm(formData);
+
+  if (!agentId) throw new Error("Agent id is required.");
+  if (!groupName) throw new Error("Group name is required.");
+  if (mode === "steal_customers" && !competitorUrls.length && !founderUrls.length) {
+    throw new Error("Add at least one competitor LinkedIn URL for Steal Customers.");
+  }
+  const account = await requireSelectedLinkedInAccount(workspace.id, formData);
+
+  if (mode === "steal_customers") {
+    const productProfile = await getProductProfile(workspace.id);
+    if (!productProfileIsReadyForSteal(productProfile)) {
+      throw new Error(
+        "Set up Workspace (company name, description, or pain points) before saving a Steal Customers agent.",
+      );
+    }
+    const targeting = targetingFromProductProfile(productProfile);
+    return updateAgent(workspace.id, agentId, {
+      name: String(formData.get("name") || groupName).trim(),
+      mode: "steal_customers",
+      prompt: targeting.prompt,
+      filters: targeting.filters,
+      signalSources: {
+        competitorUrls,
+        founderUrls,
+        keywords: [],
+      },
+      linkedInAccountId: account.id,
+      targetGroupName: groupName,
+    });
+  }
+
+  return updateAgent(workspace.id, agentId, {
+    name: String(formData.get("name") || groupName).trim(),
+    mode,
+    prompt: String(formData.get("prompt") || "").trim(),
+    filters: {
+      titles: listFromForm(formData, "titles", []),
+      industries: listFromForm(formData, "industries", []),
+      locations: listFromForm(formData, "locations", []),
+      keywords: listFromForm(formData, "keywords", []),
+    },
+    signalSources: {
+      competitorUrls: [],
+      founderUrls: [],
+      keywords: listFromForm(formData, "signalKeywords", []),
+    },
+    linkedInAccountId: account.id,
+    targetGroupName: groupName,
+  });
+}
+
+async function updateAgentForSetupActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const agent = await updateAgentFromForm(workspace, formData);
+
+  revalidateWorkspaceDataPages();
+  revalidatePath("/leads");
+  return { agentId: agent.id, groupId: agent.targetGroupId };
+}
+
+export async function updateAgentForSetupAction(...args: Parameters<typeof updateAgentForSetupActionImpl>) {
+  return withActionErrors(() => updateAgentForSetupActionImpl(...args));
+}
+
+async function updateAgentActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const agent = await updateAgentFromForm(workspace, formData);
+  const replyHandling =
+    formData.get("manualDefaultOutreach") === "on"
+      ? "handoff"
+      : parseReplyHandling(formData.get("replyHandling"));
+  const bookingLink = await bookingLinkFromForm(formData, replyHandling, workspace.id);
+  const messageTone = parseAgentMessageTone(String(formData.get("messageTone") || ""));
+  // Editing an agent does not go through createCampaignAction, so the send
+  // window picker on the same form has to be applied to the agent's existing
+  // campaigns here or it silently does nothing after launch. Tone is the same:
+  // the picker is on this form, the value lives on the campaign.
+  await setSendWindowForGroup(
+    workspace.id,
+    agent.targetGroupId,
+    parseSendWindow(formData.get("sendWindow")),
+  );
+  // The message sequence is on this form too. Without writing it back, edits to
+  // an existing agent's messages were dropped and the campaign kept sending its
+  // old (usually AI) messages. AI and manual sequences share one step layout,
+  // so in-flight enrollments keep their place.
+  const steps =
+    formData.get("aiDefaultOutreach") === "on" || formData.get("manualDefaultOutreach") === "on"
+      ? buildCampaignSteps(formData, workspace.settings.firstMessageDelayMinutes)
+      : undefined;
+  const campaigns = (await listCampaigns(workspace.id)).filter(
+    (campaign) => campaign.groupId === agent.targetGroupId,
+  );
+  // Only forms that show the sender picker send this marker, so an edit from
+  // an older form never clears a rotation it did not display.
+  const editsSenders = formData.get("senderRotationShown") === "on";
+  const sendersByCampaign = new Map<string, string[]>();
+  if (editsSenders) {
+    for (const campaign of campaigns) {
+      sendersByCampaign.set(
+        campaign.id,
+        await senderAccountIdsFromForm(workspace.id, formData, campaign.linkedInAccountId),
+      );
+    }
+  }
+  await Promise.all(
+    campaigns.map((campaign) =>
+      updateCampaign(workspace.id, campaign.id, {
+        replyHandling,
+        bookingLink: bookingLink || "",
+        ...(messageTone ? { messageTone } : {}),
+        ...(steps ? { steps } : {}),
+        ...(editsSenders ? { senderAccountIds: sendersByCampaign.get(campaign.id) || [] } : {}),
+      }),
+    ),
+  );
+
+  revalidateWorkspaceDataPages();
+  revalidatePath("/leads");
+  redirect("/agents");
+}
+
+export async function updateAgentAction(...args: Parameters<typeof updateAgentActionImpl>) {
+  return withActionErrors(() => updateAgentActionImpl(...args));
+}
+
+async function draftAgentSetupActionImpl() {
+  const workspace = await requireWorkspace();
+  const profile = await getProductProfile(workspace.id);
+
+  return draftAgentSetupWithGemini(profile);
+}
+
+export async function draftAgentSetupAction(...args: Parameters<typeof draftAgentSetupActionImpl>) {
+  return withActionErrors(() => draftAgentSetupActionImpl(...args));
+}
+
+async function createAgentAndDiscoverLeadsActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const groupName = String(formData.get("groupName") || "").trim();
+  const preparedAgentId = String(formData.get("preparedAgentId") || "").trim();
+  const mode = parseAgentMode(String(formData.get("mode") || ""));
+
+  if (!groupName) throw new Error("Group name is required.");
+  // Steal customers is always find + AI outreach; never the leads-only path.
+  if (mode === "steal_customers") {
+    throw new Error("Steal Customers agents always include AI outreach.");
+  }
+
+  const account = await requireSelectedLinkedInAccount(workspace.id, formData);
+
+  const agentInput = {
+    name: String(formData.get("name") || groupName).trim(),
+    mode: mode === "prompt" || mode === "filters" ? mode : "signals",
+    prompt: String(formData.get("prompt") || "").trim(),
+    filters: {
+      titles: listFromForm(formData, "titles", []),
+      industries: listFromForm(formData, "industries", []),
+      locations: listFromForm(formData, "locations", []),
+      keywords: listFromForm(formData, "keywords", []),
+    },
+    signalSources: {
+      competitorUrls: [] as string[],
+      founderUrls: [] as string[],
+      keywords: listFromForm(formData, "signalKeywords", []),
+    },
+    linkedInAccountId: account.id,
+    targetGroupName: groupName,
+    // This action is only reached from the leads-only branch of the setup form
+    // (agent-setup.tsx gates it behind `leadsOnly`). Recording the intent is
+    // what stops the resume path in agents/new from later attaching a campaign
+    // to a group the user only ever wanted filled with leads.
+    leadsOnly: true,
+  } as const;
+  const agent = preparedAgentId
+    ? await updateAgent(workspace.id, preparedAgentId, agentInput)
+    : await createAgent(workspace.id, agentInput);
+
+  // Discovery can take several minutes. Keeping it inside this Server Action
+  // makes proxies and tunnels time out before Next.js can return its response.
+  // createAgent/updateAgent already schedule the agent for the next automation
+  // tick, so setup only persists the configuration and returns quickly.
+  revalidateWorkspaceDataPages();
+  return {
+    agentId: agent.id,
+    groupId: agent.targetGroupId,
+    groupName: agent.targetGroupName,
+    leadsDiscovered: 0,
+    leads: [],
+    candidates: 0,
+    signalsObserved: 0,
+  };
+}
+
+export async function createAgentAndDiscoverLeadsAction(...args: Parameters<typeof createAgentAndDiscoverLeadsActionImpl>) {
+  return withActionErrors(() => createAgentAndDiscoverLeadsActionImpl(...args));
+}
+
+async function pauseAgentActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const agentId = String(formData.get("agentId") || "").trim();
+
+  if (!agentId) throw new Error("Agent id is required.");
+
+  await pauseAgent(workspace.id, agentId);
+  revalidateWorkspaceDataPages();
+}
+
+export async function pauseAgentAction(...args: Parameters<typeof pauseAgentActionImpl>) {
+  return withActionErrors(() => pauseAgentActionImpl(...args));
+}
+
+async function resumeAgentActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const agentId = String(formData.get("agentId") || "").trim();
+
+  if (!agentId) throw new Error("Agent id is required.");
+
+  await resumeAgent(workspace.id, agentId);
+  revalidateWorkspaceDataPages();
+}
+
+export async function resumeAgentAction(...args: Parameters<typeof resumeAgentActionImpl>) {
+  return withActionErrors(() => resumeAgentActionImpl(...args));
+}
+
+async function setAgentLeadsOnlyActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const agentId = String(formData.get("agentId") || "").trim();
+  const leadsOnly = formData.get("leadsOnly") === "true";
+
+  if (!agentId) throw new Error("Agent id is required.");
+
+  await setAgentLeadsOnly(workspace.id, agentId, leadsOnly);
+  revalidateWorkspaceDataPages();
+}
+
+export async function setAgentLeadsOnlyAction(...args: Parameters<typeof setAgentLeadsOnlyActionImpl>) {
+  return withActionErrors(() => setAgentLeadsOnlyActionImpl(...args));
+}
+
+async function deleteAgentActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const agentId = String(formData.get("agentId") || "").trim();
+
+  if (!agentId) throw new Error("Agent id is required.");
+
+  await deleteAgent(workspace.id, agentId);
+  invalidateWorkspaceLists(workspace.id);
+  revalidateWorkspaceDataPages();
+}
+
+export async function deleteAgentAction(...args: Parameters<typeof deleteAgentActionImpl>) {
+  return withActionErrors(() => deleteAgentActionImpl(...args));
+}
+
+async function deleteGroupActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const groupId = String(formData.get("groupId") || "").trim();
+
+  if (!groupId) throw new Error("Lead group id is required.");
+
+  await deleteGroup(workspace.id, groupId);
+  invalidateWorkspaceLists(workspace.id);
+  revalidatePath("/leads");
+  revalidateWorkspaceDataPages();
+}
+
+export async function deleteGroupAction(...args: Parameters<typeof deleteGroupActionImpl>) {
+  return withActionErrors(() => deleteGroupActionImpl(...args));
+}
+
+// Campaigns created before the picker existed have no stored value and keep
+// sending round the clock, so an unrecognised value must resolve to "always"
+// rather than silently narrowing an existing campaign's hours.
+function parseSendWindow(value: FormDataEntryValue | null): SendWindow {
+  const raw = String(value || "").trim();
+  return raw === "business" || raw === "extended" ? raw : "always";
+}
+
+function parseReplyHandling(value: FormDataEntryValue | null): CampaignReplyHandling {
+  const raw = String(value || "").trim();
+  if (raw === "handoff" || raw === "ai_until_booked") return raw;
+  return "ai_until_interest";
+}
+
+async function bookingLinkFromForm(
+  formData: FormData,
+  replyHandling: CampaignReplyHandling,
+  workspaceId: string,
+) {
+  if (replyHandling !== "ai_until_booked") return undefined;
+  const fromForm = normalizeSchedulingLink(String(formData.get("bookingLink") || ""));
+  if (fromForm) return fromForm;
+  const profile = await getProductProfile(workspaceId);
+  const fromProduct = resolveBookingLink(profile?.schedulingLink);
+  if (fromProduct) return fromProduct;
+  throw new Error(
+    "Add a demo booking link in Workspace, or enter one for this agent.",
+  );
+}
+
+async function createCampaignActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const steps = buildCampaignSteps(formData, workspace.settings.firstMessageDelayMinutes);
+
+  const rawGroupId = String(formData.get("groupId") || "").trim();
+  const newGroupName = String(formData.get("newGroupName") || "").trim();
+  if (rawGroupId === "__new__" && !newGroupName) {
+    throw new Error("New lead group name is required.");
+  }
+  const groupId =
+    rawGroupId === "__new__"
+      ? (await createOrGetGroup(workspace.id, newGroupName, "Created during campaign setup")).id
+      : rawGroupId;
+  const status = formData.get("status") === "draft" ? "draft" : "active";
+  const account = await requireSelectedLinkedInAccount(workspace.id, formData);
+  const replyHandling =
+    formData.get("manualDefaultOutreach") === "on"
+      ? "handoff"
+      : parseReplyHandling(formData.get("replyHandling"));
+  const bookingLink = await bookingLinkFromForm(formData, replyHandling, workspace.id);
+
+  if (status === "active") {
+    await assertCampaignCanRun(workspace.id, groupId, steps, {
+      requireLeads: formData.get("allowEmptyLeadGroup") !== "on",
+      linkedInAccountId: account.id,
+    });
+  }
+
+  const messageTone = parseAgentMessageTone(String(formData.get("messageTone") || ""));
+  const senderAccountIds = await senderAccountIdsFromForm(workspace.id, formData, account.id);
+  const campaign = await createCampaign(workspace.id, {
+    name: String(formData.get("name") || "LinkedIn campaign").trim(),
+    groupId,
+    linkedInAccountId: account.id,
+    ...(senderAccountIds.length ? { senderAccountIds } : {}),
+    status,
+    steps,
+    replyHandling,
+    ...(bookingLink ? { bookingLink } : {}),
+    notifyOnReply: formData.get("notifyOnReply") !== "off",
+    sendWindow: parseSendWindow(formData.get("sendWindow")),
+    // Firestore rejects undefined properties - only set intent when provided.
+    ...(formData.get("campaignGoal")
+      ? { campaignGoal: formData.get("campaignGoal") === "demo" ? ("demo" as const) : ("warm" as const) }
+      : {}),
+    ...(messageTone ? { messageTone } : {}),
+  });
+
+  // Only enroll leads for campaigns that are actually live. Draft campaigns are
+  // skipped by the cron, so enrolling them would create perpetually-due, never-
+  // advanced enrollments. When a draft is later activated, syncNewEnrollments
+  // enrolls its leads on the next tick.
+  if (campaign.groupId && campaign.status === "active") {
+    await enrollGroupInCampaign(workspace.id, campaign);
+  }
+
+  revalidateWorkspaceDataPages();
+}
+
+export async function createCampaignAction(...args: Parameters<typeof createCampaignActionImpl>) {
+  return withActionErrors(() => createCampaignActionImpl(...args));
+}
+
+async function cleanupAgentAfterFailedLaunch(agentId: string, context: string) {
+  const cleanup = new FormData();
+  cleanup.set("agentId", agentId);
+  try {
+    await deleteAgentActionImpl(cleanup);
+  } catch (cleanupError) {
+    console.error(context, cleanupError);
+  }
+}
+
+async function launchAgentFromSetupActionImpl(formData: FormData) {
+  const groupName = String(formData.get("groupName") || "").trim();
+  const agentName = String(formData.get("name") || groupName || "LinkedIn agent").trim();
+
+  const createdAgent = await createAgentForSetupActionImpl(formData);
+  formData.set("name", agentName);
+  formData.set("groupId", createdAgent.groupId);
+  formData.set("allowEmptyLeadGroup", "on");
+
+  try {
+    await createCampaignActionImpl(formData);
+  } catch (error) {
+    // A failed final launch must not leave a newly-created agent consuming the
+    // user's plan slot.
+    await cleanupAgentAfterFailedLaunch(
+      createdAgent.agentId,
+      "Failed to clean up agent after launch error.",
+    );
+    throw error;
+  }
+  // Setup navigates to the new agent's page itself.
+  return { agentId: createdAgent.agentId };
+}
+
+export async function launchAgentFromSetupAction(...args: Parameters<typeof launchAgentFromSetupActionImpl>) {
+  return withActionErrors(() => launchAgentFromSetupActionImpl(...args));
+}
+
+async function launchOutreachAgentFromSetupActionImpl(formData: FormData) {
+  const groupName = String(formData.get("groupName") || "").trim();
+  formData.set("name", String(formData.get("name") || groupName || "LinkedIn outreach").trim());
+  formData.set("mode", "outreach");
+  const createdAgent = await createAgentForSetupActionImpl(formData);
+  formData.set("agentId", createdAgent.agentId);
+  formData.set("groupId", createdAgent.groupId);
+  try {
+    await importLinkedInCsvLeadsActionImpl(formData);
+    await createCampaignActionImpl(formData);
+  } catch (error) {
+    await cleanupAgentAfterFailedLaunch(
+      createdAgent.agentId,
+      "Failed to clean up outreach agent after launch error.",
+    );
+    throw error;
+  }
+  return { agentId: createdAgent.agentId };
+}
+
+export async function launchOutreachAgentFromSetupAction(...args: Parameters<typeof launchOutreachAgentFromSetupActionImpl>) {
+  return withActionErrors(() => launchOutreachAgentFromSetupActionImpl(...args));
+}
+
+async function launchExistingAgentFromSetupActionImpl(formData: FormData) {
+  const groupName = String(formData.get("groupName") || "").trim();
+  const agentName = String(formData.get("name") || groupName || "LinkedIn agent").trim();
+  formData.set("name", agentName);
+
+  const updatedAgent = await updateAgentForSetupActionImpl(formData);
+  formData.set("groupId", updatedAgent.groupId);
+  formData.set("allowEmptyLeadGroup", "on");
+
+  await createCampaignActionImpl(formData);
+  return { agentId: updatedAgent.agentId };
+}
+
+export async function launchExistingAgentFromSetupAction(...args: Parameters<typeof launchExistingAgentFromSetupActionImpl>) {
+  return withActionErrors(() => launchExistingAgentFromSetupActionImpl(...args));
+}
+
+// Threads that are not in the live LinkedIn inbox list have no chat id, so the
+// reply goes to the lead directly (LinkedIn reuses the existing 1:1 chat).
+async function sendLeadReplyActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const leadId = String(formData.get("leadId") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  if (!leadId) throw new Error("Lead id is required.");
+  if (!body) throw new Error("Message cannot be empty.");
+  if (body.length > 4000) throw new Error("Message is too long.");
+  const { sendReplyToLead } = await import("@/lib/server/agent-api-operations");
+  await sendReplyToLead(workspace, leadId, body, { manual: true });
+  revalidatePath("/actions");
+  revalidatePath("/agents");
+  revalidatePath("/leads");
+  revalidatePath("/overview");
+  revalidatePath("/messages");
+}
+
+export async function sendLeadReplyAction(...args: Parameters<typeof sendLeadReplyActionImpl>) {
+  return withActionErrors(() => sendLeadReplyActionImpl(...args));
+}
+
+async function sendLinkedInChatMessageActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  requireActiveSubscription(workspace);
+  const chatId = String(formData.get("chatId") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  // Reply from the account that owns the chat - with multiple connected
+  // accounts, defaulting to the first would send from the wrong identity. The
+  // inbox also lists accounts shared from the owner's other workspaces, so any
+  // account this workspace can use is accepted; an unknown one is an error.
+  const requestedAccountId = String(formData.get("accountId") || "").trim();
+  let linkedInAccount;
+  if (requestedAccountId) {
+    const requestedAccount = (await listLinkedInAccounts(workspace.id)).find(
+      (account) => account.accountId === requestedAccountId,
+    );
+    if (!requestedAccount) {
+      throw new Error("This LinkedIn account is not connected to this workspace.");
+    }
+    linkedInAccount = requestedAccount;
+  } else {
+    linkedInAccount = await getLinkedInAccount(workspace.id);
+  }
+
+  const attachments = formData
+    .getAll("attachments")
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+  if (!linkedInAccount) throw new Error("Connect LinkedIn before sending messages.");
+  if (!chatId) throw new Error("Chat id is required.");
+  if (!body && !attachments.length) throw new Error("Message cannot be empty.");
+  const oversized = attachments.find((file) => file.size > 15 * 1024 * 1024);
+  if (oversized) throw new Error(`"${oversized.name}" is too large - attachments must be under 15MB.`);
+
+  if (!(await linkedInChatBelongsToAccount(chatId, linkedInAccount.accountId))) {
+    throw new Error("This conversation is not on the selected LinkedIn account.");
+  }
+  // A person replying in the inbox is not automation: no spacing gate or daily
+  // cap. Recording the send still makes automation on this account back off.
+  await recordManualActionSlot(workspace.id, linkedInAccount.id);
+
+  const result = await sendLinkedInChatMessage({
+    chatId,
+    accountId: linkedInAccount.accountId,
+    body,
+    attachments,
+  });
+  await consumeDailyQuota(
+    workspace.id,
+    "messages",
+    workspace.settings.dailyMessageLimit,
+    workspace.timezone,
+    linkedInAccount.id,
+  );
+  const leadId = String(formData.get("leadId") || "").trim();
+  if (leadId && body) {
+    const { createConversationMessage } = await import("@/lib/server/data");
+    await createConversationMessage({
+      workspaceId: workspace.id,
+      leadId,
+      userId: workspace.id,
+      senderName: "You",
+      body,
+      direction: "outbound",
+      providerMessageId: result.id,
+    });
+  } else if (leadId) {
+    const { OWNER_MESSAGED_OUTREACH_ERROR } = await import("@/lib/server/reply-automation-policy");
+    await stopLeadOutreach(workspace.id, leadId, OWNER_MESSAGED_OUTREACH_ERROR);
+  }
+  revalidatePath("/actions");
+  revalidatePath("/agents");
+  revalidatePath("/leads");
+  revalidatePath("/overview");
+  revalidatePath("/messages");
+}
+
+export async function sendLinkedInChatMessageAction(...args: Parameters<typeof sendLinkedInChatMessageActionImpl>) {
+  return withActionErrors(() => sendLinkedInChatMessageActionImpl(...args));
+}
+
+async function completeConversationManualFollowUpActionImpl(formData: FormData) {
+  const workspace = await requireWorkspace();
+  const leadId = String(formData.get("leadId") || "").trim();
+  if (!leadId) throw new Error("Lead id is required.");
+  await completeConversationManualFollowUp(workspace.id, leadId);
+  revalidatePath("/messages");
+}
+
+export async function completeConversationManualFollowUpAction(...args: Parameters<typeof completeConversationManualFollowUpActionImpl>) {
+  return withActionErrors(() => completeConversationManualFollowUpActionImpl(...args));
+}
+
+async function listBlacklistActionImpl() {
+  const workspace = await requireWorkspace();
+  const entries = (await listExclusions(workspace.id)).map(({ id, kind, value, createdAt }) => ({
+    id,
+    kind,
+    value,
+    createdAt,
+  }));
+  return { entries, countryOptions: BLOCKABLE_COUNTRIES };
+}
+
+export async function listBlacklistAction() {
+  return withActionErrors(() => listBlacklistActionImpl());
+}
+
+async function addToBlacklistActionImpl(text: string) {
+  const workspace = await requireWorkspace();
+  const entries = parseExclusionInput(String(text || "").slice(0, 500_000));
+  if (!entries.length) {
+    throw new Error("Add LinkedIn profile links or company names, one per line.");
+  }
+  const result = await addExclusions(workspace.id, entries);
+  return { added: result.added, parsed: entries.length };
+}
+
+export async function addToBlacklistAction(...args: Parameters<typeof addToBlacklistActionImpl>) {
+  return withActionErrors(() => addToBlacklistActionImpl(...args));
+}
+
+async function blockCountryActionImpl(country: string) {
+  const workspace = await requireWorkspace();
+  const entry = parseCountryExclusion(String(country || ""));
+  if (!entry) throw new Error("Pick a country from the list.");
+  await addExclusions(workspace.id, [entry]);
+  return { ok: true as const };
+}
+
+export async function blockCountryAction(...args: Parameters<typeof blockCountryActionImpl>) {
+  return withActionErrors(() => blockCountryActionImpl(...args));
+}
+
+async function removeFromBlacklistActionImpl(id: string) {
+  const workspace = await requireWorkspace();
+  await removeExclusion(workspace.id, String(id || ""));
+  return { ok: true as const };
+}
+
+export async function removeFromBlacklistAction(...args: Parameters<typeof removeFromBlacklistActionImpl>) {
+  return withActionErrors(() => removeFromBlacklistActionImpl(...args));
+}
+

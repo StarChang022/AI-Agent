@@ -1,0 +1,25 @@
+{
+  "name": "everyinfra-seo-skills",
+  "owner": {
+    "name": "EveryInfra"
+  },
+  "metadata": {
+    "description": "EveryInfra SEO/GEO skills marketplace",
+    "version": 1
+  },
+  "plugins": [
+    {
+      "name": "seo-suite",
+      "source": "./",
+      "description": "Agent-native SEO/GEO workbench: 18 language markets, 103 stdlib scripts, self-updating intel loop, monitoring daemon, golden tests.",
+      "version": "0.48.2",
+      "author": {
+        "name": "EveryInfra"
+      },
+      "homepage": "https://github.com/everyinfra/seo-skills",
+      "license": "Apache-2.0",
+      "categories": ["seo", "marketing", "web-development"],
+      "keywords": ["seo", "geo", "aeo", "ai-visibility", "multilingual"]
+    }
+  ]
+}

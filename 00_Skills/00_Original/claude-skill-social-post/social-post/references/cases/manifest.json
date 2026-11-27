@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "cases": [
+    {
+      "case_id": 1,
+      "title": "虛構烘焙品牌的兩版新品貼文",
+      "path": "case-01.md",
+      "sha256": "c56e184cf261196431efc9b22953fdde59d562b8fe6abec48fc88f2821d56642"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.zhuyansen/new-term-radar",
+  "title": "New-Term Radar",
+  "description": "New AI model, product and repo names as they surface, and the search terms behind them, sized.",
+  "repository": {
+    "url": "https://github.com/zhuyansen/new-term-radar",
+    "source": "github"
+  },
+  "version": "0.8.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "new-term-radar",
+      "version": "0.8.0",
+      "runtimeHint": "uvx",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--with",
+          "value": "mcp",
+          "description": "The radar itself has no dependencies; the server needs the MCP SDK."
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp",
+          "description": "Start the MCP server on stdio."
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "GLASSER_API_KEY",
+          "description": "Glasser key, the first choice for the paid data: search volumes, DataForSEO Trends, Google results, Reddit.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "AISA_API_KEY",
+          "description": "AIsa key: site: searches and the model; all the paid data when there is no Glasser key. One of the two is needed.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "RADAR_LLM_BASE_URL",
+          "description": "Optional. An OpenAI-compatible endpoint for the model, in place of AIsa's (RADAR_LLM_API_KEY, RADAR_LLM_MODEL).",
+          "isRequired": false
+        },
+        {
+          "name": "RADAR_LLM_API_KEY",
+          "description": "Optional. The key of the RADAR_LLM_BASE_URL endpoint.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "RADAR_LLM_MODEL",
+          "description": "Optional. The model to ask at RADAR_LLM_BASE_URL, in place of the ones config.json names.",
+          "isRequired": false
+        },
+        {
+          "name": "GOANYAPI_API_KEY",
+          "description": "Optional. Adds what people searched together with each name, and one country's settled daily series.",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "RADAR_CONFIG",
+          "description": "Optional. Absolute path to your config.json (X accounts, sitemaps, thresholds).",
+          "isRequired": false
+        },
+        {
+          "name": "RADAR_STATE",
+          "description": "Optional. Absolute path to the directory that holds the radar's SQLite state.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

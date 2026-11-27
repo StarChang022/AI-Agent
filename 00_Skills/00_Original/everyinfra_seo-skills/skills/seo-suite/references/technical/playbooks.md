@@ -1,0 +1,109 @@
+# Programmatic SEO 页面模式
+
+用途：用「模板 × 数据」批量生成页面之前，判断该不该做、做哪种、怎么控制质量。
+
+## 先看红线
+
+Google 的垃圾内容政策明确针对**规模化内容滥用**（原文：为操纵搜索排名而不是帮助用户，大量生成页面，「no matter how it's created」）和**门页**（为排名特定的相似查询而建，把用户导向没有最终目的页有用的中间页）（[垃圾内容政策](https://developers.google.com/search/docs/essentials/spam-policies)，核对 2026-10-21）。Google 对自动生成内容的口径：用自动化（含 AI）生成内容，如果主要目的是操纵排名，就违反垃圾内容政策（[有用内容指南](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)）。Google 也说它没有偏好的字数，不要按字数下限做模板。因此：
+
+- 每个页面都要有独立的用户价值：独有的数据、实用的工具结果或真实的对比，而不是只换了关键词的同一段话。
+- 文本重复率低不等于安全；判断标准是对用户是否有用。
+- 数据不足的组合不生成，或生成后不允许索引。
+
+## 常见模式
+
+| 模式 | 典型查询 | 独立价值从哪来 | 数据来源 | 什么时候不该做 |
+|---|---|---|---|---|
+| 模板库 | 「[用途] 模板」 | 可直接使用的模板本身和使用说明 | 自有模板 | 模板只是换标题的同一份 |
+| 精选清单 | 「适合 [场景] 的 [品类]」 | 明确的评选标准和真实评测 | 自有测试、公开资料 | 没有真实评测，只是罗列 |
+| 换算与计算 | 「[A] 换算 [B]」「[参数] 计算」 | 准确的计算结果和解释 | 公式、公开数据 | 结果不准确或已有权威工具完全覆盖 |
+| 对比 | 「[A] vs [B]」 | 维度清楚、定期核实的事实对比 | 集中维护的竞品数据（见 [competitor-content-architecture.md](../research/competitor-content-architecture.md)） | 事实无法核实或无法更新 |
+| 示例库 | 「[类型] 示例」 | 真实示例和拆解 | 自有或经授权的案例 | 示例来源不清或未经授权 |
+| 地点 | 「[服务] + [城市]」 | 真实的本地信息：地址、服务范围、本地案例 | 自有门店或服务数据 | 在当地没有真实业务，只换城市名 |
+| 人群 | 「给 [角色] 的 [产品]」 | 该人群特有的问题和用法 | 客户研究、案例 | 各人群页面内容几乎相同 |
+| 集成 | 「[产品] + [工具] 集成」 | 真实可用的集成步骤和限制 | 集成文档 | 集成并不存在或只是规划中 |
+| 术语表 | 「[术语] 是什么」 | 准确定义、例子和与业务的关联 | 专业知识 | 只是复制通用释义 |
+| 多语言 | 各语言的同类查询 | 母语质量的本地化内容 | 翻译加母语审校 | 只有机器翻译、没有审校 |
+| 目录 | 「[品类] 服务商 / 工具」 | 完整、及时、可筛选的条目 | 自有或授权数据 | 条目少、过期或抓取来路不明 |
+| 资料页 | 「[实体] 资料」 | 核实过的结构化信息 | 公开且可核实的数据 | 信息无法核实或涉及个人隐私 |
+
+模式可以组合（例如「地点 × 人群」），但组合越多，越要确认每个组合都有足够的独有内容。
+
+## 实施步骤
+
+1. **需求核实**：用关键词数据确认模板对应的查询真实存在，并看 SERP 上排名的是什么类型的页面。
+2. **数据审计**：数据来源、授权、完整度、更新频率；缺字段的记录怎么处理。
+3. **模板设计**：固定部分与数据驱动部分分开；每页至少有一块只属于这一页的实质内容。
+4. **索引策略**：只让达到质量门槛的页面可索引；其余 noindex 或不生成；站点地图只收可索引页面。
+5. **内链**：通过 hub 页、分类页和相关页链接组织，避免孤立页面。
+6. **抽样审校**：上线前人工抽样检查事实、可读性和重复度。
+7. **分批放量**：先发布一小批，观察索引、展示和用户行为，再扩大规模。
+8. **维护**：数据更新机制；过期页面的更新、合并或下线规则。
+
+## 检查清单
+
+| 检查什么 | 怎么查 | 通过 / 失败 |
+|---|---|---|
+| 模式有真实需求 | `python3 scripts/pseo_pattern_mining.py --gsc queries.csv --sitemap https://example.com/sitemap.xml`（GSC 查询导出 CSV） | 输出 GO 或 WATCH 且有 addressable 量 → 可做；白空间 → 先别做 |
+| 批次质量 | `python3 scripts/pseo_batch_gate.py --records batch.jsonl --rendered rendered/` | 退出码 0 → 可发布；1 → 退回数据层（阈值见 [programmatic-seo-gates.md](programmatic-seo-gates.md)） |
+| 上线后收录 | `python3 scripts/pseo_cohort.py init ...` 登记 cohort，每周 `ingest` GSC 页面导出，`report` 看判读（参数用 `--help` 现查） | 预注册的判读标准达标 → 放量；未达标 → 停止放量 |
+| 零展示页处置 | `python3 scripts/prune_gate.py --urls urls.txt --gsc gsc.csv --crawl crawl.json` | 有入链/外链/排名词的页面不下线（NO-GO）；其余按 prune/merge/watch 处置 |
+| 每页独有内容 | 随机抽 5 页，遮住关键词和城市名后对比 | 仍能看出各页内容不同 → 通过 |
+
+## 交付
+
+- 选定的模式、目标查询模板和需求证据。
+- 数据字段表与质量门槛。
+- 页面模板结构（固定区块和数据区块）。
+- 索引与内链规则、抽样审校和分批发布计划。
+
+## 来源
+
+本文由 EveryInfra 自行编写，只保留要点，未复制原文。
+
+- 思路参考：[coreyhaines31/marketingskills · skills/programmatic-seo/references/playbooks.md](https://github.com/coreyhaines31/marketingskills/blob/v1.10.0/skills/programmatic-seo/references/playbooks.md)（MIT）
+- 一手资料：[Google：垃圾内容政策](https://developers.google.com/search/docs/essentials/spam-policies)、[Google：有用、可靠、以人为本的内容](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)、[Google 关于 AI 生成内容](https://developers.google.com/search/blog/2023/02/google-search-and-ai-content)、[Google：站点地图](https://developers.google.com/search/docs/crawling-indexing/sitemaps/overview)
+
+---
+
+# (rampstack 深读 2026-10-09b) 运营层工作流手册(rampstack forward-deployed tier)
+
+来源：[rampstackco/claude-skills](https://github.com/rampstackco/claude-skills) 的 workflows/ 目录（README、GETTING-STARTED + 15 个工作流，共 17 个文档；2026-10-21 对照仓库 HEAD 核对：15 个工作流文件、车道名、状态阶梯、honest-stop 约定、仅 Content Pipeline 为 validated 均与仓库一致）。这是一套第三方的运营框架，不是搜索引擎规则，也不是本套件的流程要求。技能目录解决"把一个站建好一次"；这一层解决"持续运营一条已部署的内容与增长管线"。
+
+## 全层共用的六个机制
+
+1. **车道（lane）模型**。每个阶段标注车道：convergent（Tholo，机器收敛执行，产出工件）；gate（Basano，只校验、只报告、永不修复，输出 pass/fail + 证据）；divergent（Krine，判断与排序，产出建议包后停下等人）；human（平台动作——DNS、发布、流量分配、晋升——永远由人执行）。
+2. **合并教义**：检查报告并失败、引擎提议并停止、人合并；自主权按车道逐步挣得、可撤销、永不自我声明。
+3. **诚实停止约定（honest-stop）**：任一阶段缺少必需输入/工具/访问时，合规产出是 report-blocked 声明（缺什么、实际拿到什么、影响哪部分），该声明即满足 done-when；为凑数而编造/内插数字永不合规。依赖的前置阶段 blocked 时，本阶段视为自身前置未满足、连锁 blocked，不许在不存在的输入上硬跑。
+4. **状态阶梯**：template（设计、未按文执行）→ validated（按文档原样在指定真实资产上执行过、附公开 run record）→ hardened（validated + 真实事故沉淀的失败模式）。状态描述"发生过什么"，与文档写得多好无关。
+5. **连接器与写持有（write-held）**：每个工作流声明所需 capability 及访问级别；一切写路径 write-held——落地为 CMS 草稿或 PR，人合并。仓库查询必须带日期范围下推为分区过滤，无日期范围的调用直接拒绝而非执行。
+6. **双存储边界**：指标仓（搜索表现/分析导出及其派生）与运营仓（run record、决策、agreement log）分开；仓库区域一次选定；导出第一天就开启（不回填，晚开一天就永久少一天历史）。
+
+## 15 个工作流速览
+
+| 工作流 | 轨 | 核心意图与独有纪律 |
+|---|---|---|
+| Warehouse Data Plane Standup | FDE | 数据面立起：导出先行（不回填）；双存储；只读有界访问（无界查询必须被代码拒绝而非靠约定）；成本治理与预算告警；感知层阈值按各序列自身历史推导，不跨序列复制 |
+| CI Prove-Gate Wiring | FDE | 把证明检查装成**必需**状态检查：对构建产物断言而非 dev 构建；故意播种坏输入、捕获红灯证据——没见过失败的 gate 不算装好；gate 只报告永不自修（改自己评判对象的 gate 绿灯无意义）；canon 变动须重证明，否则标记 stale |
+| Post-Deploy Live Verification | FDE | "merged ≠ live" 程序化：每路由带**判别值**（只有新构建才可能渲染的值）+ 构建 id；生产 URL（非预览/staging）双次抓取（CDN 边缘可能不同）；失败分类决策表：全部 STALE=未晋升（平台侧修）、部分 STALE=缓存/增量渲染陈旧（定向 purge）、CURRENT 但 WRONG=缺陷已合并（改代码）；部署面板成功不等于线上状态 |
+| Migration with Verification | FDE | 迁移六阶段：老 URL 清单 = 站点地图 ∪ 爬取 ∪ 搜索表现三方并集；重定向映射**全量不抽样**（301 / 410 有意下线 / 记理由放弃，未覆盖数必须为 0）；新旧奇偶校验查元数据/canonical/schema/内容而非"URL 存在"；分阶段带检查点切换；恢复指标**切换前预注册**；DNS 通了不叫迁移完成 |
+| Data Surface Integrity | FDE | 机器渲染数据序列诚实化：按**序列**（非数据集）盘点与守卫——新鲜数据集里可藏冻结序列；停更序列登记 discontinued 而非静默陈旧；降级渲染显示 as-of 并抑制趋势箭头（冻结值上画上升箭头比不画更糟）；两表面一致 = 单源模块 + 构建测试 + 缓存寿命检查；"每日更新"文案对齐真实节奏；退役连叙述一起退役 |
+| Content Pipeline with Prove Gates | FDM | 内容即交付管线：需求排名（证据附队、命名可争论的标准）→ 持有草稿（claim 带源）→ 预发布 gate（**源形状检查**：引用的源真的含那个数，而非源存在）→ 人合并 → 生产 URL 实审计 → 衰减标志回流进**同一个**排名队列（刷新不是第二前门）。全 tier 唯一 validated |
+| Corpus Integrity and Correction | FDM | 语料真相维护：claim 登记覆盖标题/描述/schema/OG（正文只是最小部分），分类 DERIVED/RELAYED/DATED；真值检查对源的**当前内容**而非存在性；可推导计数里的手写字面量 = 缺陷（现在对也是，离错一次发布）；同一事实两个值/两个源 = 缺陷；可见更正（错了什么、现在说什么、何时改），原发布日期不动；修源不修副本；季度循环 |
+| Link Graph and Metadata Parity Audit | FDM | 全图周期审计：爬取对路由注册表双向调和（存在但无链 ↔ 有链但不存在）；孤儿（零入链）与**死端**（零出链到转化面）都检测并按路由价值加权（一千个孤儿 tag 页 ≠ 一个孤儿金钱页）；元数据查**唯一性**而非存在性（40 页共用首页 OG 卡能骗过存在性检查；标题后缀翻倍"Page \| Site \| Site"单列一类）；修复在模板层而非页面层 |
+| Regulated-Content Compliance Gate | FDM | YMYL 额外 gate（加在内容管线 Phase 3 之内、不替代）：人拥有的**版本化**合规登记簿（登记簿按稿现写就不是标准）；**授权清单检查**而非来源存在检查（引了个源但不在登记簿授权清单上 = 不过）；披露位置在**构建渲染页**上验证（折叠元素里的披露对读者 = 不存在）；豁免只有登记簿主人能批、单件生效、反复豁免本身是登记簿或流程有错的信号 |
+| Experiment Loop with Pre-Registered Gates | FDM | 先冻结后开跑：机制型假设（说清为什么这个改动会动这个指标）才可测；停止规则/MDE/样本量/主指标/窗口五项预注册；样本不足的判决是"不跑"而非"再等等"；变体 SEO 安全 gate（cloaking 风险 / canonical 一致 / CLS 不回归——**靠被去索引赢的实验不是赢**）；流量分配永远人；判决只按预注册规则在预注册点计算（中途偷看后停止 = 制造假阳性）；获胜变体的**合并版**要重过 SEO 安全检查 |
+| Traffic-Drop Triage | FDA | 掉量分诊：先钉 drop 画像（何时/多少/哪些分段，禁全站平均——-30% 平均可能是一个模板 -90%）；五分支**全部**查（tracking 断裂 / 技术回归 / 算法更新要时间+形状双证 / 季节性需求（同比）/ SERP 位移——位置守住点击掉 = 特性位移，位置丢 = 竞品）；诊断与治疗分离（诊断里出现"因此我们应该" = 锚定）；恢复指标先预注册；复合掉量当复合处理（只修一半 = 另一半继续恶化还赖修复失败） |
+| Conversion-by-Source Diagnosis | FDA | 转化分段诊断：先写框架再看数（看完再写框架就成了辩护）；按 source × 模板 × 设备切割、禁平均；每个发现先过**测量 gate**（consent 差异 / 重定向剥参数 / 跨域 / 事件触发）判 BEHAVIOR/MEASUREMENT/MIXED——花一季度优化一个 consent 假象是最贵也最常见的失败；薄单元标 not-rankable（是判决不是道歉）；假设必须带机制；自己不跑自己提的实验 |
+| Revenue Tracking Integrity | FDA | 钱路径例行证明：按**类**不按实例映射（链接→重定向链→必需参数→事件→平台记录）；每类实抓验证存活 + 参数存活到链尾（链接上有 ≠ 链尾还在）；consent 矩阵含 denied/未决状态（归因归零就发生在这）；按源对账不按总额（两个抵消性错误能凑出健康的总数）；月度循环——死链类靠例程抓住，不靠一季度缺收入发现 |
+| Incident Response and Lane Demotion | 跨轨 | 晋升车道回归的处理序：先**降级**（回到人 gate，修好前不能再自动合并——边修边让它继续合并 = 事故长出第二个头）→ 回滚/修复走 held、按捕获回归的那个 post_merge_outcome 信号关闭（不按"PR 合了"）→ 假阳性审计（问 gate **结构性**漏了什么、补具体检查，不问谁的错）→ 重晋升只在重置窗口后按 Autonomy Review 阈值重新挣得 |
+| Autonomy Review | 跨轨 | agreement log 的周期仪式：按车道算四向一致率（true/false × pass/fail）；waive 行单独报告、不计入率；样本不足 = "不可评"判决而非"再攒攒"；**天花板**：Tier-3 判断/边界类 gate（诚实与披露线、开放-运营边界、定位命名、以及"何时毕业"这个元决策）永久不可晋升——能许可毕业的仪式绝不能许可自己的类；调参不许"为让车道通过而调"（那是换了伪装的晋升） |
+
+## 可移植的阶段骨架与反模式库
+
+每个工作流同构：连接器声明 → 前置清单 → 诚实停止约定 → 逐阶段（调用的 skills + 能力类 + 输入 + Run 块 + 产出工件 + 二值 done-when + "失败长什么样"）→ 失败模式 → worked example → 边界（与其他工作流的路由关系）。"Fails look like" 是教学密度最高的部分，且反模式跨工作流复用：分段平均掩盖单模板崩塌；单次抓取当判决；存在性冒充唯一性；总额对账掩盖分源漂移；按修复难易而非读者伤害排优先级；第一个像罪犯的分支就停；预注册 retrofitted 到已相信的改动上；gate 永远绿 = gate 没在检查任何东西。
+
+## 来源
+
+- 仓库：https://github.com/rampstackco/claude-skills（workflows/ 目录，15 工作流 + README + GETTING-STARTED）
+- 第三方盲测：[openaddict.com](https://openaddict.com/workflows) 对其中 3 个工作流的多模型测试（页面标注最后一次运行 2026-10-03，每个模型跑 5 次，核对 2026-10-21）：traffic-drop 病因命名正确率 80–100%（Sonnet 5 为 80%，Opus 5 与 Fable 5.1 为 100%）；corpus 完整性 24 个植入错误，找到 64.2–75.8%；链图审计 51 个植入错误，找到 73.7–100%。该站自己声明：三份测试材料由站点运营方编写并自测，「Nobody outside checked any of it」，所以只当作该框架可用性的旁证，不当作效果证据。

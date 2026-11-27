@@ -1,0 +1,507 @@
+import type { Metadata } from "next";
+
+function isBlogLive(blog: { publishedDate: string }, now: Date = new Date()) {
+  const published = new Date(`${blog.publishedDate} UTC`);
+  if (Number.isNaN(published.getTime())) return false;
+  return published.getTime() <= now.getTime();
+}
+
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://omentir.com").replace(/\/$/, "");
+
+// The headline, verbatim from the hero on the homepage. Every brand surface -
+// tab titles, social cards, structured data, the footer - reads it from here so
+// the site says one thing, and changing the headline changes all of them at
+// once instead of leaving old wording behind in metadata nobody looks at.
+export const brandTagline = "AI LinkedIn outreach for founders and small sales teams";
+
+export const defaultTitle = `Omentir - ${brandTagline}`;
+
+export const defaultDescription =
+  "Omentir finds ICP-fit buyers, drafts LinkedIn outreach from your profile, and keeps interested replies in one inbox.";
+
+export const defaultOgImage = {
+  url: "/omentir-og.png",
+  width: 1200,
+  height: 630,
+  alt: "Omentir will find you customers or you pay nothing.",
+  type: "image/png",
+};
+
+export const defaultKeywords = [
+  "Omentir",
+  "AI sales outreach",
+  "LinkedIn outreach",
+  "LinkedIn lead generation",
+  "AI sales agents",
+  "AI SDR",
+  "autonomous sales agent",
+  "B2B sales automation",
+  "outbound sales software",
+  "personalized outbound",
+  "sales prospecting software",
+];
+
+export const noIndexRobots: Metadata["robots"] = {
+  index: false,
+  follow: false,
+  googleBot: {
+    index: false,
+    follow: false,
+  },
+};
+
+export const indexRobots: Metadata["robots"] = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-video-preview": -1,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+  },
+};
+
+type PageMetadataOptions = {
+  title: string;
+  description: string;
+  path?: string;
+  canonicalPath?: string;
+  noIndex?: boolean;
+  keywords?: string[];
+  image?: {
+    url: string;
+    width: number;
+    height: number;
+    alt: string;
+  };
+  /** When set, CMS (or the caller) owns article metadata. Do not overlay ALL_BLOGS. */
+  article?: {
+    publishedDate: string;
+    updatedDate?: string;
+    category?: string;
+  };
+};
+
+export function absoluteAssetUrl(src: string) {
+  if (!src) return src;
+  if (src.startsWith("http://") || src.startsWith("https://")) return src;
+  return `${siteUrl}${src.startsWith("/") ? src : `/${src}`}`;
+}
+
+/** Sitemap image:loc values. Next.js writes them without XML-escaping, so a raw `&` is an unknown entity. */
+export function sitemapImageUrl(src: string) {
+  const url = absoluteAssetUrl(src);
+  const query = url.indexOf("?");
+  return query === -1 ? url : url.slice(0, query);
+}
+
+// Dates in blog-data are calendar days ("July 22, 2026") with no timezone, so
+// they must be parsed as UTC. Letting the runtime read them as local time makes
+// `toISOString()` shift the day backwards anywhere west-positive of UTC — on an
+// Asia/Calcutta machine "July 22, 2026" is emitted as 2026-07-21, one day off
+// from the byline the same date renders. That disagreement is precisely what
+// makes a crawler distrust a site's dates, and it moves with the server's
+// timezone, so it cannot be caught by reading the output on one machine.
+export function normalizeDate(value: string) {
+  const parsedDate = new Date(`${value} UTC`);
+  if (!isNaN(parsedDate.getTime())) {
+    return parsedDate.toISOString().split("T")[0];
+  }
+
+  return value;
+}
+
+function uniqueValues(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function markdownAlternatePath(path: string) {
+  if (
+    path === "/agents.md" ||
+    path.endsWith(".txt") ||
+    path.endsWith(".json") ||
+    path.endsWith(".xml") ||
+    path.endsWith(".md")
+  ) {
+    return null;
+  }
+  return path === "/" ? "/index.md" : `${path}.md`;
+}
+
+export function createPageMetadata({
+  title,
+  description,
+  path = "/",
+  canonicalPath = path,
+  noIndex = false,
+  keywords = [],
+  image = defaultOgImage,
+  article,
+}: PageMetadataOptions): Metadata {
+  const url = `${siteUrl}${path}`;
+  const canonicalUrl = `${siteUrl}${canonicalPath}`;
+  const blog = article
+    ? {
+        title,
+        description,
+        publishedDate: article.publishedDate,
+        updatedDate: article.updatedDate || article.publishedDate,
+        category: article.category || "Playbooks",
+        bannerSrc: image.url,
+        bannerAlt: image.alt,
+      }
+    : undefined;
+  const pageTitle = title;
+  const pageDescription = description;
+  const metadataImage = image;
+  const ogImage = { ...metadataImage, url: absoluteAssetUrl(metadataImage.url) };
+  const articleKeywords = blog
+    ? [
+        blog.title,
+        blog.category,
+        `${blog.category} for B2B sales`,
+        `${blog.title} Omentir`,
+      ]
+    : [];
+  const allKeywords = uniqueValues([...defaultKeywords, ...keywords, ...articleKeywords]);
+  const markdownPath = markdownAlternatePath(canonicalPath);
+
+  const openGraph = blog
+    ? {
+        title: pageTitle,
+        description: pageDescription,
+        url,
+        siteName: "Omentir",
+        type: "article" as const,
+        publishedTime: normalizeDate(blog.publishedDate),
+        modifiedTime: normalizeDate(blog.updatedDate || blog.publishedDate),
+        authors: ["Vansh Yadav"],
+        section: blog.category,
+        tags: uniqueValues([...keywords, blog.title, blog.category]),
+        images: [ogImage],
+      }
+    : {
+        title: pageTitle,
+        description: pageDescription,
+        url,
+        siteName: "Omentir",
+        type: "website" as const,
+        images: [ogImage],
+      };
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: pageTitle,
+    description: pageDescription,
+    keywords: allKeywords,
+    authors: blog ? [{ name: "Vansh Yadav", url: `${siteUrl}/about` }] : [{ name: "Omentir" }],
+    creator: "Omentir",
+    publisher: "Omentir",
+    category: blog?.category,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: {
+        "en-US": canonicalUrl,
+      },
+      types: {
+        "text/plain": [
+          { url: `${siteUrl}/llms.txt`, title: "llms.txt" },
+          { url: `${siteUrl}/llms-full.txt`, title: "llms-full.txt" },
+        ],
+        ...(markdownPath
+          ? {
+              "text/markdown": [
+                { url: `${siteUrl}${markdownPath}`, title: "Markdown" },
+              ],
+            }
+          : {}),
+      },
+    },
+    openGraph,
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description: pageDescription,
+      images: [ogImage.url],
+    },
+    // A post whose release date has not arrived yet is noindexed without each
+    // page needing to opt in, so a scheduled post cannot leak into the index
+    // just because its own file forgot to ask.
+    robots:
+      noIndex || (blog && !isBlogLive(blog))
+        ? noIndexRobots
+        : indexRobots,
+  };
+}
+
+export const founderJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": `${siteUrl}/about#vansh-yadav`,
+  name: "Vansh Yadav",
+  url: `${siteUrl}/about`,
+  image: `${siteUrl}/founder.jpg`,
+  jobTitle: "Founder",
+  worksFor: {
+    "@id": `${siteUrl}/#organization`,
+  },
+};
+
+export const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
+  name: "Omentir",
+  slogan: brandTagline,
+  description: defaultDescription,
+  url: siteUrl,
+  logo: `${siteUrl}/omentir-logo.png`,
+  founder: {
+    "@id": `${siteUrl}/about#vansh-yadav`,
+  },
+  sameAs: [
+    "https://www.linkedin.com/company/121943897",
+    "https://github.com/vanshyadav1408/Omentir",
+  ],
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: process.env.HOSTED_CONTACT_EMAIL?.trim() || "vansh@omentir.com",
+  },
+  knowsAbout: [
+    "AI sales outreach",
+    "LinkedIn lead generation",
+    "B2B outbound sales",
+    "AI SDR software",
+    "sales prospecting",
+    "open-source sales software",
+  ],
+};
+
+export const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl}/#website`,
+  name: "Omentir",
+  alternateName: "Omentir AI",
+  url: siteUrl,
+  // No `slogan` here or on the SoftwareApplication below: schema.org defines it
+  // only for Brand, Organization, Place, Product and Service. Both entities
+  // carry the headline through `description`, which starts with it.
+  description: defaultDescription,
+  inLanguage: "en-US",
+  publisher: {
+    "@id": `${siteUrl}/#organization`,
+  },
+};
+
+export const softwareApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "@id": `${siteUrl}/#software`,
+  name: "Omentir",
+  alternateName: [
+    "Omentir AI sales agent",
+    "Omentir AI SDR",
+    "Omentir LinkedIn outreach tool",
+  ],
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  license: "https://github.com/vanshyadav1408/Omentir/blob/main/LICENSE",
+  url: siteUrl,
+  description: defaultDescription,
+  inLanguage: "en-US",
+  audience: {
+    "@type": "Audience",
+    audienceType: "B2B founders, SDRs, solo operators, and small sales teams",
+  },
+  featureList: [
+    "AI-assisted LinkedIn outreach",
+    "Buyer discovery",
+    "Lead organization",
+    "Campaign copy generation",
+    "Reply tracking",
+    "Unified sales inbox",
+  ],
+  creator: {
+    "@id": `${siteUrl}/#organization`,
+  },
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Pro plan",
+      price: "49",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "Enterprise plan",
+      availability: "https://schema.org/InStock",
+      url: `${siteUrl}/pricing`,
+    },
+  ],
+};
+
+type BlogJsonLdOptions = {
+  title: string;
+  description: string;
+  url: string;
+  publishedDate: string;
+  modifiedDate?: string;
+  authorName: string;
+  section?: string;
+  images?: string[];
+};
+
+export function createBlogJsonLd({
+  title,
+  description,
+  url,
+  publishedDate,
+  modifiedDate,
+  authorName,
+  section,
+  images = [],
+}: BlogJsonLdOptions) {
+  const formattedPublishedDate = normalizeDate(publishedDate);
+  const formattedModifiedDate = normalizeDate(modifiedDate || publishedDate);
+  const keywords = uniqueValues([
+    title,
+    ...(section ? [section, `${section} for B2B sales`] : []),
+    ...defaultKeywords,
+  ]);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    url,
+    headline: title,
+    description: description,
+    inLanguage: "en-US",
+    ...(section ? { articleSection: section } : {}),
+    keywords,
+    image: images,
+    ...(images[0] ? { thumbnailUrl: images[0] } : {}),
+    datePublished: formattedPublishedDate,
+    dateModified: formattedModifiedDate,
+    author: {
+      "@type": "Person",
+      "@id": `${siteUrl}/about#vansh-yadav`,
+      name: authorName,
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Omentir",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/omentir-logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    isPartOf: {
+      "@id": `${siteUrl}/blogs#collection`,
+    },
+  };
+}
+
+export function createBlogCollectionJsonLd(
+  publishedBlogs: Array<{ slug: string; title: string }>
+) {
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${siteUrl}/blogs#collection`,
+    name: "LinkedIn outreach blogs",
+    description:
+      "Guides, templates, and playbooks for LinkedIn outreach, outbound sequences, and booking demos.",
+    url: `${siteUrl}/blogs`,
+    inLanguage: "en-US",
+    isPartOf: {
+      "@id": `${siteUrl}/#website`,
+    },
+    publisher: {
+      "@id": `${siteUrl}/#organization`,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: publishedBlogs.length,
+      itemListElement: publishedBlogs.map((blog, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${siteUrl}/blogs/${blog.slug}`,
+        name: blog.title,
+      })),
+    },
+  };
+}
+
+export function createBreadcrumbJsonLd(
+  items: Array<{ name: string; url: string }>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+export function createWebPageJsonLd({
+  name,
+  description,
+  url,
+  dateModified,
+}: {
+  name: string;
+  description: string;
+  url: string;
+  dateModified?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    name,
+    description,
+    url,
+    inLanguage: "en-US",
+    ...(dateModified ? { dateModified: normalizeDate(dateModified) } : {}),
+    isPartOf: {
+      "@id": `${siteUrl}/#website`,
+    },
+    about: {
+      "@id": `${siteUrl}/#organization`,
+    },
+  };
+}
+
+export function createFAQJsonLd(
+  items: ReadonlyArray<{ question: string; answer: string }>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}

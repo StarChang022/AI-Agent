@@ -1,0 +1,56 @@
+# Tessl Skill Review — runs on PRs that change any SKILL.md; posts scores as one PR comment.
+#
+# The old `tesslio/skill-review@main` GitHub Action was retired at the end of July 2026
+# (issue #8). This workflow uses the `tessl review` CLI instead. Scoring dimensions live
+# in .github/tessl-rubric.yml. Verify exact CLI flag names against the current Tessl
+# migration docs at swap time — the structure below is the required shape.
+name: Tessl Skill Review
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/SKILL.md"
+
+jobs:
+  # TESSL_API_KEY is an optional repo secret. It is read once here so the review
+  # job can be skipped cleanly when the secret is absent: `if:` conditions cannot
+  # reference `secrets` directly, and forks never receive repo secrets. Without
+  # this gate every SKILL.md PR from a fork — and every PR on a clone that has
+  # not set the secret — fails at `tessl review` with an auth error.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          TESSL_API_KEY: ${{ secrets.TESSL_API_KEY }}
+        run: echo "enabled=${TESSL_API_KEY:+true}" >> "$GITHUB_OUTPUT"
+
+  review:
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      # This job holds TESSL_API_KEY and a token that can write PR comments, so what it runs is pinned:
+      # the action by commit (v4.4.0) and the CLI by exact version. Bump both on purpose, never implicitly.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+        with:
+          fetch-depth: 0          # tessl review diffs SKILL.md changes vs the base branch
+      - name: Install Tessl CLI
+        run: npm install -g --ignore-scripts @tessl/cli@0.119.0
+      - name: Review changed skills
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TESSL_API_KEY: ${{ secrets.TESSL_API_KEY }}
+        run: |
+          tessl review \
+            --base "origin/${{ github.base_ref }}" \
+            --paths "**/SKILL.md" \
+            --rubric .github/tessl-rubric.yml \
+            --output pr-comment \
+            --pr "${{ github.event.pull_request.number }}"

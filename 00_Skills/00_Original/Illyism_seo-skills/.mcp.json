@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "aiseotracker": {
+      "type": "http",
+      "url": "https://aiseotracker.com/api/agent/mcp"
+    },
+    "scribiz": {
+      "type": "http",
+      "url": "https://scribiz.com/mcp"
+    },
+    "awesome-tools": {
+      "type": "http",
+      "url": "https://awesome.tools/mcp"
+    }
+  }
+}

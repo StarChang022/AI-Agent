@@ -1,0 +1,1147 @@
+"use client";
+
+import { unwrapAction, type ActionFailure } from "@/lib/action-result";
+import { userFacingError, useToast } from "@/app/toast";
+import { useEffect, useRef, useState, useTransition } from "react";
+import type { LinkedInAccount, Workspace } from "@/lib/server/types";
+import { ContentReveal, LinkedInAccountsSkeleton } from "@/app/app-skeletons";
+import MobileHeaderPortal from "@/app/mobile-header-portal";
+import { useSidebarResource } from "@/app/use-sidebar-resource";
+import SignOutButton from "./sign-out-button";
+import { SelectField } from "@/app/ui/select";
+import { TextField } from "@/app/ui/text-field";
+import { useWorkspaceTimeZone } from "@/app/workspace-time-zone";
+import { formatZonedDate } from "@/lib/time-zone";
+import { APPSUMO_PRODUCTS_URL, appSumoTierOf } from "@/lib/appsumo-tiers";
+import { billedLinkedInAccountLimit, formatPlanLimit } from "@/lib/plan-limits";
+import {
+  DAILY_DIGEST_HOUR_OPTIONS,
+  normalizeDailyDigestHour,
+} from "@/lib/daily-digest";
+import { extraLinkedInSeatsCount, extraSeatMonthlyPriceLabel } from "@/lib/linkedin-seat-pricing";
+import { WHOP_MEMBERSHIPS_URL } from "@/lib/whop-billing-url";
+import LinkedInSeatsCard from "./linkedin-seats-card";
+import BlacklistPanel from "./blacklist-panel";
+import LinkedInHealthCard, {
+  INVITE_WITHDRAW_HELP,
+  INVITE_WITHDRAW_SELECT_OPTIONS,
+} from "./linkedin-health-card";
+import {
+  normalizeInviteWithdrawAfterDays,
+  type LinkedInAccountHealth,
+} from "@/lib/linkedin-health";
+import DeleteWorkspaceCard from "@/app/delete-workspace-card";
+import OutreachSwitch from "@/app/outreach-switch";
+import { ToggleRow } from "@/app/ui/toggle-row";
+
+type SettingsViewProps = {
+  workspace: Workspace;
+  linkedInAccounts: LinkedInAccount[];
+  user: { name: string; email: string; imageUrl?: string };
+  saveAction: (formData: FormData) => Promise<void | ActionFailure>;
+  uploadImageAction: (formData: FormData) => Promise<void | ActionFailure>;
+  disconnectAction: (formData: FormData) => Promise<void | ActionFailure>;
+  deleteWorkspaceAction: (workspaceId: string) => Promise<void | ActionFailure>;
+  localMode?: boolean;
+  notificationsEnabled?: boolean;
+};
+
+const TABS = ["Profile", "Connected Accounts", "Restrictions", "Subscription"] as const;
+type Tab = (typeof TABS)[number];
+
+const selectLinkedInAccounts = (data: Record<string, unknown>) =>
+  (data.accounts as LinkedInAccount[]) || [];
+const selectLinkedInHealth = (data: Record<string, unknown>) =>
+  (data.health as LinkedInAccountHealth[]) || [];
+
+const LANGUAGES = ["English", "Spanish", "French", "German", "Portuguese"];
+const COMMON_TIMEZONES = ["UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "America/Anchorage", "Pacific/Honolulu", "Europe/London", "Europe/Berlin", "Europe/Paris", "Europe/Moscow", "Asia/Dubai", "Asia/Kolkata", "Asia/Shanghai", "Asia/Tokyo", "Australia/Sydney", "Pacific/Auckland"];
+const TIMEZONE_IDS = Array.from(new Set([
+  ...(typeof Intl !== "undefined" && Intl.supportedValuesOf
+    ? Intl.supportedValuesOf("timeZone")
+    : []),
+  ...COMMON_TIMEZONES,
+]));
+const TIMEZONES = TIMEZONE_IDS.map((tz) => {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    timeZoneName: "shortOffset",
+  });
+  const parts = formatter.formatToParts(now);
+  const offsetPart = parts.find((p) => p.type === "timeZoneName")?.value || "GMT";
+  const offset = offsetPart === "GMT" ? "GMT+00:00" : offsetPart;
+  return `(${offset}) ${tz}`;
+});
+
+// Sort by offset numerically then alphabetically
+TIMEZONES.sort((a, b) => {
+  const parseOffset = (s: string) => {
+    const match = s.match(/GMT([+-]?)(\d{1,2}):?(\d{2})?/);
+    if (!match) return 0;
+    const sign = match[1] === "-" ? -1 : 1;
+    const hours = parseInt(match[2], 10);
+    const minutes = parseInt(match[3] || "0", 10);
+    return sign * (hours * 60 + minutes);
+  };
+  const diff = parseOffset(a) - parseOffset(b);
+  if (diff !== 0) return diff;
+  return a.localeCompare(b);
+});
+
+function timezoneOption(timezone?: string) {
+  const name = timezone || "UTC";
+  return (
+    TIMEZONES.find((option) => option.endsWith(`) ${name}`)) ||
+    TIMEZONES.find((option) => option.endsWith(") UTC")) ||
+    TIMEZONES[0]
+  );
+}
+
+/** "(GMT+5:30) Asia/Kolkata" -> "Asia/Kolkata", the form's stored value. */
+function timezoneName(option: string) {
+  return option.split(") ").at(-1)?.trim() || "UTC";
+}
+
+async function resizeProfileImage(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  const scale = Math.max(size / bitmap.width, size / bitmap.height);
+  const width = bitmap.width * scale;
+  const height = bitmap.height * scale;
+  ctx.drawImage(bitmap, (size - width) / 2, (size - height) / 2, width, height);
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob(resolve, "image/jpeg", 0.88);
+  });
+  if (!blob) return file;
+  return new File([blob], "avatar.jpg", { type: "image/jpeg" });
+}
+const DATE_FORMATS = [
+  "May 12, 2025 (MMM D, YYYY)",
+  "12 May 2025 (D MMM YYYY)",
+  "2025-05-12 (YYYY-MM-DD)",
+];
+
+function billingPill(status?: string) {
+  if (status === "active" || status === "bypassed")
+    return { label: "Active", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" };
+  if (status === "approval_pending" || status === "pending")
+    return { label: "Pending", cls: "border-amber-200 bg-amber-50 text-amber-800" };
+  if (status === "suspended" || status === "cancelled" || status === "expired")
+    return { label: "Inactive", cls: "border-zinc-200 bg-zinc-100 text-zinc-700" };
+  return { label: "Active", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" };
+}
+
+function SectionHeader({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="mb-5">
+      <h2
+        style={{ fontFamily: "var(--font-varta)" }}
+        className="text-xl font-semibold tracking-tight text-zinc-950"
+      >
+        {title}
+      </h2>
+      <span className="mt-1.5 block h-0.5 w-8 rounded-full bg-[#ba3871]/60" aria-hidden />
+      {description ? <p className="mt-2 text-[13px] leading-relaxed text-zinc-600">{description}</p> : null}
+    </div>
+  );
+}
+
+function SubscriptionCard({
+  name,
+  price,
+  detail,
+  status,
+  manageHref,
+  manageHint,
+}: {
+  name: string;
+  price: string;
+  detail: React.ReactNode;
+  status: { label: string; cls: string };
+  manageHref: string;
+  manageHint: string;
+}) {
+  return (
+    <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="text-[14px] font-semibold text-zinc-950"
+          >
+            {name}
+          </div>
+          <div className="mt-2 flex items-baseline gap-1">
+            <span className="text-[32px] font-bold tracking-tight text-zinc-950">{price}</span>
+          </div>
+          <p className="mt-1 text-[13px] font-medium text-zinc-700">{detail}</p>
+        </div>
+        <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${status.cls}`}>
+          {status.label}
+        </span>
+      </div>
+
+      <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+        <a
+          href={manageHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontFamily: "var(--font-varta)" }}
+          className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-[#ba3871] px-4 text-[13px] font-semibold text-white shadow-[0_8px_24px_rgba(255,255,255,0.12)] transition hover:brightness-[0.98]"
+        >
+          <span className="leading-none">Manage plan</span>
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </a>
+        <span className="text-[11px] font-medium text-zinc-700">{manageHint}</span>
+      </div>
+    </div>
+  );
+}
+
+function SearchableSelectField({
+  value,
+  onChange,
+  options,
+  placeholder,
+  label,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  options: string[];
+  placeholder?: string;
+  label?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const fieldLabel = label || placeholder || "Select";
+  const hasLabel = Boolean(label);
+
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!ref.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setSearch("");
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
+
+  useEffect(() => {
+    if (open && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [open]);
+
+  const filtered = search.trim()
+    ? options.filter((option) => option.toLowerCase().includes(search.toLowerCase()))
+    : options;
+
+  // Show current time for each timezone in the filtered list
+  function getCurrentTime(tzOption: string) {
+    const tzName = tzOption.replace(/^\([^)]*\)\s*/, "");
+    try {
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: tzName,
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }).format(new Date());
+    } catch {
+      return "";
+    }
+  }
+
+  return (
+    <div
+      className={`m3-text-field m3-text-field--outlined relative ${hasLabel ? "" : "m3-text-field--no-label"}`}
+      data-focused={open ? "true" : "false"}
+      data-error="false"
+      data-disabled="false"
+      ref={ref}
+    >
+      {hasLabel ? <span className="m3-text-field__label">{fieldLabel}</span> : null}
+      <div className="m3-text-field__body">
+        <div className="m3-text-field__shell">
+          <button
+            type="button"
+            onClick={() => setOpen((current) => !current)}
+            className="m3-text-field__input flex w-full items-center justify-between gap-2 !h-[var(--md-sys-text-field-height)] !border-0 !bg-transparent !shadow-none text-left focus:outline-none"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+          >
+            <span
+              className={`min-w-0 truncate text-[14px] leading-5 ${
+                value
+                  ? "text-[var(--md-sys-color-field-text)]"
+                  : "text-[var(--md-sys-color-text-disabled)]"
+              }`}
+            >
+              {value || placeholder || "Select"}
+            </span>
+            <span
+              className={`material-symbols-outlined text-[20px] font-light leading-none text-[var(--md-sys-color-on-surface-variant)] transition-transform ${
+                open ? "rotate-180" : ""
+              }`}
+              aria-hidden="true"
+            >
+              expand_more
+            </span>
+          </button>
+        </div>
+      </div>
+      {open ? (
+        <div className="m3-menu m3-menu-enter m3-menu--origin-top absolute z-50 mt-1 w-full !max-h-none overflow-hidden">
+          <div className="border-b border-[var(--md-sys-color-outline-variant)] px-2 py-2">
+            <TextField
+              ref={inputRef}
+              variant="filled"
+              placeholder={placeholder || "Search timezone, city, or region..."}
+              aria-label={placeholder || "Search timezone, city, or region..."}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              trailingIcon={
+                search ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="grid h-10 w-10 place-items-center text-[var(--md-sys-color-on-surface-variant)]"
+                    aria-label="Clear search"
+                  >
+                    <span className="material-symbols-outlined text-[16px] font-light" aria-hidden="true">
+                      close
+                    </span>
+                  </button>
+                ) : null
+              }
+            />
+          </div>
+          <div ref={listRef} className="max-h-56 overflow-y-auto" role="listbox">
+            {filtered.length === 0 ? (
+              <div className="m3-menu-item !cursor-default text-center text-[var(--md-sys-color-on-surface-variant)]">
+                No timezones match &ldquo;{search}&rdquo;
+              </div>
+            ) : (
+              filtered.map((option) => {
+                const time = getCurrentTime(option);
+                const isSelected = value === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => {
+                      onChange(option);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className={`m3-menu-item ${isSelected ? "m3-menu-item--selected" : ""}`}
+                  >
+                    <span className="m3-menu-item__label min-w-0 truncate">{option}</span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="text-[11px] font-medium text-[var(--md-sys-color-on-surface-variant)]">
+                        {time}
+                      </span>
+                      {isSelected ? (
+                        <span className="m3-menu-item__check material-symbols-outlined" aria-hidden="true">
+                          check
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function NumberField({
+  value,
+  onChange,
+  min,
+  max,
+  suffix,
+  label,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  min: number;
+  max: number;
+  suffix?: string;
+  label?: string;
+}) {
+  return (
+    <TextField
+      type="number"
+      value={value}
+      min={min}
+      max={max}
+      onChange={(event) => onChange(Number(event.target.value) || 0)}
+      label={label}
+      trailingIcon={
+        suffix ? (
+          <span className="whitespace-nowrap text-[13px] font-medium text-[var(--md-sys-color-on-surface-variant)]">
+            {suffix}
+          </span>
+        ) : null
+      }
+      className="[&_input]:[appearance:textfield] [&_input::-webkit-inner-spin-button]:appearance-none [&_input::-webkit-outer-spin-button]:appearance-none"
+    />
+  );
+}
+
+export default function SettingsView({
+  workspace,
+  linkedInAccounts,
+  user,
+  saveAction,
+  uploadImageAction,
+  disconnectAction,
+  deleteWorkspaceAction,
+  localMode = false,
+  notificationsEnabled = true,
+}: SettingsViewProps) {
+  const [tab, setTab] = useState<Tab>("Profile");
+  const [pending, startTransition] = useTransition();
+  const { showError } = useToast();
+  const [uploadingPhoto, startUpload] = useTransition();
+  const [photoError, setPhotoError] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const linkedInAccountsResource = useSidebarResource(
+    "linkedinAccounts",
+    linkedInAccounts,
+    selectLinkedInAccounts,
+  );
+  const loadedLinkedInAccounts = linkedInAccountsResource.value;
+  const linkedInAccountsLoading = linkedInAccountsResource.loading;
+  // Reads the pending-invite list from LinkedIn, so only on the tab that shows it.
+  const linkedInHealthResource = useSidebarResource(
+    "linkedinHealth",
+    [] as LinkedInAccountHealth[],
+    selectLinkedInHealth,
+    tab === "Connected Accounts",
+  );
+  const [withdrawAfterDays, setWithdrawAfterDays] = useState(
+    normalizeInviteWithdrawAfterDays(workspace.settings.inviteWithdrawAfterDays),
+  );
+
+  const [language, setLanguage] = useState("English");
+  // Follows the workspace zone (detected on first load when none is stored)
+  // until the user picks one, so the field always shows the zone the rest of
+  // the app is formatting in rather than a stale "UTC".
+  const timeZone = useWorkspaceTimeZone();
+  const [pickedTimezone, setPickedTimezone] = useState("");
+  const timezone = pickedTimezone || timezoneOption(timeZone);
+  const [dateFormat, setDateFormat] = useState("May 12, 2025 (MMM D, YYYY)");
+  const [dailyInvites, setDailyInvites] = useState(workspace.settings.dailyInviteLimit);
+  const [dailyMessages, setDailyMessages] = useState(workspace.settings.dailyMessageLimit);
+  const [firstDelay, setFirstDelay] = useState(
+    Math.max(1, Math.round(workspace.settings.firstMessageDelayMinutes / 60)),
+  );
+  const [aiFollowUp, setAiFollowUp] = useState(workspace.settings.aiFollowUpEnabled);
+  const [dailyDigest, setDailyDigest] = useState(workspace.settings.dailyDigestEmailEnabled === true);
+  const [digestHour, setDigestHour] = useState(
+    normalizeDailyDigestHour(workspace.settings.dailyDigestHour),
+  );
+  const [notifEmail, setNotifEmail] = useState(workspace.notificationEmail || user.email);
+  const plan = workspace.billing?.plan || "solo";
+  // Set for an AppSumo license, which is the lifetime plan sold in tiers.
+  const appSumoTier = appSumoTierOf(workspace.billing);
+  const planName = appSumoTier
+    ? "AppSumo Lifetime"
+    : plan === "startup"
+      ? "Current subscription"
+      : plan === "lifetime"
+        ? "Lifetime"
+        : plan === "enterprise"
+          ? "Enterprise"
+          : "Pro";
+  // The price paid on AppSumo varies with their sales, so the tier is shown.
+  const planPrice = appSumoTier
+    ? `Tier ${appSumoTier}`
+    : plan === "startup"
+      ? "Active"
+      : plan === "lifetime"
+        ? "$99"
+        : plan === "enterprise"
+          ? "Custom"
+          : "$49/month";
+  // Same ceilings as plan-limits enforcement. Local/self-hosted is unlimited.
+  const extraLinkedInSeats = extraLinkedInSeatsCount(workspace.billing?.extraLinkedInSeats);
+  const includedLinkedInAccounts = billedLinkedInAccountLimit(plan, 0, appSumoTier);
+  const linkedInAccountCap = localMode
+    ? Number.POSITIVE_INFINITY
+    : billedLinkedInAccountLimit(plan, extraLinkedInSeats, appSumoTier);
+  const linkedInLimit = formatPlanLimit(linkedInAccountCap);
+  const linkedInLimitLabel =
+    linkedInLimit === "unlimited" ? "unlimited" : linkedInLimit;
+  const linkedInIsUnlimited = !Number.isFinite(linkedInAccountCap);
+  const subscriptionActive =
+    workspace.billing?.status === "active" || workspace.billing?.status === "bypassed";
+  const [notifFlags, setNotifFlags] = useState({ campaign: true, product: true });
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    formData.set("dailyInviteLimit", String(dailyInvites));
+    formData.set("dailyMessageLimit", String(dailyMessages));
+    formData.set("firstMessageDelayMinutes", String(firstDelay * 60));
+    formData.set("aiFollowUpDelayMinutes", String(workspace.settings.aiFollowUpDelayMinutes));
+    formData.set("timezone", timezoneName(timezone));
+    if (aiFollowUp) formData.set("aiFollowUpEnabled", "on");
+    if (dailyDigest && subscriptionActive) formData.set("dailyDigestEmailEnabled", "on");
+    formData.set("dailyDigestHour", String(digestHour));
+    formData.set("inviteWithdrawAfterDays", String(withdrawAfterDays));
+    startTransition(async () => {
+      try {
+        unwrapAction(await saveAction(formData));
+      } catch (error) {
+        showError(userFacingError(error, "Settings could not be saved."));
+      }
+    });
+  }
+
+  async function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setPhotoError("");
+    try {
+      const image = await resizeProfileImage(file);
+      const formData = new FormData();
+      formData.set("image", image);
+      startUpload(async () => {
+        try {
+          unwrapAction(await uploadImageAction(formData));
+        } catch (err) {
+          setPhotoError(userFacingError(err, "Could not update the photo."));
+        }
+      });
+    } catch {
+      setPhotoError("Could not read that image. Try another file.");
+    }
+  }
+
+  const billing = billingPill(workspace.billing?.status);
+  const userInitials = user.name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  return (
+    <form
+      id="settings-save-form"
+      onSubmit={handleSubmit}
+      className="flex h-full min-h-0 min-w-0 flex-col gap-3 md:mr-0.5"
+    >
+      {/* Portaled to body so fixed positioning is not trapped by page enter /
+          fade transforms (or main overflow), which hid this control on mobile. */}
+      <MobileHeaderPortal>
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-[92] flex h-14 items-center justify-end px-2 md:hidden">
+          <button
+            type="submit"
+            form="settings-save-form"
+            disabled={pending}
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="pointer-events-auto m3-btn m3-btn-filled h-8 px-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="translate-y-px">{pending ? "Saving..." : "Save"}</span>
+          </button>
+        </div>
+      </MobileHeaderPortal>
+
+      {/* Header — primary action matches Leads "Add leads" */}
+      <div className="app-x hidden shrink-0 items-center justify-between gap-3 pt-6 md:flex">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold leading-none tracking-tight text-[var(--md-sys-color-on-surface)]">
+            Settings
+          </h1>
+        </div>
+        <button
+          type="submit"
+          disabled={pending}
+          className="m3-btn m3-btn-filled h-8 shrink-0 gap-1 px-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          {pending ? "Saving..." : "Save settings"}
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="app-x shrink-0">
+        <div className="flex items-center gap-6 overflow-x-auto border-b border-zinc-200 pt-4 md:pt-0">
+          {TABS.filter((label) => workspace.id !== "local" || label !== "Subscription").map((label) => {
+            const active = tab === label;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setTab(label)}
+                className={`relative -mb-px cursor-pointer pb-2.5 text-[14px] font-semibold transition-colors ${
+                  active ? "text-zinc-950" : "text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                {label}
+                {active ? <span className="absolute inset-x-0 -bottom-px h-0.5 bg-zinc-950" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="app-x h-full overflow-y-auto">
+          <div className="max-w-5xl pb-8 pt-1 sm:pb-10 sm:pt-2 md:pb-3">
+            {tab === "Profile" && (
+              <>
+                {/* Profile section */}
+                <SectionHeader
+                  title="Profile"
+                  description="Your personal information and workspace preferences."
+                />
+
+                <div className="m3-card m3-card-outlined flex min-w-0 items-center gap-3 p-3">
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    aria-label={
+                      uploadingPhoto
+                        ? "Uploading photo"
+                        : user.imageUrl
+                          ? "Change photo"
+                          : "Upload photo"
+                    }
+                    className="group relative grid h-8 w-8 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full disabled:cursor-not-allowed"
+                  >
+                    {user.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={user.imageUrl}
+                        alt=""
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-8 w-8 place-items-center rounded-full bg-[#ba3871] text-[10px] font-medium text-white">
+                        {userInitials}
+                      </span>
+                    )}
+                    <span
+                      className={`absolute inset-0 grid place-items-center bg-black/55 text-white transition-opacity ${
+                        uploadingPhoto
+                          ? "opacity-100"
+                          : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                      }`}
+                    >
+                      {uploadingPhoto ? (
+                        <span className="h-3 w-3 animate-spin rounded-full border border-white/30 border-t-white" />
+                      ) : (
+                        <svg
+                          className="h-3.5 w-3.5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                      )}
+                    </span>
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[14px] font-semibold text-zinc-950">
+                      {user.name}
+                    </div>
+                    <div className="truncate text-[13px] font-medium text-zinc-700">{user.email}</div>
+                    {photoError ? (
+                      <p className="mt-1 text-[11px] font-medium text-red-600">{photoError}</p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-x-6 gap-y-6 md:grid-cols-2">
+                  <SelectField
+                    label="Language"
+                    value={language}
+                    onChange={setLanguage}
+                    options={LANGUAGES}
+                  />
+                  <div>
+                    <SearchableSelectField
+                      label="Time zone"
+                      value={timezone}
+                      onChange={setPickedTimezone}
+                      options={TIMEZONES}
+                      placeholder="Search timezone, city, or region..."
+                    />
+                    <p className="mt-1.5 text-[11px] font-medium text-zinc-600">
+                      Every date and time in Omentir is shown in this zone, and your daily
+                      sending limits reset at its midnight. Send windows follow each lead&apos;s
+                      own zone, falling back to this one when their location is unknown.
+                    </p>
+                  </div>
+                  <SelectField
+                    label="Date format"
+                    value={dateFormat}
+                    onChange={setDateFormat}
+                    options={DATE_FORMATS}
+                  />
+                </div>
+
+                <div className="my-8 h-px bg-zinc-200" />
+
+                {/* Automation limits */}
+                <SectionHeader
+                  title="Automation limits"
+                  description="Control how aggressively your agents and campaigns reach out. The daily invite and message limits apply to each connected LinkedIn account on its own."
+                />
+
+                <div className="mb-4">
+                  <OutreachSwitch
+                    workspaceName={workspace.name}
+                    initialPaused={workspace.settings.outreachPaused === true}
+                  />
+                </div>
+
+                <div className="grid gap-x-6 gap-y-6 md:grid-cols-2">
+                  <NumberField
+                    label="Daily connection invites"
+                    value={dailyInvites}
+                    onChange={setDailyInvites}
+                    min={1}
+                    max={100}
+                    suffix="invites / day"
+                  />
+                  <NumberField
+                    label="Daily messages"
+                    value={dailyMessages}
+                    onChange={setDailyMessages}
+                    min={1}
+                    max={200}
+                    suffix="messages / day"
+                  />
+                  <NumberField
+                    label="First message delay"
+                    value={firstDelay}
+                    onChange={setFirstDelay}
+                    min={1}
+                    max={168}
+                    suffix="hours after connect"
+                  />
+                </div>
+
+                <div className="mt-2">
+                  <ToggleRow
+                    title="AI follow-up"
+                    description="Let AI write personalized follow-up messages when no reply has come in."
+                    enabled={aiFollowUp}
+                    onChange={setAiFollowUp}
+                  />
+                </div>
+
+                {!localMode ? (
+                  <>
+                    <div className="my-8 h-px bg-zinc-200" />
+
+                    {/* Notifications */}
+                    <SectionHeader
+                      title="Notifications"
+                      description="Choose what to get emailed about and where."
+                    />
+
+                    {!notificationsEnabled ? (
+                      <p className="mb-4 rounded-lg bg-[var(--md-sys-color-surface-container)] p-4 text-sm text-[var(--md-sys-color-on-surface-variant)]">
+                        Email notifications are disabled. Configure RESEND_API_KEY and RESEND_FROM_EMAIL, then restart Omentir to enable operational alerts.
+                      </p>
+                    ) : null}
+
+                    <TextField
+                      name="notificationEmail"
+                      type="email"
+                      label="Notification email"
+                      value={notifEmail}
+                      onChange={(event) => setNotifEmail(event.target.value)}
+                      supportingText="We'll send important updates to this email."
+                    />
+
+                    <div className="mt-2">
+                      <ToggleRow
+                        title="Daily outreach summary"
+                        description={
+                          subscriptionActive
+                            ? "Email the last 24 hours of invites, messages, and replies. Off until you turn it on."
+                            : "Requires an active subscription."
+                        }
+                        enabled={dailyDigest && subscriptionActive}
+                        disabled={!subscriptionActive}
+                        onChange={setDailyDigest}
+                      />
+                      <div className="max-w-sm pb-1">
+                        <SelectField
+                          label="Send time"
+                          options={DAILY_DIGEST_HOUR_OPTIONS}
+                          value={String(digestHour)}
+                          onChange={(value) => setDigestHour(normalizeDailyDigestHour(value))}
+                          clearable={false}
+                        />
+                        <p className="mt-1.5 text-[11px] font-medium text-zinc-600">
+                          Uses your workspace time zone ({timezoneName(timezone)}).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 divide-y divide-zinc-100 rounded-md border border-zinc-200 bg-white px-4">
+                      {(
+                        [
+                          ["campaign", "Campaign activity", "New replies, accepts, and important events"],
+                          ["product", "Product updates", "New features and product announcements"],
+                        ] as const
+                      ).map(([id, title, sub]) => (
+                        <ToggleRow
+                          key={id}
+                          title={title}
+                          description={sub}
+                          enabled={notifFlags[id]}
+                          onChange={(next) => setNotifFlags({ ...notifFlags, [id]: next })}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="my-8 h-px bg-zinc-200" />
+
+                    <SectionHeader
+                      title="Account session"
+                      description="Manage your signed-in session on this device."
+                    />
+                    <SignOutButton localMode={workspace.id === "local"} />
+                  </>
+                ) : null}
+
+                <div className="my-8 h-px bg-zinc-200" />
+
+                <SectionHeader
+                  title="Workspace"
+                  description="Delete this workspace and everything in it."
+                />
+                <DeleteWorkspaceCard
+                  workspace={workspace}
+                  deleteAction={deleteWorkspaceAction}
+                />
+              </>
+            )}
+
+            {tab === "Connected Accounts" && (
+              <>
+                <SectionHeader
+                  title="Connected accounts"
+                  description={`You can connect ${linkedInLimitLabel} LinkedIn account${linkedInIsUnlimited || linkedInAccountCap !== 1 ? "s" : ""}.`}
+                />
+
+                {linkedInAccountsLoading ? (
+                  <LinkedInAccountsSkeleton />
+                ) : (
+                <ContentReveal className="space-y-3">
+                  {loadedLinkedInAccounts.length ? (
+                    loadedLinkedInAccounts.map((account, index) => (
+                      <div key={account.id} className="flex flex-col items-start gap-3 rounded-md border border-zinc-200 bg-white p-3 sm:flex-row sm:items-center">
+                        <div className="grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-[#0a66c2]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={account.avatarUrl || "/linkedin-logo.png"}
+                            alt={account.avatarUrl ? `${account.displayName} profile` : "LinkedIn"}
+                            className={account.avatarUrl ? "h-full w-full object-cover" : "h-3.5 w-auto object-contain brightness-0 invert"}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-[14px] font-semibold text-zinc-950">
+                              {account.displayName || "LinkedIn account"}
+                            </span>
+                            <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              Connected
+                            </span>
+                          </div>
+                          <div className="mt-0.5 truncate text-[13px] font-medium text-zinc-700">
+                            LinkedIn account
+                          </div>
+                          <div className="text-[11px] font-medium text-zinc-600">
+                            Connected on {formatZonedDate(account.createdAt, timeZone)}
+                          </div>
+                        </div>
+                        <div className="flex w-full shrink-0 flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+                          {index === 0 ? (
+                            <a
+                              href="/api/connect/linkedin"
+                              className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-[13px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
+                            >
+                              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+                              </svg>
+                              Reconnect
+                            </a>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const formData = new FormData();
+                              formData.set("linkedInAccountId", account.id);
+                              startTransition(async () => {
+                                unwrapAction(await disconnectAction(formData));
+                                linkedInAccountsResource.reload();
+                              });
+                            }}
+                            disabled={pending}
+                            className="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-red-200 bg-white px-3 text-[13px] font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Disconnect
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-start gap-3 rounded-md border border-zinc-200 bg-white p-3 sm:flex-row sm:items-center">
+                      <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#0a66c2]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/linkedin-logo.png" alt="LinkedIn" className="h-3.5 w-auto object-contain brightness-0 invert" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[14px] font-semibold text-zinc-950">Not connected</div>
+                        <div className="mt-0.5 truncate text-[13px] font-medium text-zinc-700">
+                          Connect to send messages from your account
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </ContentReveal>
+                )}
+
+                {linkedInAccountsLoading ? null : linkedInIsUnlimited ||
+                  loadedLinkedInAccounts.length < linkedInAccountCap ? (
+                  <a
+                    href="/api/connect/linkedin"
+                    style={{ fontFamily: "var(--font-varta)" }}
+                    className="mt-3 inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-[#0a66c2] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#0855a3]"
+                  >
+                    Connect account
+                  </a>
+                ) : (
+                  <p className="mt-3 text-[13px] font-medium text-zinc-700">
+                    You are using all {linkedInLimit} connected account
+                    {linkedInAccountCap === 1 ? "" : "s"}. Add extra LinkedIn
+                    accounts below to connect more.
+                  </p>
+                )}
+
+                {loadedLinkedInAccounts.length ? (
+                  <>
+                    <div className="my-8 h-px bg-zinc-200" />
+                    <SectionHeader
+                      title="Account health"
+                      description="LinkedIn restricts accounts that pile up unanswered invites or get few accepts. These numbers show how close you are."
+                    />
+                    {linkedInHealthResource.loading ? (
+                      <LinkedInAccountsSkeleton />
+                    ) : (
+                      <ContentReveal className="space-y-3">
+                        {linkedInHealthResource.value.map((health) => (
+                          <LinkedInHealthCard
+                            key={health.linkedInAccountId}
+                            health={health}
+                            accountName={
+                              loadedLinkedInAccounts.length > 1
+                                ? loadedLinkedInAccounts.find(
+                                    (account) => account.id === health.linkedInAccountId,
+                                  )?.displayName
+                                : undefined
+                            }
+                          />
+                        ))}
+                      </ContentReveal>
+                    )}
+                    <div className="mt-5 max-w-sm">
+                      <SelectField
+                        label="Withdraw unanswered invites"
+                        options={INVITE_WITHDRAW_SELECT_OPTIONS}
+                        value={String(withdrawAfterDays)}
+                        onChange={(value) =>
+                          setWithdrawAfterDays(normalizeInviteWithdrawAfterDays(value))
+                        }
+                        clearable={false}
+                      />
+                      <p className="mt-1.5 text-[11px] font-medium text-zinc-600">
+                        {INVITE_WITHDRAW_HELP} Save settings to apply.
+                      </p>
+                    </div>
+                  </>
+                ) : null}
+
+                {localMode || linkedInIsUnlimited ? null : (
+                  <div className="mt-8">
+                    <LinkedInSeatsCard
+                      totalAccounts={
+                        Number.isFinite(linkedInAccountCap) ? linkedInAccountCap : 1
+                      }
+                      subscribed={subscriptionActive}
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {tab === "Restrictions" && (
+              <>
+                <SectionHeader
+                  title="Restrictions"
+                  description="Countries, people and companies Omentir must never contact, across every agent in this workspace."
+                />
+                <BlacklistPanel />
+              </>
+            )}
+
+            {tab === "Subscription" && (
+              <>
+                <SectionHeader
+                  title="Subscriptions"
+                  description="Manage your subscriptions and billing details."
+                />
+
+                <div className="flex flex-col gap-4">
+                  <SubscriptionCard
+                    name={planName}
+                    price={planPrice}
+                    status={billing}
+                    manageHref={appSumoTier ? APPSUMO_PRODUCTS_URL : "/billing/manage"}
+                    manageHint={
+                      appSumoTier
+                        ? "Change tier or request a refund on AppSumo"
+                        : "Cancel or upgrade anytime"
+                    }
+                    detail={
+                      appSumoTier ? (
+                        `${includedLinkedInAccounts} LinkedIn ${
+                          includedLinkedInAccounts === 1 ? "account" : "accounts"
+                        } included. Lifetime access. No renewal.`
+                      ) : plan === "lifetime" ? (
+                        "Lifetime access. No renewal."
+                      ) : plan === "enterprise" ? (
+                        "Custom billing terms."
+                      ) : (
+                        <>
+                          Renews on{" "}
+                          {formatZonedDate(
+                            workspace.billing?.currentPeriodEnd,
+                            timeZone,
+                            { month: "long", day: "numeric", year: "numeric" },
+                            "Jun 2, 2025",
+                          )}
+                        </>
+                      )
+                    }
+                  />
+                  {extraLinkedInSeats > 0 ? (
+                    <SubscriptionCard
+                      name="Extra Seats"
+                      price={extraSeatMonthlyPriceLabel(
+                        workspace.billing?.extraSeatMonthlyUsd,
+                        extraLinkedInSeats,
+                      )}
+                      status={billing}
+                      manageHref={WHOP_MEMBERSHIPS_URL}
+                      manageHint={
+                        appSumoTier
+                          ? "Cancel extra seats without touching your license"
+                          : "Cancel extra seats without cancelling Pro"
+                      }
+                      detail={
+                        <>
+                          {extraLinkedInSeats} extra LinkedIn{" "}
+                          {extraLinkedInSeats === 1 ? "account" : "accounts"} on top of the{" "}
+                          {Number.isFinite(includedLinkedInAccounts) && includedLinkedInAccounts > 1
+                            ? `${includedLinkedInAccounts} included accounts`
+                            : "included account"}
+                          .
+                        </>
+                      }
+                    />
+                  ) : null}
+                </div>
+
+                <div className="my-8 h-px bg-zinc-200" />
+
+                <SectionHeader title="Billing details" />
+
+                <div className="divide-y divide-zinc-100 rounded-md border border-zinc-200 bg-white">
+                  {(
+                    [
+                      [
+                        "Billing email",
+                        workspace.billing?.payerEmail || user.email,
+                      ],
+                      ["Status", billing.label],
+                    ] as const
+                  ).map(([k, v]) => (
+                    <div
+                      key={k}
+                      className="flex flex-col items-start justify-between gap-2 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4"
+                    >
+                      <span
+                        style={{ fontFamily: "var(--font-varta)" }}
+                        className="text-[14px] font-semibold text-zinc-700"
+                      >
+                        {k}
+                      </span>
+                      {k === "Status" ? (
+                        <span
+                          className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${billing.cls}`}
+                        >
+                          {v}
+                        </span>
+                      ) : (
+                        <span className="text-[14px] text-zinc-950">{v}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+}

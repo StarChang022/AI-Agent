@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Suede Skills</title>
+  <desc id="desc">Open-source agent skills for Claude Code and OpenAI Codex, with a lime and cyan wireframe knot.</desc>
+  <defs>
+    <radialGradient id="glow"><stop stop-color="#20433f"/><stop offset="1" stop-color="#0c1519"/></radialGradient>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1.25" fill="#355651"/></pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0c1519"/>
+  <ellipse cx="922" cy="263" rx="440" ry="300" fill="url(#glow)"/>
+  <rect x="650" width="550" height="486" fill="url(#dots)"/>
+  <image x="633" y="83" width="534" height="334" xlink:href="cipher-knot.png"/>
+  <g transform="translate(76 70)">
+    <g id="suede-mark">
+      <image data-approved-suede-mark="true" href="suede-ai-logo-transparent.png" width="64" height="64"/>
+    </g>
+    <text x="84" y="41" fill="#e6f3ee" font-family="Arial, sans-serif" font-size="25" font-weight="bold" letter-spacing="3">SUEDE SKILLS</text>
+  </g>
+  <g font-family="Georgia, 'Liberation Serif', serif" font-weight="bold" letter-spacing="-4">
+    <text x="72" y="275" font-size="100" fill="#e6f3ee">Open-source</text>
+    <text x="72" y="382" font-size="108" fill="#b6ff4d" font-style="italic">agent skills.</text>
+  </g>
+  <path d="M76 476H1124" stroke="#395559" stroke-width="2"/>
+  <text x="76 127" y="558" fill="#b6ff4d" font-family="Arial, sans-serif" font-size="83" font-weight="bold" letter-spacing="-18">67</text>
+  <text x="174" y="545" fill="#d5e2df" font-family="Arial, sans-serif" font-size="20" font-weight="bold" letter-spacing="2">INSTALLABLE SKILLS</text>
+  <text x="1124" y="545" text-anchor="end" fill="#a5dbd8" font-family="Arial, sans-serif" font-size="24">Claude Code + OpenAI Codex</text>
+</svg>

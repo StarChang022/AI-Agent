@@ -1,0 +1,81 @@
+{
+  "schema_version": "2.0",
+  "source_of_truth": {
+    "prose": "references/rules/RNN.md",
+    "lifecycle": "references/rules/metadata.json"
+  },
+  "rules": [
+    {
+      "id": "R01",
+      "title": "一篇只服務一個主要目標",
+      "status": "active",
+      "source_file": "references/rules/R01.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R02",
+      "title": "觀測事實與推論分欄",
+      "status": "active",
+      "source_file": "references/rules/R02.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R03",
+      "title": "只比較相近 maturity",
+      "status": "active",
+      "source_file": "references/rules/R03.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R04",
+      "title": "分開讀 distribution、watch quality 與 conversion",
+      "status": "active",
+      "source_file": "references/rules/R04.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R05",
+      "title": "變因同時改動就列 confound",
+      "status": "active",
+      "source_file": "references/rules/R05.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R06",
+      "title": "時段先當假設",
+      "status": "emerging",
+      "source_file": "references/rules/R06.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R07",
+      "title": "跨平台快照不得混成單一平台",
+      "status": "active",
+      "source_file": "references/rules/R07.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    },
+    {
+      "id": "R08",
+      "title": "私人學習與公開方法分離",
+      "status": "active",
+      "source_file": "references/rules/R08.md",
+      "source_line": 1,
+      "sample_mentions": [],
+      "experiment_ids": []
+    }
+  ]
+}

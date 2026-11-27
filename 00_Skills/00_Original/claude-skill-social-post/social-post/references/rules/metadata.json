@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "rules": [
+    {"id": "R01", "status": "active", "experiment_ids": []},
+    {"id": "R02", "status": "active", "experiment_ids": []},
+    {"id": "R03", "status": "active", "experiment_ids": []},
+    {"id": "R04", "status": "active", "experiment_ids": []},
+    {"id": "R05", "status": "active", "experiment_ids": []},
+    {"id": "R06", "status": "emerging", "experiment_ids": []},
+    {"id": "R07", "status": "active", "experiment_ids": []},
+    {"id": "R08", "status": "active", "experiment_ids": []}
+  ]
+}

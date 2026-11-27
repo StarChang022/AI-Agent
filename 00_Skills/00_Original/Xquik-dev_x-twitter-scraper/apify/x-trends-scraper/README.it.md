@@ -1,0 +1,534 @@
+[![Framer crea un ticker di tweet con Xquik](https://img.youtube.com/vi/4UOSpoOoC3Y/maxresdefault.jpg)](https://youtu.be/4UOSpoOoC3Y?t=367)\
+[Guarda come Framer usa gli scraper Xquik](https://youtu.be/4UOSpoOoC3Y?t=367)
+con Claude Code, Codex, Cursor & altro, da 6:07.
+
+[English](README.md) · [Español](README.es.md) · [Türkçe](README.tr.md) ·
+[简体中文](README.zh-CN.md) · [日本語](README.ja.md) · [한국어](README.ko.md) ·
+[Deutsch](README.de.md) · [Français](README.fr.md) · **Italiano**
+
+Xquik è il servizio di scraping X (Twitter) più veloce & economico al mondo, con
+i dati X più completi. X Trends Scraper di Xquik raccoglie le tendenze in tempo
+reale per località, con posizione in classifica, volume & query. La maggior
+parte degli altri Actor Apify fa pagare prima di filtrare o deduplicare. Xquik
+fa pagare solo i risultati consegnati, unici e conformi ai filtri.
+
+Estrai le tendenze attuali di Twitter in molte località in 1 esecuzione. Oppure
+leggi le tendenze passate dall'archivio delle tendenze di Twitter di Xquik, che
+parte dal 2026-10-13 alle 02:20 UTC. Paghi **$0.00015 per riga consegnata**, &
+Apify fattura a parte l'uso della piattaforma. Non ti servono una chiave API X
+né il login.
+
+> Xquik è un servizio di terze parti indipendente. Non è affiliato a X Corp.
+> "Twitter" e "X" sono marchi di X Corp.
+
+## Perché usare X Trends Scraper?
+
+- **Cronologia delle tendenze per intervallo.** Imposta `from`, `to` & `every`
+  per avere 1 elenco di tendenze per ogni passo.
+- **Le tendenze di ieri, ogni giorno.** Con `at` impostato su `24h`, una
+  pianificazione giornaliera legge le tendenze di ieri.
+- **WOEID, ID dei luoghi & hashflag.** Attiva `listLocations` o `listHashflags`,
+  oppure compila `placeSearchTerms`.
+- **Orari di acquisizione esatti.** Le righe passate riportano `capturedAt`,
+  cioè quando X ha mostrato l'elenco.
+- **Export pronti all'uso.** Tieni, rinomina, appiattisci o unisci i campi, poi
+  esporta in JSON, CSV, Excel, XML o RSS.
+
+### Risultati completi
+
+- Ogni risultato riporta i dati più completi che X ha a disposizione.
+
+### Righe accurate
+
+- Le righe contengono solo dati pubblici.
+
+### Dati aggiornati
+
+- Leggi le tendenze di qualsiasi momento passato dal 2026-10-13 in poi.
+- Le letture continuano a funzionare quando X rilascia modifiche.
+
+### Velocità
+
+- Una pagina lenta non blocca la tua esecuzione.
+- Le letture finiscono appena arrivano le loro righe.
+- Le chiamate agli Actor che si bloccano riprendono da sole.
+
+### Fatturazione equa
+
+- Un input errato non costa nulla & ti dice cosa correggere.
+- Gli Actor fanno pagare solo le righe consegnate, uniche & conformi ai filtri.
+- Un'esecuzione riavviata non addebita mai due volte.
+- Le esecuzioni restano entro il tuo limite di spesa & scrivono comunque la loro
+  diagnostica.
+
+### Affidabilità
+
+- Un errore isolato non fa fallire la tua esecuzione.
+- Quando scade il tempo, ricevi le righe già trovate con la diagnostica.
+- Gli Actor resistono ai brevi disservizi di Xquik.
+- Le esecuzioni degli Actor superano i riavvii senza ripetere nulla.
+- Una riga errata non fa fallire il lotto.
+- Le esecuzioni interrotte conservano le loro righe & il loro report.
+- Un'esecuzione che non riesce a partire spiega comunque perché.
+- Il supporto può vedere esattamente cosa ha restituito una richiesta o
+  un'esecuzione.
+
+### Pensato per gli agenti
+
+- Gli Actor accettano input scritti per altri Actor.
+- Ogni esecuzione dice perché è finita & se conviene riprovare.
+
+### Dati ricchi
+
+- Tendenze per nome del luogo, paese o ID della regione, con le tendenze
+  sponsorizzate segnalate.
+
+### Controlli di qualità
+
+- Ogni campo che X mostra è fornito, escluso di proposito o dimostrato assente.
+- Xquik testa ogni lettura dal vivo su X.
+
+## Quali dati può estrarre X Trends Scraper?
+
+- Fino a 50 tendenze attuali per ogni località.
+- Un elenco di tutti i luoghi per cui X offre tendenze, con WOEID, paese & tipo.
+- La ricerca di luoghi di X, con l'ID del luogo che la ricerca di post di X
+  accetta.
+- Gli hashflag di X, cioè le emoji personalizzate che X mostra dopo alcuni
+  hashtag.
+- Posizione in classifica, argomento, query, volume di post, URL di ricerca,
+  WOEID & località di origine.
+- Attribuzione della località su ogni riga.
+- Flag che segnano le righe con hashtag & le righe che hanno un volume di post.
+
+## Come estrarre le tendenze di X
+
+Non usi ancora Apify?
+[Crea prima un account gratuito](https://console.apify.com/sign-up?fpr=xquik).
+Il piano gratuito non richiede carta di credito & offre $5 da spendere ogni
+mese. A $0.00015 per tendenza, $5 coprono fino a 33.000 tendenze, senza contare
+l'uso della piattaforma. Poi torna qui & premi Try for free.
+
+1. Apri X Trends Scraper di Xquik in Apify Console.
+2. Inserisci i nomi delle località in `locations` o i WOEID numerici in
+   `woeids`.
+3. Imposta `maxTrendsPerLocation`, fino a 50 tendenze per ogni località.
+4. Imposta `maxItems` per limitare le righe consegnate nell'intera esecuzione,
+   poi fai clic su Start.
+5. Scarica il dataset in JSON, CSV o Excel, oppure usa l'API di Apify.
+
+## Input
+
+Usa nomi di località, WOEID numerici o entrambi.
+
+```json
+{
+  "locations": ["Worldwide", "United States", "Turkey"],
+  "maxTrendsPerLocation": 50,
+  "maxItems": 150
+}
+```
+
+`locations` accetta qualsiasi paese o città per cui X offre tendenze, come
+Worldwide, United States, Japan o London. Funzionano anche i codici paese di 2
+lettere. Un nome per cui X non offre tendenze non restituisce righe & non costa
+nulla. `woeids` accetta WOEID numerici.
+
+Per vedere ogni nome & WOEID, attiva `listLocations`. L'esecuzione elenca allora
+i luoghi per cui X offre tendenze, al posto delle tendenze.
+
+```json
+{ "listLocations": true, "country": "TR", "maxItems": 100 }
+```
+
+`country` accetta un nome o un codice di 2 lettere. `placeType` accetta
+`country`, `town`, `worldwide` o `unknown`. `nameContains` tiene i luoghi il cui
+nome contiene il tuo testo. Lascia vuoti tutti e 3 per elencare ogni luogo.
+
+Per cercare i luoghi di X per nome, compila `placeSearchTerms`. L'esecuzione
+restituisce allora luoghi al posto delle tendenze.
+
+```json
+{ "placeSearchTerms": ["New York"], "maxItems": 20 }
+```
+
+Ogni luogo ha l'`id` che la ricerca di post di X accetta come `place`. X ordina
+i luoghi, quindi il loro ordine può cambiare da un'esecuzione all'altra. X
+elenca fino a 20 luoghi per un nome, & meno per alcuni nomi, come New York.
+L'esecuzione tiene solo i luoghi con il nome che hai scritto, quindi New Delhi
+non restituisce righe & non costa nulla.
+
+`maxItems` limita l'intera esecuzione & la riempie un termine alla volta, quindi
+il primo termine può usarlo tutto. Imposta `maxItemsPerTarget` per dare a ogni
+termine una quota uguale.
+
+```json
+{
+  "placeSearchTerms": ["Paris", "Rome"],
+  "maxItems": 20,
+  "maxItemsPerTarget": 10
+}
+```
+
+Per elencare gli hashflag di X, attiva `listHashflags`. Un hashflag è l'emoji
+personalizzata che X mostra dopo un hashtag per un periodo stabilito.
+
+```json
+{ "listHashflags": true, "hashtagContains": "football" }
+```
+
+L'esecuzione elenca gli hashflag che X mostra ora. Disattiva `activeOnly` per
+aggiungere quelli terminati & quelli in arrivo. `hashtagContains` tiene gli
+hashtag che contengono il tuo testo.
+
+Per vedere cosa era in tendenza su Twitter ieri o in qualsiasi momento passato,
+compila `at`. L'esecuzione legge allora, per ogni località, l'elenco salvato più
+vicino a quel momento.
+
+```json
+{ "locations": ["Turkey"], "at": "2026-10-13T14:00:00Z" }
+```
+
+`at` accetta una data come 2026-10-13, un orario come 2026-10-13T14:00:00Z o i
+secondi Unix. Un orario senza fuso è in UTC. Xquik salva 12 elenchi all'ora per
+ogni località & conserva ciascuno per 25 mesi. Lo storico delle tendenze di
+Twitter parte dal 2026-10-13 alle 02:20 UTC. Un momento a più di 24 ore da ogni
+elenco salvato non restituisce righe & non costa nulla.
+
+`at` accetta anche un intervallo prima dell'esecuzione, come un numero & `s`,
+`m`, `h` o `d`. Con `24h`, una pianificazione giornaliera legge le tendenze di
+ieri a ogni esecuzione.
+
+```json
+{ "locations": ["Turkey"], "at": "24h" }
+```
+
+Per un intervallo, compila `from` & `to`. L'esecuzione restituisce 1 elenco
+salvato per ogni passo di `every`, come `15m`, `1h` o `1d`.
+
+```json
+{
+  "locations": ["Turkey"],
+  "from": "2026-10-13",
+  "to": "2026-10-14",
+  "every": "1h",
+  "maxItems": 1200
+}
+```
+
+Senza `to`, l'intervallo finisce adesso. Senza `every`, l'esecuzione restituisce
+1 elenco all'ora. Un passo senza elenco salvato non restituisce righe. Anche
+`from` & `to` accettano intervalli, quindi `from` impostato a `24h` legge le
+ultime 24 ore. `at` prevale su `from` & `to`.
+
+Un'esecuzione legge 1 tipo di riga. `listLocations` prevale su `listHashflags`,
+che prevale su `placeSearchTerms`. Senza nessuno di questi, l'esecuzione legge
+le tendenze.
+
+Le esecuzioni piccole senza problemi saltano `run-report` & risparmiano uso di
+Apify. Attiva `alwaysSaveRunRecords` per scriverlo a ogni esecuzione.
+
+## Output
+
+Ogni tendenza è 1 riga del dataset. Le righe riportano `name`, `rank`,
+`tweetVolume`, `query`, `url`, `woeid`, `sourceTarget` & `resultType`.
+`sourceTarget` è la località come l'hai scritta. I campi di origine mancanti
+restano assenti. X Trends Scraper di Xquik non inventa valori.
+
+Gli esempi usano valori fittizi. I risultati contengono dati live. Una riga di
+tendenza ha questo aspetto.
+
+```json
+{
+  "name": "#SampleTrend",
+  "rank": 1,
+  "tweetVolume": 12000,
+  "isHashtag": true,
+  "woeid": 1,
+  "sourceTarget": "Worldwide"
+}
+```
+
+Le righe di `at` o di un intervallo riportano anche `capturedAt`, il momento in
+cui Xquik ha letto il loro elenco da X. Le righe di `at` riportano inoltre
+`requestedAt`, il momento che hai chiesto. Xquik non stima nessuno dei 2.
+
+Con `listLocations`, ogni luogo è 1 riga del dataset. Le righe riportano
+`woeid`, `name`, `country`, `countryCode`, `placeType`, `placeTypeCode`,
+`parentWoeid`, `url` & `resultType`. `url` è il riferimento legacy di X per il
+luogo & potrebbe non aprirsi. Una riga di località di tendenza ha questo
+aspetto.
+
+```json
+{
+  "woeid": 2344116,
+  "name": "Istanbul",
+  "country": "Turkey",
+  "countryCode": "TR",
+  "placeType": "Town",
+  "placeTypeCode": 7,
+  "parentWoeid": 23424969,
+  "resultType": "trendLocation"
+}
+```
+
+Con `placeSearchTerms`, ogni luogo è 1 riga del dataset. Le righe riportano
+`id`, `name`, `fullName`, `country`, `countryCode`, `placeType`, `url`,
+`centroid`, `boundingBox`, `attributes`, `containedWithin`, `sourceTarget` &
+`resultType`. `centroid` contiene la longitudine, poi la latitudine. Una riga di
+luogo ha questo aspetto.
+
+```json
+{
+  "id": "0123456789abcdef",
+  "name": "Sample City",
+  "fullName": "Sample City, Sample Country",
+  "country": "Sample Country",
+  "countryCode": "US",
+  "placeType": "city",
+  "centroid": [-73.97, 40.78],
+  "sourceTarget": "New York",
+  "resultType": "place"
+}
+```
+
+Con `listHashflags`, ogni hashflag è 1 riga del dataset. Le righe riportano
+`hashtag`, `assetUrl`, `startsAt`, `endsAt`, `isHashfettiEnabled`, `animations`
+& `resultType`. Una riga di hashflag ha questo aspetto.
+
+```json
+{
+  "hashtag": "SampleHashtag",
+  "assetUrl": "https://abs.twimg.com/hashflags/Sample/Sample.png",
+  "startsAt": "2026-10-02T10:00:00.000Z",
+  "endsAt": "2027-01-03T14:59:00.000Z",
+  "isHashfettiEnabled": false,
+  "animations": [],
+  "resultType": "hashflag"
+}
+```
+
+## Colonne di output
+
+8 input danno forma a ogni riga dopo che l'esecuzione la legge. Non eseguono
+codice & non cambiano il prezzo.
+
+| Campo               | Cosa fa                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `fields`            | Tiene solo questi campi, nell'ordine & con la grafia che scrivi                |
+| `omitFields`        | Scarta questi campi & tiene il resto                                           |
+| `renameFields`      | Sposta un campo in una colonna con un nuovo nome                               |
+| `flatten`           | Trasforma ogni oggetto annidato in colonne di primo livello                    |
+| `fillMissingFields` | Riempie con `null` un campo tenuto che manca in una riga. Attivo di default    |
+| `joinFields`        | Trasforma ognuno di questi elenchi in 1 valore di testo                        |
+| `joinSeparator`     | Testo tra gli elementi uniti. Il valore predefinito è una virgola & uno spazio |
+| `constantFields`    | Aggiunge una colonna con lo stesso testo su ogni riga                          |
+
+- Usa un punto per un campo dentro un oggetto. Maiuscole & trattini bassi non
+  contano.
+- Ogni riga conserva il suo `id`.
+- Con `fields`, un campo che manca in una riga arriva come `null`. Così ogni
+  riga ha le stesse colonne.
+- Un nome di campo sbagliato ferma l'esecuzione prima di leggere & non addebita
+  nulla.
+- Se i nomi non si possono controllare, l'esecuzione continua a leggere & elenca
+  per ultimi i nomi che non ha visto.
+- L'esecuzione ignora una funzione map o un filtro jq scritti per un altro
+  Actor.
+
+## Quanto costa estrarre le tendenze di X?
+
+Su ogni piano Apify paghi $0.00015 per riga consegnata. Apify fattura a parte il
+tuo uso della piattaforma.
+
+Per volumi maggiori,
+[scegli un piano Apify](https://apify.com/pricing?fpr=xquik) con più uso
+prepagato.
+
+- Un addebito per ogni riga di dati consegnata. La diagnostica in `diagnostics`
+  è gratuita.
+- Una riga di località di tendenza, luogo o hashflag costa quanto una riga di
+  tendenza.
+- Nessun costo di avvio, per query o per località.
+- La deduplicazione avviene prima della fatturazione.
+- Le impostazioni di Apify sull'addebito massimo totale limitano le righe
+  consegnate.
+
+## Limiti & recupero
+
+X Trends Scraper di Xquik legge molte località in 1 esecuzione. Le righe
+consegnate & i progressi restano dopo un riavvio di Apify. L'Actor non aggiunge
+un limite di tempo proprio. Rispetta qualsiasi timeout di Apify che imposti.
+
+Un'estrazione interrotta scrive una diagnostica `partial` gratuita. I risultati
+disponibili restano intatti. Leggi `availableResults`, `failedTargets`,
+`retryable` & `nextAction` prima di riprovare. Un'uscita riuscita dell'Actor
+conferma la consegna, non l'estrazione completa.
+
+Lo stato dell'esecuzione nomina ogni causa di un arresto anticipato.
+`stopCauses` elenca ogni causa con i propri `message`, `retryable` &
+`nextAction`. Le cause sono `target_not_found`, `target_failed`,
+`pagination_safety_limit` & `deadline_reached`. Un target mancante entra
+nell'elenco solo se un'altra causa ha fermato l'esecuzione. L'esecuzione è
+`retryable` quando lo è almeno una causa.
+
+## Actor Xquik correlati
+
+Ogni Actor Xquik usa lo stesso motore di estrazione, fattura dopo i filtri &
+offre la stessa diagnostica. Scegli quello adatto ai dati che ti servono.
+
+- [X Tweet Scraper](https://apify.com/xquik/x-tweet-scraper) estrae post da
+  ricerche, timeline dei profili, liste & ID dei post con oltre 50 filtri &
+  export piatti. Usalo quando ti servono dati sui post senza analisi. Da
+  $0.00015 per riga.
+- [X Profile Scraper](https://apify.com/xquik/x-profile-scraper) estrae profili
+  con i relativi post, risposte, media & follower da nomi utente, ID o URL.
+  Usalo quando parti dagli account invece che dalle ricerche. Da $0.00015 per
+  riga.
+- [X Reply Scraper](https://apify.com/xquik/x-reply-scraper) estrae risposte,
+  commenti & intere conversazioni sotto i post con oltre 25 filtri. Usalo quando
+  ti serve la discussione sotto i post. Da $0.00015 per riga.
+- [X Engagement Scraper](https://apify.com/xquik/x-engagement-scraper) estrae
+  risposte, citazioni, utenti che hanno fatto repost & thread da URL o ID di
+  post in blocco. Usalo quando misuri chi ha interagito con i post. Da $0.00015
+  per riga.
+- [X Quote Tweets Scraper](https://apify.com/xquik/x-quote-tweets-scraper)
+  estrae i post che citano altri post, con testo, media, conteggi, autori & 11
+  filtri. Usalo quando studi chi ha citato dei post & cosa ha detto. Da $0.00015
+  per post.
+- [X Follower Scraper](https://apify.com/xquik/x-follower-scraper) estrae
+  follower, following, membri delle liste, abbonati & membri delle community
+  come righe di profilo. Usalo quando ti servono elenchi di pubblico o di
+  membri. Da $0.00015 per profilo.
+- [X User Search Scraper](https://apify.com/xquik/x-user-search-scraper) cerca
+  utenti per nome utente, bio & posizione con filtri su follower, verifica, età
+  & posizione. Usalo quando costruisci elenchi di account dalla ricerca. Da
+  $0.00015 per profilo.
+- [X Account Location Scraper](https://apify.com/xquik/x-account-location-scraper)
+  verifica dove hanno sede gli account con l'etichetta "Posizione account" di X,
+  il modo in cui si sono collegati a X & i cambi di nome utente. Usalo quando
+  vuoi verificare dove hanno sede gli account. Da $0.00015 per account.
+- [X Email Scraper](https://apify.com/xquik/x-email-scraper) ottiene le email, i
+  numeri di telefono & i link che gli account pubblicano sui propri profili, da
+  nomi utente, follower o ricerche di utenti. Usalo quando ti servono le email
+  che i profili pubblicano. Da $0.00015 per profilo.
+- [X List Scraper](https://apify.com/xquik/x-list-scraper) estrae post, membri &
+  follower delle liste da URL o ID delle liste. Usalo quando una lista curata
+  definisce le tue fonti. Da $0.00015 per riga.
+- [X Community Scraper](https://apify.com/xquik/x-community-scraper) estrae
+  informazioni, post, ricerche, membri & moderatori delle community. Usalo
+  quando le tue fonti sono community di X. Da $0.00015 per riga.
+- [X Space Scraper](https://apify.com/xquik/x-space-scraper) trova gli Spazi per
+  parola chiave & ne legge titoli, stati, orari, numero di ascoltatori, host &
+  relatori. Legge anche le trasmissioni tramite URL o ID. Usalo quando segui
+  audio & video in diretta su X. Da $0.00015 per Spazio o trasmissione.
+- [X Jobs Scraper](https://apify.com/xquik/x-job-scraper) estrae le offerte di
+  lavoro di X per parola chiave, luogo, modalità di lavoro, livello di
+  esperienza & azienda, con stipendi & link di candidatura. Usalo quando
+  raccogli le offerte di lavoro pubblicate su X. Da $0.00015 per offerta.
+- [X Article Scraper](https://apify.com/xquik/x-article-scraper) estrae gli
+  articoli lunghi di X come Markdown & testo, con copertine, autori, date &
+  metriche. Usalo quando ti serve il corpo degli articoli, non i post. Da
+  $0.00015 per articolo.
+- [X Media Downloader](https://apify.com/xquik/x-media-downloader) estrae o
+  archivia foto, video & GIF da post o profili con opzioni MP4 & metadati. Usalo
+  quando ti servono i file multimediali veri e propri. Da $0.00015 per riga di
+  media.
+- [X (Twitter) Brand Monitoring with AI Analysis](https://apify.com/xquik/x-twitter-brand-monitoring)
+  monitora le menzioni del brand con rilevanza, sentiment & risposte sulla
+  customer experience generate con AI & confronta le esecuzioni. Usalo quando
+  osservi un brand nel tempo. Da $0.0003 per post analizzato.
+- [X Tweet Sentiment Analysis with AI](https://apify.com/xquik/x-tweet-sentiment-analysis)
+  etichetta atteggiamento, intensità & probabilità di sarcasmo di ogni post con
+  AI. Usalo quando ti serve il sentiment generale su qualsiasi argomento. Da
+  $0.0003 per post analizzato.
+- [X (Twitter) Stock & Crypto AI Trading Signals](https://apify.com/xquik/x-twitter-stock-crypto-signals)
+  etichetta con AI la posizione rialzista, ribassista, neutra o mista, il tipo
+  di contenuto, la convinzione & la rilevanza per l'asset. Usalo quando segui
+  azioni, crypto o discussioni di trading. Da $0.0003 per post analizzato.
+- [X (Twitter) News Monitor with AI Analysis](https://apify.com/xquik/x-twitter-news-monitor)
+  etichetta con AI i post di notizie per formato, attribuzione della fonte &
+  rilevanza dell'argomento. Usalo quando separi le notizie dai commenti. Da
+  $0.0003 per post analizzato.
+- [X Tweet Classifier with AI Analysis](https://apify.com/xquik/x-twitter-tweet-classifier)
+  risponde con AI alle tue domande di categoria, punteggio & sì/no su ogni post.
+  Usalo quando le analisi preimpostate non si adattano alle tue etichette. Da
+  $0.0003 per post analizzato.
+- [X Tweet Viral Score Analyzer with AI](https://apify.com/xquik/x-tweet-viral-score-analyzer)
+  stima un Viral Score da 0 a 100 & un verdetto per ogni post da 8 risposte AI
+  sui suoi tratti. Usalo quando studi perché i post si diffondono o falliscono.
+  Da $0.0003 per post analizzato.
+- [X (Twitter) Monitor](https://apify.com/xquik/x-twitter-monitor) rileva ogni
+  nuovo tweet, risposta, citazione, repost & cambio di profilo degli account, di
+  solito in meno di un secondo da quando X lo mostra, più i tweet per parola
+  chiave & i follow. Usalo quando ti servono avvisi appena X mostra un tweet. Da
+  $0.0045 per monitor-hour.
+- [X (Twitter) to Discord Bot](https://apify.com/xquik/x-twitter-to-discord)
+  invia ogni nuovo tweet, risposta, citazione & repost degli account a un canale
+  Discord con il suo webhook, senza bot da ospitare. Usalo quando vuoi i tweet
+  di un account in un canale Discord. Da $0.0045 per monitor-hour.
+- [X (Twitter) Crypto Tracker](https://apify.com/xquik/x-twitter-crypto-tracker)
+  segue i tweet, i tweet eliminati, i cambi di profilo & i follow di account
+  crypto & KOL, più i tweet con cashtag. Usalo quando agisci su ciò che gli
+  account crypto pubblicano o seguono. Da $0.0045 per monitor-hour.
+- [X (Twitter) Follower Tracker](https://apify.com/xquik/x-twitter-follower-tracker)
+  segue i follower nuovi & persi di un account, & chi segue o smette di seguire,
+  con il profilo completo di ogni account. Usalo quando leggi i follower o i
+  follow di un account come un segnale. Da $0.0045 per monitor-hour.
+- [X (Twitter) Post Tracker](https://apify.com/xquik/x-twitter-post-tracker)
+  registra a ogni esecuzione visualizzazioni, like, repost, risposte, citazioni
+  & segnalibri dei post scelti, con la variazione dall'ultima esecuzione. Usalo
+  quando segui il rendimento dei post nel tempo. Da $0.00015 per rilevazione.
+
+## FAQ
+
+Le risposte alle domande più comuni, poi dove trovare assistenza.
+
+### Serve una chiave API X o il login?
+
+No. X Trends Scraper di Xquik non richiede chiave API X, login o credenziali.
+
+### È legale estrarre le tendenze di X?
+
+X Trends Scraper di Xquik raccoglie campi pubblici di X. I risultati possono
+contenere dati personali. Verifica di avere uno scopo lecito & rispetta le norme
+sulla privacy applicabili. Nel dubbio, chiedi a un legale qualificato.
+
+### Perché la mia esecuzione non ha restituito risultati?
+
+Leggi prima lo stato dell'esecuzione. Lo stato di un'esecuzione vuota ti dice di
+controllare target & filtri. L'output gratuito `diagnostics` compare quando
+qualcosa richiede attenzione. Il suo `stopCauses` assegna a ogni causa un
+`nextAction` da seguire. Una località per cui X non offre tendenze non
+restituisce righe. Attiva `listLocations` per vedere i nomi che X accetta.
+
+### Posso estrarre lo storico delle tendenze di Twitter?
+
+Sì, dal 2026-10-13 alle 02:20 UTC. Compila `at` per 1 momento passato, oppure
+`from` & `to` per un intervallo. In una pianificazione, compila un intervallo
+come `24h`. Ogni riga riporta `capturedAt`, il momento del suo elenco salvato.
+
+### Posso usare l'API, le pianificazioni & le integrazioni?
+
+Sì. Scegli tra 50 task pubblici o l'API REST di Xquik. La
+[scheda API](https://apify.com/xquik/x-trends-scraper/api) ha esempi in Python,
+JavaScript & cURL. Le
+[pianificazioni](https://docs.apify.com/platform/schedules) di Apify avviano X
+Trends Scraper di Xquik con un cron. Gli agenti usano
+[Apify MCP](https://docs.apify.com/platform/integrations/mcp). Usa `latest`, a
+meno che non ti serva una build precedente.
+
+### Dove trovo assistenza?
+
+Apri una issue nella
+[scheda Issues](https://apify.com/xquik/x-trends-scraper/issues) con l'ID
+dell'esecuzione. La diagnostica gratuita nel key-value store spiega le
+esecuzioni che richiedono attenzione. Un'esecuzione che non riceve nessuna riga
+ne spiega il motivo nel suo stato.
+
+### Posso avere una soluzione personalizzata?
+
+Sì. Descrivi ciò che ti serve nella
+[scheda Issues](https://apify.com/xquik/x-trends-scraper/issues). Xquik offre
+anche una dashboard, un'API REST, un server MCP & webhook. Trovi il sito web di
+Xquik sul suo [profilo Apify](https://apify.com/xquik).

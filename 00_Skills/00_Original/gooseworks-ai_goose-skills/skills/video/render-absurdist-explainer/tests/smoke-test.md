@@ -1,0 +1,80 @@
+# Smoke test — render-absurdist-explainer
+
+Verifies the free PIL + ffmpeg assembly end-to-end. No paid calls. Needs: Python 3 with
+Pillow, ffmpeg/ffprobe, and a sans-serif TrueType font (DejaVu on most Linux, Arial on
+macOS, Arial or Segoe UI on Windows). You supply per-scene clips + VO mp3s + a music bed + a real
+product photo (any 1080×1920 mp4s and a ≥1000px product jpg work for a smoke run).
+
+## Setup
+
+```bash
+cd scripts
+python3 -m pip install pillow            # if not present
+mkdir -p /tmp/absurdist-smoke
+# Copy config.example.json -> config.json and point every path at real files:
+#   - scenes[].clip  : your per-scene i2v mp4s (1080x1920)
+#   - scenes[].vo    : the per-scene VO mp3s (target_sec = ffprobe of each)
+#   - end_card.product_image : a real retail product photo (>=1000px)
+#   - music_bed      : an instrumental bed (or set to null to run VO-only)
+#   - end_card.vo    : the end card's spoken line (or remove the key for a silent card)
+#   - captions + end_card copy + brand_palette : your brand's (the example's are a
+#     worked example, not defaults)
+cp config.example.json /tmp/absurdist-smoke/config.json
+```
+
+## Run
+
+```bash
+# 1) real-product end card (PIL) — must run BEFORE compose
+python3 build_endcard.py --config /tmp/absurdist-smoke/config.json \
+                         --out /tmp/absurdist-smoke/endcard.png
+# (then set end_card.image in config.json to /tmp/absurdist-smoke/endcard.png)
+
+# 2) per-scene captions (libass) — must run BEFORE compose
+python3 make_captions.py --config /tmp/absurdist-smoke/config.json \
+                         --out /tmp/absurdist-smoke/captions.ass
+# (then set captions_ass in config.json to /tmp/absurdist-smoke/captions.ass)
+
+# 3) assemble the master
+python3 compose.py --config /tmp/absurdist-smoke/config.json \
+                   --work-dir /tmp/absurdist-smoke \
+                   --out /tmp/absurdist-smoke/master.mp4
+```
+
+## Expect
+
+- `build_endcard.py` writes `endcard.png` (1080×1920): the REAL product photo centred over
+  the brand palette, with a typeset wordmark + claim rows + accent CTA pill. NOT an AI
+  bottle; NO smeared/AI-rendered text.
+- `make_captions.py` writes `captions.ass` — one cue per scene with a caption, the end card
+  suppressed, `start = scene_start + 0.08s`.
+- `compose.py` prints per-scene retime lines, the total runtime, a `loudness:` line, and
+  a final `WROTE ... (expected ~Xs, delta ...)`. `master.mp4` is 1080x1920, 30fps; its
+  duration is within 0.1s of `sum(scenes[].target_sec)` + the end-card dwell.
+- The `loudness:` line reads between -14.5 and -13.5 LUFS, with a true peak <= -1.5 dBFS.
+- With `end_card.vo` set, the line is heard over the end card. If the line + 0.5s is
+  longer than `dwell_sec`, compose prints the stretched dwell.
+- The caption burn works with an absolute `captions_ass` path, on Windows too.
+- Run the `watch` skill on `master.mp4`: every character's look holds across scenes,
+  the single narrator voice (whoever the recipe's `choices.narrator` picked) carries the
+  whole spot, no AI brand text
+  leaked into a cartoon background, captions don't collide with on-screen text, and the end
+  card is the real product with legible copy.
+
+## Fail signals
+
+- Concat drops frames / audio desyncs → a segment wasn't re-encoded to 30fps (all segments
+  MUST be `libx264 -r 30` before the concat demuxer). compose.py always re-encodes, so this
+  means a source clip fed the wrong stream — check the ffprobe output.
+- compose.py warns that the master is outside the loudness target -> the master pass
+  could not converge. Check the VO and music files are not silent or clipped.
+- End card shows a cartoon/AI bottle or smeared text → `end_card.product_image` points at
+  an AI render, or a font failed to load (build_endcard tries DejaVu, Arial, Segoe UI,
+  then Pillow's built-in font and prints a warning - install DejaVu or Arial).
+- End-card text is a different colour from the palette -> the brand colour was too close
+  to the background. build_endcard printed a contrast warning; set `end_card.background`
+  or change the palette.
+- Caption flashes a frame before a cut → the +0.08s offset was removed from make_captions.
+- Duration far off the summed windows → a `target_sec` wasn't the measured VO duration
+  (ffprobe each VO mp3; don't use planned word counts).
+```

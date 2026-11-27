@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import path from 'node:path';
+
+export async function verifyFeaturedOrder(page) {
+  const expected = ['kling-global', 'aihot', 'asoscan', 'go-public', 'nexscope-amazon', 'nexscope-ecommerce', 'deed-page', 'resume-tribunal', 'siebly-crypto-exchange-api', 'tecadrise-bot', 'govisit', 'datacircle', 'resume-claim-guard', 'socratic-story-cartographer', 'agentswarm-work', 'cloudgpu', 'poptin-email-marketing', 'shiptopaid-lite', 'video-director', 'agent-qa', 'berlin-job-search', 'bulkpublish', 'empacer', 'frametell', 'inkroom', 'lfr', 'trong-hieu', 'geekflare', 'cisco-skill-scanner', 'opsibyte', 'extra-caffeine', 'costory', 'appie', 'coalwash', 'design-os', 'lava', 'arcmira'];
+  assert.deepEqual(await page.locator('article.featured-project').evaluateAll((cards) => cards.map((card) => card.id)), expected);
+  assert.deepEqual(await page.locator('.featured-jump a[href^="#"]').evaluateAll((links) => links.map((link) => link.hash.slice(1))), expected);
+}
+
+export async function verifyFeaturedNavigation(page, base, output, mount = '/directory') {
+  const destination = mount + '/featured/';
+  for (const width of [1280, 769, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: width > 768 ? 900 : 844 });
+    for (const route of ['/', '/frontend-design/', '/agents/', '/featured/'].map(route => mount + route)) {
+      await page.goto(base + route);
+      const featured = page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Featured Skills', exact: true, includeHidden: true });
+      assert.equal(await featured.count(), 1, route + ' exposes Featured Skills in shared navigation');
+      assert.equal(await featured.evaluate(el => new URL(el.href).pathname), destination);
+      if (width <= 768) {
+        await page.locator('.nav-hamburger').focus();
+        await page.keyboard.press('Enter');
+      }
+      assert.ok(await featured.isVisible());
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), route + ' has no overflow at ' + width);
+      await featured.focus();
+      assert.equal(await featured.evaluate(el => getComputedStyle(el).outlineStyle), 'solid');
+      // A featured-page link reloads the same URL. Wait for the new document,
+      // since waitForURL alone can resolve against the document being replaced.
+      await Promise.all([
+        page.waitForEvent('domcontentloaded'),
+        page.keyboard.press('Enter'),
+      ]);
+      await page.waitForURL(base + destination);
+      assert.match(await page.locator('h1').innerText(), /Featured/);
+      await verifyFeaturedOrder(page);
+    }
+    await page.goto(base + mount + '/');
+    const quickLink = page.locator('.home-masthead').getByRole('link', { name: 'Featured skills', exact: true });
+    assert.ok(await quickLink.isVisible(), 'the homepage masthead exposes Featured skills');
+    assert.equal(await quickLink.evaluate(el => new URL(el.href).pathname), destination);
+    assert.ok(await quickLink.evaluate(el => el.getBoundingClientRect().bottom <= innerHeight), 'Featured Skills appears in the first viewport at ' + width);
+    if (width === 1280 || width === 390) {
+      await page.evaluate(() => document.activeElement?.blur());
+      await page.screenshot({ path: path.join(output, 'directory-featured-' + width + '.png') });
+      if (width === 390) {
+        await page.locator('.nav-hamburger').click();
+        await page.screenshot({ path: path.join(output, 'directory-featured-menu-390.png') });
+      }
+    }
+  }
+  await page.goto(base + destination + '?sort=name');
+  await verifyFeaturedOrder(page);
+  await page.reload();
+  await verifyFeaturedOrder(page);
+  console.log('Featured navigation passed: exact local destination, shared desktop/mobile navigation, keyboard activation, first-viewport homepage link and 320–1280px reflow.');
+}

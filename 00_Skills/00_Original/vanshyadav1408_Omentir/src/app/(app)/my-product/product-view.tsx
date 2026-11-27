@@ -1,0 +1,598 @@
+"use client";
+
+import { unwrapAction, type ActionFailure } from "@/lib/action-result";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import type { ProductProfile, Workspace } from "@/lib/server/types";
+import DeleteWorkspaceCard from "@/app/delete-workspace-card";
+import OutreachSwitch from "@/app/outreach-switch";
+import AiLoadingOverlay from "@/app/ai-loading-overlay";
+import MobileHeaderPortal from "@/app/mobile-header-portal";
+import { SelectField } from "@/app/ui/select";
+import { TextAreaField, TextField } from "@/app/ui/text-field";
+import {
+  INVALID_SCHEDULING_LINK_MESSAGE,
+  hasUsableBookingLink,
+  normalizeSchedulingLink,
+} from "@/lib/scheduling-link";
+import { isNextNavigationError, useToast, userFacingError } from "@/app/toast";
+import { WorkspaceAvatar } from "@/app/workspace-switcher";
+
+type SaveProductResult = { ok: true } | { ok: false; error: string };
+
+type ProductViewProps = {
+  profile?: ProductProfile;
+  workspace: Pick<Workspace, "id" | "ownerId" | "name" | "settings">;
+  faviconUrl?: string;
+  workspaceName?: string;
+  saveAction: (formData: FormData) => Promise<void | SaveProductResult | ActionFailure>;
+  analyzeAction: (formData: FormData) => Promise<{ analyzed: boolean } | ActionFailure>;
+  deleteAction: (workspaceId: string) => Promise<void | ActionFailure>;
+};
+
+const INDUSTRY_OPTIONS = [
+  "Software Development & SaaS",
+  "Marketing & Advertising",
+  "Financial Services",
+  "Healthcare & Life Sciences",
+  "E-commerce & Retail",
+  "Education & EdTech",
+  "Real Estate & Construction",
+  "Manufacturing & Logistics",
+  "Media & Entertainment",
+  "Professional Services",
+  "Hospitality & Travel",
+  "Other",
+];
+
+const COMPANY_SIZE_OPTIONS = [
+  "1 - 10 employees",
+  "11 - 50 employees",
+  "51 - 200 employees",
+  "201 - 500 employees",
+  "501 - 1,000 employees",
+  "1,001 - 5,000 employees",
+  "5,000+ employees",
+];
+
+function TextInput({
+  name,
+  value,
+  onChange,
+  label,
+  placeholder,
+  type = "text",
+  required,
+  error,
+}: {
+  name: string;
+  value: string;
+  onChange: (next: string) => void;
+  label?: string;
+  placeholder?: string;
+  type?: string;
+  required?: boolean;
+  error?: boolean | string;
+}) {
+  return (
+    <TextField
+      name={name}
+      type={type}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      label={label}
+      placeholder={placeholder}
+      required={required}
+      error={error}
+    />
+  );
+}
+
+function Textarea({
+  name,
+  value,
+  onChange,
+  label,
+  placeholder,
+  rows = 3,
+}: {
+  name: string;
+  value: string;
+  onChange: (next: string) => void;
+  label?: string;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <TextAreaField
+      name={name}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      label={label}
+      placeholder={placeholder}
+      rows={rows}
+    />
+  );
+}
+
+function ListField({
+  name,
+  values,
+  onChange,
+  addPlaceholder,
+}: {
+  name: string;
+  values: string[];
+  onChange: (next: string[]) => void;
+  addPlaceholder: string;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function add() {
+    const next = draft.trim();
+    if (!next) return;
+    if (values.some((value) => value.toLowerCase() === next.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...values, next]);
+    setDraft("");
+  }
+
+  return (
+    <div className="grid gap-2">
+      {values.map((value) => (
+        <input key={`hidden-${value}`} type="hidden" name={name} value={value} />
+      ))}
+      {values.map((value, idx) => (
+        <div key={`${value}-${idx}`} className="flex items-center gap-2">
+          <TextField
+            className="min-w-0 flex-1"
+            value={value}
+            onChange={(event) => {
+              const next = [...values];
+              next[idx] = event.target.value;
+              onChange(next);
+            }}
+            label={`Item ${idx + 1}`}
+          />
+          <button
+            type="button"
+            onClick={() => onChange(values.filter((_, i) => i !== idx))}
+            aria-label="Remove"
+            className="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-md text-[#e85e6b] hover:bg-[#fff5f6]"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6M14 11v6" />
+              <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+      ))}
+      <div className="flex items-center gap-2">
+        <TextField
+          className="min-w-0 flex-1"
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              add();
+            }
+          }}
+          label={addPlaceholder}
+        />
+        <button
+          type="button"
+          onClick={add}
+          disabled={!draft.trim()}
+          className="h-10 shrink-0 cursor-pointer rounded-md bg-zinc-100 px-4 text-[14px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function ProductView({
+  profile,
+  workspace,
+  faviconUrl,
+  workspaceName,
+  saveAction,
+  analyzeAction,
+  deleteAction,
+}: ProductViewProps) {
+  const router = useRouter();
+  const { showError, showSuccess } = useToast();
+  const [pending, startTransition] = useTransition();
+  const [analyzing, startAnalyzing] = useTransition();
+
+  const [companyName, setCompanyName] = useState(profile?.companyName ?? "");
+  const [websiteUrl, setWebsiteUrl] = useState(profile?.websiteUrl ?? "");
+  const [industry, setIndustry] = useState(profile?.industry ?? "");
+  const [companySize, setCompanySize] = useState(profile?.companySize ?? "");
+  const [description, setDescription] = useState(profile?.description ?? "");
+  const [painPointsText, setPainPointsText] = useState(profile?.painPointsText ?? "");
+  const [pricingDetails, setPricingDetails] = useState(profile?.pricingDetails ?? "");
+  const [schedulingLink, setSchedulingLink] = useState(profile?.schedulingLink ?? "");
+  const [schedulingError, setSchedulingError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [keyFeatures, setKeyFeatures] = useState<string[]>(profile?.keyFeatures ?? []);
+  const [socialProof, setSocialProof] = useState<string[]>(profile?.socialProof ?? []);
+  const [linkedInCompanyPage, setLinkedInCompanyPage] = useState(profile?.linkedInCompanyPage ?? "");
+  const [averageTicketSize, setAverageTicketSize] = useState(
+    profile?.averageTicketSize ? String(profile.averageTicketSize) : "",
+  );
+
+  useEffect(() => {
+    if (profile) {
+      setCompanyName(profile.companyName ?? "");
+      setWebsiteUrl(profile.websiteUrl ?? "");
+      setIndustry(profile.industry ?? "");
+      setCompanySize(profile.companySize ?? "");
+      setDescription(profile.description ?? "");
+      setPainPointsText(profile.painPointsText ?? "");
+      setPricingDetails(profile.pricingDetails ?? "");
+      setSchedulingLink(profile.schedulingLink ?? "");
+      setSchedulingError("");
+      setSaveError("");
+      setKeyFeatures(profile.keyFeatures ?? []);
+      setSocialProof(profile.socialProof ?? []);
+      setLinkedInCompanyPage(profile.linkedInCompanyPage ?? "");
+      setAverageTicketSize(profile.averageTicketSize ? String(profile.averageTicketSize) : "");
+    }
+  }, [profile]);
+
+  function handleAnalyze() {
+    if (!websiteUrl.trim()) return;
+    const formData = new FormData();
+    formData.set("websiteUrl", websiteUrl);
+    startAnalyzing(async () => {
+      try {
+        const { analyzed } = unwrapAction(await analyzeAction(formData));
+        if (!analyzed) showError("Could not analyze this website. Check the URL and try again.");
+      } catch (error) {
+        showError(userFacingError(error, "Could not analyze this website."));
+      }
+    });
+  }
+
+  function handleSave(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSchedulingError("");
+    setSaveError("");
+    const formData = new FormData(event.currentTarget);
+    [
+      ["keyFeatures", keyFeatures],
+      ["socialProof", socialProof],
+    ].forEach(([key, list]) => {
+      formData.delete(key as string);
+      (list as string[]).forEach((value) => formData.append(key as string, value));
+    });
+    if (normalizeSchedulingLink(String(formData.get("schedulingLink") || "")) === null) {
+      setSchedulingError(INVALID_SCHEDULING_LINK_MESSAGE);
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const result = unwrapAction(await saveAction(formData));
+        if (result && typeof result === "object" && result.ok === false) {
+          setSchedulingError(result.error);
+          return;
+        }
+        showSuccess("Saved.");
+        router.refresh();
+        // Overview "Add a booking link" deep-links here. After a successful
+        // save, send them back so the checklist can mark the step done.
+        if (
+          hasUsableBookingLink(String(formData.get("schedulingLink") || "")) &&
+          window.location.hash === "#demo-booking"
+        ) {
+          router.replace("/overview");
+        }
+      } catch (error) {
+        if (isNextNavigationError(error)) {
+          showSuccess("Saved.");
+          router.refresh();
+          if (
+            hasUsableBookingLink(String(formData.get("schedulingLink") || "")) &&
+            window.location.hash === "#demo-booking"
+          ) {
+            router.replace("/overview");
+          }
+          return;
+        }
+        setSaveError(userFacingError(error, "Could not save. Try again."));
+      }
+    });
+  }
+
+  return (
+    <form
+      id="product-save-form"
+      onSubmit={handleSave}
+      className="flex h-full min-h-0 min-w-0 flex-col gap-3 md:mr-0.5"
+    >
+      <AiLoadingOverlay
+        open={analyzing}
+        title="Analysing your website with AI"
+        note="Usually takes 30 seconds"
+      />
+
+      {/* Portaled to body so fixed positioning is not trapped by page enter /
+          fade transforms (or main overflow), which hid this control on mobile. */}
+      <MobileHeaderPortal>
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-[92] flex h-14 items-center justify-end px-2 md:hidden">
+          <button
+            type="submit"
+            form="product-save-form"
+            disabled={pending}
+            style={{ fontFamily: "var(--font-varta)" }}
+            className="pointer-events-auto m3-btn m3-btn-filled h-8 px-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span className="translate-y-px">{pending ? "Saving..." : "Save"}</span>
+          </button>
+        </div>
+      </MobileHeaderPortal>
+
+      {/* Header — primary action matches Leads "Add leads" */}
+      <div className="app-x hidden shrink-0 items-center justify-between gap-3 pt-6 md:flex">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <WorkspaceAvatar
+            name={companyName || workspaceName || "Workspace"}
+            faviconUrl={faviconUrl}
+            size={28}
+          />
+          <h1 className="text-2xl font-semibold leading-none tracking-tight text-[var(--md-sys-color-on-surface)]">
+            Workspace
+          </h1>
+        </div>
+        <button
+          type="submit"
+          disabled={pending}
+          className="m3-btn m3-btn-filled h-8 shrink-0 gap-1 px-2.5 text-xs disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          {pending ? "Saving..." : "Save changes"}
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="mt-2 min-h-0 flex-1 overflow-hidden md:mt-0">
+        <div className="app-x h-full overflow-y-auto">
+          <div className="max-w-5xl pb-8 pt-1 sm:pb-10 sm:pt-2 md:pb-3">
+            {/* Section heading */}
+            <div className="mb-8">
+              {saveError ? (
+                <p className="mb-4 text-sm text-[#c62828]" role="alert">
+                  {saveError}
+                </p>
+              ) : null}
+              <h2
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="text-xl font-semibold tracking-tight text-zinc-950"
+              >
+                Company Information
+              </h2>
+              <span className="mt-1.5 block h-0.5 w-8 rounded-full bg-[#ba3871]/60" aria-hidden />
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                These details power outreach from this workspace. Update them when the offer changes.
+              </p>
+            </div>
+
+            {/* Company Name + Website */}
+            <div className="grid gap-x-6 gap-y-6 md:grid-cols-2">
+              <div>
+                <TextInput
+                  name="companyName"
+                  value={companyName}
+                  onChange={setCompanyName}
+                  label="Company Name"
+                  placeholder="Acme Inc."
+                  required
+                />
+              </div>
+              <div>
+                <div className="flex flex-row items-end gap-2">
+                  <div className="min-w-0 flex-1">
+                    <TextInput
+                      name="websiteUrl"
+                      value={websiteUrl}
+                      onChange={setWebsiteUrl}
+                      label="Website"
+                      placeholder="acme.com"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    disabled={analyzing || !websiteUrl.trim()}
+                    className="m3-btn m3-btn-filled m3-btn-field shrink-0 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {analyzing ? "Analysing..." : "AI Analyse"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Industry + Company Size */}
+            <div className="mt-8 grid gap-x-6 gap-y-6 md:grid-cols-2">
+              <div>
+                <SelectField
+                  label="Industry"
+                  name="industry"
+                  value={industry}
+                  onChange={setIndustry}
+                  placeholder="Select industry"
+                  options={INDUSTRY_OPTIONS}
+                />
+              </div>
+              <div>
+                <SelectField
+                  label="Company Size"
+                  name="companySize"
+                  value={companySize}
+                  onChange={setCompanySize}
+                  placeholder="Select company size"
+                  options={COMPANY_SIZE_OPTIONS}
+                />
+              </div>
+            </div>
+
+            {/* Average Ticket Size */}
+            <div className="mt-8 md:max-w-xs">
+              <TextField
+                name="averageTicketSize"
+                inputMode="numeric"
+                value={averageTicketSize}
+                onChange={(event) => setAverageTicketSize(event.target.value)}
+                label="Average Ticket Size"
+                placeholder="5,000"
+                className="average-ticket-size-field"
+                leadingIcon={<span className="text-[16px] font-medium">$</span>}
+                supportingText="Your typical deal value per customer, used to estimate pipeline generated."
+              />
+            </div>
+
+            {/* Company Description */}
+            <div className="mt-8">
+              <Textarea
+                name="description"
+                value={description}
+                onChange={setDescription}
+                label="Company Description"
+                placeholder="Describe what your company does, who it's for, and the value it provides."
+                rows={3}
+              />
+            </div>
+
+            {/* Pain Points */}
+            <div className="mt-8">
+              <Textarea
+                name="painPointsText"
+                value={painPointsText}
+                onChange={setPainPointsText}
+                label="Pain Points"
+                placeholder="What problems does your product solve for customers?"
+                rows={3}
+              />
+            </div>
+
+            <div className="mt-8">
+              <Textarea
+                name="pricingDetails"
+                value={pricingDetails}
+                onChange={setPricingDetails}
+                label="Pricing"
+                placeholder="Example: $49 per month, including 3 seats. Annual plans are $490."
+                rows={3}
+              />
+              <p className="mt-1.5 text-[12px] font-medium text-zinc-600">
+                AI uses only these pricing facts when a lead asks about cost.
+              </p>
+            </div>
+
+            <div className="mt-8" id="demo-booking">
+              <TextInput
+                name="schedulingLink"
+                value={schedulingLink}
+                onChange={(next) => {
+                  setSchedulingLink(next);
+                  setSchedulingError("");
+                }}
+                label="Demo booking link"
+                placeholder="https://cal.com/your-name/intro"
+                error={schedulingError || undefined}
+              />
+              {!schedulingError ? (
+                <p className="mt-1.5 text-[12px] font-medium text-zinc-600">
+                  Paste any meeting scheduler URL. Agents that continue until a demo is
+                  booked use this link by default. You can override it per agent during
+                  setup.
+                </p>
+              ) : null}
+            </div>
+
+            {/* Key Features */}
+            <div className="mt-8">
+              <p className="mb-2 text-[12px] font-medium text-[var(--md-sys-color-on-surface-variant)]">
+                Key Features
+              </p>
+              <ListField
+                name="keyFeatures"
+                values={keyFeatures}
+                onChange={setKeyFeatures}
+                addPlaceholder="Add a key feature..."
+              />
+            </div>
+
+            {/* Social Proof */}
+            <div className="mt-8">
+              <p className="mb-2 text-[12px] font-medium text-[var(--md-sys-color-on-surface-variant)]">
+                Social Proof
+              </p>
+              <ListField
+                name="socialProof"
+                values={socialProof}
+                onChange={setSocialProof}
+                addPlaceholder="Add social proof..."
+              />
+            </div>
+
+            {/* LinkedIn Company Page */}
+            <div className="mt-8 pb-2">
+              <TextInput
+                name="linkedInCompanyPage"
+                value={linkedInCompanyPage}
+                onChange={setLinkedInCompanyPage}
+                label="LinkedIn Company Page"
+                placeholder="https://linkedin.com/company/your-company"
+              />
+            </div>
+
+            <div className="my-8 h-px bg-zinc-200" />
+
+            <div className="mb-2">
+              <h2
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="text-xl font-semibold tracking-tight text-zinc-950"
+              >
+                Outreach
+              </h2>
+              <span className="mt-1.5 block h-0.5 w-8 rounded-full bg-[#ba3871]/60" aria-hidden />
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                Pause sending for this workspace without touching its agents or your other workspaces.
+              </p>
+            </div>
+            <OutreachSwitch
+              workspaceName={workspace.name}
+              initialPaused={workspace.settings.outreachPaused === true}
+            />
+
+            <div className="my-8 h-px bg-zinc-200" />
+
+            <div className="mb-5">
+              <h2
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="text-xl font-semibold tracking-tight text-zinc-950"
+              >
+                Delete workspace
+              </h2>
+              <span className="mt-1.5 block h-0.5 w-8 rounded-full bg-[#ba3871]/60" aria-hidden />
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+                Delete this workspace and everything in it.
+              </p>
+            </div>
+            <DeleteWorkspaceCard workspace={workspace} deleteAction={deleteAction} />
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+}

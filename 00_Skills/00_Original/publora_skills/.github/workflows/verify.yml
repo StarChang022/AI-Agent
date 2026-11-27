@@ -1,0 +1,50 @@
+name: Verify skills
+
+on:
+  # No branch filter on pull_request: a stacked PR targets its parent branch,
+  # not main, and those are exactly the changes that most need checking.
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install check dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install -r requirements-dev.txt
+      - name: Frontmatter regression tests
+        run: .venv/bin/python -m unittest discover -s scripts -p 'test_*.py'
+      - name: Frontmatter, prices, stale paths, link hosts
+        run: .venv/bin/python scripts/check_skills.py
+
+  package:
+    name: Plugin packages in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Regenerate and confirm nothing changed
+        run: |
+          python3 scripts/sync_plugin_packages.py
+          # status, not diff: a new skill shows up as untracked files.
+          stale="$(git status --porcelain -- .claude-marketplace .codex-marketplace)"
+          if [ -n "$stale" ]; then
+            echo "$stale"
+            echo "::error::Plugin packages are stale; run scripts/sync_plugin_packages.py"
+            exit 1
+          fi
+
+  links:
+    name: Link check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Every documentation link resolves
+        run: python3 scripts/check_links.py

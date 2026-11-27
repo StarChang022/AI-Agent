@@ -1,0 +1,260 @@
+name: Deploy Production
+
+# Runs only for commits that reach main, plus manual dispatch. Neither trigger
+# is reachable by a fork or an outside contributor: pushing to main and
+# dispatching a workflow both require write access to this repository.
+#
+# Deploy secrets live in the `production` GitHub Environment, not at repository
+# level, so only the `deploy` job below can read them. The environment is
+# restricted to the main branch, and GitHub never exposes secrets to workflows
+# triggered by pull requests from forks.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: omentir-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # Public Sanity project id. Without it, next build only prerenders ~69
+      # shells and the VPS ships that instead of the ~889 CMS pages.
+      NEXT_PUBLIC_SANITY_PROJECT_ID: xatqbx3d
+      NEXT_PUBLIC_SANITY_DATASET: production
+      SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
+      # PostHog project key. Inlined into the client bundle at build.
+      # Keep the value in GitHub secrets: gitleaks treats the project key as a
+      # hosted account identifier and must not see it in this public repo. The VPS
+      # ships this prebuilt .next; VPS runtime env cannot fill NEXT_PUBLIC_*
+      # in browser code. Without this, posthog-js never inits, Web Analytics
+      # unique users freeze, and only server events still flow.
+      NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+      # Clerk publishable key (public, but gitleaks flags it inline, so it is a
+      # secret like the PostHog key). Prerendered pages (homepage, pricing,
+      # blog) and the client bundle take it from this build, not from the VPS.
+      # Without it they ship with an empty key and never load Clerk, and since
+      # the root layout is kept across in-app navigation, everyone who clicks
+      # through to /login or /signup gets "Sign in could not load".
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit --pretty false
+      - name: Require PostHog project key
+        run: |
+          if [ -z "${NEXT_PUBLIC_POSTHOG_KEY:-}" ]; then
+            echo "NEXT_PUBLIC_POSTHOG_KEY is required. This job's .next is what the VPS serves; without the key, posthog-js never inits and Web Analytics freezes." >&2
+            exit 1
+          fi
+      - name: Require Clerk live publishable key
+        run: |
+          case "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}" in
+            pk_live_*) ;;
+            *)
+              echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY must be the pk_live_ key the VPS runs with. This job's .next is what the VPS serves; without the key, prerendered pages never load Clerk and nobody can log in or sign up from them." >&2
+              exit 1
+              ;;
+          esac
+      - name: bun run build
+        env:
+          # The header's GitHub star count is fetched while prerendering. This
+          # runner's shared IP is usually over GitHub's unauthenticated limit,
+          # so without a token every page ships with no count. Step-scoped so
+          # install scripts never see it.
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bun run build
+      - name: Pack .next for the VPS
+        run: tar -C .next --exclude=cache -czf next-build.tgz .
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: next-build
+          path: next-build.tgz
+          if-no-files-found: error
+          retention-days: 1
+      - name: Publish .next release for the VPS
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="vps-next-${GITHUB_SHA}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" next-build.tgz --clobber
+          else
+            gh release create "$tag" next-build.tgz \
+              --title "VPS prebuilt ${GITHUB_SHA}" \
+              --notes "Prebuilt .next for production deploy. Not an app release." \
+              --prerelease \
+              --latest=false
+          fi
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+          APP_COMMIT_SHA: ${{ github.sha }}
+          APP_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          GH_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          for required in VPS_HOST VPS_USER VPS_SSH_KEY; do
+            if [ -z "${!required}" ]; then
+              echo "Missing required secret: $required" >&2
+              exit 1
+            fi
+          done
+
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/omentir_vps
+          chmod 600 ~/.ssh/omentir_vps
+
+          # Prefer a pinned host key so the runner cannot be tricked into
+          # trusting an impostor host. Fall back to a scan if none is set.
+          if [ -n "$VPS_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "VPS_KNOWN_HOSTS is not set; falling back to ssh-keyscan." >&2
+            ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          # The VPS key wrapper only runs ~/scripts/deploy-omentir.sh. Extra
+          # SSH sessions are rewritten into another rebuild. The VPS cannot
+          # next build (kernel SIGKILL), so production-build.sh downloads the
+          # .next artifact compiled in verify.
+          remote_cmd=$(printf 'APP_COMMIT_SHA=%q APP_REPOSITORY=%q GH_TOKEN=%q GH_RUN_ID=%q bash ~/scripts/deploy-omentir.sh' \
+            "$APP_COMMIT_SHA" "$APP_REPOSITORY" "$GH_TOKEN" "$GH_RUN_ID")
+          ssh -i ~/.ssh/omentir_vps -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=40 \
+            "$VPS_USER@$VPS_HOST" \
+            "$remote_cmd"
+
+          # Cutover is a short pm2 reload after the sidecar compile. Give the
+          # first check retries in case the new process is still booting.
+          if ! homepage="$(curl --fail --silent --show-error --retry 12 --retry-delay 5 https://omentir.com/)"
+          then
+            echo "Production homepage did not become healthy after deployment." >&2
+            exit 1
+          fi
+          mapfile -t assets < <(
+            printf '%s' "$homepage" |
+              grep -oE '(src|href)="/_next/static/chunks/[^"]+\.(js|css)"' |
+              sed -E 's/^(src|href)="(.*)"$/\2/' |
+              sort -u
+          )
+
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No JavaScript or CSS chunks found in the production homepage." >&2
+            exit 1
+          fi
+
+          for asset in "${assets[@]}"; do
+            case "$asset" in
+              *.js) expected_content_type="application/javascript" ;;
+              *.css) expected_content_type="text/css" ;;
+              *) echo "Unexpected asset type: $asset" >&2; exit 1 ;;
+            esac
+            if ! content_type="$(
+              curl --fail --silent --show-error --retry 5 --retry-delay 2 \
+                --output /dev/null --write-out '%{content_type}' \
+                "https://omentir.com$asset"
+            )"
+            then
+              echo "Production asset failed to load: $asset" >&2
+              exit 1
+            fi
+            if [[ "$content_type" != "$expected_content_type"* ]]; then
+              echo "Unexpected content type for $asset: $content_type" >&2
+              exit 1
+            fi
+          done
+
+      # The VPS has the build now. Drop every vps-next-* release and its tag so
+      # the repo keeps only real version tags. The concurrency group means no
+      # other deploy is waiting on one of these.
+      - name: Delete prebuilt .next releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh release list --limit 200 --json tagName \
+            --jq '.[].tagName | select(startswith("vps-next-"))' |
+            while read -r tag; do
+              gh release delete "$tag" --cleanup-tag --yes
+            done
+
+      - name: Notify IndexNow
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+          import xml.etree.ElementTree as ET
+
+          def fetch(url, data=None, headers=None, timeout=60):
+              # Cloudflare answers 403 to urllib's default Python-urllib agent.
+              headers = {"user-agent": "omentir-deploy/1.0 (+https://omentir.com)", **(headers or {})}
+              request = urllib.request.Request(url, data=data, headers=headers)
+              with urllib.request.urlopen(request, timeout=timeout) as response:
+                  return response.status, response.read()
+
+          key = fetch("https://omentir.com/indexnow-key.txt")[1].decode().strip()
+          spec_path = f"https://omentir.com/{key}.txt"
+          spec_body = fetch(spec_path)[1].decode().strip()
+          if spec_body != key:
+              raise SystemExit(f"IndexNow spec path {spec_path} did not return the key")
+
+          xml = fetch("https://omentir.com/sitemap.xml")[1]
+          ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          urls = []
+          for loc in ET.fromstring(xml).findall(".//sm:loc", ns):
+              url = (loc.text or "").strip()
+              path = url[len("https://omentir.com"):] if url.startswith("https://omentir.com") else url
+              if url and not path.endswith((".md", ".txt", ".json")):
+                  urls.append(url)
+          if not urls:
+              raise SystemExit("sitemap.xml contained no HTML URLs")
+
+          payload = json.dumps({
+              "host": "omentir.com",
+              "key": key,
+              "keyLocation": spec_path,
+              "urlList": urls,
+          }).encode()
+          headers = {"content-type": "application/json; charset=utf-8"}
+          ok = False
+          for endpoint in ("https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"):
+              try:
+                  status, body = fetch(endpoint, data=payload, headers=headers)
+                  print(f"{endpoint} -> {status} {body[:200]!r}")
+                  ok = ok or status in (200, 202)
+              except Exception as error:
+                  print(f"{endpoint} failed: {error}")
+          if not ok:
+              raise SystemExit("IndexNow rejected the post-deploy ping")
+          print(f"IndexNow accepted {len(urls)} HTML URLs")
+          PY

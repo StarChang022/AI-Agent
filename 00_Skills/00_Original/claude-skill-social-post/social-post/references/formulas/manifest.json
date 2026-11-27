@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "source_of_truth": "references/formulas/FNN.md",
+  "formulas": [
+    {
+      "id": "F1",
+      "title": "成果更新",
+      "path": "F01.md"
+    },
+    {
+      "id": "F2",
+      "title": "短觀察",
+      "path": "F02.md"
+    },
+    {
+      "id": "F3",
+      "title": "數據復盤",
+      "path": "F03.md"
+    },
+    {
+      "id": "F4",
+      "title": "系列內容",
+      "path": "F04.md"
+    },
+    {
+      "id": "F5",
+      "title": "開源邀請",
+      "path": "F05.md"
+    }
+  ]
+}

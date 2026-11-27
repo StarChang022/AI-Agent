@@ -1,0 +1,99 @@
+import { auth, currentUser } from "@/lib/server/auth";
+import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { saveProductProfileAction } from "@/app/actions";
+import { resolveActiveWorkspace } from "@/lib/server/active-workspace";
+import {
+  syncWorkspaceBillingIfInactive,
+  syncWorkspaceLinkedInSeatsFromWhop,
+} from "@/lib/server/billing-sync";
+import { hasActiveSubscription } from "@/lib/server/subscription";
+import { getWorkspaceSetup } from "@/lib/server/workspace-setup";
+import OverviewSetup from "./overview-setup";
+import OverviewView from "./overview-view";
+import { createPageMetadata } from "@/app/seo";
+
+export const metadata = createPageMetadata({
+  title: "Overview - Omentir",
+  description: "View your Omentir workspace performance, leads, campaigns, conversations, and account setup.",
+  path: "/overview",
+  noIndex: true,
+});
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type SessionClaimsProfile = { first_name?: string; full_name?: string };
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ linkedin?: string | string[] }>;
+}) {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) {
+    await auth.protect();
+    throw new Error("Unauthorized");
+  }
+  const userProfile = (sessionClaims || {}) as SessionClaimsProfile;
+  const userName = userProfile.first_name || userProfile.full_name?.split(" ")[0] || "there";
+  const params = await searchParams;
+  const linkedinParam = Array.isArray(params.linkedin) ? params.linkedin[0] : params.linkedin;
+
+  const loadedWorkspace = await resolveActiveWorkspace(userId);
+  // Independent reads. Activating an unpaid workspace from Whop has to happen
+  // before render (it decides the paywall); the LinkedIn seat sync does not,
+  // since Overview shows no seat count, so it runs after the response with the
+  // user read here (request APIs are unavailable inside after()).
+  const [setup, workspace, user] = await Promise.all([
+    getWorkspaceSetup(loadedWorkspace.id),
+    syncWorkspaceBillingIfInactive(loadedWorkspace),
+    currentUser(),
+  ]);
+  after(() =>
+    syncWorkspaceLinkedInSeatsFromWhop(workspace, user).catch((error) => {
+      console.error(
+        "[overview] LinkedIn seat sync failed:",
+        error instanceof Error ? error.message : error,
+      );
+    }),
+  );
+
+  if (!setup.productProfile) {
+    redirect(workspace.onboarding ? "/workspace" : "/onboarding");
+  }
+
+  if (!workspace.onboarding) {
+    redirect("/onboarding");
+  }
+
+  const hasSubscription = hasActiveSubscription(workspace);
+
+  if (!hasSubscription || !setup.setupDone) {
+    return (
+      <OverviewSetup
+        hasSubscription={hasSubscription}
+        linkedInConnected={setup.linkedInConnected}
+        linkedInError={linkedinParam === "error"}
+        hasBookingLink={setup.hasBookingLink}
+        schedulingLink={setup.productProfile.schedulingLink || ""}
+        saveBookingLink={saveProductProfileAction}
+        needsLinkedInReconnect={setup.needsLinkedInReconnect}
+        hasAgent={setup.hasAgent}
+      />
+    );
+  }
+
+  return (
+    <>
+      {/* The reads behind this view are started before hydration from the root
+          layout's early-fetch script (see sidebar-early-fetch). */}
+      <OverviewView
+        linkedInThreads={[]}
+        workspace={{ id: workspace.id, name: workspace.name }}
+        userName={userName}
+        averageTicketSize={setup.productProfile.averageTicketSize}
+      />
+    </>
+  );
+}

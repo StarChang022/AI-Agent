@@ -1,0 +1,155 @@
+import { describe, expect, test } from "bun:test";
+import {
+  canClaimAgentRun,
+  inviteRateLimitPause,
+  localDayAndHour,
+  nextInviteLimitRetryAt,
+  nextLocalMondayAt,
+} from "./scheduling";
+
+describe("nextInviteLimitRetryAt", () => {
+  test("first account-wide block waits 6 hours so a note-quota false alarm is not parked until Monday", () => {
+    const nowMs = Date.parse("2026-09-18T16:00:00.000Z");
+    expect(nextInviteLimitRetryAt({ nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-09-18T22:00:00.000Z",
+      stage: 1,
+    });
+  });
+
+  test("a failed 6-hour retry waits until next Monday when that is sooner than 3 days", () => {
+    // Saturday morning: Monday 9am beats Tuesday at the same clock time.
+    const nowMs = Date.parse("2026-09-19T10:00:00.000Z");
+    expect(nextInviteLimitRetryAt({ previousStage: 1, nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-09-21T09:00:00.000Z",
+      stage: 2,
+    });
+  });
+
+  test("a failed 6-hour retry waits 3 days when next Monday is farther away", () => {
+    // Tuesday: Friday is sooner than the following Monday.
+    const nowMs = Date.parse("2026-09-22T10:00:00.000Z");
+    expect(nextInviteLimitRetryAt({ previousStage: 1, nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-09-25T10:00:00.000Z",
+      stage: 2,
+    });
+  });
+});
+
+describe("inviteRateLimitPause", () => {
+  test("the first 429 pauses invites for 6 hours without emailing the owner, because one can be a passing rate limit", () => {
+    const nowMs = Date.parse("2026-11-24T20:00:00.000Z");
+    expect(inviteRateLimitPause({ prior: null, nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-11-25T02:00:00.000Z",
+      stage: 1,
+      started: true,
+      notifyOwner: false,
+    });
+  });
+
+  test("a 429 once the 6-hour pause has run out is the weekly limit: wait for Monday and tell the owner", () => {
+    // Saturday, with the week's invitations used up.
+    const nowMs = Date.parse("2026-11-21T10:00:00.000Z");
+    const prior = { until: "2026-11-21T08:00:00.000Z", stage: 1, active: false };
+    expect(inviteRateLimitPause({ prior, nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-11-23T09:00:00.000Z",
+      stage: 2,
+      started: true,
+      notifyOwner: true,
+    });
+  });
+
+  test("a refused probe keeps the running pause, so a real weekly limit gets one live attempt per window and not one per tick", () => {
+    const nowMs = Date.parse("2026-11-24T20:04:00.000Z");
+    const prior = { until: "2026-11-25T02:00:00.000Z", stage: 1, active: true };
+    expect(inviteRateLimitPause({ prior, nowMs, timezone: "UTC" })).toEqual({
+      until: "2026-11-25T02:00:00.000Z",
+      stage: 1,
+      started: false,
+      notifyOwner: false,
+    });
+  });
+});
+
+describe("nextLocalMondayAt", () => {
+  test("uses this Monday 9am when that instant is still ahead so a Sunday-night pause is not deferred a week", () => {
+    expect(nextLocalMondayAt("UTC", Date.parse("2026-09-21T08:00:00.000Z"))).toBe(
+      "2026-09-21T09:00:00.000Z",
+    );
+  });
+
+  test("skips to next week after Monday 9am because this week's LinkedIn reset has already passed", () => {
+    expect(nextLocalMondayAt("UTC", Date.parse("2026-09-21T10:00:00.000Z"))).toBe(
+      "2026-09-28T09:00:00.000Z",
+    );
+  });
+});
+
+describe("localDayAndHour", () => {
+  test("reads the hour on the workspace clock so a 9am IST digest does not fire at 9am UTC", () => {
+    const nowMs = Date.parse("2026-09-21T03:30:00.000Z");
+    expect(localDayAndHour("Asia/Kolkata", nowMs)).toEqual({ day: "2026-09-21", hour: 9 });
+    expect(localDayAndHour("UTC", nowMs)).toEqual({ day: "2026-09-21", hour: 3 });
+  });
+
+  test("treats Asia/Calcutta as the same zone as Kolkata so a Darwin picker still sends on IST", () => {
+    const nowMs = Date.parse("2026-09-21T03:30:00.000Z");
+    expect(localDayAndHour("Asia/Calcutta", nowMs)).toEqual(
+      localDayAndHour("Asia/Kolkata", nowMs),
+    );
+  });
+
+  test("uses Eastern 9am, not UTC 9am, when the workspace zone is America/New_York", () => {
+    const nowMs = Date.parse("2026-09-21T13:00:00.000Z");
+    expect(localDayAndHour("America/New_York", nowMs)).toEqual({
+      day: "2026-09-21",
+      hour: 9,
+    });
+    expect(localDayAndHour("UTC", nowMs).hour).toBe(13);
+  });
+});
+
+describe("canClaimAgentRun", () => {
+  const nowMs = Date.parse("2026-09-26T10:00:00.000Z");
+  const due = {
+    mode: "signals" as const,
+    status: "active" as const,
+    nextRunAt: "2026-09-26T09:00:00.000Z",
+    updatedAt: "2026-09-25T09:00:00.000Z",
+  };
+
+  test("a due agent can be claimed", () => {
+    expect(canClaimAgentRun(due, nowMs)).toBe(true);
+  });
+
+  test("an agent another tick already ran (next run moved to tomorrow) is not run again from a stale due list", () => {
+    expect(
+      canClaimAgentRun({ ...due, nextRunAt: "2026-09-27T09:00:00.000Z" }, nowMs),
+    ).toBe(false);
+  });
+
+  test("an agent another tick is running right now is not started a second time", () => {
+    expect(
+      canClaimAgentRun(
+        { ...due, status: "running", runStartedAt: "2026-09-26T09:55:00.000Z" },
+        nowMs,
+      ),
+    ).toBe(false);
+  });
+
+  test("a run stuck for over 30 minutes can be reclaimed so a crashed tick does not wedge the agent", () => {
+    expect(
+      canClaimAgentRun(
+        { ...due, status: "running", runStartedAt: "2026-09-26T09:00:00.000Z" },
+        nowMs,
+      ),
+    ).toBe(true);
+  });
+
+  test("an agent paused since the due list was read does not start", () => {
+    expect(canClaimAgentRun({ ...due, status: "paused" }, nowMs)).toBe(false);
+  });
+
+  test("outreach-only agents never run discovery", () => {
+    expect(canClaimAgentRun({ ...due, mode: "outreach" }, nowMs)).toBe(false);
+  });
+});

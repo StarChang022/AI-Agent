@@ -1,0 +1,22 @@
+{
+  "name": "omentir",
+  "displayName": "Omentir",
+  "version": "1.2.0",
+  "description": "Find LinkedIn prospects, draft outreach, and run human-paced campaigns.",
+  "author": {
+    "name": "Omentir",
+    "email": "hi@omentir.com",
+    "url": "https://omentir.com"
+  },
+  "homepage": "https://omentir.com/integrations/mcp",
+  "repository": "https://github.com/vanshyadav1408/Omentir",
+  "license": "MIT",
+  "keywords": [
+    "omentir",
+    "linkedin",
+    "sales",
+    "outreach",
+    "prospecting"
+  ],
+  "mcpServers": "./mcp.json"
+}

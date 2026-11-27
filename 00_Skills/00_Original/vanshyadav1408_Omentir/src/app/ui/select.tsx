@@ -1,0 +1,213 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { LeadAvatar } from "@/app/lead-avatar";
+
+export type SelectOption = {
+  value: string;
+  label: string;
+  description?: string;
+  imageUrl?: string;
+  imageFallback?: string;
+};
+
+function OptionAvatar({ option, size = "sm" }: { option: SelectOption; size?: "sm" | "md" }) {
+  const className = size === "md" ? "h-8 w-8" : "h-6 w-6";
+  const textClass = size === "md" ? "text-[11px]" : "text-[10px]";
+
+  return (
+    <LeadAvatar
+      name={option.imageFallback || option.label || option.value}
+      avatarUrl={option.imageUrl}
+      className={`${className} bg-[#0a66c2]`}
+      initialsClassName={`${textClass} font-semibold text-white`}
+    />
+  );
+}
+
+export function SelectField({
+  label,
+  name,
+  options,
+  value,
+  onChange,
+  placeholder,
+  className,
+  menuPlacement = "bottom",
+  clearable = true,
+}: {
+  label?: string;
+  name?: string;
+  options: SelectOption[] | string[];
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  menuPlacement?: "top" | "bottom";
+  // Fields that always hold a value pass false: the reset row is dead weight in
+  // a menu whose empty state the form would reject anyway.
+  clearable?: boolean;
+}) {
+  const normalizedOptions = options.map((o) =>
+    typeof o === "string" ? { value: o, label: o } : o,
+  );
+  const placeholder_ = placeholder ?? "Select one";
+
+  // Controlled mode when value+onChange provided, otherwise internal state (form mode)
+  const isControlled = value !== undefined && onChange !== undefined;
+  const [internalValue, setInternalValue] = useState("");
+  const selected = isControlled ? value : internalValue;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function select(val: string) {
+    if (isControlled) {
+      onChange(val);
+    } else {
+      setInternalValue(val);
+    }
+    setIsOpen(false);
+  }
+
+  const selectedLabel =
+    normalizedOptions.find((o) => o.value === selected)?.label ?? selected;
+  const selectedOption = normalizedOptions.find((o) => o.value === selected);
+  const hasLabel = Boolean(label);
+  const originClass =
+    menuPlacement === "top" ? "m3-menu--origin-bottom" : "m3-menu--origin-top";
+
+  return (
+    <div
+      className={`m3-text-field m3-text-field--outlined ${hasLabel ? "" : "m3-text-field--no-label"} ${className || ""}`}
+      data-focused={isOpen ? "true" : "false"}
+      data-error="false"
+      data-disabled="false"
+      ref={ref}
+    >
+      {hasLabel ? (
+        <span className="m3-text-field__label">{label}</span>
+      ) : null}
+      <div className="m3-text-field__body">
+        <div className="m3-text-field__shell">
+          {name ? (
+            <input
+              type="text"
+              name={name}
+              value={selected}
+              onChange={() => {}}
+              required={!isControlled}
+              className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+              tabIndex={-1}
+            />
+          ) : null}
+          <button
+            type="button"
+            onClick={() => setIsOpen((v) => !v)}
+            className="m3-text-field__input flex w-full items-center justify-between gap-2 !h-[var(--md-sys-text-field-height)] !border-0 !bg-transparent !shadow-none text-left focus:outline-none"
+            aria-haspopup="listbox"
+            aria-expanded={isOpen}
+          >
+            <span className="flex min-w-0 flex-1 items-center gap-2.5">
+              {selectedOption?.imageUrl || selectedOption?.imageFallback ? (
+                <OptionAvatar option={selectedOption} />
+              ) : null}
+              <span className="min-w-0 flex-1">
+                <span
+                  className={`block truncate text-[14px] leading-5 ${
+                    selected
+                      ? "text-[var(--md-sys-color-field-text)]"
+                      : "text-[var(--md-sys-color-text-disabled)]"
+                  }`}
+                >
+                  {selected ? selectedLabel : placeholder_}
+                </span>
+                {selectedOption?.description ? (
+                  <span className="mt-0.5 block truncate text-[11px] font-medium leading-4 text-[var(--md-sys-color-on-surface-variant)]">
+                    {selectedOption.description}
+                  </span>
+                ) : null}
+              </span>
+            </span>
+            <svg
+              className={`shrink-0 text-[var(--md-sys-color-on-surface-variant)] transition-transform ${isOpen ? "rotate-180" : ""}`}
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {isOpen ? (
+        <div
+          className={`m3-menu m3-menu-enter absolute z-50 w-full ${originClass} ${
+            menuPlacement === "top" ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
+          role="listbox"
+        >
+          {clearable ? (
+            <button
+              type="button"
+              className="m3-menu-item"
+              onClick={() => select("")}
+            >
+              <span className="m3-menu-item__label truncate text-[var(--md-sys-color-on-surface-variant)]">
+                {placeholder_}
+              </span>
+            </button>
+          ) : null}
+          {normalizedOptions.map((option) => {
+            const isSelected = selected === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={`m3-menu-item ${isSelected ? "m3-menu-item--selected" : ""}`}
+                onClick={() => select(option.value)}
+              >
+                <span className="m3-menu-item__leading">
+                  {option.imageUrl || option.imageFallback ? (
+                    <OptionAvatar option={option} size="md" />
+                  ) : null}
+                  <span className="m3-menu-item__label min-w-0">
+                    <span className="block truncate">{option.label}</span>
+                    {option.description ? (
+                      <span className="m3-menu-item__secondary">{option.description}</span>
+                    ) : null}
+                  </span>
+                </span>
+                {isSelected ? (
+                  <span className="m3-menu-item__check material-symbols-outlined" aria-hidden="true">
+                    check
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}

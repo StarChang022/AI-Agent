@@ -1,0 +1,253 @@
+import './test_maker_lifecycle.mjs';
+import './test_maker_showcase.mjs';
+import './test_maker_projection_v2.mjs';
+import './test_maker_owner_v2.mjs';
+import './test_maker_runtime_v2.mjs';
+import './test_maker_store_v2.mjs';
+import './test_maker_frontend_v2.mjs';
+import './test_maker_build_v2.mjs';
+import './test_agents_model.mjs';
+import './test_agents_site.mjs';
+import './test_agents_ungraded.mjs';
+// The standalone suedeai.directory build: URL rewrites and a full internal link check.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { build, rewriteUrl, rewriteText, rehomeWebsite, retagUtmSource, rehomeSocialImages, SITE_NODE, OLD, NEW } from "../scripts/build-directory-site.mjs";
+
+const page = `${OLD}/directory/obra/superpowers/index.html`;
+
+test("links inside the directory keep their relative form", () => {
+  assert.equal(rewriteUrl("../../", page), "../../");
+  assert.equal(rewriteUrl("writing-plans/#badge", page), "writing-plans/#badge");
+});
+
+test("links that leave the directory point back to skills.suedeai.ai, except shared assets", () => {
+  assert.equal(rewriteUrl("../../../", page), `${OLD}/`);
+  assert.equal(rewriteUrl("../../../skills/suede-seo-audit.html#run", page), `${OLD}/skills/suede-seo-audit.html#run`);
+  assert.equal(rewriteUrl("../../../assets/site.css", page), "/assets/site.css");
+});
+
+test("absolute and root-absolute directory URLs move to the new host", () => {
+  assert.equal(rewriteUrl(`${OLD}/directory/badge.svg`, page), `${NEW}/badge.svg`);
+  assert.equal(rewriteUrl("/directory/ai-agents-llm/", `${OLD}/404.html`), "/ai-agents-llm/");
+  assert.equal(rewriteUrl("directory/", `${OLD}/404.html`), "/");
+  assert.equal(rewriteUrl("https://github.com/obra/superpowers", page), "https://github.com/obra/superpowers");
+});
+
+test("canonical tags, JSON-LD and search-index paths are rewritten", () => {
+  const html = `<link rel="canonical" href="${OLD}/directory/obra/superpowers/"><script type="application/ld+json">{"url":"${OLD}/directory/"}</script>`;
+  const out = rewriteText(html, ".html", page);
+  assert.ok(out.includes(`href="${NEW}/obra/superpowers/"`));
+  assert.ok(out.includes(`"url":"${NEW}/"`));
+  assert.equal(rewriteText('{"href":"/directory/a/b/"}', ".json", page), '{"href":"/a/b/"}');
+});
+
+test("directory link rewrites preserve encoded queries, repeated values and fragments", () => {
+  const tail = "?q=anthropics%2Fskills&pick=a&pick=b&utm_source=shared#results";
+  assert.equal(rewriteUrl(`${OLD}/directory/check/${tail}`, page), `${NEW}/check/${tail}`);
+  assert.equal(rewriteUrl(`/directory/check/${tail}`, page), `/check/${tail}`);
+  assert.equal(rewriteUrl(`../../check/${tail}`, page), `../../check/${tail}`);
+  const html = `<link rel="canonical" href="${NEW}/check/"><a href="${OLD}/directory/check/${tail}">Check</a>`;
+  assert.equal(rewriteText(html, ".html", page), `<link rel="canonical" href="${NEW}/check/"><a href="${NEW}/check/${tail}">Check</a>`);
+});
+
+test("the built site has no old directory URLs and no broken internal links", () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "suedeai-directory-"));
+  try {
+    build(out);
+    for (const f of ["index.html", "robots.txt", "sitemap.xml", "llms.txt", "404.html", "assets/site.css", "search-index.json"]) {
+      assert.ok(fs.existsSync(path.join(out, f)), `missing ${f}`);
+    }
+    assert.match(fs.readFileSync(path.join(out, "robots.txt"), "utf8"), /^Sitemap: https:\/\/suedeai\.directory\/sitemap\.xml$/m);
+    for (const name of ["google4b0bcf0a4950299c.html", "google2adc3d1aa9f93cf0.html"]) {
+      assert.equal(fs.readFileSync(path.join(out, name), "utf8").trim(), `google-site-verification: ${name}`,
+        `${name}: Google must be able to verify the standalone directory property`);
+    }
+    const keys = fs.readdirSync(out).filter((f) => /^[A-Za-z0-9-]{8,128}\.txt$/.test(f) && f !== "llms.txt" && f !== "robots.txt");
+    assert.equal(keys.length, 1, `expected one IndexNow key file at the site root, found ${keys.join(", ") || "none"}`);
+    assert.equal(fs.readFileSync(path.join(out, keys[0]), "utf8").trim(), keys[0].slice(0, -4));
+    const sitemap = fs.readFileSync(path.join(out, "sitemap.xml"), "utf8");
+    assert.ok(sitemap.includes(`<loc>${NEW}/</loc>`));
+    assert.ok(!sitemap.includes(OLD));
+    const home = fs.readFileSync(path.join(out, 'index.html'), 'utf8');
+    const menu = home.match(/<details class="directory-more">[\s\S]*?<\/details>/)?.[0];
+    assert.ok(menu, 'the standalone directory groups secondary navigation');
+    for (const label of ['Top 100', 'New', 'Topics', 'Stacks', 'Security', 'Saved']) {
+      assert.ok(menu.includes('>' + label), label + ' is reachable from More');
+    }
+    for (const label of ['Skills', 'Featured Skills', 'Agents']) {
+      assert.ok(!menu.includes('>' + label + '<'), label + ' remains in the primary navigation');
+    }
+    const crackedLink = /<a class="cracked-devs-link" href="https:\/\/skills\.suedeai\.ai\/cracked\.html" aria-describedby="(cracked-devs-(?:desktop|mobile)-note)">/g;
+    assert.deepEqual([...home.matchAll(crackedLink)].map(match => match[1]), ['cracked-devs-desktop-note', 'cracked-devs-mobile-note']);
+    for (const id of ['cracked-devs-desktop-note', 'cracked-devs-mobile-note']) {
+      assert.match(home, new RegExp(`id="${id}">Don’t click\\. They’re already insufferable\\.<`));
+    }
+    assert.match(home, /<\/nav>\s*<\/header>\s*<div class="shell cracked-devs-mobile"/);
+    // The directory ships its own legible icon set, not the shared thin-ring 64px icon.
+    assert.doesNotMatch(home, /favicon-64\.png/);
+    for (const icon of ['/favicon.ico', '/assets/favicon/favicon-16.png', '/assets/favicon/favicon-32.png', '/assets/favicon/apple-touch-icon.png']) {
+      assert.ok(home.includes(`href="${icon}"`), `${icon} is linked from the homepage`);
+      assert.ok(fs.existsSync(path.join(out, icon)), `${icon} ships with the site`);
+    }
+    assert.ok(fs.readFileSync(path.join(out, 'favicon.ico')).equals(fs.readFileSync(new URL('../directory/assets/favicon/favicon.ico', import.meta.url))));
+    const sharedHome = fs.readFileSync(new URL('../docs/directory/index.html', import.meta.url), 'utf8');
+    assert.doesNotMatch(sharedHome, /class="cracked-devs-link"/, 'the old host does not get the new CTA');
+    const featured = fs.readFileSync(path.join(out, 'featured/index.html'), 'utf8');
+    assert.doesNotMatch(featured, /class="cracked-devs-link"/, 'subpages do not get the homepage CTA');
+    assert.ok(sitemap.includes(`<loc>${NEW}/featured/</loc>`));
+    assert.ok(featured.includes(`rel="canonical" href="${NEW}/featured/"`));
+    assert.doesNotMatch(featured, /noindex/);
+    const member = featured.split('id="arcmira"')[1]?.split('</article>')[0];
+    assert.ok(member, 'standalone site retains the Arcmira member entry');
+    assert.match(member, /Suede Directory Member/);
+    assert.equal((member.match(/\/SKILL\.md"/g) || []).length, 6);
+    assert.doesNotMatch(featured, /featured-badge-arcmira/);
+    const broken = [];
+    const walk = (dir) => {
+      for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+        const p = path.join(dir, e.name);
+        if (e.isDirectory()) { walk(p); continue; }
+        if (!/\.(html|json|xml|txt|js|mjs|md|css|svg)$/.test(e.name)) continue;
+        const text = fs.readFileSync(p, "utf8");
+        assert.ok(!/\bskills\.sh\b/i.test(text), `${path.relative(out, p)} mentions a removed directory`);
+        assert.ok(!text.includes(`${OLD}/directory`), `${path.relative(out, p)} still links to ${OLD}/directory`);
+        if (!e.name.endsWith(".html")) continue;
+        const rel = path.relative(out, p).split(path.sep).join("/");
+        const header = text.match(/<header class="nav">([\s\S]*?)<\/header>/)?.[1];
+        if (header) {
+          const featuredLinks = [...header.matchAll(/<a href="([^"]+)"(?: aria-current="page")?>Featured Skills<\/a>/g)];
+          assert.equal(featuredLinks.length, 1, `${rel}: Featured Skills in shared navigation`);
+          assert.equal(new URL(featuredLinks[0][1], `${NEW}/${rel}`).href, `${NEW}/featured/`, rel);
+        }
+        if (e.name === "index.html" && !/<meta name="robots" content="[^"]*noindex/i.test(text)) {
+          const canonical = `${NEW}/${rel.replace(/index\.html$/, "")}`;
+          assert.equal(text.match(/<link rel="canonical" href="([^"]*)"/)?.[1], canonical, rel);
+          assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), `${rel}: missing from sitemap`);
+          assert.doesNotMatch(text, /http-equiv=["']refresh["']/i, `${rel}: refresh would lose shared query state`);
+        }
+        for (const m of text.matchAll(/\b(?:href|src|action)="([^"]*)"/g)) {
+          if (!m[1] || /^(#|mailto:|tel:|data:|javascript:)/.test(m[1])) continue;
+          const u = new URL(m[1], `${NEW}/${rel}`);
+          if (u.origin !== NEW) continue;
+          const target = path.join(out, decodeURIComponent(u.pathname));
+          const ok = u.pathname.endsWith("/") ? fs.existsSync(path.join(target, "index.html")) : fs.existsSync(target) || fs.existsSync(path.join(target, "index.html"));
+          if (!ok) broken.push(`${rel} -> ${u.pathname}`);
+        }
+      }
+    };
+    walk(out);
+    assert.deepEqual(broken.slice(0, 10), []);
+  } finally {
+    fs.rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("standalone reports verify independently and match their displayed versions", async () => {
+  const { createHash } = await import("node:crypto");
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), "suedeai-reports-"));
+  const source = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../docs/directory");
+  const originals = new Map();
+  const remember = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) remember(p);
+      else if (e.name === "report.json" && JSON.parse(fs.readFileSync(p, "utf8")).kind !== "agent") originals.set(path.relative(source, p), fs.readFileSync(p, "utf8"));
+    }
+  };
+  remember(source);
+  try {
+    build(out);
+    const index = JSON.parse(fs.readFileSync(path.join(out, "search-index.json"), "utf8"));
+    assert.ok(index.length > 0);
+    assert.equal(index.length, originals.size);
+    assert.deepEqual(new Set(index.map(e => e.report.slice(1))), new Set(originals.keys()));
+    const htmlByPath = new Map();
+    for (const entry of index) {
+      const rel = entry.report.replace(/^\//, "");
+      const sourceFile = path.join(source, rel);
+      const before = originals.get(rel);
+      const original = JSON.parse(before);
+      const report = JSON.parse(fs.readFileSync(path.join(out, rel), "utf8"));
+      const { report_version, ...evidence } = report;
+      const expected = createHash("sha256").update(JSON.stringify(evidence)).digest("hex");
+      assert.equal(report_version, expected, rel);
+      assert.notEqual(report_version, original.report_version, rel);
+      assert.equal(report.listing_url, NEW + entry.href);
+      assert.ok(report.methodology.url.startsWith(NEW + "/"));
+      for (const badge of report.badges) assert.ok(badge.src.startsWith(NEW + "/"));
+      assert.deepEqual(report.snapshot, original.snapshot);
+      assert.deepEqual(report.source, original.source);
+      assert.deepEqual(report.quality, original.quality);
+      assert.equal(report.security_scan_status, original.security_scan_status);
+      const htmlPath = path.join(out, new URL(report.listing_url).pathname, "index.html");
+      if (!htmlByPath.has(htmlPath)) htmlByPath.set(htmlPath, fs.readFileSync(htmlPath, "utf8"));
+      const html = htmlByPath.get(htmlPath);
+      if (entry.full) assert.ok(html.includes(`Report version <code>${expected.slice(0, 12)}</code>`), rel);
+      assert.ok(!html.includes(`Report version <code>${original.report_version.slice(0, 12)}</code>`), rel);
+      assert.equal(fs.readFileSync(sourceFile, "utf8"), before);
+    }
+  } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});
+
+test("the standalone home names suedeai.directory as its own WebSite", () => {
+  const html = `<script type="application/ld+json">\n    {"@type":"CollectionPage","isPartOf":{"@type":"WebSite","@id":"${OLD}/#website","name":"Suede Skills","url":"${OLD}/"}}\n  </script>`;
+  const out = rehomeWebsite(html);
+  const ld = JSON.parse(out.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  assert.deepEqual(ld.isPartOf, SITE_NODE);
+  assert.equal(SITE_NODE["@id"], `${NEW}/#website`);
+  assert.ok(!out.includes(`${OLD}/#website`));
+  const other = `<script type="application/ld+json">{"@type":"WebPage"}</script>`;
+  assert.equal(rehomeWebsite(other), other, "JSON-LD without the old WebSite stays byte-identical");
+  const out2 = fs.mkdtempSync(path.join(os.tmpdir(), "suedeai-directory-site-"));
+  try {
+    build(out2);
+    const home = fs.readFileSync(path.join(out2, "index.html"), "utf8");
+    assert.ok(home.includes(`"@id": "${NEW}/#website"`), "home page JSON-LD names the directory WebSite");
+    assert.ok(!home.includes(`${OLD}/#website`), "home page still names the skills site as its WebSite");
+    const repo = fs.readFileSync(path.join(out2, "anthropics", "skills", "index.html"), "utf8");
+    assert.match(repo, /<link rel="canonical" href="https:\/\/suedeai\.directory\/anthropics\/skills\/">/);
+    const notFound = fs.readFileSync(path.join(out2, "404.html"), "utf8");
+    assert.ok(notFound.includes("This page is not on suedeai.directory."));
+    assert.ok(!notFound.includes("This page is not on skills.suedeai.ai."));
+    // Every page on this host tags its CTAs and serves its social card from here.
+    const skill = fs.readFileSync(path.join(out2, "anthropics", "skills", "pdf", "index.html"), "utf8");
+    for (const [rel, html] of [["index.html", home], ["anthropics/skills/index.html", repo], ["anthropics/skills/pdf/index.html", skill], ["404.html", notFound]]) {
+      assert.doesNotMatch(html, /utm_source=skills\.suedeai\.ai/, `${rel}: CTA still tagged with the old host`);
+      for (const m of html.matchAll(/<meta (?:property="og:image"|name="twitter:image") content="([^"]*)"/g)) {
+        assert.ok(m[1].startsWith(`${NEW}/assets/`), `${rel}: social image ${m[1]} not on ${NEW}`);
+        assert.ok(fs.existsSync(path.join(out2, ...m[1].slice(NEW.length + 1).split("/"))), `${rel}: ${m[1]} is not in the build`);
+      }
+    }
+    assert.match(skill, /href="https:\/\/suedeai\.(?:agency|app)\/\?utm_source=suedeai\.directory&amp;/, "skill page CTA carries the directory source tag");
+    assert.match(skill, /<meta property="og:image" content="https:\/\/suedeai\.directory\/assets\/social\/directory-card-v2\.png">/);
+    // docs/ is the skills.suedeai.ai copy and keeps its own tags.
+    const docsSkill = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "docs", "directory", "anthropics", "skills", "pdf", "index.html"), "utf8");
+    assert.match(docsSkill, /utm_source=skills\.suedeai\.ai/);
+    assert.match(docsSkill, /<meta property="og:image" content="https:\/\/skills\.suedeai\.ai\/assets\/social\/directory-card-v2\.png">/);
+  } finally { fs.rmSync(out2, { recursive: true, force: true }); }
+});
+
+test("directory pages retag CTA utm_source and keep other parameters", () => {
+  const a = `<a href="https://suedeai.agency/?utm_source=skills.suedeai.ai&amp;utm_medium=directory&amp;utm_content=x">A</a>`;
+  assert.equal(retagUtmSource(a), `<a href="https://suedeai.agency/?utm_source=suedeai.directory&amp;utm_medium=directory&amp;utm_content=x">A</a>`);
+  const b = `<a href="https://suedeai.app/?utm_medium=directory&utm_source=skills.suedeai.ai">B</a>`;
+  assert.equal(retagUtmSource(b), `<a href="https://suedeai.app/?utm_medium=directory&utm_source=suedeai.directory">B</a>`);
+  for (const keep of [`utm_source=skills.suedeai.ai.example`, `?utm_source=trendshift-badge`, `<p>skills.suedeai.ai</p>`]) assert.equal(retagUtmSource(keep), keep);
+  const page = rewriteText(`<a href="https://suedeai.agency/?utm_source=skills.suedeai.ai&amp;utm_medium=directory">A</a>`, ".html", `${OLD}/directory/x/`);
+  assert.ok(page.includes("utm_source=suedeai.directory"));
+});
+
+test("social images move to the directory host only when the asset ships with it", () => {
+  const html = `<meta property="og:image" content="${OLD}/assets/social/directory-card-v2.png">\n<meta name="twitter:image" content="${OLD}/assets/social/directory-card-v2.png">`;
+  assert.equal(rehomeSocialImages(html), html.replaceAll(`${OLD}/assets/`, `${NEW}/assets/`));
+  const missing = `<meta property="og:image" content="${OLD}/assets/social/not-built.png">`;
+  assert.equal(rehomeSocialImages(missing), missing, "an image outside docs/assets keeps its URL");
+  assert.equal(rehomeSocialImages(html, () => false), html);
+  const other = `<meta property="og:image" content="https://example.com/assets/x.png">`;
+  assert.equal(rehomeSocialImages(other), other);
+});

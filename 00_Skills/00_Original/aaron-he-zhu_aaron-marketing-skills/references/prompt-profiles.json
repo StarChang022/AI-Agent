@@ -1,0 +1,30 @@
+{
+  "$schema": "./prompt-profiles.schema.json",
+  "schema_version": "2.0",
+  "default_profile": "explicit",
+  "profile_order": [
+    "explicit"
+  ],
+  "always_on_overlays": [
+    "consent",
+    "claims",
+    "pii-secrets",
+    "external-mutation",
+    "audit-verdict",
+    "release-provenance"
+  ],
+  "profiles": {
+    "explicit": {
+      "example_budget": 4,
+      "rationale_detail": "full",
+      "reminder_density": "repeated",
+      "template_detail": "expanded",
+      "workflow_detail": "full"
+    }
+  },
+  "host_defaults": {
+    "claude-code-plugin-host": "explicit",
+    "generic-shared-root-host": "explicit",
+    "standalone-skill-host": "explicit"
+  }
+}

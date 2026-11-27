@@ -1,0 +1,220 @@
+import { auth } from "@/lib/server/auth";
+import { redirect } from "next/navigation";
+import {
+  createAgentAndDiscoverLeadsAction,
+  draftAgentSetupAction,
+  launchAgentFromSetupAction,
+  launchExistingAgentFromSetupAction,
+  launchOutreachAgentFromSetupAction,
+  saveProductProfileAction,
+  updateAgentAction,
+} from "@/app/actions";
+import {
+  getAgent,
+  getProductProfile,
+  listAgents,
+  listCampaigns,
+  listGroups,
+  listLinkedInAccounts,
+} from "@/lib/server/data";
+import { resolveActiveWorkspace } from "@/lib/server/active-workspace";
+import { hasActiveSubscription } from "@/lib/server/subscription";
+import { formatPlanLimit, planLimits } from "@/lib/plan-limits";
+import { isAtPlanLimit } from "@/lib/agent-limit";
+import CompleteSetupPrompt from "@/app/(app)/complete-setup-prompt";
+import AgentSetup from "./agent-setup";
+import { createPageMetadata } from "@/app/seo";
+import Link from "next/link";
+
+export const metadata = createPageMetadata({
+  title: "New Agent - Omentir",
+  description: "Create or edit an Omentir AI agent for customer discovery.",
+  path: "/agents/new",
+  noIndex: true,
+});
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+function AgentLimitReached({ limit }: { limit: number }) {
+  return (
+    <div className="app-x flex h-full min-h-0 min-w-0 flex-col">
+      <div className="mx-auto flex w-full max-w-xl flex-1 items-center justify-center py-10">
+        <section className="w-full rounded-md border border-zinc-200 bg-white px-6 py-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+          <div className="flex items-start gap-3">
+            <span
+              className="material-symbols-outlined text-xl font-light leading-none text-[#ba3871]"
+              aria-hidden="true"
+            >
+              model_training
+            </span>
+            <div className="min-w-0">
+              <h1
+                style={{ fontFamily: "var(--font-varta)" }}
+                className="text-xl font-semibold tracking-tight text-zinc-950"
+              >
+                You&apos;ve reached your agent limit
+              </h1>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                Your current plan includes up to {formatPlanLimit(limit)} agent
+                {limit === 1 ? "" : "s"}. Upgrade your plan or remove an existing agent before
+                creating another one.
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-zinc-100 pt-4">
+            <Link
+              href="/agents"
+              className="inline-flex h-9 items-center justify-center rounded-md px-3.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+            >
+              Back to agents
+            </Link>
+            <Link
+              href="/upgrade"
+              style={{ fontFamily: "var(--font-varta)" }}
+              className="inline-flex h-9 items-center justify-center rounded-md bg-[#ba3871] px-4 text-sm font-semibold text-white shadow-sm transition hover:brightness-[0.98]"
+            >
+              Upgrade plan
+            </Link>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default async function NewAgentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ id?: string; mode?: string }>;
+}) {
+  const { userId } = await auth();
+  if (!userId) {
+    await auth.protect();
+    redirect("/login");
+  }
+
+  const workspace = await resolveActiveWorkspace(userId);
+  const params = await searchParams;
+  const [linkedInAccounts, requestedAgent, profile] = await Promise.all([
+    listLinkedInAccounts(workspace.id),
+    params.id ? getAgent(workspace.id, params.id) : null,
+    getProductProfile(workspace.id),
+  ]);
+  if (!hasActiveSubscription(workspace) || !linkedInAccounts.length) {
+    return (
+      <CompleteSetupPrompt
+        icon="smart_toy"
+        message="Finish the 4 steps on Overview, then start an AI agent."
+      />
+    );
+  }
+
+  let agent = requestedAgent;
+  let isResumingOutreach = false;
+
+  // Enforce the plan's agent limit at the start of creation. If the only slot
+  // is occupied by an agent without outreach, selecting the full-agent flow
+  // resumes that agent instead of stranding the user behind the quota screen.
+  if (!agent) {
+    const existingAgents = await listAgents(workspace.id);
+    const agentLimit = planLimits(workspace.billing?.plan).agents;
+    if (isAtPlanLimit(existingAgents.length, agentLimit)) {
+      if (
+        params.mode !== "leads" &&
+        params.mode !== "outreach" &&
+        params.mode !== "steal"
+      ) {
+        const [campaigns, groups] = await Promise.all([
+          listCampaigns(workspace.id),
+          listGroups(workspace.id),
+        ]);
+        const campaignGroupIds = new Set(campaigns.map((campaign) => campaign.groupId));
+        const leadCountByGroup = new Map(groups.map((group) => [group.id, group.leadCount]));
+        // "No campaign on its group" means a half-finished full setup, which
+        // this flow is meant to rescue. A leads-only agent looks identical but
+        // is finished by design, and resuming one attaches a campaign that
+        // messages every lead the user only ever asked to be found.
+        //
+        // The empty-group test is what protects agents predating `leadsOnly`:
+        // an abandoned setup never got far enough to collect leads, while a
+        // working leads-only agent has a group full of them. Without it the
+        // flag only defends agents created from here on.
+        const resumableAgent = existingAgents.find(
+          (existingAgent) =>
+            !existingAgent.leadsOnly &&
+            !campaignGroupIds.has(existingAgent.targetGroupId) &&
+            !(leadCountByGroup.get(existingAgent.targetGroupId) ?? 0),
+        );
+        if (resumableAgent) {
+          agent = resumableAgent;
+          isResumingOutreach = true;
+        }
+      }
+
+      if (!agent) return <AgentLimitReached limit={agentLimit} />;
+    }
+  }
+
+  // The send window lives on the campaign, but it is edited on this form, so an
+  // existing agent has to open showing the window it is actually sending in -
+  // otherwise saving an unrelated edit would quietly reset it to 24/7.
+  const existingCampaign =
+    agent && !isResumingOutreach
+      ? (await listCampaigns(workspace.id)).find(
+          (campaign) => campaign.groupId === agent.targetGroupId,
+        )
+      : undefined;
+
+  return (
+    <AgentSetup
+      key={agent?.id || "new-agent"}
+      createAgent={
+        isResumingOutreach
+          ? launchExistingAgentFromSetupAction
+          : agent
+            ? updateAgentAction
+            : params.mode === "outreach"
+              ? launchOutreachAgentFromSetupAction
+              : launchAgentFromSetupAction
+      }
+      prepareAgent={createAgentAndDiscoverLeadsAction}
+      leadsOnly={!agent && params.mode === "leads"}
+      outreachOnly={!agent && params.mode === "outreach"}
+      stealCustomers={
+        agent?.mode === "steal_customers" || (!agent && params.mode === "steal")
+      }
+      draftSetup={draftAgentSetupAction}
+      saveProductProfile={saveProductProfileAction}
+      initialAgent={agent}
+      initialSendWindow={existingCampaign?.sendWindow}
+      initialMessageTone={existingCampaign?.messageTone}
+      hasExistingCampaign={Boolean(existingCampaign)}
+      initialSteps={existingCampaign?.steps}
+      initialSenderAccountIds={existingCampaign?.senderAccountIds}
+      initialReplyHandling={existingCampaign?.replyHandling}
+      initialBookingLink={existingCampaign?.bookingLink}
+      timezone={workspace.timezone}
+      linkedInAccounts={linkedInAccounts.map((account) => ({
+        id: account.id,
+        displayName: account.displayName,
+        accountId: account.accountId,
+        avatarUrl: account.avatarUrl,
+      }))}
+      profile={
+        profile
+          ? {
+              companyName: profile.companyName || "",
+              description: profile.description || "",
+              industry: profile.industry || "",
+              companySize: profile.companySize || "",
+              painPointsText: profile.painPointsText || "",
+              websiteUrl: profile.websiteUrl || "",
+              pricingDetails: profile.pricingDetails || "",
+              schedulingLink: profile.schedulingLink || "",
+            }
+          : null
+      }
+    />
+  );
+}

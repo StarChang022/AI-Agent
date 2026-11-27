@@ -1,0 +1,310 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Overview
+
+This repository packages AI-agent skills for Postey — markdown skill definitions plus a zero-dependency Node.js CLI that agents invoke to draft, schedule, and manage social media posts. Multiple skills are planned; `postey` is the first.
+
+Note: `AGENTS.md` is a symlink to this file; edits propagate.
+
+## Repository Layout
+
+```
+skills/  (repo: posteyai/skills)
+├── .claude-plugin/
+│   └── marketplace.json       — Marketplace catalog; a pack's entry IS its manifest (strict: false); the hub has its own plugin.json
+├── .grok-plugin/
+│   └── plugin.json            — Grok Build manifest; the whole repo is the plugin (xai-org/plugin-marketplace pins a commit of it)
+├── .mcp.json                  — The hosted Postey MCP server for the Grok Build plugin; must match skills/postey/.mcp.json
+├── .claude/
+│   └── settings.json          — extraKnownMarketplaces for team auto-install
+├── .github/workflows/
+│   └── test.yml               — CI: node --test + check-versions + check-leaks (2 scopes) + check-setup-links + check-capability-overlap + check-doc-commands + refresh-capability-snapshot + check-mcp-tool-sync
+├── scripts/
+│   ├── lib/
+│   │   ├── skills.js          — discoverSkills(): the single definition of "what counts as a skill". Every multi-skill check consumes this
+│   │   └── cross-skill-links.js — reference scanner (markdown links + backtick refs) behind check-cross-skill-links.js
+│   ├── check-versions.js      — CI: verify SKILL.md version == marketplace == pack.json == REGISTRY.md == README badge (per skill) == .codex-plugin == .cursor-plugin
+│   ├── set-version.mjs        — write every version place from one argument (release step; --check to dry-run)
+│   ├── check-release-tag.mjs  — CI on main: the released version's tag exists on the remote (rawBase pins it)
+│   ├── check-cross-skill-links.js — CI: no skill may reference a file it does not ship
+│   ├── check-doc-commands.js  — CI: verify every documented command exists in the CLI COMMANDS table
+│   ├── check-mcp-tool-sync.js — CI: verify SKILL.md mcp-tools.tools: == MCP server registry
+│   ├── check-leaks.js         — CI leak gate: hashed-denylist + secret-pattern scanner (`--hash` mode generates denylist entries)
+│   └── leak-denylist.json     — Committed sha256 hashes (high-entropy terms only) + secret-shape patterns
+├── tests/
+│   ├── postey-cli.test.js     — node:test suite for postey CLI
+│   ├── check-leaks.test.js    — leak-gate suite (synthetic secret-shaped fixtures; root tests/ is skip-listed in the scanner)
+│   ├── skills-discovery.test.js — discoverSkills() against a 2-skill fixture
+│   ├── cross-skill-links.test.js — reference gate: leak/dangling/history cases
+│   ├── fixtures/              — synthetic skill trees for the two suites above
+│   └── pack-manifest.test.js  — pack.json completeness + version + tag-pinned rawBase, per skill
+├── claude-directory/
+│   └── postey/                — The Claude directory plugin: markdown only, MCP for everything (see Multi-Skill Conventions)
+├── templates/
+│   └── skill/                 — Starter template for new skills (copy and fill in). Kept out of skills/ so whole-repo installers (Grok, Codex) don't ship it
+└── skills/
+    ├── REGISTRY.md            — Index of all skills in this repo
+    └── postey/                — The postey skill (the hub)
+        ├── .claude-plugin/plugin.json + .mcp.json — Claude directory plugin root (hub only)
+        ├── .muse-plugin/plugin.json — Muse Code manifest: the skill plus the MCP server (hub only)
+        ├── SKILL.md           — Authoritative skill spec (< 500 lines)
+        ├── CHANGELOG.md       — User-facing changelog
+        ├── command-reference.md — Full command table (loaded on demand)
+        ├── routing-guide.md   — Extended CLI vs MCP routing reference
+        ├── video-workflow.md  — Video transcription + cross-post workflow
+        ├── prompts.md         — Platform caption generation templates
+        ├── pack.json          — Fetch-install manifest (rawBase pinned to the release tag)
+        ├── bootstrap-prompt.md — One-paste agent setup prompt
+        ├── references/        — Content flows + playbooks (10 files, loaded on demand)
+        └── scripts/
+            ├── postey.js      — Main CLI (zero runtime deps, Node 18+)
+            ├── videoUtils.js  — Video transcription + cross-post helpers
+            └── mediaValidator.js — MIME validation
+```
+
+## Multi-Skill Conventions
+
+- **Each skill is self-contained** in its `skills/<name>/` directory — no runtime cross-dependencies between skills.
+- **Each pack folder is a plain skill folder** — no `.claude-plugin/`, no `.mcp.json`. ClawHub refuses a folder that holds a plugin manifest. A pack's Claude Code plugin is defined entirely by its entry in `.claude-plugin/marketplace.json` (`strict: false`, `dependencies: ["postey"]`). **The hub is the exception:** `skills/postey/` carries `.claude-plugin/plugin.json` and `.mcp.json`, because the Claude directory blocks a submitted plugin folder with no `plugin.json`; its entry is not `strict: false` and carries no `mcpServers`. It also carries `.muse-plugin/plugin.json`, because Muse Code rejects the Claude manifest's http MCP server and reads its own manifest first. ClawHub gets the hub from a staged copy without those three files (RUNBOOK Step 2). `tests/plugin-layout.test.mjs` enforces all of this.
+- **The Claude directory gets `claude-directory/postey/`, not the hub.** Postey is not a Verified organization there, and the directory refuses scripts, `allowed-tools` beyond Read/Grep/Glob/LS, and frontmatter keys outside its list from anyone else. That folder ships only markdown, JSON and the icon, does everything through the MCP server, and has its own version. Its `references/` are byte-identical copies of the hub's craft references: edit the hub, then copy. `tests/claude-directory-plugin.test.mjs` enforces all of this.
+- **Shared dev tooling** lives in `scripts/` at the repo root (CI checks only, never runtime code).
+- **Git tags** use the format `skills/{name}/vX.Y.Z` (e.g. `skills/postey/v1.2.0`).
+- **Version must be consistent** across every place `scripts/set-version.mjs` writes (see "When Editing the Skill or CLI"). The CI `check-versions.js` script enforces this.
+- **To add a new skill**: copy `templates/skill/` to `skills/<new-name>/`, fill in the SKILL.md, add a `plugins` entry (copy a pack's entry: `strict: false` plus `dependencies`) in `.claude-plugin/marketplace.json`, and add a row to `skills/REGISTRY.md`.
+
+## CLI Architecture (`skills/postey/scripts/postey.js`)
+
+- **Single file, zero runtime deps**, CommonJS, Node.js 18+ (uses built-in `fetch`). `package.json` is private — `npm install` is not required.
+- **API base**: `https://srvr.postey.ai/v1`, overridable via `POSTEY_API_BASE` (the test suite uses this to point at a local mock server).
+- **All commands output JSON to stdout**; human-readable chrome (colors, prompts) goes to stderr and is gated on `process.stderr.isTTY`. Don't add stdout logging — tests parse stdout as JSON.
+- **Auth resolution priority** (highest to lowest), per `getAuthHeader()`:
+  1. `POSTEY_API_KEY` env var → `X-API-Key`
+  2. `POSTEY_AUTH_TOKEN` env var → `Authorization: Bearer`. Set by the MCP server when it shells out for an OAuth caller, and the header a `pat_` agent token uses.
+  3. OAuth session in the global config, refreshed when within 60s of expiry
+  4. `cliToken` in the global config, written by `auth:link`
+  5. `./.postey/config.json` (project-local) — trusted only in the directory it was stamped for (`scope_path`), or with `POSTEY_TRUST_LOCAL_CONFIG=1`
+  6. `~/.config/postey/config.json` (user-global)
+
+  `getApiKey()` and `requireApiKey()` resolve only 1, 5 and 6. A caller authenticated by OAuth or by `auth:link` alone is therefore told to run `setup`, even though `getAuthHeader()` would have authenticated it. `config:show` handles all six; `requireApiKey()` does not.
+- **Platform enum** is defined in one place (`SOCIAL_PLATFORMS`). When adding or removing a platform, also update: `SKILL.md` frontmatter `platforms:` list, `skills/postey/SKILL.md` Platform Names table, `.claude-plugin/marketplace.json` plugin description. Platform truth is checked against the server by `refresh-capability-snapshot.js --check`, not against a second hand-kept copy.
+- **MCP tool list** in `SKILL.md mcp-tools.tools:` must match the `@mcp.tool(name="...")` declarations in `postey-backend/app/core/mcp/tools/*.py`. The CI `check-mcp-tool-sync.js` script enforces this. See "MCP Integration" section below.
+
+## Installation Flow
+
+`setup.md` is the canonical instruction set, and the app's "Connect your agent"
+prompt points an agent straight at it. Keep every install command here in step
+with it.
+
+Claude Code, in a terminal. Use the shell form, not the slash command: `/plugin`
+opens an interactive panel, so an agent cannot run it.
+```
+claude plugin marketplace add posteyai/skills
+claude plugin install postey@postey-skills
+```
+
+Every other agent. Both flags are required — without them the CLI prompts for
+scope, agent and skill, and an unattended run hangs.
+```
+npx -y skills add posteyai/skills -a <agent> -s postey -y
+```
+
+The agent id for Hermes is `hermes-agent`. `-a hermes` exits with an error.
+
+Muse Code. It reads `.claude-plugin/marketplace.json` and installs the hub from
+`skills/postey/.muse-plugin/plugin.json`. The packs are not offered on Muse.
+```
+muse plugins marketplace add postey https://github.com/posteyai/skills
+muse plugins install postey@postey
+muse plugins approve postey
+```
+
+Teams using the committed `.claude/settings.json` get auto-prompted on project trust.
+
+## Common Commands
+
+```bash
+# Run the full test suite (includes CI checks)
+npm test                                        # or: node --test
+
+# Run a single test file
+node --test tests/postey-cli.test.js
+
+# Filter to a single test by name
+node --test --test-name-pattern="<substring>" tests/postey-cli.test.js
+
+# Run CI checks manually
+node scripts/check-versions.js
+node scripts/check-doc-commands.js
+
+# Check MCP tool sync (source-parse mode — no live server needed)
+MCP_TOOLS_DIR=../postey-backend/app/core/mcp/tools node scripts/check-mcp-tool-sync.js
+
+# Check MCP tool sync (runtime mode — requires live server + API key)
+MCP_SERVER_URL=https://mcp.postey.ai POSTEY_API_KEY=mk_... node scripts/check-mcp-tool-sync.js
+
+# Smoke test (requires a real API key)
+./skills/postey/scripts/postey.js setup
+./skills/postey/scripts/postey.js config:show
+```
+
+There is no build step, no lint config, and no formatter config in this repo.
+
+## When Editing the Skill or CLI
+
+1. **Set the version with `node scripts/set-version.mjs X.Y.Z`.** It writes all eleven places — `skills/postey/SKILL.md` frontmatter, `skills/postey/.claude-plugin/plugin.json` and `skills/postey/.muse-plugin/plugin.json` (hub only), the plugin entry in `.claude-plugin/marketplace.json`, `skills/postey/pack.json` (version AND the tag in `rawBase`), the `skills/REGISTRY.md` row, the README badge, and (hub only) `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json` and `.grok-plugin/plugin.json`. It fails loudly if any file or anchor is missing rather than writing ten of eleven. `--check` reports without writing. Then run `node scripts/check-versions.js` — the writer and the assertion are separate programs on purpose, so a bug in one cannot silence the other.
+
+   **After the release merges, push the tag: `git tag skills/postey/vX.Y.Z <merge-sha> && git push origin skills/postey/vX.Y.Z`.** pack.json's `rawBase` pins it, so every fetch-based install 404s until it exists. `scripts/check-release-tag.mjs` asserts this against the remote and runs in CI on `main` only — a release PR legitimately carries a version whose tag is not pushed yet.
+
+   Version lineage: `skills/postey/v3.0.0` and `v3.0.1` were cut on the
+   `program/postey-skills-pillars` branch. That branch is merged, so those tags are ancestors of
+   `main` and the hub continues on 3.x — `set-version.mjs` has no monotonicity check, so writing a
+   2.x here would pass every gate and publish a downgrade to four registries.
+2. **Update `skills/postey/CHANGELOG.md`** for user-facing changes (new commands/flags, behavior changes, bug fixes). Skip internal refactors, test/CI changes, formatting-only edits.
+3. **Keep SKILL.md and CLI in sync**: if you add/rename a command or flag, update `command-reference.md`. The command list in `command-reference.md` is the contract agents read.
+4. **SKILL.md body must stay under 500 lines** — move heavy content to supporting files (`command-reference.md`, `video-workflow.md`, `routing-guide.md`).
+5. **Preserve JSON-only stdout** in the CLI — any new output path must go to stderr or be part of the JSON payload.
+6. **Do not remove `last-updated` from SKILL.md** — the field was removed; do not re-add it. Freshness tracking is via CHANGELOG and git history.
+7. **When adding an MCP tool** to `postey-backend/app/core/mcp/tools/*.py`: also add the tool to `SKILL.md mcp-tools.tools:` as a **bare tool name** (no `mcp__<server>__` prefix — the prefix is derived from whatever the user named the connection, so hardcoding one is wrong for everyone else). Run `check-mcp-tool-sync.js` to verify.
+8. **When adding a platform** to `platform_knowledge.py`: also update `SOCIAL_PLATFORMS` in `postey.js`, `platforms:` in `SKILL.md`, `MCP_PLATFORMS` in `tests/skill-parity.test.js`, and give it a section in `references/platform-archetypes.md`. Run `refresh-capability-snapshot.js --check` (needs a live server) and `node --test` (does not).
+
+## MCP Integration
+
+The skill integrates with the Postey MCP server (`postey-backend/app/core/mcp/`) through three contracts:
+
+### 1. Tool Registry Sync
+`SKILL.md mcp-tools.tools:` must list every tool declared with `@mcp.tool(name="...")` in `tools/*.py`.
+CI enforces this via `check-mcp-tool-sync.js`.
+
+- **Source-parse mode** (default, offline): reads `@mcp.tool(name=...)` from Python files.
+  ```bash
+  MCP_TOOLS_DIR=../postey-backend/app/core/mcp/tools node scripts/check-mcp-tool-sync.js
+  ```
+- **Runtime mode** (live server): fetches `postey://skill-manifest` resource.
+  ```bash
+  MCP_SERVER_URL=https://mcp.postey.ai POSTEY_API_KEY=mk_... node scripts/check-mcp-tool-sync.js
+  ```
+  Set `MCP_STAGING_URL` as a GitHub Actions secret to enable runtime verification in CI.
+
+### 2. Platform Knowledge Single Source
+`platform_knowledge.py` in the MCP server is the authoritative source for platform specs.
+`prompts.md` is a static snapshot for offline use — prefer the `postey://platform-limits`
+MCP resource in Claude Code sessions. `refresh-capability-snapshot.js --check` verifies the snapshot against the live server.
+
+### 3. Routing Contract
+`SKILL.md` frontmatter `routing:` block is the machine-readable version of `routing-guide.md`.
+Agents parse it to decide CLI vs MCP-resource vs MCP-tool without reading prose.
+Keep both in sync when adding new operation types.
+
+### Prompt Registry Sync
+`SKILL.md mcp-tools.prompts:` must list every prompt declared with `@mcp.prompt(name="...")`
+in `app/core/mcp/prompts.py`. `check-mcp-tool-sync.js` enforces this alongside tools.
+
+- **Source-parse mode**: automatically reads `prompts.py` from the parent of `MCP_TOOLS_DIR`.
+  ```bash
+  MCP_TOOLS_DIR=../postey-backend/app/core/mcp/tools node scripts/check-mcp-tool-sync.js
+  # → also reads ../postey-backend/app/core/mcp/prompts.py
+  ```
+- **Override**: set `MCP_PROMPTS_FILE=<path>` to point at a different file.
+- **Runtime mode**: reads `manifest.prompts` from `postey://skill-manifest` (server v2.1.0+).
+
+### New Skill MCP Integration Checklist
+When creating a skill that has an MCP server counterpart:
+1. Set `mcp-server-module:` in `SKILL.md` frontmatter (e.g. `app.core.mcp`)
+2. List all MCP tools in `mcp-tools.tools:` as bare tool names (no server prefix)
+3. List all MCP resources in `mcp-tools.resources:`
+4. List all MCP prompts in `mcp-tools.prompts:` (prompt names, no prefix)
+5. Add `routing:` block with machine-readable routing rules
+6. Set `MCP_TOOLS_DIR` in CI workflow env to enable drift detection
+7. Copy `templates/skill/SKILL.md` for the scaffold (it includes the commented sections)
+
+## Adding a New MCP Tool
+
+When adding a tool to `postey-backend/app/core/mcp/tools/*.py`, do all of these:
+
+1. **[Backend]** Add `@mcp.tool(\n    name="<name>", ...)` to the correct `tools/*.py` file.
+   If it's a new module file, add the module name to `_EXPECTED_TOOL_MODULES` in `server.py`.
+
+2. **[Backend]** If the tool needs agent guidance (hard rules, ordering, anti-patterns), add
+   instructions to `_build_instructions()` in `server.py`.
+
+3. **[skills repo]** Add the bare `<name>` to `SKILL.md mcp-tools.tools:` for
+   any skill that should surface this tool. Comment-annotate its category (write / read / AI).
+
+4. **[skills repo]** Add a `routing:` entry in `SKILL.md` if the tool has a specific CLI vs
+   MCP routing preference (e.g. `my-operation: mcp-tool`).
+
+5. **[CI]** Run `MCP_TOOLS_DIR=../postey-backend/app/core/mcp/tools node scripts/check-mcp-tool-sync.js`
+   — it fails if SKILL.md is out of sync. Fix before merging.
+
+## Adding a New MCP Prompt
+
+When adding a prompt to `postey-backend/app/core/mcp/prompts.py`:
+
+1. **[Backend]** Declare with `@mcp.prompt(\n    name="<name>", ...)`.
+
+2. **[skills repo]** Add `<name>` (no prefix) to `SKILL.md mcp-tools.prompts:`.
+
+3. **[CI]** Run `check-mcp-tool-sync.js` — it will now also verify prompts.
+
+## Adding a New Skill
+
+1. Copy `templates/skill/` to `skills/<new-name>/`.
+2. Fill in `SKILL.md` frontmatter: name, version (start at `1.0.0`), platforms, description,
+   `allowed-tools:`, `mcp-tools:` (tools, resources, prompts), and `routing:`.
+3. Add a `plugins` entry in `.claude-plugin/marketplace.json` (name, source, version, author, `strict: false`, `dependencies`). It is the plugin manifest; do not add a `plugin.json` to the skill folder.
+4. Run `claude plugin validate --strict .`.
+5. Add a row to `skills/REGISTRY.md`.
+6. Write the CLI entry point in `skills/<new-name>/scripts/`.
+7. Run `npm test` — `check-versions.js` and `check-mcp-tool-sync.js` will catch mismatches.
+8. Tag release as `skills/<new-name>/v1.0.0`.
+
+## Commit & PR Guidelines
+
+- Do not add "Co-authored with Claude" or similar AI-assistant attributions to commit messages or PR descriptions.
+
+## Postey Estate Contract
+
+- This repository has no `dev` branch; its default base is `main`. Never create or target `dev`.
+- Program work branches from and targets `program/<name>` when this repo participates. Other work
+  uses a short-lived branch from `main` and targets `main` by PR.
+- Use the Postey workspace's `wt` command for worktrees. Never run `git worktree add` manually.
+- Never push or merge directly to `main`; open a PR and stop. Never bypass the pre-push rule with
+  `--no-verify`.
+- Only the owner may set a program's approval. If workspace-root `HALT` exists, do not claim new
+  work. DONE requires a merge and captured green verification.
+
+## Codex Setup And Verification
+
+```bash
+npm ci
+npm test
+node scripts/check-versions.js
+node scripts/check-leaks.js .
+node scripts/check-setup-links.mjs
+node scripts/check-setup-doc.mjs
+node scripts/gen-mcp-tools.js --check
+node scripts/check-capability-contract.js
+node scripts/check-script-parity.js
+node scripts/check-pack-discovery.js
+node scripts/check-cross-skill-links.js
+node scripts/check-capability-overlap.js
+node scripts/check-doc-commands.js
+```
+
+Run the live capability snapshot, server-card, and MCP sync checks only when their required server
+URL and credentials are available. A missing credential or soft skip is not a green live check.
+
+## Code Review Rules
+
+- Before a program merge or PR to `main`, run `/review` against the actual target base.
+- Compare the complete diff with its actual target base and approved program stage.
+- Preserve the capability ownership contract: the server owns live capability truth, MCP owns all
+  writes, and the CLI owns only local-machine operations. Reject a new CLI write path.
+- Keep skill metadata, plugin manifests, marketplace entries, pack manifests, registry entries,
+  release tags, generated MCP tool lists, and mirrored CLI copies synchronized.
+- Check every shipped reference exists inside the installed skill, every documented command exists,
+  and setup instructions are non-interactive for agent execution.
+- Reject secrets or private terms in shipped content, unauthenticated lookup results presented as
+  absence, weakened leak/version/capability gates, and direct pushes or merges to `main`.

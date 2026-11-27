@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "ends_at": null,
+  "copy": {
+    "about": "Either badge linked to the listing qualifies for review on the official website or in a README. Eligibility is 80–99. Show an end date only when ends_at is set.",
+    "offer_short": "Add your badge to your website or README. Verified listings scoring 80–99 can earn a featured placement.",
+    "offer_long": "Add either quality badge to your official website and link it to your Suede listing. A repository or skill README also qualifies. Send us the page URL or README path. Once Suede verifies the badge, skills scoring 80–99 can receive a featured placement while the offer is open.",
+    "partners_intro": "These publishers display a quality badge linked to their listing on their website or in their README. Suede verified each placement.",
+    "button": "Request badge verification"
+  },
+  "outreach_priority": {
+    "about": "Order for inviting publishers to add badges. Messages are drafted for approval and never sent automatically. See directory/STRATEGY.md section 4.",
+    "categories": [
+      "marketing-seo",
+      "writing-content",
+      "ai-agents-llm",
+      "productivity-knowledge"
+    ],
+    "min_score": 80
+  },
+  "verifications": {}
+}

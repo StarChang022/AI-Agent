@@ -1,0 +1,816 @@
+"use client";
+
+import { unwrapAction } from "@/lib/action-result";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import type { Agent, Group } from "@/lib/server/types";
+import {
+  deleteAgentAction,
+  pauseAgentAction,
+  resumeAgentAction,
+  setAgentLeadsOnlyAction,
+} from "@/app/actions";
+import { useSidebarResource } from "@/app/use-sidebar-resource";
+import { AGENTS_RESOURCE } from "@/app/sidebar-early-fetch";
+import { NO_AGENT_METRICS, type AgentMetrics } from "@/lib/agent-metrics";
+import { ContentReveal, OutreachListSkeleton } from "@/app/app-skeletons";
+import NewAgentButton from "./new-agent-button";
+import { AgentStatusPill } from "./agent-status-pill";
+import { useBodyScrollLock } from "@/app/use-body-scroll-lock";
+import {
+  consumeAgentStartedNotice,
+  isNextNavigationError,
+  useToast,
+  userFacingError,
+} from "@/app/toast";
+import CompleteSetupPrompt from "@/app/(app)/complete-setup-prompt";
+import MobileHeaderPortal from "@/app/mobile-header-portal";
+import { useWorkspaceTimeZone } from "@/app/workspace-time-zone";
+import { formatZonedDate } from "@/lib/time-zone";
+import { useHydrated } from "@/app/use-hydrated";
+import {
+  agentModeLabel,
+  describeAgentStatus,
+  formatStatusTime,
+  type AgentStatusFacts,
+  type AgentStatusLine,
+} from "@/lib/agent-status";
+
+type AgentsViewProps = {
+  agents: Agent[];
+  groups: Group[];
+  /** Finite plan cap, or null when the plan has unlimited agents. */
+  agentLimit: number | null;
+  atAgentLimit: boolean;
+  // Sidebar reads refuse unpaid workspaces, so for those the page passes the
+  // agents it already loaded and every card says outreach has stopped.
+  subscriptionActive: boolean;
+};
+
+const selectAgentsData = (data: Record<string, unknown>) => ({
+  agents: data.agents as Agent[] || [],
+  groups: data.groups as Group[] || [],
+  agentMetrics: data.agentMetrics as Record<string, AgentMetrics> || {},
+});
+
+const selectAgentStatus = (data: Record<string, unknown>) =>
+  (data.agentStatus as Record<string, AgentStatusFacts>) || {};
+
+const STATUS_DOT: Record<AgentStatusLine["tone"], string> = {
+  active: "bg-emerald-500",
+  waiting: "bg-amber-500",
+  paused: "bg-zinc-400",
+  stopped: "bg-red-500",
+};
+
+const STATUS_LABEL: Record<AgentStatusLine["tone"], string> = {
+  active: "text-emerald-700",
+  waiting: "text-amber-700",
+  paused: "text-zinc-800",
+  stopped: "text-red-700",
+};
+
+function linkedGroupName(agent: Agent, groups: Group[]) {
+  return (
+    groups.find((group) => group.id === agent.targetGroupId)?.name ||
+    agent.targetGroupName ||
+    "No group"
+  );
+}
+
+function agentTitle(agent: Agent) {
+  return agent.name?.trim() || agentModeLabel(agent);
+}
+
+type StatusFilter = "all" | "active" | "paused" | "error";
+type AgentSort = "newest" | "oldest" | "most_leads" | "fewest_leads";
+
+const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
+  { id: "all", label: "All agents" },
+  { id: "active", label: "Active" },
+  { id: "paused", label: "Paused" },
+  { id: "error", label: "Errors" },
+];
+
+const AGENT_SORTS: { id: AgentSort; label: string }[] = [
+  { id: "newest", label: "Newest first" },
+  { id: "oldest", label: "Oldest first" },
+  { id: "most_leads", label: "Most leads" },
+  { id: "fewest_leads", label: "Fewest leads" },
+];
+
+// "running" is an active agent mid-run, so it belongs under Active.
+function matchesStatusFilter(status: Agent["status"], filter: StatusFilter) {
+  if (filter === "all") return true;
+  if (filter === "active") return status === "active" || status === "running";
+  return status === filter;
+}
+
+export default function AgentsView({
+  agents,
+  groups,
+  agentLimit,
+  atAgentLimit,
+  subscriptionActive,
+}: AgentsViewProps) {
+  const router = useRouter();
+  const timeZone = useWorkspaceTimeZone();
+  const hydrated = useHydrated();
+  // Per-agent counts are computed on the server (src/lib/agent-metrics.ts).
+  const agentsResource = useSidebarResource(
+    AGENTS_RESOURCE,
+    { agents, groups, agentMetrics: {} as Record<string, AgentMetrics> },
+    selectAgentsData,
+    subscriptionActive,
+  );
+  const statusResource = useSidebarResource(
+    "agentStatus",
+    {} as Record<string, AgentStatusFacts>,
+    selectAgentStatus,
+    subscriptionActive,
+  );
+  const {
+    agents: loadedAgents,
+    groups: loadedGroups,
+    agentMetrics,
+  } = agentsResource.value;
+  const isInitialLoading = agentsResource.loading;
+  const [pendingToggleIds, setPendingToggleIds] = useState<Set<string>>(new Set());
+  const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, Agent["status"]>>({});
+  const [deleteAgent, setDeleteAgent] = useState<{ id: string; name: string } | null>(null);
+  const [leadsOnlyTarget, setLeadsOnlyTarget] = useState<{
+    agent: Agent;
+    leadsOnly: boolean;
+  } | null>(null);
+  const [savingLeadsOnly, setSavingLeadsOnly] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortBy, setSortBy] = useState<AgentSort>("newest");
+  // Keeps "in 25 min" honest while the page sits open. The facts behind the
+  // line are re-read less often: each read queries every campaign's queue.
+  const [now, setNow] = useState(() => Date.now());
+  const reloadStatus = statusResource.reload;
+  useEffect(() => {
+    const clock = window.setInterval(() => setNow(Date.now()), 30_000);
+    const refresh = window.setInterval(() => reloadStatus(), 5 * 60_000);
+    return () => {
+      window.clearInterval(clock);
+      window.clearInterval(refresh);
+    };
+  }, [reloadStatus]);
+  const { showError, showAgentStarted } = useToast();
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  useBodyScrollLock(Boolean(deleteAgent || leadsOnlyTarget));
+
+  // After launch, setup redirects here for full / steal / outreach agents.
+  useEffect(() => {
+    const notice = consumeAgentStartedNotice();
+    if (!notice) return;
+    showAgentStarted(notice.name || undefined, notice.kind);
+  }, [showAgentStarted]);
+  const visibleAgents = useMemo(
+    () => loadedAgents.filter((agent) => !deletedIds.has(agent.id)),
+    [loadedAgents, deletedIds],
+  );
+  // null agentLimit means unlimited. While sidebar agents are still loading,
+  // trust the server-computed flag so a Basic user already at capacity cannot
+  // open create. After load (or local delete), use the live visible count.
+  const effectiveAtAgentLimit =
+    agentLimit != null &&
+    (isInitialLoading ? atAgentLimit : visibleAgents.length >= agentLimit);
+
+  function setTogglePending(agentId: string, pending: boolean) {
+    setPendingToggleIds((current) => {
+      const next = new Set(current);
+      if (pending) next.add(agentId);
+      else next.delete(agentId);
+      return next;
+    });
+  }
+
+  async function toggleAgent(agent: Agent) {
+    if (pendingToggleIds.has(agent.id)) return;
+
+    const currentStatus = optimisticStatuses[agent.id] ?? agent.status;
+    // Error is treated like paused: toggle resumes discovery instead of no-op.
+    const isActive = currentStatus === "active" || currentStatus === "running";
+    const nextStatus: Agent["status"] = isActive ? "paused" : "active";
+    const formData = new FormData();
+    formData.set("agentId", agent.id);
+
+    setTogglePending(agent.id, true);
+    setOptimisticStatuses((current) => ({ ...current, [agent.id]: nextStatus }));
+
+    try {
+      if (isActive) {
+        unwrapAction(await pauseAgentAction(formData));
+      } else {
+        unwrapAction(await resumeAgentAction(formData));
+        const resumeKind =
+          agent.mode === "steal_customers"
+            ? "steal_customers"
+            : agent.mode === "outreach"
+              ? "outreach_only"
+              : agent.leadsOnly
+                ? "leads_only"
+                : "resume";
+        showAgentStarted(
+          agentTitle(agent),
+          resumeKind === "steal_customers" ||
+            resumeKind === "outreach_only" ||
+            resumeKind === "leads_only"
+            ? resumeKind
+            : "resume",
+        );
+      }
+      // Drop optimistic override so the next server payload (active after
+      // resume, including recovery from status "error") is what we render.
+      setOptimisticStatuses((current) => {
+        const next = { ...current };
+        delete next[agent.id];
+        return next;
+      });
+      router.refresh();
+      agentsResource.reload();
+    } catch (error) {
+      if (isNextNavigationError(error)) {
+        setOptimisticStatuses((current) => {
+          const next = { ...current };
+          delete next[agent.id];
+          return next;
+        });
+        router.refresh();
+        agentsResource.reload();
+        return;
+      }
+      setOptimisticStatuses((current) => ({ ...current, [agent.id]: agent.status }));
+      showError(userFacingError(error, "Agent status could not be updated."));
+    } finally {
+      setTogglePending(agent.id, false);
+    }
+  }
+
+  async function confirmDeleteAgent() {
+    const target = deleteAgent;
+    if (!target) return;
+
+    // Optimistically remove the row and close the modal immediately, then
+    // run the delete in the background and reconcile with the server.
+    setDeleteAgent(null);
+    setDeletedIds((current) => new Set(current).add(target.id));
+
+    const formData = new FormData();
+    formData.set("agentId", target.id);
+
+    try {
+      unwrapAction(await deleteAgentAction(formData));
+      agentsResource.reload();
+      router.refresh();
+    } catch (error) {
+      if (isNextNavigationError(error)) {
+        agentsResource.reload();
+        router.refresh();
+        return;
+      }
+      setDeletedIds((current) => {
+        const next = new Set(current);
+        next.delete(target.id);
+        return next;
+      });
+      showError(userFacingError(error, "Agent could not be deleted."));
+    }
+  }
+
+  async function confirmLeadsOnly() {
+    const target = leadsOnlyTarget;
+    if (!target || savingLeadsOnly) return;
+    const formData = new FormData();
+    formData.set("agentId", target.agent.id);
+    formData.set("leadsOnly", String(target.leadsOnly));
+    setSavingLeadsOnly(true);
+    try {
+      unwrapAction(await setAgentLeadsOnlyAction(formData));
+      setLeadsOnlyTarget(null);
+      agentsResource.reload();
+      statusResource.reload();
+      router.refresh();
+    } catch (error) {
+      if (isNextNavigationError(error)) {
+        setLeadsOnlyTarget(null);
+        agentsResource.reload();
+        statusResource.reload();
+        router.refresh();
+        return;
+      }
+      showError(userFacingError(error, "The agent could not be updated."));
+    } finally {
+      setSavingLeadsOnly(false);
+    }
+  }
+
+  function agentStatusLine(agent: Agent, displayStatus: Agent["status"]) {
+    const facts = statusResource.value[agent.id];
+    const options = {
+      subscriptionActive,
+      nowMs: now,
+      formatAt: (iso: string) => formatStatusTime(iso, timeZone, now),
+    };
+    if (!subscriptionActive && !facts) {
+      return describeAgentStatus(
+        {
+          agentStatus: displayStatus,
+          leadsOnly: Boolean(agent.leadsOnly),
+          findsLeads: agent.mode !== "outreach",
+          accountConnected: true,
+          automationPaused: false,
+          outreachOff: false,
+          awaitingAcceptance: 0,
+        },
+        options,
+      );
+    }
+    if (!facts) return null;
+    // The switch updates the card before the status read comes back.
+    return describeAgentStatus({ ...facts, agentStatus: displayStatus }, options);
+  }
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusFilter, number> = { all: 0, active: 0, paused: 0, error: 0 };
+    for (const agent of visibleAgents) {
+      const status = optimisticStatuses[agent.id] ?? agent.status;
+      for (const { id } of STATUS_FILTERS) {
+        if (matchesStatusFilter(status, id)) counts[id] += 1;
+      }
+    }
+    return counts;
+  }, [visibleAgents, optimisticStatuses]);
+
+  const listedAgents = useMemo(() => {
+    const createdMs = (agent: Agent) => Date.parse(agent.createdAt) || 0;
+    const leadCount = (agent: Agent) => agentMetrics[agent.id]?.target ?? 0;
+    return visibleAgents
+      .filter((agent) =>
+        matchesStatusFilter(optimisticStatuses[agent.id] ?? agent.status, statusFilter),
+      )
+      .sort((a, b) => {
+        if (sortBy === "oldest") return createdMs(a) - createdMs(b);
+        if (sortBy === "most_leads" || sortBy === "fewest_leads") {
+          const diff = leadCount(a) - leadCount(b);
+          // Equal lead counts fall back to newest first so the order is stable.
+          if (diff !== 0) return sortBy === "fewest_leads" ? diff : -diff;
+        }
+        return createdMs(b) - createdMs(a);
+      });
+  }, [visibleAgents, optimisticStatuses, statusFilter, sortBy, agentMetrics]);
+
+  if (!isInitialLoading && visibleAgents.length === 0) {
+    return (
+      <CompleteSetupPrompt
+        icon="smart_toy"
+        message="Finish the 4 steps on Overview, then start an AI agent."
+      />
+    );
+  }
+
+  const createAgentIcon = (
+    <svg
+      className="h-3.5 w-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+
+  const dropdownArrow = (
+    <span className="material-symbols-outlined pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[16px] text-zinc-500" aria-hidden="true">
+      arrow_drop_down
+    </span>
+  );
+
+  const listControls = (
+    <div className="flex flex-wrap items-center gap-2">
+      <label className="flex h-8 items-center gap-2 rounded-md border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-700">
+        <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 5h16l-6 7v5l-4 2v-7L4 5Z" />
+        </svg>
+        <span className="relative">
+          <select
+            aria-label="Filter agents by status"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+            className="cursor-pointer appearance-none border-0 bg-transparent pr-6 shadow-none outline-none"
+          >
+            {STATUS_FILTERS.map((filter) => (
+              <option key={filter.id} value={filter.id}>
+                {filter.label} ({statusCounts[filter.id]})
+              </option>
+            ))}
+          </select>
+          {dropdownArrow}
+        </span>
+      </label>
+      <label className="flex h-8 items-center gap-2 rounded-md border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-700">
+        <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4" />
+        </svg>
+        <span className="relative">
+          <select
+            aria-label="Sort agents"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value as AgentSort)}
+            className="cursor-pointer appearance-none border-0 bg-transparent pr-6 shadow-none outline-none"
+          >
+            {AGENT_SORTS.map((sort) => (
+              <option key={sort.id} value={sort.id}>
+                {sort.label}
+              </option>
+            ))}
+          </select>
+          {dropdownArrow}
+        </span>
+      </label>
+    </div>
+  );
+
+  const mobileHeaderFabClass =
+    "m3-btn m3-btn-filled h-8 cursor-pointer px-2.5 text-xs";
+
+  return (
+    // Scroll lives on a full-width pane so the scrollbar sits at the right
+    // edge of main (not inside app-x padding against the agent cards).
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-3 md:pb-3">
+      {/* Mobile app bar — full-height strip so the control is vertically centered
+          in the 56px header (same bar as the sidebar title). */}
+      <MobileHeaderPortal>
+        <div className="pointer-events-none fixed inset-x-0 top-0 z-[92] flex h-14 items-center justify-end px-2 md:hidden">
+          <div className="pointer-events-auto">
+            {effectiveAtAgentLimit ? (
+              <Link
+                href="/agents/new"
+                aria-label="New agent"
+                className={mobileHeaderFabClass}
+              >
+                <span className="text-sm leading-none" aria-hidden="true">
+                  +
+                </span>
+                New agent
+              </Link>
+            ) : (
+              <NewAgentButton className={mobileHeaderFabClass} aria-label="New agent">
+                <span className="text-sm leading-none" aria-hidden="true">
+                  +
+                </span>
+                New agent
+              </NewAgentButton>
+            )}
+          </div>
+        </div>
+      </MobileHeaderPortal>
+
+      {/* Header — match Leads page metrics */}
+      <div className="app-x hidden shrink-0 items-center justify-between gap-3 pt-6 md:flex">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold leading-none tracking-tight text-[var(--md-sys-color-on-surface)]">
+            AI Agents
+          </h1>
+        </div>
+
+        {effectiveAtAgentLimit ? (
+          <Link
+            href="/agents/new"
+            className="m3-btn m3-btn-filled h-8 shrink-0 gap-1 px-2.5 text-xs"
+          >
+            {createAgentIcon}
+            Create an agent
+          </Link>
+        ) : (
+          <NewAgentButton className="m3-btn m3-btn-filled h-8 shrink-0 cursor-pointer gap-1 px-2.5 text-xs">
+            {createAgentIcon}
+            Create an agent
+          </NewAgentButton>
+        )}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6 pt-2 md:pb-3 md:pt-0">
+        <div className="app-x">
+        {isInitialLoading ? (
+          <OutreachListSkeleton label="Loading agents" />
+        ) : (
+          <ContentReveal>
+          <div className="mb-3">{listControls}</div>
+          {listedAgents.length === 0 ? (
+            <p className="py-10 text-center text-sm font-medium text-zinc-600">
+              No agents match this filter.
+            </p>
+          ) : null}
+          <ul className="flex flex-col gap-3">
+            {listedAgents.map((agent) => {
+              const metrics = agentMetrics[agent.id] ?? NO_AGENT_METRICS;
+              const displayStatus = optimisticStatuses[agent.id] ?? agent.status;
+              const isActive = displayStatus === "active" || displayStatus === "running";
+              const togglePending = pendingToggleIds.has(agent.id);
+              const contactedPercent =
+                metrics.target > 0
+                  ? Math.round((metrics.contacted / metrics.target) * 100)
+                  : 0;
+
+              return (
+                <li
+                  key={agent.id}
+                  className={`m3-card m3-card-elevated m3-card-lg min-w-0 px-4 pb-5 pt-5 sm:px-6${
+                    agent.mode === "steal_customers" ? " agent-card-steal-customers" : ""
+                  }`}
+                >
+                  {/* Card header */}
+                  <div className="flex items-center justify-between gap-3 md:items-start">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <h2
+                        style={{ fontFamily: "var(--font-varta)" }}
+                        className="min-w-0 break-words text-base font-semibold leading-tight text-zinc-950"
+                      >
+                        {agentTitle(agent)}
+                      </h2>
+                      <AgentStatusPill status={displayStatus} />
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2 self-center md:self-auto">
+                      <button
+                        type="button"
+                        aria-label={isActive ? "Pause agent" : "Resume agent"}
+                        aria-pressed={isActive}
+                        disabled={togglePending}
+                        onClick={() => toggleAgent(agent)}
+                        className="m3-switch rounded-full"
+                      >
+                        <span className="m3-switch__thumb" />
+                      </button>
+
+                      <details className="relative">
+                        <summary className="grid h-7 w-7 cursor-pointer list-none place-items-center rounded-md text-zinc-600 hover:bg-zinc-100">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="5" cy="12" r="1.6" />
+                            <circle cx="12" cy="12" r="1.6" />
+                            <circle cx="19" cy="12" r="1.6" />
+                          </svg>
+                        </summary>
+                        <div className="m3-menu m3-menu-enter m3-menu--origin-top-right m3-menu--compact absolute right-0 z-10 mt-1 w-36">
+                          <Link
+                            href={`/agents/new?id=${agent.id}`}
+                            className="m3-menu-item"
+                          >
+                            Edit
+                          </Link>
+                          {agent.mode !== "outreach" ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setLeadsOnlyTarget({ agent, leadsOnly: !agent.leadsOnly })
+                              }
+                              className="m3-menu-item"
+                            >
+                              {agent.leadsOnly ? "Allow outreach" : "Leads only"}
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => setDeleteAgent({ id: agent.id, name: agentTitle(agent) })}
+                            className="m3-menu-item m3-menu-item--danger"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const line = hydrated ? agentStatusLine(agent, displayStatus) : null;
+                    if (!line) {
+                      return <div className="mt-3 h-5" aria-hidden="true" />;
+                    }
+                    return (
+                      <p className="mt-3 flex items-start gap-2 text-[13px] leading-5 text-zinc-700">
+                        <span
+                          className={`mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full ${STATUS_DOT[line.tone]}`}
+                          aria-hidden="true"
+                        />
+                        <span className="min-w-0">
+                          <span className={`font-semibold ${STATUS_LABEL[line.tone]}`}>
+                            {line.label}:
+                          </span>{" "}
+                          {line.text}
+                          {!subscriptionActive ? (
+                            <>
+                              {" "}
+                              <Link href="/overview" className="font-semibold text-[#ba3871] underline-offset-2 hover:underline">
+                                Renew
+                              </Link>
+                            </>
+                          ) : null}
+                        </span>
+                      </p>
+                    );
+                  })()}
+
+                  {/* Stats row */}
+                  <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-600">
+                        {agent.leadsOnly ? "Number of leads" : "Contacted"}
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold leading-none text-zinc-950">
+                        {agent.leadsOnly ? (
+                          metrics.target
+                        ) : (
+                          <>
+                            {metrics.contacted}
+                            <span className="ml-1 align-baseline text-sm font-medium text-zinc-600">
+                              / {metrics.target}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-medium text-zinc-700">
+                        {agent.leadsOnly ? "leads found" : `${contactedPercent}% contacted`}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-600">
+                        Accepted
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold leading-none text-zinc-950">
+                        {agent.leadsOnly ? "N/A" : metrics.accepted}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-medium text-zinc-700">
+                        {agent.leadsOnly
+                          ? "N/A"
+                          : metrics.acceptRate === null
+                            ? "- accept rate"
+                            : `${metrics.acceptRate}% accept rate`}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-600">
+                        Messaged
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold leading-none text-zinc-950">
+                        {agent.leadsOnly ? "N/A" : metrics.messaged}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-medium text-zinc-700">
+                        {agent.leadsOnly ? "N/A" : "total messaged"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-600">
+                        Replied
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold leading-none text-zinc-950">
+                        {agent.leadsOnly ? "N/A" : metrics.replied}
+                      </p>
+                      <p className="mt-1.5 text-[11px] font-medium text-zinc-700">
+                        {agent.leadsOnly
+                          ? "N/A"
+                          : metrics.replyRate === null
+                            ? "- reply rate"
+                            : `${metrics.replyRate}% reply rate`}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="mt-5 flex flex-col items-start justify-between gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:items-center">
+                    <p className="min-w-0 break-words text-xs font-medium text-zinc-700">
+                      {linkedGroupName(agent, loadedGroups)}
+                      {agent.createdAt ? (
+                        <>
+                          <span className="mx-1.5 text-zinc-500">·</span>
+                          Created {formatZonedDate(agent.createdAt, timeZone)}
+                        </>
+                      ) : null}
+                    </p>
+                    <div className="flex w-full items-stretch gap-2 sm:w-auto">
+                      <Link
+                        href={`/agents/${agent.id}`}
+                        className="m3-btn m3-btn-outlined box-border h-7 flex-1 px-2.5 text-xs leading-none sm:flex-none"
+                      >
+                        <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 12h4l2-7 4 14 2-7h6" />
+                        </svg>
+                        View
+                      </Link>
+                      <Link
+                        href={`/agents/new?id=${agent.id}`}
+                        className="m3-btn m3-btn-filled box-border h-7 flex-1 px-2.5 text-xs leading-none sm:flex-none"
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          </ContentReveal>
+        )}
+        </div>
+      </div>
+
+      {leadsOnlyTarget ? (
+        <div
+          className="m3-dialog-scrim z-[95]"
+          role="presentation"
+          onClick={() => (savingLeadsOnly ? undefined : setLeadsOnlyTarget(null))}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="leads-only-title"
+            className="m3-dialog-surface"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="leads-only-title" className="m3-dialog-title">
+              {leadsOnlyTarget.leadsOnly ? "Make this agent leads only?" : "Allow outreach?"}
+            </h2>
+            <p className="m3-dialog-body">
+              {leadsOnlyTarget.leadsOnly
+                ? `${agentTitle(leadsOnlyTarget.agent)} keeps finding leads, but Omentir stops contacting anyone it found, in every lead group. Sequences and AI replies already running for those people end, and they do not restart if you allow outreach again later.`
+                : `People ${agentTitle(leadsOnlyTarget.agent)} finds can be contacted again by outreach on their lead group. If the agent has no outreach sequence yet, edit it to add one.`}
+            </p>
+            <div className="m3-dialog-actions">
+              <button
+                type="button"
+                disabled={savingLeadsOnly}
+                onClick={() => setLeadsOnlyTarget(null)}
+                className="m3-dialog-btn m3-dialog-btn--text"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={savingLeadsOnly}
+                onClick={confirmLeadsOnly}
+                className="m3-dialog-btn m3-dialog-btn--filled"
+              >
+                {savingLeadsOnly
+                  ? "Saving..."
+                  : leadsOnlyTarget.leadsOnly
+                    ? "Make leads only"
+                    : "Allow outreach"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {deleteAgent ? (
+        <div
+          className="m3-dialog-scrim z-[95]"
+          role="presentation"
+          onClick={() => setDeleteAgent(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-agent-title"
+            className="m3-dialog-surface"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="delete-agent-title" className="m3-dialog-title">
+              Delete agent?
+            </h2>
+            <p className="m3-dialog-body">
+              Are you sure you want to delete {deleteAgent.name}? This stops outreach, deletes its
+              lead group and campaigns, and permanently deletes the leads in that group.
+            </p>
+            <div className="m3-dialog-actions">
+              <button
+                type="button"
+                onClick={() => setDeleteAgent(null)}
+                className="m3-dialog-btn m3-dialog-btn--text"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteAgent}
+                className="m3-dialog-btn m3-dialog-btn--destructive"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}

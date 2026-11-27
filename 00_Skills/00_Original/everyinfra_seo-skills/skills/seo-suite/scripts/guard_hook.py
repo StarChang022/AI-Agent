@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""guard_hook.py — 编码 agent 的改动前钩子:主干上不许直接改搜索引擎可见的索引控制(RQ-229;stdlib only)。
+
+规则(SKILL.md 使用原则 3):在站点仓库里改 robots.txt、noindex、canonical、重定向,一律在分支上改、开草稿 PR,
+不推主干、不合并。本钩子把这条从「写在文档里」变成「会拦」:当前分支是 main / master(或 --protect 指定的)时,
+Edit / Write / MultiEdit 碰到下列任一项就拦下,告诉 agent 先开分支。
+  - 文件:robots.txt、robots.ts/js、_redirects、vercel.json、netlify.toml、next.config.*、middleware.*、
+    .htaccess、nginx 配置、sitemap 生成文件;
+  - 内容:新增或删掉 noindex / nofollow、rel="canonical" / canonical: / alternates、redirect(s)、
+    X-Robots-Tag、Disallow:,以及页面 <title>、meta description、og:*、Next 的 metadata / generateMetadata。
+Bash 里对 robots.txt / 重定向文件的写操作(重定向符、sed -i、tee、mv、cp)同样拦;人在主干上 `git push`、
+或推送目标写着 main / master,也拦(行为评测里「用户说直接推 main」时 agent 照推了,文字规则挡不住)。
+
+接法(Claude Code,项目 .claude/settings.json;`project.py ops install` 会写):
+  {"hooks": {"PreToolUse": [{"matcher": "Edit|Write|MultiEdit|Bash", "hooks": [{"type": "command", "command": "<找脚本>"}]}]}}
+  <找脚本> 按 SEO_SUITE_DIR → 插件根 → ~/.claude/skills → ~/.agents/skills → 安装时的实际路径的顺序找本文件
+  (ops.hook_cmd();skill 装在哪都能找到,不写死 ~/.claude/skills)。
+钩子从 stdin 读 {"tool_name", "tool_input", "cwd"};退出码 2 = 拦下(理由写 stderr,agent 能看到);0 = 放行。
+另有 git pre-push 一层(`--pre-push`,`ops install` 装进 .git/hooks/pre-push):编码 agent 的 shell 推 main / master
+一律拒绝——对 Codex、子代理这些读不到 .claude/settings.json 的 agent 也生效;人自己的终端不受影响。
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+
+PROTECTED = ("main", "master")
+FILE_RE = re.compile(r"(^|/)(robots\.(txt|ts|js|mjs)|_redirects|_headers|vercel\.json|netlify\.toml|"
+                     r"next\.config\.(js|mjs|ts|cjs)|middleware\.(ts|js)|\.htaccess|nginx[^/]*\.conf|"
+                     r"sitemap[^/]*\.(xml|ts|js))$", re.I)
+CONTENT_RE = re.compile(r"noindex|nofollow|rel=[\"']?canonical|\bcanonical\s*[:=]|alternates\s*:|"
+                        r"\bredirects?\b|x-robots-tag|^\s*disallow\s*:|"
+                        r"<title[\s>]|name=[\"']?description|property=[\"']?og:|generateMetadata|"
+                        r"export\s+const\s+metadata", re.I | re.M)   # 后一行:页面标题、描述、分享卡片
+PUSH_RE = re.compile(r"\bgit\s+push\b(?P<rest>[^;&|]*)")
+BASH_WRITE_RE = re.compile(r"(robots\.txt|_redirects|vercel\.json|netlify\.toml|\.htaccess)", re.I)
+BASH_OP_RE = re.compile(r"(>|sed\s+-i|\btee\b|\bmv\b|\bcp\b|\brm\b)")
+
+
+def branch(cwd):
+    try:
+        p = subprocess.run(["git", "-C", cwd or ".", "symbolic-ref", "--short", "-q", "HEAD"],
+                           capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return p.stdout.strip() if p.returncode == 0 else None
+
+
+def touched_text(tool, inp):
+    if tool == "Write":
+        return inp.get("content") or ""
+    if tool == "Edit":
+        return (inp.get("old_string") or "") + "\n" + (inp.get("new_string") or "")
+    if tool == "MultiEdit":
+        return "\n".join((e.get("old_string") or "") + "\n" + (e.get("new_string") or "")
+                         for e in inp.get("edits") or [])
+    return ""
+
+
+def verdict(event, protected=PROTECTED):
+    """→ (拦不拦, 理由)。纯函数,便于测试。"""
+    tool = event.get("tool_name") or ""
+    inp = event.get("tool_input") or {}
+    cwd = event.get("cwd") or os.getcwd()
+    br = event.get("_branch") if "_branch" in event else branch(cwd)
+    if tool == "Bash":                                          # 推送目标写着主干:不管人在哪个分支都拦
+        for m in PUSH_RE.finditer(inp.get("command") or ""):
+            refs = [w for w in m.group("rest").split() if not w.startswith("-")]
+            if any(r.split(":")[-1] in protected for r in refs[1:]):
+                return True, "推送到主干(%s)" % " ".join(refs)
+            if br in protected and len(refs) <= 1:              # 人在主干上裸推
+                return True, "在 %s 上推送" % br
+    if br not in protected:
+        return False, ""
+    if tool in ("Edit", "Write", "MultiEdit"):
+        path = inp.get("file_path") or ""
+        if FILE_RE.search(path):
+            return True, "在 %s 上改 %s(索引控制 / 重定向文件)" % (br, os.path.basename(path))
+        m = CONTENT_RE.search(touched_text(tool, inp))
+        if m:
+            return True, "在 %s 上改动涉及「%s」(索引控制)" % (br, m.group(0).strip())
+    elif tool == "Bash":
+        cmd = inp.get("command") or ""
+        target = BASH_WRITE_RE.search(cmd)
+        if target and BASH_OP_RE.search(cmd):
+            return True, "在 %s 上用命令改 %s" % (br, target.group(1))
+    return False, ""
+
+
+AGENT_ENV = ("CLAUDECODE", "AI_AGENT", "CURSOR_AGENT", "GEMINI_CLI")
+
+
+def agent_env(env):
+    """编码 agent 跑的 shell 会带的环境变量(Claude Code: CLAUDECODE、AI_AGENT;Codex: CODEX_*)。人自己的终端没有。"""
+    return [k for k in env if k in AGENT_ENV or k.startswith("CODEX_")]
+
+
+def pre_push(lines, env, protected=PROTECTED):
+    """git pre-push 钩子:stdin 每行「本地 ref 本地 sha 远端 ref 远端 sha」。agent 推主干 → (True, 理由)。
+    这一层对所有 agent 都生效(Codex、子代理也一样),不依赖 Claude Code 的 PreToolUse;人自己推不受影响,
+    确实要让 agent 推主干时设 SEO_SUITE_ALLOW_MAIN_PUSH=1。"""
+    if env.get("SEO_SUITE_ALLOW_MAIN_PUSH") == "1":
+        return False, ""
+    who = agent_env(env)
+    if not who:
+        return False, ""
+    for line in lines:
+        parts = line.split()
+        if len(parts) >= 3 and parts[2].rsplit("/", 1)[-1] in protected and parts[2].startswith("refs/heads/"):
+            return True, "编码 agent(%s)推送到主干 %s" % (",".join(sorted(who)[:2]), parts[2])
+    return False, ""
+
+
+def main():
+    if "--pre-push" in sys.argv:
+        block, why = pre_push(sys.stdin.read().splitlines(), os.environ)
+        if block:
+            sys.stderr.write("seo-suite 拦下:%s。SEO 改动推分支、开草稿 PR 给人合并;用户说直接推也一样。"
+                             "人确实要让 agent 推主干时设 SEO_SUITE_ALLOW_MAIN_PUSH=1。\n" % why)
+            return 1
+        return 0
+    try:
+        event = json.load(sys.stdin)
+    except ValueError:
+        return 0                                    # 读不懂就放行,不卡住 agent
+    block, why = verdict(event)
+    if block:
+        sys.stderr.write("seo-suite 拦下:%s。SEO 改动(robots / noindex / canonical / 重定向 / 标题 / 描述)先开分支"
+                         "(git switch -c seo/<描述>),改完推分支、开草稿 PR 给人合并;不推主干,用户说直接推也一样。\n" % why)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

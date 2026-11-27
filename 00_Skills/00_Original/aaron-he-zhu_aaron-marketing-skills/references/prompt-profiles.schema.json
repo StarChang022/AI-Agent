@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aaron-he-zhu/aaron-marketing-skills/references/prompt-profiles.schema.json",
+  "title": "Aaron model prompt profiles",
+  "description": "The only deployed prompt representation is explicit; retired research profiles cannot authorize execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "default_profile",
+    "profile_order",
+    "always_on_overlays",
+    "profiles",
+    "host_defaults"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "./prompt-profiles.schema.json"
+    },
+    "schema_version": {
+      "const": "2.0"
+    },
+    "default_profile": {
+      "const": "explicit"
+    },
+    "profile_order": {
+      "const": [
+        "explicit"
+      ]
+    },
+    "always_on_overlays": {
+      "const": [
+        "consent",
+        "claims",
+        "pii-secrets",
+        "external-mutation",
+        "audit-verdict",
+        "release-provenance"
+      ]
+    },
+    "profiles": {
+      "const": {
+        "explicit": {
+          "example_budget": 4,
+          "rationale_detail": "full",
+          "reminder_density": "repeated",
+          "template_detail": "expanded",
+          "workflow_detail": "full"
+        }
+      }
+    },
+    "host_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "standalone-skill-host",
+        "generic-shared-root-host",
+        "claude-code-plugin-host"
+      ],
+      "properties": {
+        "standalone-skill-host": {
+          "const": "explicit"
+        },
+        "generic-shared-root-host": {
+          "const": "explicit"
+        },
+        "claude-code-plugin-host": {
+          "const": "explicit"
+        }
+      }
+    }
+  }
+}

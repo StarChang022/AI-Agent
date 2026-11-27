@@ -1,0 +1,116 @@
+{
+  "schema_version": 2,
+  "document_role": "generated_public_projection",
+  "canonical_source": ".rd/capability-ledger.json",
+  "canonical_schema_version": 1,
+  "canonical_sha256": "0cc67582cc7cf0d893424fde1cd91282e142222579bc5b6bc5db9f0892a67532",
+  "release_version": "2.5.0",
+  "release_state": "released",
+  "source_revision_basis": "release-tag:v2.5.0",
+  "required_obligation_ids": [
+    "COMMENT_SCAN_LEDGER",
+    "COMMENT_WRITE_AUTHORIZATION",
+    "CHROME_ACTUATOR_CONTRACT",
+    "THREE_PLATFORM_BROWSER_FIXTURE",
+    "THREE_PLATFORM_LIVE_DRAFT",
+    "LIVE_BATCH_CONFIRM",
+    "LIVE_BOUNDED_AUTO"
+  ],
+  "obligations": [
+    {
+      "id": "COMMENT_SCAN_LEDGER",
+      "name": "Scoped scans persist completion and zero-result evidence",
+      "status": "verified",
+      "integration_level": "contract_enforced",
+      "scope": [
+        "internal"
+      ],
+      "verified_version": "2.5.0",
+      "evidence": [
+        "python scripts/comment_self_test.py",
+        "scripts/comment_test_browser_contract.py"
+      ]
+    },
+    {
+      "id": "COMMENT_WRITE_AUTHORIZATION",
+      "name": "Every external reply needs a bounded grant or approval and one-shot permit",
+      "status": "verified",
+      "integration_level": "contract_enforced",
+      "scope": [
+        "internal"
+      ],
+      "verified_version": "2.5.0",
+      "evidence": [
+        "python scripts/comment_self_test.py",
+        "scripts/comment_test_authorization.py",
+        "scripts/comment_test_browser_contract.py"
+      ]
+    },
+    {
+      "id": "CHROME_ACTUATOR_CONTRACT",
+      "name": "Test-only Chrome actuator contract binds parent, preparation, durable claim, and exactly-once submit",
+      "status": "verified",
+      "integration_level": "contract_enforced",
+      "scope": [
+        "internal"
+      ],
+      "verified_version": "2.5.0",
+      "evidence": [
+        "node scripts/comment_chrome_actuator_test.mjs",
+        "node scripts/comment_chrome_claim_bridge_test.mjs",
+        "node scripts/comment_chrome_claim_integration_test.mjs",
+        "python scripts/comment_self_test.py",
+        "scripts/comment_test_browser_policy_gate.py",
+        "scripts/comment_chrome_send.mjs",
+        "scripts/comment_chrome_claim_bridge.mjs"
+      ],
+      "live_browser_actuation_enabled_by_default": false,
+      "limitation": "Verification is isolated contract evidence; release policy rejects live scan completion and send lifecycle mutations."
+    },
+    {
+      "id": "THREE_PLATFORM_BROWSER_FIXTURE",
+      "name": "FB, IG, and Threads run through a real controlled browser fixture",
+      "status": "unmeasured",
+      "integration_level": "unmeasured",
+      "scope": [
+        "internal"
+      ],
+      "next_experiment": "Run comment_fixture_browser_e2e.mjs in a controlled Browser session as independent three-platform test-only quality evidence. Even a full PASS must remain promotion=false and cannot set status=verified, unlock a live successor, claim authenticated Meta authority, or enable live actuation.",
+      "live_browser_actuation_enabled_by_default": false
+    },
+    {
+      "id": "THREE_PLATFORM_LIVE_DRAFT",
+      "name": "Authenticated FB, IG, and Threads scans produce same-revision draft queues",
+      "status": "unmeasured",
+      "integration_level": "unmeasured",
+      "scope": [
+        "internal"
+      ],
+      "next_experiment": "After TRUSTED_CHROME_HOST_RESOLVER and STABLE_NODE_FRAME_MAPPING are genuinely verified, run one authenticated read-only draft_only canary per platform and retain ledger receipts. The test-only Browser fixture remains independent regression evidence and cannot satisfy or unlock this obligation.",
+      "live_browser_actuation_enabled_by_default": false
+    },
+    {
+      "id": "LIVE_BATCH_CONFIRM",
+      "name": "A confirmed reply is sent and verified under the correct live parent",
+      "status": "unmeasured",
+      "integration_level": "unmeasured",
+      "scope": [
+        "internal"
+      ],
+      "next_experiment": "After trusted host, stable node/frame mapping, fixture, and draft canaries pass, send one explicitly approved canary per platform and verify exact parent placement.",
+      "live_browser_actuation_enabled_by_default": false
+    },
+    {
+      "id": "LIVE_BOUNDED_AUTO",
+      "name": "A current-session bounded_auto grant completes without exceeding its cap",
+      "status": "unmeasured",
+      "integration_level": "unmeasured",
+      "scope": [
+        "internal"
+      ],
+      "next_experiment": "After batch-confirm live evidence passes, run one explicitly authorized low-risk bounded_auto canary and verify cap, dedupe, and circuit-breaker behavior.",
+      "live_browser_actuation_enabled_by_default": false
+    }
+  ],
+  "projection_payload_sha256": "4b1b2b7dbe68c85dbf1245f6cd04e14b0f61282b6d7e540b52695b78370eb730"
+}
